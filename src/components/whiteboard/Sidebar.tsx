@@ -146,14 +146,6 @@ export const Sidebar: React.FC = () => {
                   onCheckedChange={(checked) => updateToolSettings({ showLinedPaper: checked })}
                 />
               </div>
-
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Snap to Grid</label>
-                <Switch
-                  checked={settings.snapToGrid}
-                  onCheckedChange={(checked) => updateSettings({ snapToGrid: checked })}
-                />
-              </div>
             </CardContent>
           </Card>
 
