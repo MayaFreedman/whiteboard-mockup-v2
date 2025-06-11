@@ -62,116 +62,122 @@ export const Toolbar: React.FC = () => {
   return (
     <div className="bg-card border-b border-border">
       {/* First Line - Main Tools */}
-      <div className="h-16 flex items-center px-4 gap-4">
-        {/* Basic Tools */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {basicTools.map((tool) => (
-            <Button
-              key={tool.id}
-              variant={activeTool === tool.id ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setActiveTool(tool.id as any)}
-              className="p-2"
-            >
-              <tool.icon className="w-4 h-4" />
-            </Button>
-          ))}
-        </div>
-
-        <Separator orientation="vertical" className="h-8 flex-shrink-0" />
-
-        {/* Shapes Dropdown */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+      <div className="min-h-16 flex items-center px-4 gap-4">
+        {/* Left Side - Tools and Colors */}
+        <div className="flex items-center gap-4 flex-wrap flex-1 min-w-0">
+          {/* Basic Tools */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {basicTools.map((tool) => (
               <Button
-                variant={currentShape ? "default" : "ghost"}
+                key={tool.id}
+                variant={activeTool === tool.id ? "default" : "ghost"}
                 size="sm"
-                className="p-2 gap-1"
+                onClick={() => setActiveTool(tool.id as any)}
+                className="p-2"
               >
-                <ShapeIcon className="w-4 h-4" />
-                <ChevronDown className="w-3 h-3" />
+                <tool.icon className="w-4 h-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              {shapes.map((shape) => (
-                <DropdownMenuItem
-                  key={shape.id}
-                  onClick={() => setActiveTool(shape.id as any)}
-                  className="flex items-center gap-2"
-                >
-                  <shape.icon className="w-4 h-4" />
-                  {shape.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <Separator orientation="vertical" className="h-8 flex-shrink-0" />
-
-        {/* Color Palette */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-sm font-medium">Colors:</span>
-          <div className="flex gap-1">
-            {colors.map((color) => (
-              <button
-                key={color}
-                className={`w-6 h-6 rounded border-2 transition-all ${
-                  toolSettings.strokeColor === color 
-                    ? 'border-primary scale-110' 
-                    : 'border-transparent hover:border-muted-foreground/50'
-                }`}
-                style={{ backgroundColor: color }}
-                onClick={() => updateToolSettings({ strokeColor: color })}
-              />
             ))}
+          </div>
+
+          <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+
+          {/* Shapes Dropdown */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={currentShape ? "default" : "ghost"}
+                  size="sm"
+                  className="p-2 gap-1"
+                >
+                  <ShapeIcon className="w-4 h-4" />
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                {shapes.map((shape) => (
+                  <DropdownMenuItem
+                    key={shape.id}
+                    onClick={() => setActiveTool(shape.id as any)}
+                    className="flex items-center gap-2"
+                  >
+                    <shape.icon className="w-4 h-4" />
+                    {shape.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+
+          {/* Color Palette */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-sm font-medium">Colors:</span>
+            <div className="flex gap-1">
+              {colors.map((color) => (
+                <button
+                  key={color}
+                  className={`w-6 h-6 rounded border-2 transition-all ${
+                    toolSettings.strokeColor === color 
+                      ? 'border-primary scale-110' 
+                      : 'border-transparent hover:border-muted-foreground/50'
+                  }`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => updateToolSettings({ strokeColor: color })}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Stroke Width - Large screens only */}
+          <div className="hidden xl:flex items-center gap-2 min-w-32 flex-shrink-0">
+            <span className="text-sm font-medium">Width:</span>
+            <Slider
+              value={[toolSettings.strokeWidth]}
+              onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
+              min={1}
+              max={20}
+              step={1}
+              className="flex-1"
+            />
+            <Badge variant="outline" className="min-w-8 text-center">
+              {toolSettings.strokeWidth}
+            </Badge>
           </div>
         </div>
 
-        {/* Stroke Width - Desktop */}
-        <div className="hidden lg:flex items-center gap-2 min-w-32 flex-shrink-0">
-          <span className="text-sm font-medium">Width:</span>
-          <Slider
-            value={[toolSettings.strokeWidth]}
-            onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
-            min={1}
-            max={20}
-            step={1}
-            className="flex-1"
-          />
-          <Badge variant="outline" className="min-w-8 text-center">
-            {toolSettings.strokeWidth}
-          </Badge>
-        </div>
+        {/* Right Side - Actions (always on right) */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm">
+              <Undo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Redo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+          </div>
 
-        {/* Actions - Desktop */}
-        <div className="hidden lg:flex items-center gap-2 ml-auto flex-shrink-0">
-          <Button variant="ghost" size="sm">
-            <Undo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Redo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Active Tool Indicator - Desktop */}
-        <div className="hidden xl:flex items-center gap-2 flex-shrink-0">
-          <span className="text-sm text-muted-foreground">Active:</span>
-          <Badge variant="default" className="capitalize">
-            {activeTool}
-          </Badge>
+          {/* Active Tool Indicator - Extra large screens only */}
+          <div className="hidden 2xl:flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Active:</span>
+            <Badge variant="default" className="capitalize">
+              {activeTool}
+            </Badge>
+          </div>
         </div>
       </div>
 
-      {/* Second Line - Mobile/Tablet overflow content */}
-      <div className="lg:hidden border-t border-border px-4 py-2 flex items-center justify-between gap-4">
+      {/* Second Line - Additional controls for smaller screens */}
+      <div className="xl:hidden border-t border-border px-4 py-2 flex items-center justify-between gap-4">
         {/* Stroke Width */}
         <div className="flex items-center gap-2 min-w-32">
           <span className="text-sm font-medium">Width:</span>
@@ -186,22 +192,6 @@ export const Toolbar: React.FC = () => {
           <Badge variant="outline" className="min-w-8 text-center">
             {toolSettings.strokeWidth}
           </Badge>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            <Undo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Redo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomIn className="w-4 h-4" />
-          </Button>
         </div>
 
         {/* Active Tool Indicator */}
