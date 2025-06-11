@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
@@ -29,12 +29,18 @@ import {
   Star,
   Pentagon,
   Diamond,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export const Toolbar: React.FC = () => {
   const { activeTool, setActiveTool, toolSettings, updateToolSettings, getActiveColors } = useToolStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollButtons, setShowScrollButtons] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Update CSS custom property for toolbar height
   useEffect(() => {
@@ -42,7 +48,24 @@ export const Toolbar: React.FC = () => {
       const height = toolbarRef.current.offsetHeight;
       document.documentElement.style.setProperty('--toolbar-height', `${height}px`);
     }
-  }, [activeTool]); // Re-calculate when tool changes (might affect toolbar height)
+  }, [activeTool]);
+
+  // Check scroll state
+  useEffect(() => {
+    const checkScrollState = () => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        setShowScrollButtons(scrollWidth > clientWidth);
+        setCanScrollLeft(scrollLeft > 0);
+        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+      }
+    };
+
+    checkScrollState();
+    window.addEventListener('resize', checkScrollState);
+    
+    return () => window.removeEventListener('resize', checkScrollState);
+  }, [activeTool, toolSettings]);
 
   const basicTools = [
     { id: 'select', icon: MousePointer, label: 'Select' },
@@ -64,7 +87,6 @@ export const Toolbar: React.FC = () => {
   ];
 
   const colors = getActiveColors();
-
   const currentShape = shapes.find(shape => shape.id === activeTool);
   const ShapeIcon = currentShape?.icon || Square;
 
@@ -72,12 +94,76 @@ export const Toolbar: React.FC = () => {
   const widthSupportingTools = ['pencil', 'brush', 'eraser'];
   const showWidthControls = widthSupportingTools.includes(activeTool);
 
+  // Calculate how many colors to show based on available space and active tool
+  const getVisibleColorCount = () => {
+    if (showWidthControls) {
+      // When width controls are shown, show fewer colors to make space
+      return Math.min(6, colors.length);
+    }
+    // For basic tools, show more colors if available
+    return colors.length;
+  };
+
+  const visibleColors = colors.slice(0, getVisibleColorCount());
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+    }
+  };
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
   return (
-    <div ref={toolbarRef} className="bg-card border-b border-border">
-      {/* First Line - Main Tools */}
-      <div className="min-h-16 flex items-center px-4 gap-4">
-        {/* Left Side - Tools and Colors */}
-        <div className="flex items-center gap-4 flex-wrap flex-1 min-w-0">
+    <div ref={toolbarRef} className="bg-card border-b border-border relative">
+      {/* Scroll Left Button */}
+      {showScrollButtons && canScrollLeft && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute left-0 top-0 h-full z-10 rounded-none border-r bg-card/95 backdrop-blur"
+          onClick={scrollLeft}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+      )}
+
+      {/* Scroll Right Button */}
+      {showScrollButtons && canScrollRight && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute right-0 top-0 h-full z-10 rounded-none border-l bg-card/95 backdrop-blur"
+          onClick={scrollRight}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      )}
+
+      {/* Scrollable Content Container */}
+      <div 
+        ref={scrollContainerRef}
+        className="overflow-x-auto scrollbar-hide"
+        onScroll={handleScroll}
+        style={{
+          paddingLeft: showScrollButtons && canScrollLeft ? '40px' : '0',
+          paddingRight: showScrollButtons && canScrollRight ? '40px' : '0',
+        }}
+      >
+        {/* Single Line - All Tools */}
+        <div className="min-h-16 flex items-center px-4 gap-4 w-max">
           {/* Basic Tools */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {basicTools.map((tool) => (
@@ -125,11 +211,11 @@ export const Toolbar: React.FC = () => {
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
-          {/* Color Palette */}
+          {/* Dynamic Color Palette */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <span className="text-sm font-medium">Colors:</span>
             <div className="flex gap-1">
-              {colors.map((color) => (
+              {visibleColors.map((color) => (
                 <button
                   key={color}
                   className={`w-6 h-6 rounded border-2 transition-all ${
@@ -141,83 +227,65 @@ export const Toolbar: React.FC = () => {
                   onClick={() => updateToolSettings({ strokeColor: color })}
                 />
               ))}
+              {colors.length > visibleColors.length && (
+                <Badge variant="outline" className="text-xs">
+                  +{colors.length - visibleColors.length}
+                </Badge>
+              )}
             </div>
           </div>
 
-          {/* Stroke Width - Show only for width-supporting tools on large screens */}
-          {showWidthControls && (
-            <div className="hidden xl:flex items-center gap-2 min-w-32 flex-shrink-0">
-              <span className="text-sm font-medium">Width:</span>
-              <Slider
-                value={[toolSettings.strokeWidth]}
-                onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
-                min={1}
-                max={20}
-                step={1}
-                className="flex-1"
-              />
-              <Badge variant="outline" className="min-w-8 text-center">
-                {toolSettings.strokeWidth}
-              </Badge>
-            </div>
-          )}
-        </div>
-
-        {/* Right Side - Actions only */}
-        <div className="hidden xl:flex items-center gap-2 flex-shrink-0">
-          <Button variant="ghost" size="sm">
-            <Undo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Redo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Second Line - Additional controls for smaller screens */}
-      <div className="xl:hidden border-t border-border px-4 py-2 flex items-center gap-4">
-        <div className="flex items-center gap-4 flex-1">
           {/* Stroke Width - Show only for width-supporting tools */}
           {showWidthControls && (
-            <div className="flex items-center gap-2 min-w-32">
-              <span className="text-sm font-medium">Width:</span>
-              <Slider
-                value={[toolSettings.strokeWidth]}
-                onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
-                min={1}
-                max={20}
-                step={1}
-                className="flex-1"
-              />
-              <Badge variant="outline" className="min-w-8 text-center">
-                {toolSettings.strokeWidth}
-              </Badge>
-            </div>
+            <>
+              <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+              <div className="flex items-center gap-2 min-w-32 flex-shrink-0">
+                <span className="text-sm font-medium">Width:</span>
+                <Slider
+                  value={[toolSettings.strokeWidth]}
+                  onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
+                  min={1}
+                  max={20}
+                  step={1}
+                  className="flex-1"
+                />
+                <Badge variant="outline" className="min-w-8 text-center">
+                  {toolSettings.strokeWidth}
+                </Badge>
+              </div>
+            </>
           )}
-        </div>
 
-        {/* Right side - Actions */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            <Undo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Redo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomIn className="w-4 h-4" />
-          </Button>
+          <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button variant="ghost" size="sm">
+              <Undo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Redo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Custom scrollbar hiding */}
+      <style jsx>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };
