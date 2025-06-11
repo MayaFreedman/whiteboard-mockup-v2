@@ -155,13 +155,21 @@ export const Toolbar: React.FC = () => {
       {/* Scrollable Content Container */}
       <div 
         ref={scrollContainerRef}
-        className="overflow-x-auto scrollbar-hide"
-        onScroll={handleScroll}
+        className="overflow-x-auto"
         style={{
           paddingLeft: showScrollButtons && canScrollLeft ? '40px' : '0',
           paddingRight: showScrollButtons && canScrollRight ? '40px' : '0',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
+        onScroll={handleScroll}
       >
+        <style>{`
+          .overflow-x-auto::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+        
         {/* Single Line - All Tools */}
         <div className="min-h-16 flex items-center px-4 gap-4 w-max">
           {/* Basic Tools */}
@@ -275,17 +283,6 @@ export const Toolbar: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Custom scrollbar hiding */}
-      <style jsx>{`
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
     </div>
   );
 };
