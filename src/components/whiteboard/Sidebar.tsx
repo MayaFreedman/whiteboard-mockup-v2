@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
@@ -29,7 +28,8 @@ export const Sidebar: React.FC = () => {
         collapsible="offcanvas"
         style={{
           transform: open ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.2s ease-linear'
+          transition: 'transform 0.2s ease-linear',
+          marginTop: 'var(--toolbar-height, 0px)' // Account for toolbar height
         }}
       >
         <SidebarHeader className="border-b px-4 py-3">
@@ -225,7 +225,12 @@ export const Sidebar: React.FC = () => {
       {!open && (
         <button
           onClick={toggleSidebar}
-          className="fixed left-0 top-1/2 -translate-y-1/2 z-50 bg-background/95 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-r-md cursor-pointer shadow-md hover:shadow-lg"
+          className="fixed z-50 bg-background/95 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-r-md cursor-pointer shadow-md hover:shadow-lg border-0 outline-none"
+          style={{
+            left: '0',
+            top: 'calc(var(--toolbar-height, 64px) + 50vh)',
+            transform: 'translateY(-50%)'
+          }}
         >
           <ChevronsRight className="h-4 w-4" />
           <span className="text-sm">Open sidebar</span>

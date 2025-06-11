@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
@@ -34,6 +33,15 @@ import {
 
 export const Toolbar: React.FC = () => {
   const { activeTool, setActiveTool, toolSettings, updateToolSettings, getActiveColors } = useToolStore();
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
+  // Update CSS custom property for toolbar height
+  useEffect(() => {
+    if (toolbarRef.current) {
+      const height = toolbarRef.current.offsetHeight;
+      document.documentElement.style.setProperty('--toolbar-height', `${height}px`);
+    }
+  }, [activeTool]); // Re-calculate when tool changes (might affect toolbar height)
 
   const basicTools = [
     { id: 'select', icon: MousePointer, label: 'Select' },
@@ -64,7 +72,7 @@ export const Toolbar: React.FC = () => {
   const showWidthControls = widthSupportingTools.includes(activeTool);
 
   return (
-    <div className="bg-card border-b border-border">
+    <div ref={toolbarRef} className="bg-card border-b border-border">
       {/* First Line - Main Tools */}
       <div className="min-h-16 flex items-center px-4 gap-4">
         {/* Left Side - Tools and Colors */}

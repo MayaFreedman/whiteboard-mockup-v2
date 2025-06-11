@@ -15,7 +15,7 @@ export const Whiteboard: React.FC = () => {
         {/* Main Content Area */}
         <div className="flex-1 flex overflow-hidden relative">
           {/* Left Sidebar - positioned to start below toolbar */}
-          <div className="absolute top-0 left-0 z-10 h-full">
+          <div className="absolute top-0 left-0 z-10 h-full pt-0">
             <Sidebar />
           </div>
           
