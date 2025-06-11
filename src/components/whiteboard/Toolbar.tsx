@@ -108,19 +108,20 @@ export const Toolbar: React.FC = () => {
       // When width controls are shown, show fewer colors to make space
       return Math.min(6, allColors.length);
     }
-    // For basic tools, show more colors if available
-    return Math.min(10, allColors.length); // Cap at 10 to trigger responsive mode
+    // For basic tools, show all colors unless we need to be responsive
+    return allColors.length;
   };
 
   const visibleColorCount = getVisibleColorCount();
-  const isResponsiveMode = allColors.length > visibleColorCount;
+  // Only trigger responsive mode when width controls are shown and we have more colors than the limit
+  const isResponsiveMode = showWidthControls && allColors.length > 6;
   
   // Only use recently used colors when in responsive mode
   const visibleColors = isResponsiveMode 
     ? getMostRecentColors(visibleColorCount)
     : allColors.slice(0, visibleColorCount);
   
-  const hiddenColors = allColors.filter(color => !visibleColors.includes(color));
+  const hiddenColors = isResponsiveMode ? allColors.filter(color => !visibleColors.includes(color)) : [];
 
   const handleColorSelect = (color: string) => {
     updateToolSettings({ strokeColor: color });
