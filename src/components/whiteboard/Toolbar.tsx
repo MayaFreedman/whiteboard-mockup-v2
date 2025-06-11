@@ -1,5 +1,7 @@
+
 import React, { useRef, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
+import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
@@ -33,6 +35,7 @@ import {
 
 export const Toolbar: React.FC = () => {
   const { activeTool, setActiveTool, toolSettings, updateToolSettings, getActiveColors } = useToolStore();
+  const { viewport } = useWhiteboardStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   // Update CSS custom property for toolbar height
@@ -72,7 +75,7 @@ export const Toolbar: React.FC = () => {
   const showWidthControls = widthSupportingTools.includes(activeTool);
 
   return (
-    <div ref={toolbarRef} className="bg-card border-b border-border">
+    <div ref={toolbarRef} className="bg-card border-b border-border relative">
       {/* First Line - Main Tools */}
       <div className="min-h-16 flex items-center px-4 gap-4">
         {/* Left Side - Tools and Colors */}
@@ -162,31 +165,20 @@ export const Toolbar: React.FC = () => {
           )}
         </div>
 
-        {/* Right Side - Actions and Active Tool (only on large screens) */}
-        <div className="hidden xl:flex items-center gap-4 flex-shrink-0">
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Undo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Redo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Active Tool Indicator */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Active:</span>
-            <Badge variant="default" className="capitalize">
-              {activeTool}
-            </Badge>
-          </div>
+        {/* Right Side - Actions only */}
+        <div className="hidden xl:flex items-center gap-2 flex-shrink-0">
+          <Button variant="ghost" size="sm">
+            <Undo className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <Redo className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <ZoomOut className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <ZoomIn className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
@@ -212,32 +204,28 @@ export const Toolbar: React.FC = () => {
           )}
         </div>
 
-        {/* Right side - Actions and Active Tool */}
-        <div className="flex items-center gap-4">
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Undo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Redo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Active Tool Indicator */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Active:</span>
-            <Badge variant="default" className="capitalize">
-              {activeTool}
-            </Badge>
-          </div>
+        {/* Right side - Actions */}
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm">
+            <Undo className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <Redo className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <ZoomOut className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <ZoomIn className="w-4 h-4" />
+          </Button>
         </div>
+      </div>
+
+      {/* Status Display - Fixed to right side */}
+      <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
+        Zoom: {Math.round(viewport.zoom * 100)}% | 
+        Tool: {activeTool} | 
+        Size: {toolSettings.strokeWidth}px
       </div>
     </div>
   );
