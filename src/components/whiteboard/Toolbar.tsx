@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuPortal,
 } from '../ui/dropdown-menu';
 import { 
   Pencil, 
@@ -74,14 +75,14 @@ export const Toolbar: React.FC = () => {
       const viewportWidth = window.innerWidth;
       console.log('Viewport width:', viewportWidth);
       
-      // Calculate the width used by other elements (less conservative estimates)
-      const baseToolsWidth = 240; // Reduced from 280
-      const shapesWidth = 50; // Reduced from 60
-      const separatorsWidth = 30; // Reduced from 40
-      const widthControlsWidth = showWidthControls ? 180 : 0; // Reduced from 200
-      const actionsWidth = 160; // Reduced from 180
-      const paddingAndMargins = 60; // Reduced from 80
-      const scrollButtonsWidth = 60; // Reduced from 80
+      // Calculate the width used by other elements (even less conservative)
+      const baseToolsWidth = 220; // Reduced further
+      const shapesWidth = 45; // Reduced further
+      const separatorsWidth = 25; // Reduced further
+      const widthControlsWidth = showWidthControls ? 160 : 0; // Reduced further
+      const actionsWidth = 140; // Reduced further
+      const paddingAndMargins = 40; // Reduced further
+      const scrollButtonsWidth = 50; // Reduced further
       
       const usedWidth = baseToolsWidth + shapesWidth + separatorsWidth + widthControlsWidth + actionsWidth + paddingAndMargins + scrollButtonsWidth;
       const availableForColors = viewportWidth - usedWidth;
@@ -98,9 +99,9 @@ export const Toolbar: React.FC = () => {
       });
       console.log('Available width for colors:', availableForColors);
       
-      // Each color button is about 28px (24px + 4px gap) - less conservative
-      const colorButtonWidth = 28;
-      const colorsLabelWidth = 60; // Reduced from 70
+      // Each color button is about 26px (more optimistic)
+      const colorButtonWidth = 26;
+      const colorsLabelWidth = 55;
       
       const maxColors = Math.floor((availableForColors - colorsLabelWidth) / colorButtonWidth);
       
@@ -248,7 +249,7 @@ export const Toolbar: React.FC = () => {
       {/* Scrollable Content Container */}
       <div 
         ref={scrollContainerRef}
-        className="overflow-x-auto flex-1 overflow-visible"
+        className="overflow-x-auto flex-1"
         style={{
           paddingLeft: showScrollButtons && canScrollLeft ? '40px' : '0',
           paddingRight: '180px',
@@ -334,6 +335,7 @@ export const Toolbar: React.FC = () => {
                     if (open) {
                       console.log('ITS ME IM THE RESPONSIVE DROPDOWN BUTTON!');
                       console.log('Dropdown opened, hiddenColors:', hiddenColors);
+                      console.log('Dropdown should be rendering with portal...');
                     }
                   }}
                 >
@@ -345,31 +347,33 @@ export const Toolbar: React.FC = () => {
                       +{hiddenColors.length}
                     </Badge>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="start" 
-                    className="w-48 bg-popover border border-border shadow-lg z-[100]"
-                    side="bottom"
-                    sideOffset={5}
-                    avoidCollisions={true}
-                  >
-                    <div className="grid grid-cols-6 gap-2 p-2">
-                      {hiddenColors.map((color) => (
-                        <button
-                          key={color}
-                          className={`w-6 h-6 rounded border-2 transition-all ${
-                            toolSettings.strokeColor === color 
-                              ? 'border-primary scale-110' 
-                              : 'border-border hover:border-muted-foreground/50'
-                          }`}
-                          style={{ backgroundColor: color }}
-                          onClick={() => {
-                            console.log('Hidden color clicked:', color);
-                            handleColorSelect(color);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </DropdownMenuContent>
+                  <DropdownMenuPortal>
+                    <DropdownMenuContent 
+                      className="w-48 bg-card border shadow-lg z-[9999]"
+                      onCloseAutoFocus={(e) => e.preventDefault()}
+                    >
+                      <div className="p-2">
+                        <div className="text-xs text-muted-foreground mb-2">More Colors:</div>
+                        <div className="grid grid-cols-6 gap-2">
+                          {hiddenColors.map((color) => (
+                            <button
+                              key={color}
+                              className={`w-6 h-6 rounded border-2 transition-all ${
+                                toolSettings.strokeColor === color 
+                                  ? 'border-primary scale-110' 
+                                  : 'border-border hover:border-muted-foreground/50'
+                              }`}
+                              style={{ backgroundColor: color }}
+                              onClick={() => {
+                                console.log('Hidden color clicked:', color);
+                                handleColorSelect(color);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenuPortal>
                 </DropdownMenu>
               )}
             </div>
