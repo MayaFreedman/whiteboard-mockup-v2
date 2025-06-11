@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
@@ -39,9 +38,9 @@ export const Toolbar: React.FC = () => {
     { id: 'select', icon: MousePointer, label: 'Select' },
     { id: 'pencil', icon: Pencil, label: 'Pencil' },
     { id: 'brush', icon: Brush, label: 'Brush' },
+    { id: 'eraser', icon: Eraser, label: 'Eraser' },
     { id: 'text', icon: Type, label: 'Text' },
     { id: 'fill', icon: PaintBucket, label: 'Fill' },
-    { id: 'eraser', icon: Eraser, label: 'Eraser' },
   ];
 
   const shapes = [
