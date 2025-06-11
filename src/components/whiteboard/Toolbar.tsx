@@ -60,11 +60,11 @@ export const Toolbar: React.FC = () => {
   const ShapeIcon = currentShape?.icon || Square;
 
   return (
-    <div className="min-h-16 bg-card border-b border-border">
+    <div className="bg-card border-b border-border">
       {/* First Line - Main Tools */}
-      <div className="h-16 flex items-center px-4 gap-4 flex-wrap lg:flex-nowrap">
+      <div className="h-16 flex items-center px-4 gap-4">
         {/* Basic Tools */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {basicTools.map((tool) => (
             <Button
               key={tool.id}
@@ -78,10 +78,10 @@ export const Toolbar: React.FC = () => {
           ))}
         </div>
 
-        <Separator orientation="vertical" className="h-8 hidden lg:block" />
+        <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
         {/* Shapes Dropdown */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -108,11 +108,11 @@ export const Toolbar: React.FC = () => {
           </DropdownMenu>
         </div>
 
-        <Separator orientation="vertical" className="h-8 hidden lg:block" />
+        <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
         {/* Color Palette */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium hidden md:inline">Colors:</span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-sm font-medium">Colors:</span>
           <div className="flex gap-1">
             {colors.map((color) => (
               <button
@@ -129,8 +129,24 @@ export const Toolbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Actions - Hidden on small screens, shown in second line */}
-        <div className="hidden lg:flex items-center gap-2 ml-auto">
+        {/* Stroke Width - Desktop */}
+        <div className="hidden lg:flex items-center gap-2 min-w-32 flex-shrink-0">
+          <span className="text-sm font-medium">Width:</span>
+          <Slider
+            value={[toolSettings.strokeWidth]}
+            onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
+            min={1}
+            max={20}
+            step={1}
+            className="flex-1"
+          />
+          <Badge variant="outline" className="min-w-8 text-center">
+            {toolSettings.strokeWidth}
+          </Badge>
+        </div>
+
+        {/* Actions - Desktop */}
+        <div className="hidden lg:flex items-center gap-2 ml-auto flex-shrink-0">
           <Button variant="ghost" size="sm">
             <Undo className="w-4 h-4" />
           </Button>
@@ -145,8 +161,8 @@ export const Toolbar: React.FC = () => {
           </Button>
         </div>
 
-        {/* Active Tool Indicator - Hidden on small screens */}
-        <div className="hidden xl:flex items-center gap-2">
+        {/* Active Tool Indicator - Desktop */}
+        <div className="hidden xl:flex items-center gap-2 flex-shrink-0">
           <span className="text-sm text-muted-foreground">Active:</span>
           <Badge variant="default" className="capitalize">
             {activeTool}
@@ -154,7 +170,7 @@ export const Toolbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Second Line - Responsive overflow content */}
+      {/* Second Line - Mobile/Tablet overflow content */}
       <div className="lg:hidden border-t border-border px-4 py-2 flex items-center justify-between gap-4">
         {/* Stroke Width */}
         <div className="flex items-center gap-2 min-w-32">
@@ -192,24 +208,6 @@ export const Toolbar: React.FC = () => {
         <div className="flex items-center gap-2">
           <Badge variant="default" className="capitalize">
             {activeTool}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Stroke Width - Desktop only, shown in first line */}
-      <div className="hidden lg:block absolute right-4 top-4">
-        <div className="flex items-center gap-2 min-w-32">
-          <span className="text-sm font-medium">Width:</span>
-          <Slider
-            value={[toolSettings.strokeWidth]}
-            onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
-            min={1}
-            max={20}
-            step={1}
-            className="flex-1"
-          />
-          <Badge variant="outline" className="min-w-8 text-center">
-            {toolSettings.strokeWidth}
           </Badge>
         </div>
       </div>
