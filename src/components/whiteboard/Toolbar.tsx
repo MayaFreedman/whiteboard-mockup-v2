@@ -248,10 +248,10 @@ export const Toolbar: React.FC = () => {
       {/* Scrollable Content Container */}
       <div 
         ref={scrollContainerRef}
-        className="overflow-x-auto flex-1"
+        className="overflow-x-auto flex-1 overflow-visible"
         style={{
           paddingLeft: showScrollButtons && canScrollLeft ? '40px' : '0',
-          paddingRight: '180px', // Always reserve space for fixed action buttons
+          paddingRight: '180px',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}
@@ -347,7 +347,10 @@ export const Toolbar: React.FC = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
                     align="start" 
-                    className="w-48 bg-popover border border-border shadow-lg z-[60]"
+                    className="w-48 bg-popover border border-border shadow-lg z-[100]"
+                    side="bottom"
+                    sideOffset={5}
+                    avoidCollisions={true}
                   >
                     <div className="grid grid-cols-6 gap-2 p-2">
                       {hiddenColors.map((color) => (
@@ -413,3 +416,5 @@ export const Toolbar: React.FC = () => {
     </div>
   );
 };
+
+export default Toolbar;
