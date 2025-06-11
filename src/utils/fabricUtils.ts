@@ -1,4 +1,4 @@
-import { FabricObject } from 'fabric';
+
 import { WhiteboardObject } from '../types/whiteboard';
 
 // Convert Fabric.js object to our whiteboard object format
