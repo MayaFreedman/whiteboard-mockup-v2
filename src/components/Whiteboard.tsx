@@ -3,23 +3,26 @@ import React from 'react';
 import { Toolbar } from './whiteboard/Toolbar';
 import { Canvas } from './whiteboard/Canvas';
 import { Sidebar } from './whiteboard/Sidebar';
+import { SidebarProvider, SidebarInset } from './ui/sidebar';
 
 export const Whiteboard: React.FC = () => {
   return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Top Toolbar */}
-      <Toolbar />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
-        <Sidebar />
+    <SidebarProvider>
+      <div className="h-screen flex flex-col bg-background w-full">
+        {/* Top Toolbar */}
+        <Toolbar />
         
-        {/* Canvas Area */}
-        <div className="flex-1 relative">
-          <Canvas />
+        {/* Main Content Area */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Sidebar */}
+          <Sidebar />
+          
+          {/* Canvas Area */}
+          <SidebarInset>
+            <Canvas />
+          </SidebarInset>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
