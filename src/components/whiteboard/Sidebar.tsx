@@ -1,16 +1,35 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const { toolSettings, updateToolSettings, colorPalettes } = useToolStore();
   const { settings, updateSettings } = useWhiteboardStore();
+  const [openPalettes, setOpenPalettes] = useState<string[]>(['basic']);
+
+  const togglePalette = (paletteName: string) => {
+    setOpenPalettes(prev => 
+      prev.includes(paletteName) 
+        ? prev.filter(name => name !== paletteName)
+        : [...prev, paletteName]
+    );
+  };
+
+  const handlePaletteSelect = (paletteName: string, colors: string[]) => {
+    // This would update the toolbar colors - for now we'll just update the current color
+    if (colors.length > 0) {
+      updateToolSettings({ strokeColor: colors[0] });
+    }
+  };
 
   return (
     <div className="w-80 bg-card border-r border-border p-4 overflow-y-auto">
@@ -63,26 +82,59 @@ export const Sidebar: React.FC = () => {
             <CardHeader>
               <CardTitle className="text-lg">Color Palettes</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {Object.entries(colorPalettes).map(([name, colors]) => (
-                <div key={name}>
-                  <h4 className="text-sm font-medium mb-2 capitalize">{name}</h4>
-                  <div className="grid grid-cols-6 gap-1">
-                    {colors.map((color, index) => (
-                      <button
-                        key={index}
-                        className={`w-8 h-8 rounded border-2 ${
-                          toolSettings.strokeColor === color 
-                            ? 'border-primary ring-2 ring-primary/20' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => updateToolSettings({ strokeColor: color })}
-                        title={color}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <Collapsible
+                  key={name}
+                  open={openPalettes.includes(name)}
+                  onOpenChange={() => togglePalette(name)}
+                >
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-between p-2 h-auto"
+                      onClick={() => handlePaletteSelect(name, colors)}
+                    >
+                      <span className="capitalize font-medium">{name}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          {colors.slice(0, 4).map((color, index) => (
+                            <div
+                              key={index}
+                              className="w-4 h-4 rounded border border-border"
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                          {colors.length > 4 && (
+                            <span className="text-xs text-muted-foreground">+{colors.length - 4}</span>
+                          )}
+                        </div>
+                        {openPalettes.includes(name) ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        )}
+                      </div>
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2">
+                    <div className="grid grid-cols-6 gap-1 p-2 bg-muted/20 rounded">
+                      {colors.map((color, index) => (
+                        <button
+                          key={index}
+                          className={`w-8 h-8 rounded border-2 ${
+                            toolSettings.strokeColor === color 
+                              ? 'border-primary ring-2 ring-primary/20' 
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                          style={{ backgroundColor: color }}
+                          onClick={() => updateToolSettings({ strokeColor: color })}
+                          title={color}
+                        />
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               ))}
             </CardContent>
           </Card>

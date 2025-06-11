@@ -6,6 +6,12 @@ import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 import { Slider } from '../ui/slider';
 import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
+import { 
   Pencil, 
   Square, 
   Circle, 
@@ -15,19 +21,35 @@ import {
   Undo,
   Redo,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  PaintBucket,
+  Triangle,
+  Hexagon,
+  Star,
+  Pentagon,
+  Diamond,
+  ChevronDown
 } from 'lucide-react';
 
 export const Toolbar: React.FC = () => {
   const { activeTool, setActiveTool, toolSettings, updateToolSettings } = useToolStore();
 
-  const tools = [
+  const basicTools = [
     { id: 'select', icon: MousePointer, label: 'Select' },
     { id: 'pencil', icon: Pencil, label: 'Pencil' },
+    { id: 'text', icon: Type, label: 'Text' },
+    { id: 'fill', icon: PaintBucket, label: 'Fill' },
+    { id: 'eraser', icon: Eraser, label: 'Eraser' },
+  ];
+
+  const shapes = [
     { id: 'rectangle', icon: Square, label: 'Rectangle' },
     { id: 'circle', icon: Circle, label: 'Circle' },
-    { id: 'text', icon: Type, label: 'Text' },
-    { id: 'eraser', icon: Eraser, label: 'Eraser' },
+    { id: 'triangle', icon: Triangle, label: 'Triangle' },
+    { id: 'hexagon', icon: Hexagon, label: 'Hexagon' },
+    { id: 'star', icon: Star, label: 'Star' },
+    { id: 'pentagon', icon: Pentagon, label: 'Pentagon' },
+    { id: 'diamond', icon: Diamond, label: 'Diamond' },
   ];
 
   const colors = [
@@ -36,11 +58,14 @@ export const Toolbar: React.FC = () => {
     '#800080', '#008000', '#800000', '#000080'
   ];
 
+  const currentShape = shapes.find(shape => shape.id === activeTool);
+  const ShapeIcon = currentShape?.icon || Square;
+
   return (
     <div className="h-16 bg-card border-b border-border flex items-center px-4 gap-4">
-      {/* Tool Selection */}
+      {/* Basic Tools */}
       <div className="flex items-center gap-2">
-        {tools.map((tool) => (
+        {basicTools.map((tool) => (
           <Button
             key={tool.id}
             variant={activeTool === tool.id ? "default" : "ghost"}
@@ -51,6 +76,36 @@ export const Toolbar: React.FC = () => {
             <tool.icon className="w-4 h-4" />
           </Button>
         ))}
+      </div>
+
+      <Separator orientation="vertical" className="h-8" />
+
+      {/* Shapes Dropdown */}
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant={currentShape ? "default" : "ghost"}
+              size="sm"
+              className="p-2 gap-1"
+            >
+              <ShapeIcon className="w-4 h-4" />
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            {shapes.map((shape) => (
+              <DropdownMenuItem
+                key={shape.id}
+                onClick={() => setActiveTool(shape.id as any)}
+                className="flex items-center gap-2"
+              >
+                <shape.icon className="w-4 h-4" />
+                {shape.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Separator orientation="vertical" className="h-8" />

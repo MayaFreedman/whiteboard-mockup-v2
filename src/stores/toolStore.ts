@@ -11,7 +11,11 @@ export type Tool =
   | 'line'
   | 'triangle'
   | 'text'
-  | 'fill';
+  | 'fill'
+  | 'hexagon'
+  | 'star'
+  | 'pentagon'
+  | 'diamond';
 
 export type BrushType = 'pencil' | 'chalk' | 'spray' | 'crayon';
 
