@@ -109,16 +109,25 @@ export const Toolbar: React.FC = () => {
       return Math.min(6, allColors.length);
     }
     // For basic tools, show more colors if available
-    return allColors.length;
+    return Math.min(10, allColors.length); // Cap at 10 to trigger responsive mode
   };
 
   const visibleColorCount = getVisibleColorCount();
-  const mostRecentColors = getMostRecentColors(visibleColorCount);
-  const hiddenColors = allColors.filter(color => !mostRecentColors.includes(color));
+  const isResponsiveMode = allColors.length > visibleColorCount;
+  
+  // Only use recently used colors when in responsive mode
+  const visibleColors = isResponsiveMode 
+    ? getMostRecentColors(visibleColorCount)
+    : allColors.slice(0, visibleColorCount);
+  
+  const hiddenColors = allColors.filter(color => !visibleColors.includes(color));
 
   const handleColorSelect = (color: string) => {
     updateToolSettings({ strokeColor: color });
-    updateRecentlyUsedColor(color);
+    // Only track recently used colors when in responsive mode
+    if (isResponsiveMode) {
+      updateRecentlyUsedColor(color);
+    }
   };
 
   const scrollLeft = () => {
@@ -173,7 +182,7 @@ export const Toolbar: React.FC = () => {
         className="overflow-x-auto flex-1"
         style={{
           paddingLeft: showScrollButtons && canScrollLeft ? '40px' : '0',
-          paddingRight: showScrollButtons && canScrollRight ? '60px' : '20px',
+          paddingRight: '180px', // Always reserve space for fixed action buttons
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}
@@ -238,7 +247,7 @@ export const Toolbar: React.FC = () => {
           <div className="flex items-center gap-2 flex-shrink-0">
             <span className="text-sm font-medium">Colors:</span>
             <div className="flex gap-1 items-center">
-              {mostRecentColors.map((color) => (
+              {visibleColors.map((color) => (
                 <button
                   key={color}
                   className={`w-6 h-6 rounded border-2 transition-all ${
@@ -257,7 +266,7 @@ export const Toolbar: React.FC = () => {
                       +{hiddenColors.length}
                     </Badge>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuContent align="start" className="w-48 bg-popover">
                     <div className="grid grid-cols-6 gap-2 p-2">
                       {hiddenColors.map((color) => (
                         <button
@@ -302,7 +311,7 @@ export const Toolbar: React.FC = () => {
       </div>
 
       {/* Fixed Action Buttons on Right Edge */}
-      <div className="flex items-center gap-2 flex-shrink-0 px-4 border-l bg-card">
+      <div className="absolute right-0 top-0 h-full flex items-center gap-2 px-4 border-l bg-card">
         <Button variant="ghost" size="sm">
           <Undo className="w-4 h-4" />
         </Button>
