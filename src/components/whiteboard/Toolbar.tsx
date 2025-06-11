@@ -50,7 +50,11 @@ export const Toolbar: React.FC = () => {
   const [showScrollButtons, setShowScrollButtons] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [maxVisibleColors, setMaxVisibleColors] = useState(15); // Start with showing all colors
+  const [maxVisibleColors, setMaxVisibleColors] = useState(15);
+
+  // Tools that support width changes - moved earlier to fix declaration order
+  const widthSupportingTools = ['pencil', 'brush', 'eraser'];
+  const showWidthControls = widthSupportingTools.includes(activeTool);
 
   // Update CSS custom property for toolbar height
   useEffect(() => {
@@ -63,48 +67,59 @@ export const Toolbar: React.FC = () => {
   // Measure available space and calculate how many colors can fit
   useEffect(() => {
     const measureAvailableSpace = () => {
-      if (!scrollContainerRef.current || !colorContainerRef.current) return;
+      if (!colorContainerRef.current) return;
 
-      const scrollContainer = scrollContainerRef.current;
-      const colorContainer = colorContainerRef.current;
+      console.log('Measuring available space for colors...');
       
-      // Get the total width available for content
-      const availableWidth = scrollContainer.clientWidth;
+      // Get the viewport width
+      const viewportWidth = window.innerWidth;
+      console.log('Viewport width:', viewportWidth);
       
       // Calculate the width used by other elements (tools, separators, etc.)
-      const toolsWidth = 300; // Approximate width of basic tools + shapes
+      const baseToolsWidth = 280; // Basic tools section
+      const shapesWidth = 60; // Shapes dropdown
+      const separatorsWidth = 40; // Separators
       const widthControlsWidth = showWidthControls ? 200 : 0; // Width controls if shown
-      const paddingAndMargins = 100; // Extra space for padding/margins
+      const actionsWidth = 180; // Action buttons on the right
+      const paddingAndMargins = 80; // Extra space for padding/margins
+      const scrollButtonsWidth = 80; // Space for scroll buttons when needed
       
-      const availableForColors = availableWidth - toolsWidth - widthControlsWidth - paddingAndMargins;
+      const usedWidth = baseToolsWidth + shapesWidth + separatorsWidth + widthControlsWidth + actionsWidth + paddingAndMargins + scrollButtonsWidth;
+      const availableForColors = viewportWidth - usedWidth;
+      
+      console.log('Used width breakdown:', {
+        baseToolsWidth,
+        shapesWidth,
+        separatorsWidth,
+        widthControlsWidth,
+        actionsWidth,
+        paddingAndMargins,
+        scrollButtonsWidth,
+        total: usedWidth
+      });
+      console.log('Available width for colors:', availableForColors);
       
       // Each color button is about 32px (24px + 8px gap)
       const colorButtonWidth = 32;
-      const colorsLabel = 70; // "Colors:" label width
+      const colorsLabelWidth = 70; // "Colors:" label width
       
-      const maxColors = Math.floor((availableForColors - colorsLabel) / colorButtonWidth);
+      const maxColors = Math.floor((availableForColors - colorsLabelWidth) / colorButtonWidth);
       
-      console.log('Debug - availableWidth:', availableWidth);
-      console.log('Debug - availableForColors:', availableForColors);
-      console.log('Debug - maxColors calculated:', maxColors);
-      console.log('Debug - showWidthControls:', showWidthControls);
+      console.log('Max colors that can fit:', maxColors);
       
       // Ensure we show at least 3 colors, but cap based on available space
       const newMaxColors = Math.max(3, Math.min(maxColors, 15));
       
-      console.log('Debug - newMaxColors:', newMaxColors);
+      console.log('Setting maxVisibleColors to:', newMaxColors);
       
       setMaxVisibleColors(newMaxColors);
     };
 
     measureAvailableSpace();
     
-    const resizeObserver = new ResizeObserver(measureAvailableSpace);
-    if (scrollContainerRef.current) {
-      resizeObserver.observe(scrollContainerRef.current);
-    }
+    window.addEventListener('resize', measureAvailableSpace);
     
-    return () => resizeObserver.disconnect();
+    return () => window.removeEventListener('resize', measureAvailableSpace);
   }, [showWidthControls, activeTool]);
 
   // Check scroll state
@@ -147,16 +162,15 @@ export const Toolbar: React.FC = () => {
   const currentShape = shapes.find(shape => shape.id === activeTool);
   const ShapeIcon = currentShape?.icon || Square;
 
-  // Tools that support width changes
-  const widthSupportingTools = ['pencil', 'brush', 'eraser'];
-  const showWidthControls = widthSupportingTools.includes(activeTool);
-
   // Responsive mode triggers when we have more colors than can fit
   const isResponsiveMode = allColors.length > maxVisibleColors;
   
-  console.log('Debug - allColors.length:', allColors.length);
-  console.log('Debug - maxVisibleColors:', maxVisibleColors);
-  console.log('Debug - isResponsiveMode:', isResponsiveMode);
+  console.log('Color display logic:', {
+    'allColors.length': allColors.length,
+    maxVisibleColors,
+    isResponsiveMode,
+    showWidthControls
+  });
   
   // Get visible colors - use recently used only when in responsive mode AND width controls are shown
   const visibleColors = (isResponsiveMode && showWidthControls) 
@@ -166,16 +180,18 @@ export const Toolbar: React.FC = () => {
   // Hidden colors are any colors not in the visible set
   const hiddenColors = allColors.filter(color => !visibleColors.includes(color));
   
-  console.log('Debug - visibleColors:', visibleColors);
-  console.log('Debug - hiddenColors.length:', hiddenColors.length);
-  console.log('Debug - hiddenColors:', hiddenColors);
+  console.log('Color arrays:', {
+    visibleColors: visibleColors.length,
+    hiddenColors: hiddenColors.length,
+    hiddenColorsArray: hiddenColors
+  });
 
   const handleColorSelect = (color: string) => {
-    console.log('Debug - Color selected:', color);
+    console.log('Color selected:', color);
     updateToolSettings({ strokeColor: color });
     // Only track recently used colors when in responsive mode with width controls
     if (isResponsiveMode && showWidthControls) {
-      console.log('Debug - Adding to recently used colors');
+      console.log('Adding to recently used colors');
       updateRecentlyUsedColor(color);
     }
   };
@@ -310,20 +326,19 @@ export const Toolbar: React.FC = () => {
                 />
               ))}
               {hiddenColors.length > 0 && (
-                <DropdownMenu>
+                <DropdownMenu onOpenChange={(open) => console.log('Dropdown open state changed:', open)}>
                   <DropdownMenuTrigger asChild>
                     <Badge 
                       variant="outline" 
                       className="text-xs cursor-pointer hover:bg-muted"
-                      onClick={() => console.log('Debug - Dropdown trigger clicked, hiddenColors:', hiddenColors)}
+                      onClick={() => console.log('Dropdown trigger clicked, hiddenColors:', hiddenColors)}
                     >
                       +{hiddenColors.length}
                     </Badge>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
                     align="start" 
-                    className="w-48 bg-popover border border-border shadow-lg z-50"
-                    onOpenChange={(open) => console.log('Debug - Dropdown open state changed:', open)}
+                    className="w-48 bg-popover border border-border shadow-lg z-[60]"
                   >
                     <div className="grid grid-cols-6 gap-2 p-2">
                       {hiddenColors.map((color) => (
@@ -336,7 +351,7 @@ export const Toolbar: React.FC = () => {
                           }`}
                           style={{ backgroundColor: color }}
                           onClick={() => {
-                            console.log('Debug - Hidden color clicked:', color);
+                            console.log('Hidden color clicked:', color);
                             handleColorSelect(color);
                           }}
                         />
