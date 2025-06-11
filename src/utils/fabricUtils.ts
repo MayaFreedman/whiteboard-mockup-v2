@@ -1,10 +1,8 @@
-
-
-import { Object as FabricObject } from 'fabric';
+import { FabricObject } from 'fabric';
 import { WhiteboardObject } from '../types/whiteboard';
 
 // Convert Fabric.js object to our whiteboard object format
-export function fabricToWhiteboardObject(fabricObj: FabricObject): Partial<WhiteboardObject> {
+export function fabricToWhiteboardObject(fabricObj: any): Partial<WhiteboardObject> {
   const baseProps = {
     x: fabricObj.left || 0,
     y: fabricObj.top || 0,
@@ -117,12 +115,12 @@ export function whiteboardObjectToFabricProps(obj: WhiteboardObject): any {
 }
 
 // Generate unique object ID for Fabric objects
-export function assignWhiteboardId(fabricObj: FabricObject, id: string): void {
+export function assignWhiteboardId(fabricObj: any, id: string): void {
   (fabricObj as any).whiteboardId = id;
 }
 
 // Get whiteboard ID from Fabric object
-export function getWhiteboardId(fabricObj: FabricObject): string | undefined {
+export function getWhiteboardId(fabricObj: any): string | undefined {
   return (fabricObj as any).whiteboardId;
 }
 
@@ -140,4 +138,3 @@ export function deserializeCanvasState(serialized: string): Record<string, White
     return {};
   }
 }
-
