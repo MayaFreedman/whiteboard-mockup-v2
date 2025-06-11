@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
@@ -22,7 +23,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <>
-      <SidebarRoot side="left" className="border-r w-96">
+      <SidebarRoot side="left" className="border-r w-96" collapsible="offcanvas">
         <SidebarHeader className="border-b px-4 py-3">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">Tools & Settings</h2>
@@ -212,16 +213,15 @@ export const Sidebar: React.FC = () => {
         </SidebarContent>
       </SidebarRoot>
 
-      {/* Collapsed state toggle button */}
+      {/* Collapsed state hover trigger */}
       {!open && (
-        <Button
-          onClick={toggleSidebar}
-          variant="outline"
-          className="fixed left-4 top-1/2 -translate-y-1/2 z-50 bg-background/95 backdrop-blur-sm border-muted-foreground/20 text-muted-foreground hover:text-foreground flex items-center gap-2 px-3 py-2"
+        <div
+          onMouseEnter={toggleSidebar}
+          className="fixed left-0 top-1/2 -translate-y-1/2 z-50 bg-background/95 backdrop-blur-sm border border-muted-foreground/20 text-muted-foreground hover:text-foreground hover:border-muted-foreground/40 transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-r-md cursor-pointer"
         >
           <ChevronsRight className="h-4 w-4" />
           <span className="text-sm">Open sidebar</span>
-        </Button>
+        </div>
       )}
     </>
   );
