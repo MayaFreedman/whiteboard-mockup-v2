@@ -8,28 +8,11 @@ import { Slider } from '../ui/slider';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
-  const { toolSettings, updateToolSettings, colorPalettes } = useToolStore();
+  const { toolSettings, updateToolSettings, colorPalettes, activeColorPalette, setActiveColorPalette } = useToolStore();
   const { settings, updateSettings } = useWhiteboardStore();
-  const [openPalettes, setOpenPalettes] = useState<string[]>(['basic']);
-
-  const togglePalette = (paletteName: string) => {
-    setOpenPalettes(prev => 
-      prev.includes(paletteName) 
-        ? prev.filter(name => name !== paletteName)
-        : [...prev, paletteName]
-    );
-  };
-
-  const handlePaletteSelect = (paletteName: string, colors: string[]) => {
-    // This would update the toolbar colors - for now we'll just update the current color
-    if (colors.length > 0) {
-      updateToolSettings({ strokeColor: colors[0] });
-    }
-  };
 
   return (
     <div className="w-80 bg-card border-r border-border p-4 overflow-y-auto">
@@ -82,59 +65,40 @@ export const Sidebar: React.FC = () => {
             <CardHeader>
               <CardTitle className="text-lg">Color Palettes</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-3">
               {Object.entries(colorPalettes).map(([name, colors]) => (
-                <Collapsible
-                  key={name}
-                  open={openPalettes.includes(name)}
-                  onOpenChange={() => togglePalette(name)}
-                >
-                  <CollapsibleTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-between p-2 h-auto"
-                      onClick={() => handlePaletteSelect(name, colors)}
-                    >
+                <div key={name} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       <span className="capitalize font-medium">{name}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="flex gap-1">
-                          {colors.slice(0, 4).map((color, index) => (
-                            <div
-                              key={index}
-                              className="w-4 h-4 rounded border border-border"
-                              style={{ backgroundColor: color }}
-                            />
-                          ))}
-                          {colors.length > 4 && (
-                            <span className="text-xs text-muted-foreground">+{colors.length - 4}</span>
-                          )}
-                        </div>
-                        {openPalettes.includes(name) ? (
-                          <ChevronDown className="w-4 h-4" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4" />
-                        )}
-                      </div>
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-2">
-                    <div className="grid grid-cols-6 gap-1 p-2 bg-muted/20 rounded">
-                      {colors.map((color, index) => (
-                        <button
-                          key={index}
-                          className={`w-8 h-8 rounded border-2 ${
-                            toolSettings.strokeColor === color 
-                              ? 'border-primary ring-2 ring-primary/20' 
-                              : 'border-border hover:border-primary/50'
-                          }`}
-                          style={{ backgroundColor: color }}
-                          onClick={() => updateToolSettings({ strokeColor: color })}
-                          title={color}
-                        />
-                      ))}
+                      {activeColorPalette === name && (
+                        <Check className="w-4 h-4 text-primary" />
+                      )}
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                    <Button
+                      variant={activeColorPalette === name ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setActiveColorPalette(name as any)}
+                      className="h-8 px-3"
+                    >
+                      {activeColorPalette === name ? "Equipped" : "Equip"}
+                    </Button>
+                  </div>
+                  <div className="flex gap-1">
+                    {colors.slice(0, 8).map((color, index) => (
+                      <div
+                        key={index}
+                        className="w-5 h-5 rounded border border-border"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                    {colors.length > 8 && (
+                      <div className="flex items-center justify-center w-5 h-5 text-xs text-muted-foreground border border-border rounded">
+                        +{colors.length - 8}
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
             </CardContent>
           </Card>

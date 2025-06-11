@@ -1,9 +1,11 @@
+
 import { create } from 'zustand';
 
 export type Tool = 
   | 'select'
   | 'hand' 
   | 'pencil'
+  | 'brush'
   | 'eraser'
   | 'rectangle'
   | 'circle'
@@ -51,8 +53,11 @@ interface ToolStore {
     pastel: string[];
     professional: string[];
   };
+  activeColorPalette: keyof ToolStore['colorPalettes'];
   customColors: string[];
   addCustomColor: (color: string) => void;
+  setActiveColorPalette: (palette: keyof ToolStore['colorPalettes']) => void;
+  getActiveColors: () => string[];
 }
 
 const defaultToolSettings: ToolSettings = {
@@ -93,6 +98,7 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   activeTool: 'select',
   toolSettings: defaultToolSettings,
   colorPalettes,
+  activeColorPalette: 'basic',
   customColors: [],
 
   setActiveTool: (tool) => {
@@ -122,5 +128,15 @@ export const useToolStore = create<ToolStore>((set, get) => ({
       }
       return { customColors: newCustomColors };
     });
+  },
+
+  setActiveColorPalette: (palette) => {
+    console.log('Setting active color palette:', palette);
+    set({ activeColorPalette: palette });
+  },
+
+  getActiveColors: () => {
+    const state = get();
+    return state.colorPalettes[state.activeColorPalette];
   }
 }));

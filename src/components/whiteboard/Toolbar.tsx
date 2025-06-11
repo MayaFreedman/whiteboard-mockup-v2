@@ -13,6 +13,7 @@ import {
 } from '../ui/dropdown-menu';
 import { 
   Pencil, 
+  Brush,
   Square, 
   Circle, 
   Type, 
@@ -32,11 +33,12 @@ import {
 } from 'lucide-react';
 
 export const Toolbar: React.FC = () => {
-  const { activeTool, setActiveTool, toolSettings, updateToolSettings } = useToolStore();
+  const { activeTool, setActiveTool, toolSettings, updateToolSettings, getActiveColors } = useToolStore();
 
   const basicTools = [
     { id: 'select', icon: MousePointer, label: 'Select' },
     { id: 'pencil', icon: Pencil, label: 'Pencil' },
+    { id: 'brush', icon: Brush, label: 'Brush' },
     { id: 'text', icon: Type, label: 'Text' },
     { id: 'fill', icon: PaintBucket, label: 'Fill' },
     { id: 'eraser', icon: Eraser, label: 'Eraser' },
@@ -52,11 +54,7 @@ export const Toolbar: React.FC = () => {
     { id: 'diamond', icon: Diamond, label: 'Diamond' },
   ];
 
-  const colors = [
-    '#000000', '#FF0000', '#00FF00', '#0000FF', 
-    '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500',
-    '#800080', '#008000', '#800000', '#000080'
-  ];
+  const colors = getActiveColors();
 
   const currentShape = shapes.find(shape => shape.id === activeTool);
   const ShapeIcon = currentShape?.icon || Square;
@@ -117,22 +115,15 @@ export const Toolbar: React.FC = () => {
           {colors.map((color) => (
             <button
               key={color}
-              className={`w-6 h-6 rounded border-2 ${
+              className={`w-6 h-6 rounded border-4 transition-all ${
                 toolSettings.strokeColor === color 
-                  ? 'border-primary' 
-                  : 'border-border'
+                  ? 'border-primary scale-110 shadow-md' 
+                  : 'border-transparent hover:border-muted-foreground/50'
               }`}
               style={{ backgroundColor: color }}
               onClick={() => updateToolSettings({ strokeColor: color })}
             />
           ))}
-        </div>
-        <div className="flex items-center gap-2 ml-2">
-          <span className="text-xs">Current:</span>
-          <div 
-            className="w-6 h-6 rounded border"
-            style={{ backgroundColor: toolSettings.strokeColor }}
-          />
         </div>
       </div>
 
