@@ -46,9 +46,11 @@ export const Toolbar: React.FC = () => {
   } = useToolStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const colorContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollButtons, setShowScrollButtons] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [maxVisibleColors, setMaxVisibleColors] = useState(15); // Start with showing all colors
 
   // Update CSS custom property for toolbar height
   useEffect(() => {
@@ -57,6 +59,53 @@ export const Toolbar: React.FC = () => {
       document.documentElement.style.setProperty('--toolbar-height', `${height}px`);
     }
   }, [activeTool]);
+
+  // Measure available space and calculate how many colors can fit
+  useEffect(() => {
+    const measureAvailableSpace = () => {
+      if (!scrollContainerRef.current || !colorContainerRef.current) return;
+
+      const scrollContainer = scrollContainerRef.current;
+      const colorContainer = colorContainerRef.current;
+      
+      // Get the total width available for content
+      const availableWidth = scrollContainer.clientWidth;
+      
+      // Calculate the width used by other elements (tools, separators, etc.)
+      const toolsWidth = 300; // Approximate width of basic tools + shapes
+      const widthControlsWidth = showWidthControls ? 200 : 0; // Width controls if shown
+      const paddingAndMargins = 100; // Extra space for padding/margins
+      
+      const availableForColors = availableWidth - toolsWidth - widthControlsWidth - paddingAndMargins;
+      
+      // Each color button is about 32px (24px + 8px gap)
+      const colorButtonWidth = 32;
+      const colorsLabel = 70; // "Colors:" label width
+      
+      const maxColors = Math.floor((availableForColors - colorsLabel) / colorButtonWidth);
+      
+      console.log('Debug - availableWidth:', availableWidth);
+      console.log('Debug - availableForColors:', availableForColors);
+      console.log('Debug - maxColors calculated:', maxColors);
+      console.log('Debug - showWidthControls:', showWidthControls);
+      
+      // Ensure we show at least 3 colors, but cap based on available space
+      const newMaxColors = Math.max(3, Math.min(maxColors, 15));
+      
+      console.log('Debug - newMaxColors:', newMaxColors);
+      
+      setMaxVisibleColors(newMaxColors);
+    };
+
+    measureAvailableSpace();
+    
+    const resizeObserver = new ResizeObserver(measureAvailableSpace);
+    if (scrollContainerRef.current) {
+      resizeObserver.observe(scrollContainerRef.current);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, [showWidthControls, activeTool]);
 
   // Check scroll state
   useEffect(() => {
@@ -73,7 +122,7 @@ export const Toolbar: React.FC = () => {
     window.addEventListener('resize', checkScrollState);
     
     return () => window.removeEventListener('resize', checkScrollState);
-  }, [activeTool, toolSettings]);
+  }, [activeTool, toolSettings, maxVisibleColors]);
 
   const basicTools = [
     { id: 'select', icon: MousePointer, label: 'Select' },
@@ -102,41 +151,31 @@ export const Toolbar: React.FC = () => {
   const widthSupportingTools = ['pencil', 'brush', 'eraser'];
   const showWidthControls = widthSupportingTools.includes(activeTool);
 
-  // Calculate how many colors to show based on available space and active tool
-  const getVisibleColorCount = () => {
-    if (showWidthControls) {
-      // When width controls are shown, show fewer colors to make space
-      return Math.min(6, allColors.length);
-    }
-    // For basic tools, show more colors but still limit for responsive behavior
-    return Math.min(10, allColors.length);
-  };
-
-  const visibleColorCount = getVisibleColorCount();
-  
-  // Responsive mode triggers when we have more colors than we can show
-  const isResponsiveMode = allColors.length > visibleColorCount;
+  // Responsive mode triggers when we have more colors than can fit
+  const isResponsiveMode = allColors.length > maxVisibleColors;
   
   console.log('Debug - allColors.length:', allColors.length);
-  console.log('Debug - visibleColorCount:', visibleColorCount);
+  console.log('Debug - maxVisibleColors:', maxVisibleColors);
   console.log('Debug - isResponsiveMode:', isResponsiveMode);
-  console.log('Debug - showWidthControls:', showWidthControls);
   
   // Get visible colors - use recently used only when in responsive mode AND width controls are shown
   const visibleColors = (isResponsiveMode && showWidthControls) 
-    ? getMostRecentColors(visibleColorCount)
-    : allColors.slice(0, visibleColorCount);
+    ? getMostRecentColors(maxVisibleColors)
+    : allColors.slice(0, maxVisibleColors);
   
   // Hidden colors are any colors not in the visible set
   const hiddenColors = allColors.filter(color => !visibleColors.includes(color));
   
   console.log('Debug - visibleColors:', visibleColors);
+  console.log('Debug - hiddenColors.length:', hiddenColors.length);
   console.log('Debug - hiddenColors:', hiddenColors);
 
   const handleColorSelect = (color: string) => {
+    console.log('Debug - Color selected:', color);
     updateToolSettings({ strokeColor: color });
     // Only track recently used colors when in responsive mode with width controls
     if (isResponsiveMode && showWidthControls) {
+      console.log('Debug - Adding to recently used colors');
       updateRecentlyUsedColor(color);
     }
   };
@@ -255,7 +294,7 @@ export const Toolbar: React.FC = () => {
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
           {/* Dynamic Color Palette */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div ref={colorContainerRef} className="flex items-center gap-2 flex-shrink-0">
             <span className="text-sm font-medium">Colors:</span>
             <div className="flex gap-1 items-center">
               {visibleColors.map((color) => (
@@ -273,11 +312,19 @@ export const Toolbar: React.FC = () => {
               {hiddenColors.length > 0 && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Badge variant="outline" className="text-xs cursor-pointer hover:bg-muted">
+                    <Badge 
+                      variant="outline" 
+                      className="text-xs cursor-pointer hover:bg-muted"
+                      onClick={() => console.log('Debug - Dropdown trigger clicked, hiddenColors:', hiddenColors)}
+                    >
                       +{hiddenColors.length}
                     </Badge>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48 bg-popover border border-border shadow-lg">
+                  <DropdownMenuContent 
+                    align="start" 
+                    className="w-48 bg-popover border border-border shadow-lg z-50"
+                    onOpenChange={(open) => console.log('Debug - Dropdown open state changed:', open)}
+                  >
                     <div className="grid grid-cols-6 gap-2 p-2">
                       {hiddenColors.map((color) => (
                         <button
@@ -288,7 +335,10 @@ export const Toolbar: React.FC = () => {
                               : 'border-border hover:border-muted-foreground/50'
                           }`}
                           style={{ backgroundColor: color }}
-                          onClick={() => handleColorSelect(color)}
+                          onClick={() => {
+                            console.log('Debug - Hidden color clicked:', color);
+                            handleColorSelect(color);
+                          }}
                         />
                       ))}
                     </div>
