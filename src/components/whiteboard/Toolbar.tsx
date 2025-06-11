@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
@@ -52,7 +51,7 @@ export const Toolbar: React.FC = () => {
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [maxVisibleColors, setMaxVisibleColors] = useState(15);
 
-  // Tools that support width changes - moved earlier to fix declaration order
+  // Tools that support width changes
   const widthSupportingTools = ['pencil', 'brush', 'eraser'];
   const showWidthControls = widthSupportingTools.includes(activeTool);
 
@@ -75,14 +74,14 @@ export const Toolbar: React.FC = () => {
       const viewportWidth = window.innerWidth;
       console.log('Viewport width:', viewportWidth);
       
-      // Calculate the width used by other elements (tools, separators, etc.)
-      const baseToolsWidth = 280; // Basic tools section
-      const shapesWidth = 60; // Shapes dropdown
-      const separatorsWidth = 40; // Separators
-      const widthControlsWidth = showWidthControls ? 200 : 0; // Width controls if shown
-      const actionsWidth = 180; // Action buttons on the right
-      const paddingAndMargins = 80; // Extra space for padding/margins
-      const scrollButtonsWidth = 80; // Space for scroll buttons when needed
+      // Calculate the width used by other elements (less conservative estimates)
+      const baseToolsWidth = 240; // Reduced from 280
+      const shapesWidth = 50; // Reduced from 60
+      const separatorsWidth = 30; // Reduced from 40
+      const widthControlsWidth = showWidthControls ? 180 : 0; // Reduced from 200
+      const actionsWidth = 160; // Reduced from 180
+      const paddingAndMargins = 60; // Reduced from 80
+      const scrollButtonsWidth = 60; // Reduced from 80
       
       const usedWidth = baseToolsWidth + shapesWidth + separatorsWidth + widthControlsWidth + actionsWidth + paddingAndMargins + scrollButtonsWidth;
       const availableForColors = viewportWidth - usedWidth;
@@ -99,9 +98,9 @@ export const Toolbar: React.FC = () => {
       });
       console.log('Available width for colors:', availableForColors);
       
-      // Each color button is about 32px (24px + 8px gap)
-      const colorButtonWidth = 32;
-      const colorsLabelWidth = 70; // "Colors:" label width
+      // Each color button is about 28px (24px + 4px gap) - less conservative
+      const colorButtonWidth = 28;
+      const colorsLabelWidth = 60; // Reduced from 70
       
       const maxColors = Math.floor((availableForColors - colorsLabelWidth) / colorButtonWidth);
       
@@ -162,12 +161,16 @@ export const Toolbar: React.FC = () => {
   const currentShape = shapes.find(shape => shape.id === activeTool);
   const ShapeIcon = currentShape?.icon || Square;
 
-  // Responsive mode triggers when we have more colors than can fit
-  const isResponsiveMode = allColors.length > maxVisibleColors;
+  // Check if we need responsive mode based on actual available space
+  const actualColorSpace = colorContainerRef.current?.offsetWidth || 0;
+  const neededColorSpace = allColors.length * 28 + 60; // 28px per color + label width
+  const isResponsiveMode = neededColorSpace > actualColorSpace && allColors.length > maxVisibleColors;
   
   console.log('Color display logic:', {
     'allColors.length': allColors.length,
     maxVisibleColors,
+    actualColorSpace,
+    neededColorSpace,
     isResponsiveMode,
     showWidthControls
   });
@@ -326,12 +329,15 @@ export const Toolbar: React.FC = () => {
                 />
               ))}
               {hiddenColors.length > 0 && (
-                <DropdownMenu onOpenChange={(open) => console.log('Dropdown open state changed:', open)}>
+                <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Badge 
                       variant="outline" 
                       className="text-xs cursor-pointer hover:bg-muted"
-                      onClick={() => console.log('Dropdown trigger clicked, hiddenColors:', hiddenColors)}
+                      onClick={() => {
+                        console.log('ITS ME IM THE RESPONSIVE DROPDOWN BUTTON!');
+                        console.log('Dropdown trigger clicked, hiddenColors:', hiddenColors);
+                      }}
                     >
                       +{hiddenColors.length}
                     </Badge>
