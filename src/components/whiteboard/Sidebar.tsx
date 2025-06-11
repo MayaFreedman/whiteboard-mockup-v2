@@ -25,10 +25,10 @@ export const Sidebar: React.FC = () => {
         <TabsContent value="tools" className="space-y-4">
           {/* Brush Settings */}
           <Card>
-            <CardHeader className="bg-muted/50">
+            <CardHeader className="bg-muted/80 py-3">
               <CardTitle className="text-lg">Brush Settings</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div>
                 <label className="text-sm font-medium mb-2 block">Brush Type</label>
                 <div className="flex gap-2">
@@ -62,16 +62,16 @@ export const Sidebar: React.FC = () => {
 
           {/* Color Palettes */}
           <Card>
-            <CardHeader className="bg-muted/50">
+            <CardHeader className="bg-muted/80 py-3">
               <CardTitle className="text-lg">Color Palettes</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 pt-6">
               {Object.entries(colorPalettes).map(([name, colors]) => (
                 <div key={name} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <button
                       onClick={() => setActiveColorPalette(name as any)}
-                      className={`flex items-center gap-2 text-left flex-1 p-2 rounded transition-colors ${
+                      className={`flex items-center gap-2 text-left p-2 rounded transition-colors ${
                         activeColorPalette === name 
                           ? 'bg-primary/10 text-primary font-medium' 
                           : 'hover:bg-muted/50'
@@ -104,10 +104,10 @@ export const Sidebar: React.FC = () => {
 
           {/* Text Settings */}
           <Card>
-            <CardHeader className="bg-muted/50">
+            <CardHeader className="bg-muted/80 py-3">
               <CardTitle className="text-lg">Text Settings</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   Font Size: {toolSettings.fontSize}px
@@ -142,10 +142,10 @@ export const Sidebar: React.FC = () => {
         <TabsContent value="settings" className="space-y-4">
           {/* Canvas Settings */}
           <Card>
-            <CardHeader className="bg-muted/50">
+            <CardHeader className="bg-muted/80 py-3">
               <CardTitle className="text-lg">Canvas Settings</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium">Show Grid</label>
                 <Switch
@@ -166,10 +166,10 @@ export const Sidebar: React.FC = () => {
 
           {/* Background Settings */}
           <Card>
-            <CardHeader className="bg-muted/50">
+            <CardHeader className="bg-muted/80 py-3">
               <CardTitle className="text-lg">Background</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div>
                 <label className="text-sm font-medium mb-2 block">Background Color</label>
                 <div className="grid grid-cols-4 gap-2">
