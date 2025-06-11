@@ -54,9 +54,12 @@ interface ToolStore {
   };
   activeColorPalette: keyof ToolStore['colorPalettes'];
   customColors: string[];
+  recentlyUsedColors: string[];
   addCustomColor: (color: string) => void;
   setActiveColorPalette: (palette: keyof ToolStore['colorPalettes']) => void;
   getActiveColors: () => string[];
+  updateRecentlyUsedColor: (color: string) => void;
+  getMostRecentColors: (count: number) => string[];
 }
 
 const defaultToolSettings: ToolSettings = {
@@ -99,6 +102,7 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   colorPalettes,
   activeColorPalette: 'basic',
   customColors: [],
+  recentlyUsedColors: [],
 
   setActiveTool: (tool) => {
     console.log('Setting active tool:', tool);
@@ -107,12 +111,47 @@ export const useToolStore = create<ToolStore>((set, get) => ({
 
   updateToolSettings: (settings) => {
     console.log('Updating tool settings:', settings);
-    set((state) => ({
-      toolSettings: {
+    set((state) => {
+      const newSettings = {
         ...state.toolSettings,
         ...settings
+      };
+      
+      // If stroke color is being updated, add to recently used
+      if (settings.strokeColor) {
+        get().updateRecentlyUsedColor(settings.strokeColor);
       }
-    }));
+      
+      return {
+        toolSettings: newSettings
+      };
+    });
+  },
+
+  updateRecentlyUsedColor: (color) => {
+    set((state) => {
+      const newRecentColors = [color, ...state.recentlyUsedColors.filter(c => c !== color)];
+      // Keep only the last 10 recent colors
+      if (newRecentColors.length > 10) {
+        newRecentColors.pop();
+      }
+      return { recentlyUsedColors: newRecentColors };
+    });
+  },
+
+  getMostRecentColors: (count) => {
+    const state = get();
+    const paletteColors = state.colorPalettes[state.activeColorPalette];
+    const recentColors = state.recentlyUsedColors.filter(color => 
+      paletteColors.includes(color)
+    );
+    
+    // Fill remaining slots with palette colors that haven't been used recently
+    const remainingColors = paletteColors.filter(color => 
+      !recentColors.includes(color)
+    );
+    
+    return [...recentColors, ...remainingColors].slice(0, count);
   },
 
   addCustomColor: (color) => {

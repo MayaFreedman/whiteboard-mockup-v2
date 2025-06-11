@@ -35,7 +35,15 @@ import {
 } from 'lucide-react';
 
 export const Toolbar: React.FC = () => {
-  const { activeTool, setActiveTool, toolSettings, updateToolSettings, getActiveColors } = useToolStore();
+  const { 
+    activeTool, 
+    setActiveTool, 
+    toolSettings, 
+    updateToolSettings, 
+    getActiveColors,
+    getMostRecentColors,
+    updateRecentlyUsedColor
+  } = useToolStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollButtons, setShowScrollButtons] = useState(false);
@@ -86,7 +94,7 @@ export const Toolbar: React.FC = () => {
     { id: 'diamond', icon: Diamond, label: 'Diamond' },
   ];
 
-  const colors = getActiveColors();
+  const allColors = getActiveColors();
   const currentShape = shapes.find(shape => shape.id === activeTool);
   const ShapeIcon = currentShape?.icon || Square;
 
@@ -98,13 +106,20 @@ export const Toolbar: React.FC = () => {
   const getVisibleColorCount = () => {
     if (showWidthControls) {
       // When width controls are shown, show fewer colors to make space
-      return Math.min(6, colors.length);
+      return Math.min(6, allColors.length);
     }
     // For basic tools, show more colors if available
-    return colors.length;
+    return allColors.length;
   };
 
-  const visibleColors = colors.slice(0, getVisibleColorCount());
+  const visibleColorCount = getVisibleColorCount();
+  const mostRecentColors = getMostRecentColors(visibleColorCount);
+  const hiddenColors = allColors.filter(color => !mostRecentColors.includes(color));
+
+  const handleColorSelect = (color: string) => {
+    updateToolSettings({ strokeColor: color });
+    updateRecentlyUsedColor(color);
+  };
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -127,7 +142,7 @@ export const Toolbar: React.FC = () => {
   };
 
   return (
-    <div ref={toolbarRef} className="bg-card border-b border-border relative">
+    <div ref={toolbarRef} className="bg-card border-b border-border relative flex">
       {/* Scroll Left Button */}
       {showScrollButtons && canScrollLeft && (
         <Button
@@ -145,7 +160,7 @@ export const Toolbar: React.FC = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="absolute right-0 top-0 h-full z-10 rounded-none border-l bg-card/95 backdrop-blur"
+          className="absolute right-20 top-0 h-full z-10 rounded-none border-l bg-card/95 backdrop-blur"
           onClick={scrollRight}
         >
           <ChevronRight className="w-4 h-4" />
@@ -155,10 +170,10 @@ export const Toolbar: React.FC = () => {
       {/* Scrollable Content Container */}
       <div 
         ref={scrollContainerRef}
-        className="overflow-x-auto"
+        className="overflow-x-auto flex-1"
         style={{
           paddingLeft: showScrollButtons && canScrollLeft ? '40px' : '0',
-          paddingRight: showScrollButtons && canScrollRight ? '40px' : '0',
+          paddingRight: showScrollButtons && canScrollRight ? '60px' : '20px',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}
@@ -222,8 +237,8 @@ export const Toolbar: React.FC = () => {
           {/* Dynamic Color Palette */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <span className="text-sm font-medium">Colors:</span>
-            <div className="flex gap-1">
-              {visibleColors.map((color) => (
+            <div className="flex gap-1 items-center">
+              {mostRecentColors.map((color) => (
                 <button
                   key={color}
                   className={`w-6 h-6 rounded border-2 transition-all ${
@@ -232,13 +247,33 @@ export const Toolbar: React.FC = () => {
                       : 'border-border hover:border-muted-foreground/50'
                   }`}
                   style={{ backgroundColor: color }}
-                  onClick={() => updateToolSettings({ strokeColor: color })}
+                  onClick={() => handleColorSelect(color)}
                 />
               ))}
-              {colors.length > visibleColors.length && (
-                <Badge variant="outline" className="text-xs">
-                  +{colors.length - visibleColors.length}
-                </Badge>
+              {hiddenColors.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Badge variant="outline" className="text-xs cursor-pointer hover:bg-muted">
+                      +{hiddenColors.length}
+                    </Badge>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <div className="grid grid-cols-6 gap-2 p-2">
+                      {hiddenColors.map((color) => (
+                        <button
+                          key={color}
+                          className={`w-6 h-6 rounded border-2 transition-all ${
+                            toolSettings.strokeColor === color 
+                              ? 'border-primary scale-110' 
+                              : 'border-border hover:border-muted-foreground/50'
+                          }`}
+                          style={{ backgroundColor: color }}
+                          onClick={() => handleColorSelect(color)}
+                        />
+                      ))}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
@@ -263,25 +298,23 @@ export const Toolbar: React.FC = () => {
               </div>
             </>
           )}
-
-          <Separator orientation="vertical" className="h-8 flex-shrink-0" />
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button variant="ghost" size="sm">
-              <Undo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Redo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
         </div>
+      </div>
+
+      {/* Fixed Action Buttons on Right Edge */}
+      <div className="flex items-center gap-2 flex-shrink-0 px-4 border-l bg-card">
+        <Button variant="ghost" size="sm">
+          <Undo className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="sm">
+          <Redo className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="sm">
+          <ZoomOut className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="sm">
+          <ZoomIn className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );
