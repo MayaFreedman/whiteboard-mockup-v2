@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
@@ -163,28 +162,39 @@ export const Toolbar: React.FC = () => {
           )}
         </div>
 
-        {/* Right Side - Actions (only on large screens) */}
-        <div className="hidden xl:flex items-center gap-2 flex-shrink-0">
-          <Button variant="ghost" size="sm">
-            <Undo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Redo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomIn className="w-4 h-4" />
-          </Button>
+        {/* Right Side - Actions and Active Tool (only on large screens) */}
+        <div className="hidden xl:flex items-center gap-4 flex-shrink-0">
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm">
+              <Undo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Redo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Active Tool Indicator */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Active:</span>
+            <Badge variant="default" className="capitalize">
+              {activeTool}
+            </Badge>
+          </div>
         </div>
       </div>
 
       {/* Second Line - Additional controls for smaller screens */}
-      {showWidthControls && (
-        <div className="xl:hidden border-t border-border px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* Stroke Width - Show only for width-supporting tools on smaller screens */}
+      <div className="xl:hidden border-t border-border px-4 py-2 flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-1">
+          {/* Stroke Width - Show only for width-supporting tools */}
+          {showWidthControls && (
             <div className="flex items-center gap-2 min-w-32">
               <span className="text-sm font-medium">Width:</span>
               <Slider
@@ -199,25 +209,36 @@ export const Toolbar: React.FC = () => {
                 {toolSettings.strokeWidth}
               </Badge>
             </div>
+          )}
+        </div>
 
-            {/* Actions for smaller screens */}
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm">
-                <Undo className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Redo className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm">
-                <ZoomOut className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm">
-                <ZoomIn className="w-4 h-4" />
-              </Button>
-            </div>
+        {/* Right side - Actions and Active Tool */}
+        <div className="flex items-center gap-4">
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm">
+              <Undo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Redo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Active Tool Indicator */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Active:</span>
+            <Badge variant="default" className="capitalize">
+              {activeTool}
+            </Badge>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
