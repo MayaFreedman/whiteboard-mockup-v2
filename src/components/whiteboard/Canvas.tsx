@@ -78,8 +78,8 @@ export const Canvas: React.FC = () => {
         }}
       />
       
-      {/* Canvas Info Overlay */}
-      <div className="absolute top-4 left-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
+      {/* Canvas Info Overlay - Moved to right side */}
+      <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
         Zoom: {Math.round(viewport.zoom * 100)}% | 
         Tool: {activeTool} | 
         Size: {toolSettings.strokeWidth}px
