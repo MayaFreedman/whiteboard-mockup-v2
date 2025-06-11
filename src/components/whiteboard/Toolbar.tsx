@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
@@ -9,7 +10,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuPortal,
 } from '../ui/dropdown-menu';
 import { 
   Pencil, 
@@ -40,9 +40,7 @@ export const Toolbar: React.FC = () => {
     setActiveTool, 
     toolSettings, 
     updateToolSettings, 
-    getActiveColors,
-    getMostRecentColors,
-    updateRecentlyUsedColor
+    getActiveColors
   } = useToolStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -71,35 +69,22 @@ export const Toolbar: React.FC = () => {
 
       console.log('Measuring available space for colors...');
       
-      // Get the viewport width
       const viewportWidth = window.innerWidth;
       console.log('Viewport width:', viewportWidth);
       
-      // Calculate the width used by other elements (even less conservative)
-      const baseToolsWidth = 220; // Reduced further
-      const shapesWidth = 45; // Reduced further
-      const separatorsWidth = 25; // Reduced further
-      const widthControlsWidth = showWidthControls ? 160 : 0; // Reduced further
-      const actionsWidth = 140; // Reduced further
-      const paddingAndMargins = 40; // Reduced further
-      const scrollButtonsWidth = 50; // Reduced further
+      const baseToolsWidth = 220;
+      const shapesWidth = 45;
+      const separatorsWidth = 25;
+      const widthControlsWidth = showWidthControls ? 160 : 0;
+      const actionsWidth = 140;
+      const paddingAndMargins = 40;
+      const scrollButtonsWidth = 50;
       
       const usedWidth = baseToolsWidth + shapesWidth + separatorsWidth + widthControlsWidth + actionsWidth + paddingAndMargins + scrollButtonsWidth;
       const availableForColors = viewportWidth - usedWidth;
       
-      console.log('Used width breakdown:', {
-        baseToolsWidth,
-        shapesWidth,
-        separatorsWidth,
-        widthControlsWidth,
-        actionsWidth,
-        paddingAndMargins,
-        scrollButtonsWidth,
-        total: usedWidth
-      });
       console.log('Available width for colors:', availableForColors);
       
-      // Each color button is about 26px (more optimistic)
       const colorButtonWidth = 26;
       const colorsLabelWidth = 55;
       
@@ -107,7 +92,6 @@ export const Toolbar: React.FC = () => {
       
       console.log('Max colors that can fit:', maxColors);
       
-      // Ensure we show at least 3 colors, but cap based on available space
       const newMaxColors = Math.max(3, Math.min(maxColors, 15));
       
       console.log('Setting maxVisibleColors to:', newMaxColors);
@@ -162,42 +146,22 @@ export const Toolbar: React.FC = () => {
   const currentShape = shapes.find(shape => shape.id === activeTool);
   const ShapeIcon = currentShape?.icon || Square;
 
-  // Check if we need responsive mode based on actual available space
+  // Check if we need scrolling for colors
   const actualColorSpace = colorContainerRef.current?.offsetWidth || 0;
-  const neededColorSpace = allColors.length * 28 + 60; // 28px per color + label width
-  const isResponsiveMode = neededColorSpace > actualColorSpace && allColors.length > maxVisibleColors;
+  const neededColorSpace = allColors.length * 28 + 60;
+  const needsScrolling = neededColorSpace > actualColorSpace && allColors.length > maxVisibleColors;
   
-  console.log('Color display logic:', {
+  console.log('Color scrolling logic:', {
     'allColors.length': allColors.length,
     maxVisibleColors,
     actualColorSpace,
     neededColorSpace,
-    isResponsiveMode,
-    showWidthControls
-  });
-  
-  // Get visible colors - use recently used only when in responsive mode AND width controls are shown
-  const visibleColors = (isResponsiveMode && showWidthControls) 
-    ? getMostRecentColors(maxVisibleColors)
-    : allColors.slice(0, maxVisibleColors);
-  
-  // Hidden colors are any colors not in the visible set
-  const hiddenColors = allColors.filter(color => !visibleColors.includes(color));
-  
-  console.log('Color arrays:', {
-    visibleColors: visibleColors.length,
-    hiddenColors: hiddenColors.length,
-    hiddenColorsArray: hiddenColors
+    needsScrolling
   });
 
   const handleColorSelect = (color: string) => {
     console.log('Color selected:', color);
     updateToolSettings({ strokeColor: color });
-    // Only track recently used colors when in responsive mode with width controls
-    if (isResponsiveMode && showWidthControls) {
-      console.log('Adding to recently used colors');
-      updateRecentlyUsedColor(color);
-    }
   };
 
   const scrollLeft = () => {
@@ -313,14 +277,14 @@ export const Toolbar: React.FC = () => {
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
-          {/* Dynamic Color Palette */}
+          {/* Scrollable Color Palette */}
           <div ref={colorContainerRef} className="flex items-center gap-2 flex-shrink-0">
             <span className="text-sm font-medium">Colors:</span>
             <div className="flex gap-1 items-center">
-              {visibleColors.map((color) => (
+              {allColors.map((color) => (
                 <button
                   key={color}
-                  className={`w-6 h-6 rounded border-2 transition-all ${
+                  className={`w-6 h-6 rounded border-2 transition-all flex-shrink-0 ${
                     toolSettings.strokeColor === color 
                       ? 'border-primary scale-110' 
                       : 'border-border hover:border-muted-foreground/50'
@@ -329,53 +293,6 @@ export const Toolbar: React.FC = () => {
                   onClick={() => handleColorSelect(color)}
                 />
               ))}
-              {hiddenColors.length > 0 && (
-                <DropdownMenu 
-                  onOpenChange={(open) => {
-                    if (open) {
-                      console.log('ITS ME IM THE RESPONSIVE DROPDOWN BUTTON!');
-                      console.log('Dropdown opened, hiddenColors:', hiddenColors);
-                      console.log('Dropdown should be rendering with portal...');
-                    }
-                  }}
-                >
-                  <DropdownMenuTrigger asChild>
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs cursor-pointer hover:bg-muted"
-                    >
-                      +{hiddenColors.length}
-                    </Badge>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuContent 
-                      className="w-48 bg-card border shadow-lg z-[9999]"
-                      onCloseAutoFocus={(e) => e.preventDefault()}
-                    >
-                      <div className="p-2">
-                        <div className="text-xs text-muted-foreground mb-2">More Colors:</div>
-                        <div className="grid grid-cols-6 gap-2">
-                          {hiddenColors.map((color) => (
-                            <button
-                              key={color}
-                              className={`w-6 h-6 rounded border-2 transition-all ${
-                                toolSettings.strokeColor === color 
-                                  ? 'border-primary scale-110' 
-                                  : 'border-border hover:border-muted-foreground/50'
-                              }`}
-                              style={{ backgroundColor: color }}
-                              onClick={() => {
-                                console.log('Hidden color clicked:', color);
-                                handleColorSelect(color);
-                              }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenuPortal>
-                </DropdownMenu>
-              )}
             </div>
           </div>
 
