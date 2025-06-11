@@ -50,7 +50,7 @@ export const Sidebar: React.FC = () => {
         </SidebarHeader>
         <SidebarContent className="flex-1 min-h-0 p-0">
           <ScrollArea className="h-full">
-            <div className="p-4 pb-8">
+            <div className="p-4 pb-16">
               <Tabs defaultValue="tools" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="tools">Tools</TabsTrigger>
