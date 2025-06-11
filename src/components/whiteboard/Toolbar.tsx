@@ -1,10 +1,16 @@
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 import { Slider } from '../ui/slider';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 import { 
   Pencil, 
   Brush,
@@ -23,8 +29,7 @@ import {
   Star,
   Pentagon,
   Diamond,
-  ChevronLeft,
-  ChevronRight
+  ChevronDown
 } from 'lucide-react';
 
 export const Toolbar: React.FC = () => {
@@ -36,10 +41,6 @@ export const Toolbar: React.FC = () => {
     getActiveColors
   } = useToolStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [showScrollButtons, setShowScrollButtons] = useState(false);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Tools that support width changes
   const widthSupportingTools = ['pencil', 'brush', 'eraser'];
@@ -52,24 +53,6 @@ export const Toolbar: React.FC = () => {
       document.documentElement.style.setProperty('--toolbar-height', `${height}px`);
     }
   }, [activeTool]);
-
-  // Check if scrolling is needed and update scroll buttons
-  useEffect(() => {
-    const checkScrollState = () => {
-      if (scrollContainerRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-        const needsScrolling = scrollWidth > clientWidth;
-        setShowScrollButtons(needsScrolling);
-        setCanScrollLeft(scrollLeft > 0);
-        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-      }
-    };
-
-    checkScrollState();
-    window.addEventListener('resize', checkScrollState);
-    
-    return () => window.removeEventListener('resize', checkScrollState);
-  }, [activeTool, toolSettings]);
 
   const basicTools = [
     { id: 'select', icon: MousePointer, label: 'Select' },
@@ -96,79 +79,32 @@ export const Toolbar: React.FC = () => {
     updateToolSettings({ strokeColor: color });
   };
 
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
-    }
-  };
-
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-    }
-  };
-
-  const handleScroll = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-    }
-  };
+  // Find the currently selected shape for the dropdown button
+  const selectedShape = shapes.find(shape => shape.id === activeTool);
+  const isShapeSelected = !!selectedShape;
 
   return (
     <div ref={toolbarRef} className="bg-card border-b border-border relative">
-      {/* Scroll Left Button */}
-      {showScrollButtons && canScrollLeft && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute left-0 top-0 h-full z-20 rounded-none border-r bg-card/95 backdrop-blur shadow-sm"
-          onClick={scrollLeft}
-        >
-          <ChevronLeft className="w-4 h-4" />
+      {/* Action Buttons - Fixed to the right */}
+      <div className="absolute right-4 top-0 h-full flex items-center gap-2 z-10">
+        <Button variant="ghost" size="sm">
+          <Undo className="w-4 h-4" />
         </Button>
-      )}
-
-      {/* Scroll Right Button */}
-      {showScrollButtons && canScrollRight && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute right-0 top-0 h-full z-20 rounded-none border-l bg-card/95 backdrop-blur shadow-sm"
-          onClick={scrollRight}
-        >
-          <ChevronRight className="w-4 h-4" />
+        <Button variant="ghost" size="sm">
+          <Redo className="w-4 h-4" />
         </Button>
-      )}
-
-      {/* Action Buttons - Fixed to the right when not scrolling */}
-      {!showScrollButtons && (
-        <div className="absolute right-4 top-0 h-full flex items-center gap-2 z-10">
-          <Button variant="ghost" size="sm">
-            <Undo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Redo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
+        <Button variant="ghost" size="sm">
+          <ZoomOut className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="sm">
+          <ZoomIn className="w-4 h-4" />
+        </Button>
+      </div>
 
       {/* Scrollable Content Container */}
       <div 
-        ref={scrollContainerRef}
         className="overflow-x-auto scrollbar-hide"
-        style={{
-          paddingLeft: showScrollButtons && canScrollLeft ? '44px' : '0',
-          paddingRight: showScrollButtons && canScrollRight ? '44px' : showScrollButtons ? '0' : '200px', // Reserve space for action buttons when not scrolling
-        }}
-        onScroll={handleScroll}
+        style={{ paddingRight: '200px' }} // Reserve space for action buttons
       >
         <style>{`
           .scrollbar-hide {
@@ -199,19 +135,36 @@ export const Toolbar: React.FC = () => {
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
-          {/* Shapes */}
+          {/* Shapes Dropdown */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {shapes.map((shape) => (
-              <Button
-                key={shape.id}
-                variant={activeTool === shape.id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveTool(shape.id as any)}
-                className="p-2"
-              >
-                <shape.icon className="w-4 h-4" />
-              </Button>
-            ))}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={isShapeSelected ? "default" : "ghost"}
+                  size="sm"
+                  className="p-2 gap-1"
+                >
+                  {selectedShape ? (
+                    <selectedShape.icon className="w-4 h-4" />
+                  ) : (
+                    <Square className="w-4 h-4" />
+                  )}
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="bg-popover">
+                {shapes.map((shape) => (
+                  <DropdownMenuItem
+                    key={shape.id}
+                    onClick={() => setActiveTool(shape.id as any)}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <shape.icon className="w-4 h-4" />
+                    <span>{shape.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
@@ -252,27 +205,6 @@ export const Toolbar: React.FC = () => {
                 <Badge variant="outline" className="min-w-8 text-center">
                   {toolSettings.strokeWidth}
                 </Badge>
-              </div>
-            </>
-          )}
-
-          {/* Action Buttons - Only show when scrolling */}
-          {showScrollButtons && (
-            <>
-              <Separator orientation="vertical" className="h-8 flex-shrink-0" />
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button variant="ghost" size="sm">
-                  <Undo className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Redo className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <ZoomOut className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <ZoomIn className="w-4 h-4" />
-                </Button>
               </div>
             </>
           )}
