@@ -59,6 +59,10 @@ export const Toolbar: React.FC = () => {
   const currentShape = shapes.find(shape => shape.id === activeTool);
   const ShapeIcon = currentShape?.icon || Square;
 
+  // Tools that support width changes
+  const widthSupportingTools = ['pencil', 'brush', 'eraser'];
+  const showWidthControls = widthSupportingTools.includes(activeTool);
+
   return (
     <div className="bg-card border-b border-border">
       {/* First Line - Main Tools */}
@@ -122,7 +126,7 @@ export const Toolbar: React.FC = () => {
                   className={`w-6 h-6 rounded border-2 transition-all ${
                     toolSettings.strokeColor === color 
                       ? 'border-primary scale-110' 
-                      : 'border-transparent hover:border-muted-foreground/50'
+                      : 'border-border hover:border-muted-foreground/50'
                   }`}
                   style={{ backgroundColor: color }}
                   onClick={() => updateToolSettings({ strokeColor: color })}
@@ -131,24 +135,26 @@ export const Toolbar: React.FC = () => {
             </div>
           </div>
 
-          {/* Stroke Width - Large screens only */}
-          <div className="hidden xl:flex items-center gap-2 min-w-32 flex-shrink-0">
-            <span className="text-sm font-medium">Width:</span>
-            <Slider
-              value={[toolSettings.strokeWidth]}
-              onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
-              min={1}
-              max={20}
-              step={1}
-              className="flex-1"
-            />
-            <Badge variant="outline" className="min-w-8 text-center">
-              {toolSettings.strokeWidth}
-            </Badge>
-          </div>
+          {/* Stroke Width - Show only for width-supporting tools on large screens */}
+          {showWidthControls && (
+            <div className="hidden xl:flex items-center gap-2 min-w-32 flex-shrink-0">
+              <span className="text-sm font-medium">Width:</span>
+              <Slider
+                value={[toolSettings.strokeWidth]}
+                onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
+                min={1}
+                max={20}
+                step={1}
+                className="flex-1"
+              />
+              <Badge variant="outline" className="min-w-8 text-center">
+                {toolSettings.strokeWidth}
+              </Badge>
+            </div>
+          )}
         </div>
 
-        {/* Right Side - Actions (always on right) */}
+        {/* Right Side - Actions and Active Tool */}
         <div className="flex items-center gap-4 flex-shrink-0">
           {/* Actions */}
           <div className="flex items-center gap-2">
@@ -166,7 +172,7 @@ export const Toolbar: React.FC = () => {
             </Button>
           </div>
 
-          {/* Active Tool Indicator - Extra large screens only */}
+          {/* Active Tool Indicator */}
           <div className="hidden 2xl:flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Active:</span>
             <Badge variant="default" className="capitalize">
@@ -177,28 +183,52 @@ export const Toolbar: React.FC = () => {
       </div>
 
       {/* Second Line - Additional controls for smaller screens */}
-      <div className="xl:hidden border-t border-border px-4 py-2 flex items-center justify-between gap-4">
-        {/* Stroke Width */}
-        <div className="flex items-center gap-2 min-w-32">
-          <span className="text-sm font-medium">Width:</span>
-          <Slider
-            value={[toolSettings.strokeWidth]}
-            onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
-            min={1}
-            max={20}
-            step={1}
-            className="flex-1"
-          />
-          <Badge variant="outline" className="min-w-8 text-center">
-            {toolSettings.strokeWidth}
-          </Badge>
+      <div className="xl:hidden border-t border-border px-4 py-2 flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-1">
+          {/* Stroke Width - Show only for width-supporting tools */}
+          {showWidthControls && (
+            <div className="flex items-center gap-2 min-w-32">
+              <span className="text-sm font-medium">Width:</span>
+              <Slider
+                value={[toolSettings.strokeWidth]}
+                onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
+                min={1}
+                max={20}
+                step={1}
+                className="flex-1"
+              />
+              <Badge variant="outline" className="min-w-8 text-center">
+                {toolSettings.strokeWidth}
+              </Badge>
+            </div>
+          )}
         </div>
 
-        {/* Active Tool Indicator */}
-        <div className="flex items-center gap-2">
-          <Badge variant="default" className="capitalize">
-            {activeTool}
-          </Badge>
+        {/* Right side - Actions and Active Tool */}
+        <div className="flex items-center gap-4">
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm">
+              <Undo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Redo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Active Tool Indicator */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Active:</span>
+            <Badge variant="default" className="capitalize">
+              {activeTool}
+            </Badge>
+          </div>
         </div>
       </div>
     </div>
