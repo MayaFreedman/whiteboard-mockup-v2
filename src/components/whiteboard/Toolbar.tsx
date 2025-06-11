@@ -108,25 +108,35 @@ export const Toolbar: React.FC = () => {
       // When width controls are shown, show fewer colors to make space
       return Math.min(6, allColors.length);
     }
-    // For basic tools, show all colors unless we need to be responsive
-    return allColors.length;
+    // For basic tools, show more colors but still limit for responsive behavior
+    return Math.min(10, allColors.length);
   };
 
   const visibleColorCount = getVisibleColorCount();
-  // Only trigger responsive mode when width controls are shown and we have more colors than the limit
-  const isResponsiveMode = showWidthControls && allColors.length > 6;
   
-  // Only use recently used colors when in responsive mode
-  const visibleColors = isResponsiveMode 
+  // Responsive mode triggers when we have more colors than we can show
+  const isResponsiveMode = allColors.length > visibleColorCount;
+  
+  console.log('Debug - allColors.length:', allColors.length);
+  console.log('Debug - visibleColorCount:', visibleColorCount);
+  console.log('Debug - isResponsiveMode:', isResponsiveMode);
+  console.log('Debug - showWidthControls:', showWidthControls);
+  
+  // Get visible colors - use recently used only when in responsive mode AND width controls are shown
+  const visibleColors = (isResponsiveMode && showWidthControls) 
     ? getMostRecentColors(visibleColorCount)
     : allColors.slice(0, visibleColorCount);
   
-  const hiddenColors = isResponsiveMode ? allColors.filter(color => !visibleColors.includes(color)) : [];
+  // Hidden colors are any colors not in the visible set
+  const hiddenColors = allColors.filter(color => !visibleColors.includes(color));
+  
+  console.log('Debug - visibleColors:', visibleColors);
+  console.log('Debug - hiddenColors:', hiddenColors);
 
   const handleColorSelect = (color: string) => {
     updateToolSettings({ strokeColor: color });
-    // Only track recently used colors when in responsive mode
-    if (isResponsiveMode) {
+    // Only track recently used colors when in responsive mode with width controls
+    if (isResponsiveMode && showWidthControls) {
       updateRecentlyUsedColor(color);
     }
   };
@@ -267,7 +277,7 @@ export const Toolbar: React.FC = () => {
                       +{hiddenColors.length}
                     </Badge>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48 bg-popover">
+                  <DropdownMenuContent align="start" className="w-48 bg-popover border border-border shadow-lg">
                     <div className="grid grid-cols-6 gap-2 p-2">
                       {hiddenColors.map((color) => (
                         <button
