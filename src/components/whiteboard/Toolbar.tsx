@@ -6,12 +6,6 @@ import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 import { Slider } from '../ui/slider';
 import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
-import { 
   Pencil, 
   Brush,
   Square, 
@@ -29,7 +23,6 @@ import {
   Star,
   Pentagon,
   Diamond,
-  ChevronDown,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -98,8 +91,6 @@ export const Toolbar: React.FC = () => {
   ];
 
   const allColors = getActiveColors();
-  const currentShape = shapes.find(shape => shape.id === activeTool);
-  const ShapeIcon = currentShape?.icon || Square;
 
   const handleColorSelect = (color: string) => {
     updateToolSettings({ strokeColor: color });
@@ -151,13 +142,31 @@ export const Toolbar: React.FC = () => {
         </Button>
       )}
 
+      {/* Action Buttons - Fixed to the right when not scrolling */}
+      {!showScrollButtons && (
+        <div className="absolute right-4 top-0 h-full flex items-center gap-2 z-10">
+          <Button variant="ghost" size="sm">
+            <Undo className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <Redo className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <ZoomOut className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <ZoomIn className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+
       {/* Scrollable Content Container */}
       <div 
         ref={scrollContainerRef}
         className="overflow-x-auto scrollbar-hide"
         style={{
           paddingLeft: showScrollButtons && canScrollLeft ? '44px' : '0',
-          paddingRight: showScrollButtons && canScrollRight ? '44px' : '0',
+          paddingRight: showScrollButtons && canScrollRight ? '44px' : showScrollButtons ? '0' : '200px', // Reserve space for action buttons when not scrolling
         }}
         onScroll={handleScroll}
       >
@@ -190,32 +199,19 @@ export const Toolbar: React.FC = () => {
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
-          {/* Shapes Dropdown */}
+          {/* Shapes */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant={currentShape ? "default" : "ghost"}
-                  size="sm"
-                  className="p-2 gap-1"
-                >
-                  <ShapeIcon className="w-4 h-4" />
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                {shapes.map((shape) => (
-                  <DropdownMenuItem
-                    key={shape.id}
-                    onClick={() => setActiveTool(shape.id as any)}
-                    className="flex items-center gap-2"
-                  >
-                    <shape.icon className="w-4 h-4" />
-                    {shape.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {shapes.map((shape) => (
+              <Button
+                key={shape.id}
+                variant={activeTool === shape.id ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveTool(shape.id as any)}
+                className="p-2"
+              >
+                <shape.icon className="w-4 h-4" />
+              </Button>
+            ))}
           </div>
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
@@ -260,23 +256,26 @@ export const Toolbar: React.FC = () => {
             </>
           )}
 
-          <Separator orientation="vertical" className="h-8 flex-shrink-0" />
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button variant="ghost" size="sm">
-              <Undo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Redo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
+          {/* Action Buttons - Only show when scrolling */}
+          {showScrollButtons && (
+            <>
+              <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button variant="ghost" size="sm">
+                  <Undo className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Redo className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <ZoomOut className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
