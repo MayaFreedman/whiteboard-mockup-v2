@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
+import { DevToolsOverlay } from '../components/DevToolsOverlay';
 
 const Index = () => {
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
@@ -34,10 +35,15 @@ const Index = () => {
             ✅ Undo/redo system with action history<br/>
             ✅ Serializable state for network synchronization<br/>
             ✅ Fabric.js integration utilities<br/>
-            ✅ Separate tool and whiteboard state stores
+            ✅ Separate tool and whiteboard state stores<br/>
+            ✅ Developer tools overlay with stroke tracking<br/>
+            <br/>
+            <strong>🛠️ Dev Tools:</strong> Press Ctrl+D or click the dev button in bottom-right
           </p>
         </div>
       </div>
+      
+      <DevToolsOverlay />
     </div>
   );
 };
