@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
@@ -153,8 +154,8 @@ export const Toolbar: React.FC = () => {
           )}
         </div>
 
-        {/* Right Side - Actions and Active Tool */}
-        <div className="flex items-center gap-4 flex-shrink-0">
+        {/* Right Side - Actions and Active Tool (only on large screens) */}
+        <div className="hidden xl:flex items-center gap-4 flex-shrink-0">
           {/* Actions */}
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm">
@@ -172,7 +173,7 @@ export const Toolbar: React.FC = () => {
           </div>
 
           {/* Active Tool Indicator */}
-          <div className="hidden 2xl:flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Active:</span>
             <Badge variant="default" className="capitalize">
               {activeTool}

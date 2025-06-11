@@ -13,12 +13,14 @@ export const Whiteboard: React.FC = () => {
         <Toolbar />
         
         {/* Main Content Area */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left Sidebar */}
-          <Sidebar />
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* Left Sidebar - positioned to start below toolbar */}
+          <div className="absolute top-0 left-0 z-10 h-full">
+            <Sidebar />
+          </div>
           
           {/* Canvas Area */}
-          <SidebarInset>
+          <SidebarInset className="w-full">
             <Canvas />
           </SidebarInset>
         </div>
