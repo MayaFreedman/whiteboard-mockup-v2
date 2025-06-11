@@ -329,15 +329,18 @@ export const Toolbar: React.FC = () => {
                 />
               ))}
               {hiddenColors.length > 0 && (
-                <DropdownMenu>
+                <DropdownMenu 
+                  onOpenChange={(open) => {
+                    if (open) {
+                      console.log('ITS ME IM THE RESPONSIVE DROPDOWN BUTTON!');
+                      console.log('Dropdown opened, hiddenColors:', hiddenColors);
+                    }
+                  }}
+                >
                   <DropdownMenuTrigger asChild>
                     <Badge 
                       variant="outline" 
                       className="text-xs cursor-pointer hover:bg-muted"
-                      onClick={() => {
-                        console.log('ITS ME IM THE RESPONSIVE DROPDOWN BUTTON!');
-                        console.log('Dropdown trigger clicked, hiddenColors:', hiddenColors);
-                      }}
                     >
                       +{hiddenColors.length}
                     </Badge>
