@@ -227,14 +227,14 @@ export const Sidebar: React.FC = () => {
         </SidebarContent>
       </SidebarRoot>
 
-      {/* Collapsed state button positioned below the status display */}
+      {/* Collapsed state button positioned further down from the toolbar */}
       {!open && (
         <button
           onClick={toggleSidebar}
           className="fixed z-50 bg-background/95 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-r-md cursor-pointer shadow-md hover:shadow-lg border-0 outline-none"
           style={{
             left: '0',
-            top: 'calc(var(--toolbar-height, 64px) + 16px)'
+            top: 'calc(var(--toolbar-height, 64px) + 60px)'
           }}
         >
           <ChevronsRight className="h-4 w-4" />

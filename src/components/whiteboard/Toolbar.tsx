@@ -180,12 +180,12 @@ export const Toolbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Second Line - Additional controls for smaller screens and status */}
-      <div className="border-t border-border px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {/* Stroke Width - Show only for width-supporting tools on smaller screens */}
-          {showWidthControls && (
-            <div className="xl:hidden flex items-center gap-2 min-w-32">
+      {/* Second Line - Additional controls for smaller screens */}
+      {showWidthControls && (
+        <div className="xl:hidden border-t border-border px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Stroke Width - Show only for width-supporting tools on smaller screens */}
+            <div className="flex items-center gap-2 min-w-32">
               <span className="text-sm font-medium">Width:</span>
               <Slider
                 value={[toolSettings.strokeWidth]}
@@ -199,30 +199,25 @@ export const Toolbar: React.FC = () => {
                 {toolSettings.strokeWidth}
               </Badge>
             </div>
-          )}
 
-          {/* Actions for smaller screens */}
-          <div className="xl:hidden flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Undo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Redo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomIn className="w-4 h-4" />
-            </Button>
+            {/* Actions for smaller screens */}
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm">
+                <Undo className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <Redo className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
-
-        {/* Status Display */}
-        <div className="bg-muted/50 px-3 py-1 rounded text-sm text-muted-foreground">
-          Zoom: 100% | Tool: <span className="capitalize">{activeTool}</span> | Size: {toolSettings.strokeWidth}px
-        </div>
-      </div>
+      )}
     </div>
   );
 };
