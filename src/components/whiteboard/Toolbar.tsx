@@ -44,11 +44,9 @@ export const Toolbar: React.FC = () => {
   } = useToolStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const colorContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollButtons, setShowScrollButtons] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [maxVisibleColors, setMaxVisibleColors] = useState(15);
 
   // Tools that support width changes
   const widthSupportingTools = ['pencil', 'brush', 'eraser'];
@@ -62,56 +60,13 @@ export const Toolbar: React.FC = () => {
     }
   }, [activeTool]);
 
-  // Measure available space and calculate how many colors can fit
-  useEffect(() => {
-    const measureAvailableSpace = () => {
-      if (!colorContainerRef.current) return;
-
-      console.log('Measuring available space for colors...');
-      
-      const viewportWidth = window.innerWidth;
-      console.log('Viewport width:', viewportWidth);
-      
-      const baseToolsWidth = 220;
-      const shapesWidth = 45;
-      const separatorsWidth = 25;
-      const widthControlsWidth = showWidthControls ? 160 : 0;
-      const actionsWidth = 140;
-      const paddingAndMargins = 40;
-      const scrollButtonsWidth = 50;
-      
-      const usedWidth = baseToolsWidth + shapesWidth + separatorsWidth + widthControlsWidth + actionsWidth + paddingAndMargins + scrollButtonsWidth;
-      const availableForColors = viewportWidth - usedWidth;
-      
-      console.log('Available width for colors:', availableForColors);
-      
-      const colorButtonWidth = 26;
-      const colorsLabelWidth = 55;
-      
-      const maxColors = Math.floor((availableForColors - colorsLabelWidth) / colorButtonWidth);
-      
-      console.log('Max colors that can fit:', maxColors);
-      
-      const newMaxColors = Math.max(3, Math.min(maxColors, 15));
-      
-      console.log('Setting maxVisibleColors to:', newMaxColors);
-      
-      setMaxVisibleColors(newMaxColors);
-    };
-
-    measureAvailableSpace();
-    
-    window.addEventListener('resize', measureAvailableSpace);
-    
-    return () => window.removeEventListener('resize', measureAvailableSpace);
-  }, [showWidthControls, activeTool]);
-
-  // Check scroll state
+  // Check if scrolling is needed and update scroll buttons
   useEffect(() => {
     const checkScrollState = () => {
       if (scrollContainerRef.current) {
         const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-        setShowScrollButtons(scrollWidth > clientWidth);
+        const needsScrolling = scrollWidth > clientWidth;
+        setShowScrollButtons(needsScrolling);
         setCanScrollLeft(scrollLeft > 0);
         setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
       }
@@ -121,7 +76,7 @@ export const Toolbar: React.FC = () => {
     window.addEventListener('resize', checkScrollState);
     
     return () => window.removeEventListener('resize', checkScrollState);
-  }, [activeTool, toolSettings, maxVisibleColors]);
+  }, [activeTool, toolSettings]);
 
   const basicTools = [
     { id: 'select', icon: MousePointer, label: 'Select' },
@@ -146,21 +101,7 @@ export const Toolbar: React.FC = () => {
   const currentShape = shapes.find(shape => shape.id === activeTool);
   const ShapeIcon = currentShape?.icon || Square;
 
-  // Check if we need scrolling for colors
-  const actualColorSpace = colorContainerRef.current?.offsetWidth || 0;
-  const neededColorSpace = allColors.length * 28 + 60;
-  const needsScrolling = neededColorSpace > actualColorSpace && allColors.length > maxVisibleColors;
-  
-  console.log('Color scrolling logic:', {
-    'allColors.length': allColors.length,
-    maxVisibleColors,
-    actualColorSpace,
-    neededColorSpace,
-    needsScrolling
-  });
-
   const handleColorSelect = (color: string) => {
-    console.log('Color selected:', color);
     updateToolSettings({ strokeColor: color });
   };
 
@@ -185,13 +126,13 @@ export const Toolbar: React.FC = () => {
   };
 
   return (
-    <div ref={toolbarRef} className="bg-card border-b border-border relative flex">
+    <div ref={toolbarRef} className="bg-card border-b border-border relative">
       {/* Scroll Left Button */}
       {showScrollButtons && canScrollLeft && (
         <Button
           variant="ghost"
           size="sm"
-          className="absolute left-0 top-0 h-full z-10 rounded-none border-r bg-card/95 backdrop-blur"
+          className="absolute left-0 top-0 h-full z-20 rounded-none border-r bg-card/95 backdrop-blur shadow-sm"
           onClick={scrollLeft}
         >
           <ChevronLeft className="w-4 h-4" />
@@ -203,7 +144,7 @@ export const Toolbar: React.FC = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="absolute right-20 top-0 h-full z-10 rounded-none border-l bg-card/95 backdrop-blur"
+          className="absolute right-0 top-0 h-full z-20 rounded-none border-l bg-card/95 backdrop-blur shadow-sm"
           onClick={scrollRight}
         >
           <ChevronRight className="w-4 h-4" />
@@ -213,17 +154,19 @@ export const Toolbar: React.FC = () => {
       {/* Scrollable Content Container */}
       <div 
         ref={scrollContainerRef}
-        className="overflow-x-auto flex-1"
+        className="overflow-x-auto scrollbar-hide"
         style={{
-          paddingLeft: showScrollButtons && canScrollLeft ? '40px' : '0',
-          paddingRight: '180px',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
+          paddingLeft: showScrollButtons && canScrollLeft ? '44px' : '0',
+          paddingRight: showScrollButtons && canScrollRight ? '44px' : '0',
         }}
         onScroll={handleScroll}
       >
         <style>{`
-          .overflow-x-auto::-webkit-scrollbar {
+          .scrollbar-hide {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
             display: none;
           }
         `}</style>
@@ -277,9 +220,9 @@ export const Toolbar: React.FC = () => {
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
-          {/* Scrollable Color Palette */}
-          <div ref={colorContainerRef} className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-sm font-medium">Colors:</span>
+          {/* Color Palette */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-sm font-medium whitespace-nowrap">Colors:</span>
             <div className="flex gap-1 items-center">
               {allColors.map((color) => (
                 <button
@@ -301,14 +244,14 @@ export const Toolbar: React.FC = () => {
             <>
               <Separator orientation="vertical" className="h-8 flex-shrink-0" />
               <div className="flex items-center gap-2 min-w-32 flex-shrink-0">
-                <span className="text-sm font-medium">Width:</span>
+                <span className="text-sm font-medium whitespace-nowrap">Width:</span>
                 <Slider
                   value={[toolSettings.strokeWidth]}
                   onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
                   min={1}
                   max={20}
                   step={1}
-                  className="flex-1"
+                  className="w-20"
                 />
                 <Badge variant="outline" className="min-w-8 text-center">
                   {toolSettings.strokeWidth}
@@ -316,23 +259,25 @@ export const Toolbar: React.FC = () => {
               </div>
             </>
           )}
-        </div>
-      </div>
 
-      {/* Fixed Action Buttons on Right Edge */}
-      <div className="absolute right-0 top-0 h-full flex items-center gap-2 px-4 border-l bg-card">
-        <Button variant="ghost" size="sm">
-          <Undo className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="sm">
-          <Redo className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="sm">
-          <ZoomOut className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="sm">
-          <ZoomIn className="w-4 h-4" />
-        </Button>
+          <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button variant="ghost" size="sm">
+              <Undo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Redo className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
