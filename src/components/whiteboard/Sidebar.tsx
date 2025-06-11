@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
@@ -22,7 +23,15 @@ export const Sidebar: React.FC = () => {
 
   return (
     <>
-      <SidebarRoot side="left" className="border-r w-96" collapsible="offcanvas">
+      <SidebarRoot 
+        side="left" 
+        className="border-r w-96" 
+        collapsible="offcanvas"
+        style={{
+          transform: open ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.2s ease-linear'
+        }}
+      >
         <SidebarHeader className="border-b px-4 py-3">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">Tools & Settings</h2>
