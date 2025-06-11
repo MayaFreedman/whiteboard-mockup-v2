@@ -110,14 +110,13 @@ export const Toolbar: React.FC = () => {
 
       {/* Color Palette */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Color:</span>
         <div className="flex gap-1">
           {colors.map((color) => (
             <button
               key={color}
-              className={`w-6 h-6 rounded border-4 transition-all ${
+              className={`w-6 h-6 rounded border-2 transition-all ${
                 toolSettings.strokeColor === color 
-                  ? 'border-primary scale-110 shadow-md' 
+                  ? 'border-primary scale-110' 
                   : 'border-transparent hover:border-muted-foreground/50'
               }`}
               style={{ backgroundColor: color }}

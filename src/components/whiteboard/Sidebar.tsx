@@ -25,14 +25,14 @@ export const Sidebar: React.FC = () => {
         <TabsContent value="tools" className="space-y-4">
           {/* Brush Settings */}
           <Card>
-            <CardHeader>
+            <CardHeader className="bg-muted/50">
               <CardTitle className="text-lg">Brush Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Brush Type</label>
                 <div className="flex gap-2">
-                  {['solid', 'marker', 'highlighter'].map((type) => (
+                  {['pencil', 'chalk', 'spray', 'crayon'].map((type) => (
                     <Badge
                       key={type}
                       variant={toolSettings.brushType === type ? 'default' : 'outline'}
@@ -62,27 +62,26 @@ export const Sidebar: React.FC = () => {
 
           {/* Color Palettes */}
           <Card>
-            <CardHeader>
+            <CardHeader className="bg-muted/50">
               <CardTitle className="text-lg">Color Palettes</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {Object.entries(colorPalettes).map(([name, colors]) => (
                 <div key={name} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="capitalize font-medium">{name}</span>
+                    <button
+                      onClick={() => setActiveColorPalette(name as any)}
+                      className={`flex items-center gap-2 text-left flex-1 p-2 rounded transition-colors ${
+                        activeColorPalette === name 
+                          ? 'bg-primary/10 text-primary font-medium' 
+                          : 'hover:bg-muted/50'
+                      }`}
+                    >
+                      <span className="capitalize">{name}</span>
                       {activeColorPalette === name && (
                         <Check className="w-4 h-4 text-primary" />
                       )}
-                    </div>
-                    <Button
-                      variant={activeColorPalette === name ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setActiveColorPalette(name as any)}
-                      className="h-8 px-3"
-                    >
-                      {activeColorPalette === name ? "Equipped" : "Equip"}
-                    </Button>
+                    </button>
                   </div>
                   <div className="flex gap-1">
                     {colors.slice(0, 8).map((color, index) => (
@@ -105,7 +104,7 @@ export const Sidebar: React.FC = () => {
 
           {/* Text Settings */}
           <Card>
-            <CardHeader>
+            <CardHeader className="bg-muted/50">
               <CardTitle className="text-lg">Text Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -143,7 +142,7 @@ export const Sidebar: React.FC = () => {
         <TabsContent value="settings" className="space-y-4">
           {/* Canvas Settings */}
           <Card>
-            <CardHeader>
+            <CardHeader className="bg-muted/50">
               <CardTitle className="text-lg">Canvas Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -167,7 +166,7 @@ export const Sidebar: React.FC = () => {
 
           {/* Background Settings */}
           <Card>
-            <CardHeader>
+            <CardHeader className="bg-muted/50">
               <CardTitle className="text-lg">Background</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

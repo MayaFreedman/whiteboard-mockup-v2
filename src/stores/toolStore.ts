@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 export type Tool = 
@@ -88,9 +87,9 @@ const colorPalettes = {
     '#dcedc8', '#f0f4c3', '#fff9c4', '#ffecb3', '#ffe0b2'
   ],
   professional: [
-    '#263238', '#37474f', '#455a64', '#546e7a', '#607d8b',
-    '#78909c', '#90a4ae', '#b0bec5', '#cfd8dc', '#eceff1',
-    '#1976d2', '#388e3c', '#f57c00', '#e64a19', '#7b1fa2'
+    '#1e3a8a', '#dc2626', '#059669', '#d97706', '#7c2d12',
+    '#1f2937', '#374151', '#6b7280', '#0f172a', '#1e293b',
+    '#0c4a6e', '#991b1b', '#064e3b', '#92400e', '#451a03'
   ]
 };
 
