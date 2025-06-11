@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
@@ -162,40 +163,29 @@ export const Toolbar: React.FC = () => {
           )}
         </div>
 
-        {/* Right Side - Actions and Active Tool (only on large screens) */}
-        <div className="hidden xl:flex items-center gap-4 flex-shrink-0">
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Undo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Redo className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Active Tool Indicator */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Active:</span>
-            <Badge variant="default" className="capitalize">
-              {activeTool}
-            </Badge>
-          </div>
+        {/* Right Side - Actions (only on large screens) */}
+        <div className="hidden xl:flex items-center gap-2 flex-shrink-0">
+          <Button variant="ghost" size="sm">
+            <Undo className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <Redo className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <ZoomOut className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <ZoomIn className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Second Line - Additional controls for smaller screens */}
-      <div className="xl:hidden border-t border-border px-4 py-2 flex items-center gap-4">
-        <div className="flex items-center gap-4 flex-1">
-          {/* Stroke Width - Show only for width-supporting tools */}
+      {/* Second Line - Additional controls for smaller screens and status */}
+      <div className="border-t border-border px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          {/* Stroke Width - Show only for width-supporting tools on smaller screens */}
           {showWidthControls && (
-            <div className="flex items-center gap-2 min-w-32">
+            <div className="xl:hidden flex items-center gap-2 min-w-32">
               <span className="text-sm font-medium">Width:</span>
               <Slider
                 value={[toolSettings.strokeWidth]}
@@ -210,12 +200,9 @@ export const Toolbar: React.FC = () => {
               </Badge>
             </div>
           )}
-        </div>
 
-        {/* Right side - Actions and Active Tool */}
-        <div className="flex items-center gap-4">
-          {/* Actions */}
-          <div className="flex items-center gap-2">
+          {/* Actions for smaller screens */}
+          <div className="xl:hidden flex items-center gap-2">
             <Button variant="ghost" size="sm">
               <Undo className="w-4 h-4" />
             </Button>
@@ -229,14 +216,11 @@ export const Toolbar: React.FC = () => {
               <ZoomIn className="w-4 h-4" />
             </Button>
           </div>
+        </div>
 
-          {/* Active Tool Indicator */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Active:</span>
-            <Badge variant="default" className="capitalize">
-              {activeTool}
-            </Badge>
-          </div>
+        {/* Status Display */}
+        <div className="bg-muted/50 px-3 py-1 rounded text-sm text-muted-foreground">
+          Zoom: 100% | Tool: <span className="capitalize">{activeTool}</span> | Size: {toolSettings.strokeWidth}px
         </div>
       </div>
     </div>
