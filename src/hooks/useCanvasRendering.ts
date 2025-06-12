@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -37,11 +36,11 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           ctx.lineJoin = 'round';
           ctx.stroke(path);
           
-          // Draw selection highlight for paths
+          // Draw selection highlight for paths as an outer stroke
           if (isSelected) {
             ctx.strokeStyle = '#007AFF';
             ctx.lineWidth = (obj.strokeWidth || 2) + 4;
-            ctx.globalAlpha = 0.5;
+            ctx.globalAlpha = 0.8;
             ctx.stroke(path);
           }
         }
@@ -50,6 +49,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
 
       case 'rectangle': {
         if (obj.width && obj.height) {
+          // Draw the original object first
           if (obj.fill && obj.fill !== 'none') {
             ctx.fillStyle = obj.fill;
             ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
@@ -58,6 +58,15 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
             ctx.strokeStyle = obj.stroke;
             ctx.lineWidth = obj.strokeWidth || 2;
             ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+          }
+          
+          // Draw selection highlight as outer border
+          if (isSelected) {
+            ctx.strokeStyle = '#007AFF';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.8;
+            const offset = 3;
+            ctx.strokeRect(obj.x - offset, obj.y - offset, obj.width + (offset * 2), obj.height + (offset * 2));
           }
         }
         break;
@@ -69,6 +78,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           const centerX = obj.x + radius;
           const centerY = obj.y + radius;
           
+          // Draw the original object first
           ctx.beginPath();
           ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
           
@@ -81,6 +91,16 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
             ctx.lineWidth = obj.strokeWidth || 2;
             ctx.stroke();
           }
+          
+          // Draw selection highlight as outer circle
+          if (isSelected) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius + 3, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#007AFF';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.8;
+            ctx.stroke();
+          }
         }
         break;
       }
@@ -90,31 +110,23 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           ctx.fillStyle = obj.fill || '#000000';
           ctx.font = `${obj.data.fontSize || 16}px ${obj.data.fontFamily || 'Arial'}`;
           ctx.fillText(obj.data.content, obj.x, obj.y);
+          
+          // Draw selection highlight as bounding box for text
+          if (isSelected) {
+            const fontSize = obj.data.fontSize || 16;
+            const textWidth = ctx.measureText(obj.data.content).width;
+            ctx.strokeStyle = '#007AFF';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.8;
+            const offset = 2;
+            ctx.strokeRect(obj.x - offset, obj.y - fontSize - offset, textWidth + (offset * 2), fontSize + (offset * 2));
+          }
         }
         break;
       }
     }
 
-    ctx.restore(); // This restores the context state, undoing any translations
-    
-    // Draw selection indicators for non-path selected objects only
-    if (isSelected && obj.type !== 'path') {
-      ctx.save();
-      ctx.strokeStyle = '#007AFF';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
-      ctx.globalAlpha = 1;
-      
-      if (obj.width && obj.height) {
-        ctx.strokeRect(obj.x - 2, obj.y - 2, obj.width + 4, obj.height + 4);
-      } else {
-        // For points, draw a small selection indicator
-        ctx.strokeRect(obj.x - 5, obj.y - 5, 10, 10);
-      }
-      
-      ctx.setLineDash([]);
-      ctx.restore();
-    }
+    ctx.restore();
   }, []);
 
   /**
