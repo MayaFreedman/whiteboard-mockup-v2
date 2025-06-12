@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -40,24 +41,14 @@ export const Canvas: React.FC = () => {
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
   
-  const {
-    handlePointerDown,
-    handlePointerMove,
-    handlePointerUp,
-    isDragging,
-    getCurrentDrawingPreview
-  } = useCanvasInteractions();
-
-  // Custom hooks for canvas functionality - pass the drawing preview function
-  const { redrawCanvas } = useCanvasRendering(canvasRef.current, getCurrentDrawingPreview);
+  // Initialize interactions hook first to get the preview function
+  const interactions = useCanvasInteractions();
   
-  // Update the interactions hook with redraw function
-  const {
-    handlePointerDown: finalHandlePointerDown,
-    handlePointerMove: finalHandlePointerMove,
-    handlePointerUp: finalHandlePointerUp,
-    isDragging: finalIsDragging
-  } = useCanvasInteractions(redrawCanvas);
+  // Initialize rendering hook with the preview function
+  const { redrawCanvas } = useCanvasRendering(canvasRef.current, interactions.getCurrentDrawingPreview);
+  
+  // Update interactions hook with redraw function
+  interactions.setRedrawCanvas(redrawCanvas);
 
   /**
    * Handles mouse down events on the canvas
@@ -65,7 +56,7 @@ export const Canvas: React.FC = () => {
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      finalHandlePointerDown(event.nativeEvent, canvasRef.current);
+      interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -75,7 +66,7 @@ export const Canvas: React.FC = () => {
    */
   const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      finalHandlePointerMove(event.nativeEvent, canvasRef.current);
+      interactions.handlePointerMove(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -85,7 +76,7 @@ export const Canvas: React.FC = () => {
    */
   const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      finalHandlePointerUp(event.nativeEvent, canvasRef.current);
+      interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -96,7 +87,7 @@ export const Canvas: React.FC = () => {
   const onTouchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
     event.preventDefault();
     if (canvasRef.current) {
-      finalHandlePointerDown(event.nativeEvent, canvasRef.current);
+      interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -107,7 +98,7 @@ export const Canvas: React.FC = () => {
   const onTouchMove = (event: React.TouchEvent<HTMLCanvasElement>) => {
     event.preventDefault();
     if (canvasRef.current) {
-      finalHandlePointerMove(event.nativeEvent, canvasRef.current);
+      interactions.handlePointerMove(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -118,7 +109,7 @@ export const Canvas: React.FC = () => {
   const onTouchEnd = (event: React.TouchEvent<HTMLCanvasElement>) => {
     event.preventDefault();
     if (canvasRef.current) {
-      finalHandlePointerUp(event.nativeEvent, canvasRef.current);
+      interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -128,7 +119,7 @@ export const Canvas: React.FC = () => {
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
         style={{
-          cursor: finalIsDragging ? 'grabbing' : getCursorStyle(activeTool),
+          cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
           touchAction: 'none' // Prevent default touch behaviors
         }}
         onMouseDown={onMouseDown}
@@ -143,7 +134,7 @@ export const Canvas: React.FC = () => {
       <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
         Zoom: {Math.round(viewport.zoom * 100)}% | 
         Tool: {activeTool} |
-        {finalIsDragging && ' Dragging'}
+        {interactions.isDragging && ' Dragging'}
       </div>
     </div>
   );

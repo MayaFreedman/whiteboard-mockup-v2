@@ -7,7 +7,7 @@ import { WhiteboardObject } from '../types/whiteboard';
  * Custom hook for handling canvas mouse and touch interactions
  * Manages drawing state and coordinates tool-specific behaviors
  */
-export const useCanvasInteractions = (redrawCanvas?: () => void) => {
+export const useCanvasInteractions = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const isDrawingRef = useRef(false);
@@ -16,6 +16,7 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
   const currentPathRef = useRef<string>('');
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
+  const redrawCanvasRef = useRef<(() => void) | null>(null);
   
   // Store the current drawing preview for rendering
   const currentDrawingPreviewRef = useRef<{
@@ -26,6 +27,13 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
     strokeWidth: number;
     opacity: number;
   } | null>(null);
+
+  /**
+   * Sets the redraw canvas function (called by Canvas component)
+   */
+  const setRedrawCanvas = useCallback((redrawFn: () => void) => {
+    redrawCanvasRef.current = redrawFn;
+  }, []);
 
   /**
    * Converts screen coordinates to canvas coordinates
@@ -227,7 +235,7 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
           opacity: toolStore.toolSettings.opacity
         };
         
-        console.log('✏️ Started drawing at:', coords);
+        console.log('✏️ Started drawing at:', coords, 'Preview set:', !!currentDrawingPreviewRef.current);
         break;
       }
 
@@ -265,8 +273,8 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
           dragStartRef.current = coords;
           
           // Trigger canvas redraw for smooth dragging
-          if (redrawCanvas) {
-            redrawCanvas();
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
           }
           
           console.log('🔄 Dragging objects:', { deltaX, deltaY });
@@ -286,17 +294,18 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
           // Update drawing preview
           if (currentDrawingPreviewRef.current) {
             currentDrawingPreviewRef.current.path = currentPathRef.current;
+            console.log('🖊️ Updated drawing preview path length:', currentPathRef.current.length);
           }
           
           // Trigger canvas redraw to show smooth preview
-          if (redrawCanvas) {
-            redrawCanvas();
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
           }
         }
         break;
       }
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, redrawCanvas]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates]);
 
   /**
    * Handles the end of a drawing/interaction session
@@ -340,10 +349,11 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
           
           // Clear drawing preview
           currentDrawingPreviewRef.current = null;
+          console.log('🧹 Cleared drawing preview');
           
           // Trigger redraw to show the final object
-          if (redrawCanvas) {
-            redrawCanvas();
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
           }
         }
         break;
@@ -355,13 +365,14 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
     lastPointRef.current = null;
     currentPathRef.current = '';
     pathStartRef.current = null;
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, redrawCanvas]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates]);
 
   /**
    * Gets the current drawing preview for rendering
    * @returns Current drawing preview or null
    */
   const getCurrentDrawingPreview = useCallback(() => {
+    console.log('📋 Getting drawing preview:', !!currentDrawingPreviewRef.current);
     return currentDrawingPreviewRef.current;
   }, []);
 
@@ -371,6 +382,7 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
     handlePointerUp,
     isDrawing: isDrawingRef.current,
     isDragging: isDraggingRef.current,
-    getCurrentDrawingPreview
+    getCurrentDrawingPreview,
+    setRedrawCanvas
   };
 };
