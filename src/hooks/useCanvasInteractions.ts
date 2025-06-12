@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -37,8 +38,8 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
   /**
    * Checks if a point is inside a path using path intersection
    * @param pathString - SVG path string
-   * @param x - X coordinate
-   * @param y - Y coordinate
+   * @param x - X coordinate (relative to path origin)
+   * @param y - Y coordinate (relative to path origin)
    * @param strokeWidth - Width of the stroke for hit area
    * @returns True if point intersects with path
    */
@@ -117,8 +118,18 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
       switch (obj.type) {
         case 'path': {
           if (obj.data?.path) {
-            isHit = isPointInPath(obj.data.path, x, y, obj.strokeWidth);
-            console.log('📏 Path hit test:', { id: id.slice(0, 8), isHit, strokeWidth: obj.strokeWidth });
+            // Convert screen coordinates to path-relative coordinates
+            const relativeX = x - obj.x;
+            const relativeY = y - obj.y;
+            isHit = isPointInPath(obj.data.path, relativeX, relativeY, obj.strokeWidth);
+            console.log('📏 Path hit test:', { 
+              id: id.slice(0, 8), 
+              isHit, 
+              strokeWidth: obj.strokeWidth,
+              screenCoords: { x, y },
+              pathOrigin: { x: obj.x, y: obj.y },
+              relativeCoords: { x: relativeX, y: relativeY }
+            });
           }
           break;
         }
