@@ -67,19 +67,33 @@ export const renderChalk = (
   ctx.globalAlpha = opacity * 0.3;
   ctx.fillStyle = strokeColor;
   
-  // Get path points for dust effect (simplified approach)
-  const dustDensity = Math.max(1, Math.floor(strokeWidth / 3));
-  for (let i = 0; i < dustDensity * 10; i++) {
-    const angle = (Math.PI * 2 * i) / (dustDensity * 10);
-    const distance = (strokeWidth / 2) + (Math.random() * strokeWidth * 0.5);
-    const dustX = Math.cos(angle) * distance + (Math.random() - 0.5) * strokeWidth * 2;
-    const dustY = Math.sin(angle) * distance + (Math.random() - 0.5) * strokeWidth * 2;
-    const dustSize = Math.random() * (strokeWidth * 0.2) + 1;
+  // Parse the path to get approximate points for deterministic dust placement
+  const pathCommands = path.split(/[ML]/).filter(cmd => cmd.trim());
+  
+  pathCommands.forEach((cmd, cmdIndex) => {
+    if (cmdIndex === 0) return; // Skip the first empty element
     
-    ctx.beginPath();
-    ctx.arc(dustX, dustY, dustSize, 0, 2 * Math.PI);
-    ctx.fill();
-  }
+    const coords = cmd.trim().split(' ').map(Number).filter(n => !isNaN(n));
+    if (coords.length >= 2) {
+      const [x, y] = coords;
+      
+      // Get dust density based on stroke width
+      const dustDensity = Math.max(1, Math.floor(strokeWidth / 3));
+      for (let i = 0; i < dustDensity * 5; i++) {
+        // Use deterministic seed based on position and dust index
+        const seed = x * 1000 + y * 100 + i * 10 + cmdIndex;
+        const angle = seededRandom(seed) * Math.PI * 2;
+        const distance = seededRandom(seed + 1) * strokeWidth * 0.8;
+        const dustX = x + Math.cos(angle) * distance;
+        const dustY = y + Math.sin(angle) * distance;
+        const dustSize = seededRandom(seed + 2) * (strokeWidth * 0.2) + 1;
+        
+        ctx.beginPath();
+        ctx.arc(dustX, dustY, dustSize, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+  });
   
   ctx.restore();
 };
@@ -158,7 +172,10 @@ export const renderCrayon = (
   
   const pathObj = new Path2D(path);
   
-  // Draw multiple offset strokes for texture
+  // Parse the path to get a deterministic seed for this stroke
+  const pathHash = path.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  
+  // Draw multiple offset strokes for texture with deterministic offsets
   const offsets = [
     { x: 0, y: 0, alpha: 0.8 },
     { x: 0.5, y: 0.3, alpha: 0.4 },
@@ -166,25 +183,31 @@ export const renderCrayon = (
     { x: 0.2, y: -0.4, alpha: 0.3 }
   ];
   
-  offsets.forEach(offset => {
+  offsets.forEach((offset, index) => {
     ctx.save();
     ctx.translate(offset.x, offset.y);
     ctx.globalAlpha = opacity * offset.alpha;
     ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = strokeWidth * (0.8 + Math.random() * 0.4);
+    // Use deterministic width variation
+    const widthSeed = pathHash + index * 100;
+    const widthVariation = seededRandom(widthSeed) * 0.4;
+    ctx.lineWidth = strokeWidth * (0.8 + widthVariation);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke(pathObj);
     ctx.restore();
   });
   
-  // Add slight color variations by adjusting hue
+  // Add slight color variations by adjusting hue (deterministic)
   ctx.globalAlpha = opacity * 0.3;
   
   // Convert hex to HSL for color variation
   const hslColor = hexToHsl(strokeColor);
   if (hslColor) {
-    const variedHue = (hslColor.h + (Math.random() - 0.5) * 20) % 360;
+    // Use deterministic hue variation
+    const hueSeed = pathHash + 999;
+    const hueVariation = (seededRandom(hueSeed) - 0.5) * 20;
+    const variedHue = (hslColor.h + hueVariation) % 360;
     const variedColor = hslToHex(variedHue, hslColor.s, hslColor.l);
     ctx.strokeStyle = variedColor;
     ctx.lineWidth = strokeWidth * 0.6;
