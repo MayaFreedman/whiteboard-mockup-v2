@@ -46,6 +46,15 @@ interface ToolStore {
   activeTool: Tool;
   toolSettings: ToolSettings;
   
+  // State tracking for multiplayer
+  stateVersion: number;
+  lastStateUpdate: number;
+  toolChangeHistory: Array<{
+    tool: Tool;
+    timestamp: number;
+    settings: ToolSettings;
+  }>;
+  
   // Actions
   setActiveTool: (tool: Tool) => void;
   updateToolSettings: (settings: Partial<ToolSettings>) => void;
@@ -65,6 +74,20 @@ interface ToolStore {
   getActiveColors: () => string[];
   updateRecentlyUsedColor: (color: string) => void;
   getMostRecentColors: (count: number) => string[];
+  
+  // Enhanced state tracking for multiplayer
+  getToolStateSnapshot: () => {
+    activeTool: Tool;
+    settings: ToolSettings;
+    version: number;
+    timestamp: number;
+  };
+  getToolChangesSince: (timestamp: number) => Array<{
+    tool: Tool;
+    timestamp: number;
+    settings: ToolSettings;
+  }>;
+  clearToolHistory: () => void;
 }
 
 const defaultToolSettings: ToolSettings = {
@@ -106,36 +129,82 @@ const colorPalettes = {
 export const useToolStore = create<ToolStore>((set, get) => ({
   activeTool: 'select',
   toolSettings: defaultToolSettings,
+  stateVersion: 0,
+  lastStateUpdate: Date.now(),
+  toolChangeHistory: [],
   colorPalettes,
   activeColorPalette: 'basic',
   customColors: [],
   recentlyUsedColors: [],
 
   setActiveTool: (tool) => {
-    console.log('Setting active tool:', tool);
-    set({ activeTool: tool });
+    console.log('🔧 Setting active tool:', tool);
+    
+    set((state) => {
+      const timestamp = Date.now();
+      const newVersion = state.stateVersion + 1;
+      
+      // Add to history
+      const newHistory = [...state.toolChangeHistory, {
+        tool,
+        timestamp,
+        settings: state.toolSettings
+      }];
+      
+      // Keep only last 50 tool changes
+      if (newHistory.length > 50) {
+        newHistory.splice(0, newHistory.length - 50);
+      }
+      
+      console.log('🔧 Tool state updated:', {
+        tool,
+        version: newVersion,
+        historyLength: newHistory.length
+      });
+      
+      return {
+        activeTool: tool,
+        stateVersion: newVersion,
+        lastStateUpdate: timestamp,
+        toolChangeHistory: newHistory
+      };
+    });
   },
 
   updateToolSettings: (settings) => {
-    console.log('Updating tool settings:', settings);
+    console.log('🎨 Updating tool settings:', settings);
+    
     set((state) => {
       const newSettings = {
         ...state.toolSettings,
         ...settings
       };
       
+      const timestamp = Date.now();
+      const newVersion = state.stateVersion + 1;
+      
       // If stroke color is being updated, add to recently used
       if (settings.strokeColor) {
         get().updateRecentlyUsedColor(settings.strokeColor);
       }
       
+      console.log('🎨 Tool settings updated:', {
+        changes: Object.keys(settings),
+        version: newVersion,
+        newSettings: settings
+      });
+      
       return {
-        toolSettings: newSettings
+        toolSettings: newSettings,
+        stateVersion: newVersion,
+        lastStateUpdate: timestamp
       };
     });
   },
 
   updateRecentlyUsedColor: (color) => {
+    console.log('🎨 Adding recent color:', color);
+    
     set((state) => {
       const newRecentColors = [color, ...state.recentlyUsedColors.filter(c => c !== color)];
       // Keep only the last 10 recent colors
@@ -162,6 +231,8 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   addCustomColor: (color) => {
+    console.log('🎨 Adding custom color:', color);
+    
     set((state) => {
       const newCustomColors = [...state.customColors];
       if (!newCustomColors.includes(color)) {
@@ -171,17 +242,50 @@ export const useToolStore = create<ToolStore>((set, get) => ({
           newCustomColors.shift();
         }
       }
-      return { customColors: newCustomColors };
+      return { 
+        customColors: newCustomColors,
+        stateVersion: state.stateVersion + 1,
+        lastStateUpdate: Date.now()
+      };
     });
   },
 
   setActiveColorPalette: (palette) => {
-    console.log('Setting active color palette:', palette);
-    set({ activeColorPalette: palette });
+    console.log('🎨 Setting active color palette:', palette);
+    
+    set((state) => ({
+      activeColorPalette: palette,
+      stateVersion: state.stateVersion + 1,
+      lastStateUpdate: Date.now()
+    }));
   },
 
   getActiveColors: () => {
     const state = get();
     return state.colorPalettes[state.activeColorPalette];
+  },
+
+  getToolStateSnapshot: () => {
+    const state = get();
+    return {
+      activeTool: state.activeTool,
+      settings: state.toolSettings,
+      version: state.stateVersion,
+      timestamp: state.lastStateUpdate
+    };
+  },
+
+  getToolChangesSince: (timestamp: number) => {
+    const state = get();
+    return state.toolChangeHistory.filter(change => change.timestamp > timestamp);
+  },
+
+  clearToolHistory: () => {
+    console.log('🧹 Clearing tool history');
+    set((state) => ({
+      toolChangeHistory: [],
+      stateVersion: state.stateVersion + 1,
+      lastStateUpdate: Date.now()
+    }));
   }
 }));

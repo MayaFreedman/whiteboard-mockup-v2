@@ -1,14 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { Button } from './ui/button';
-import { Eye, EyeOff, Layers, Settings, Search } from 'lucide-react';
+import { Eye, EyeOff, Layers, Settings, Search, Wifi } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { WhiteboardStatePanel } from './dev-tools/WhiteboardStatePanel';
 import { ToolStatePanel } from './dev-tools/ToolStatePanel';
 import { ActionHistoryPanel } from './dev-tools/ActionHistoryPanel';
 import { StrokeTrackingPanel } from './dev-tools/StrokeTrackingPanel';
+import { MultiplayerStatePanel } from './dev-tools/MultiplayerStatePanel';
 
 interface DevToolsOverlayProps {
   className?: string;
@@ -18,7 +18,7 @@ export const DevToolsOverlay: React.FC<DevToolsOverlayProps> = ({ className }) =
   const [isVisible, setIsVisible] = useState(() => {
     return localStorage.getItem('devToolsVisible') === 'true';
   });
-  const [activePanel, setActivePanel] = useState<string>('whiteboard');
+  const [activePanel, setActivePanel] = useState<string>('multiplayer');
   const [isMinimized, setIsMinimized] = useState(false);
 
   // Persist visibility state
@@ -52,6 +52,7 @@ export const DevToolsOverlay: React.FC<DevToolsOverlayProps> = ({ className }) =
   }
 
   const panels = [
+    { id: 'multiplayer', label: 'Multiplayer', icon: Wifi },
     { id: 'whiteboard', label: 'Whiteboard', icon: Layers },
     { id: 'tools', label: 'Tools', icon: Settings },
     { id: 'actions', label: 'Actions', icon: Search },
@@ -100,7 +101,7 @@ export const DevToolsOverlay: React.FC<DevToolsOverlayProps> = ({ className }) =
                 key={panel.id}
                 onClick={() => setActivePanel(panel.id)}
                 className={cn(
-                  "flex-1 px-2 py-2 text-xs font-medium transition-colors",
+                  "flex-1 px-1 py-2 text-xs font-medium transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
                   activePanel === panel.id
                     ? "bg-accent text-accent-foreground border-b-2 border-primary"
@@ -115,6 +116,7 @@ export const DevToolsOverlay: React.FC<DevToolsOverlayProps> = ({ className }) =
 
           {/* Panel Content */}
           <div className="flex-1 overflow-auto p-3">
+            {activePanel === 'multiplayer' && <MultiplayerStatePanel />}
             {activePanel === 'whiteboard' && <WhiteboardStatePanel />}
             {activePanel === 'tools' && <ToolStatePanel />}
             {activePanel === 'actions' && <ActionHistoryPanel />}

@@ -21,6 +21,11 @@ interface WhiteboardStore extends WhiteboardState {
   actionHistory: WhiteboardAction[];
   currentHistoryIndex: number;
   
+  // State tracking for multiplayer
+  stateVersion: number;
+  lastStateUpdate: number;
+  pendingActions: WhiteboardAction[];
+  
   // Actions that will be easily serializable for multiplayer
   dispatch: (action: WhiteboardAction) => void;
   
@@ -46,6 +51,16 @@ interface WhiteboardStore extends WhiteboardState {
   
   // Batch operations for performance
   batchUpdate: (actions: WhiteboardAction[]) => void;
+  
+  // Enhanced state tracking
+  getStateSnapshot: () => {
+    state: WhiteboardState;
+    version: number;
+    timestamp: number;
+    actionCount: number;
+  };
+  getActionsSince: (timestamp: number) => WhiteboardAction[];
+  clearActionHistory: () => void;
 }
 
 const initialState: WhiteboardState = {
@@ -68,9 +83,17 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     ...initialState,
     actionHistory: [],
     currentHistoryIndex: -1,
+    stateVersion: 0,
+    lastStateUpdate: Date.now(),
+    pendingActions: [],
 
     dispatch: (action: WhiteboardAction) => {
-      console.log('Dispatching action:', action);
+      console.log('🔄 Dispatching action:', {
+        type: action.type,
+        id: action.id,
+        timestamp: action.timestamp,
+        payload: action.payload
+      });
       
       set((state) => {
         const newState = applyAction(state, action);
@@ -79,11 +102,24 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         const newHistory = state.actionHistory.slice(0, state.currentHistoryIndex + 1);
         newHistory.push(action);
         
+        // Update state tracking
+        const newVersion = state.stateVersion + 1;
+        const timestamp = Date.now();
+        
+        console.log('📊 State updated:', {
+          version: newVersion,
+          objectCount: Object.keys(newState.objects || state.objects).length,
+          selectedCount: (newState.selectedObjectIds || state.selectedObjectIds).length,
+          historyLength: newHistory.length
+        });
+        
         return {
           ...newState,
           actionHistory: newHistory,
           currentHistoryIndex: newHistory.length - 1,
-          lastAction: action
+          lastAction: action,
+          stateVersion: newVersion,
+          lastStateUpdate: timestamp
         };
       });
     },
@@ -97,6 +133,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         updatedAt: Date.now()
       };
       
+      console.log('➕ Adding object:', { id, type: object.type, position: { x: object.x, y: object.y } });
+      
       const action: AddObjectAction = {
         type: 'ADD_OBJECT',
         payload: { object },
@@ -109,6 +147,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     updateObject: (id, updates) => {
+      console.log('📝 Updating object:', { id: id.slice(0, 8), updates });
+      
       const action: UpdateObjectAction = {
         type: 'UPDATE_OBJECT',
         payload: { id, updates: { ...updates, updatedAt: Date.now() } },
@@ -120,6 +160,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     deleteObject: (id) => {
+      console.log('🗑️ Deleting object:', { id: id.slice(0, 8) });
+      
       const action: DeleteObjectAction = {
         type: 'DELETE_OBJECT',
         payload: { id },
@@ -131,6 +173,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     selectObjects: (objectIds) => {
+      console.log('🎯 Selecting objects:', { count: objectIds.length, ids: objectIds.map(id => id.slice(0, 8)) });
+      
       const action: SelectObjectsAction = {
         type: 'SELECT_OBJECTS',
         payload: { objectIds },
@@ -142,10 +186,13 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     clearSelection: () => {
+      console.log('🎯 Clearing selection');
       get().selectObjects([]);
     },
 
     updateViewport: (viewport) => {
+      console.log('🔍 Updating viewport:', viewport);
+      
       const action: UpdateViewportAction = {
         type: 'UPDATE_VIEWPORT',
         payload: viewport,
@@ -157,6 +204,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     updateSettings: (settings) => {
+      console.log('⚙️ Updating settings:', settings);
+      
       const action: UpdateSettingsAction = {
         type: 'UPDATE_SETTINGS',
         payload: settings,
@@ -168,6 +217,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     clearCanvas: () => {
+      console.log('🧹 Clearing canvas');
+      
       const action: ClearCanvasAction = {
         type: 'CLEAR_CANVAS',
         payload: {},
@@ -179,6 +230,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     batchUpdate: (actions) => {
+      console.log('📦 Batch updating:', { actionCount: actions.length });
+      
       const action: BatchUpdateAction = {
         type: 'BATCH_UPDATE',
         payload: { actions },
@@ -192,6 +245,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     undo: () => {
       const state = get();
       if (state.canUndo()) {
+        console.log('↶ Undoing action');
+        
         set((prevState) => ({
           ...prevState,
           currentHistoryIndex: prevState.currentHistoryIndex - 1
@@ -204,7 +259,9 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         set((prevState) => ({
           ...prevState,
           ...newState,
-          currentHistoryIndex: newIndex
+          currentHistoryIndex: newIndex,
+          stateVersion: prevState.stateVersion + 1,
+          lastStateUpdate: Date.now()
         }));
       }
     },
@@ -212,6 +269,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     redo: () => {
       const state = get();
       if (state.canRedo()) {
+        console.log('↷ Redoing action');
+        
         const newIndex = state.currentHistoryIndex + 1;
         const action = state.actionHistory[newIndex];
         
@@ -219,7 +278,9 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
           const newState = applyAction(prevState, action);
           return {
             ...newState,
-            currentHistoryIndex: newIndex
+            currentHistoryIndex: newIndex,
+            stateVersion: prevState.stateVersion + 1,
+            lastStateUpdate: Date.now()
           };
         });
       }
@@ -246,8 +307,44 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     applyRemoteAction: (action) => {
+      console.log('🌐 Applying remote action:', { type: action.type, id: action.id });
       // Apply remote action without adding to local history
-      set((state) => applyAction(state, action));
+      set((state) => ({
+        ...applyAction(state, action),
+        stateVersion: state.stateVersion + 1,
+        lastStateUpdate: Date.now()
+      }));
+    },
+
+    getStateSnapshot: () => {
+      const state = get();
+      return {
+        state: {
+          objects: state.objects,
+          selectedObjectIds: state.selectedObjectIds,
+          viewport: state.viewport,
+          settings: state.settings
+        },
+        version: state.stateVersion,
+        timestamp: state.lastStateUpdate,
+        actionCount: state.actionHistory.length
+      };
+    },
+
+    getActionsSince: (timestamp: number) => {
+      const state = get();
+      return state.actionHistory.filter(action => action.timestamp > timestamp);
+    },
+
+    clearActionHistory: () => {
+      console.log('🧹 Clearing action history');
+      set((state) => ({
+        ...state,
+        actionHistory: [],
+        currentHistoryIndex: -1,
+        stateVersion: state.stateVersion + 1,
+        lastStateUpdate: Date.now()
+      }));
     }
   }))
 );
@@ -343,7 +440,6 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
   }
 }
 
-// Helper function to rebuild state from action history
 function rebuildStateFromHistory(history: WhiteboardAction[]): Partial<WhiteboardStore> {
   let state = { ...initialState };
   
