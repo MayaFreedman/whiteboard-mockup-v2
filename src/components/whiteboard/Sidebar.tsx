@@ -160,13 +160,27 @@ const ToolSettings: React.FC = () => {
           <CardTitle className="text-lg">Stamp Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
+          {/* Size control moved to top */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Stamp Size: {toolSettings.strokeWidth * 10}px
+            </label>
+            <Slider
+              value={[toolSettings.strokeWidth]}
+              onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
+              min={1}
+              max={10}
+              step={1}
+            />
+          </div>
+
           <div>
             <label className="text-sm font-medium mb-3 block">Stickers</label>
-            <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="grid grid-cols-2 gap-3 mb-3">
               {regularStickers.map((sticker) => (
                 <button
                   key={sticker.name}
-                  className="relative w-full h-12 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
+                  className="relative w-full h-20 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
                   title={sticker.name}
                 >
                   <img 
@@ -185,11 +199,11 @@ const ToolSettings: React.FC = () => {
 
           <div>
             <label className="text-sm font-medium mb-3 block">Animated Stickers</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {animatedStickers.map((sticker) => (
                 <button
                   key={sticker.name}
-                  className="relative w-full h-12 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
+                  className="relative w-full h-20 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
                   title={sticker.name}
                 >
                   <img 
@@ -205,19 +219,6 @@ const ToolSettings: React.FC = () => {
                 </button>
               ))}
             </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Stamp Size: {toolSettings.strokeWidth * 10}px
-            </label>
-            <Slider
-              value={[toolSettings.strokeWidth]}
-              onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
-              min={1}
-              max={10}
-              step={1}
-            />
           </div>
         </CardContent>
       </Card>
