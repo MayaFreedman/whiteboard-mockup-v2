@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -23,6 +24,55 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     // Apply object transformations
     ctx.globalAlpha = obj.opacity || 1;
     
+    // Draw selection highlight FIRST (behind the object) if selected
+    if (isSelected) {
+      ctx.save();
+      ctx.strokeStyle = '#007AFF';
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.8;
+      
+      switch (obj.type) {
+        case 'path': {
+          if (obj.data?.path) {
+            ctx.translate(obj.x, obj.y);
+            const path = new Path2D(obj.data.path);
+            ctx.lineWidth = (obj.strokeWidth || 2) + 4;
+            ctx.stroke(path);
+          }
+          break;
+        }
+        case 'rectangle': {
+          if (obj.width && obj.height) {
+            const offset = 3;
+            ctx.strokeRect(obj.x - offset, obj.y - offset, obj.width + (offset * 2), obj.height + (offset * 2));
+          }
+          break;
+        }
+        case 'circle': {
+          if (obj.width) {
+            const radius = obj.width / 2;
+            const centerX = obj.x + radius;
+            const centerY = obj.y + radius;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius + 3, 0, 2 * Math.PI);
+            ctx.stroke();
+          }
+          break;
+        }
+        case 'text': {
+          if (obj.data?.content) {
+            const fontSize = obj.data.fontSize || 16;
+            const textWidth = ctx.measureText(obj.data.content).width;
+            const offset = 2;
+            ctx.strokeRect(obj.x - offset, obj.y - fontSize - offset, textWidth + (offset * 2), fontSize + (offset * 2));
+          }
+          break;
+        }
+      }
+      ctx.restore();
+    }
+    
+    // Now draw the actual object ON TOP of the selection highlight
     switch (obj.type) {
       case 'path': {
         if (obj.data?.path) {
@@ -35,21 +85,13 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           ctx.stroke(path);
-          
-          // Draw selection highlight for paths as an outer stroke
-          if (isSelected) {
-            ctx.strokeStyle = '#007AFF';
-            ctx.lineWidth = (obj.strokeWidth || 2) + 4;
-            ctx.globalAlpha = 0.8;
-            ctx.stroke(path);
-          }
         }
         break;
       }
 
       case 'rectangle': {
         if (obj.width && obj.height) {
-          // Draw the original object first
+          // Draw the original object
           if (obj.fill && obj.fill !== 'none') {
             ctx.fillStyle = obj.fill;
             ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
@@ -58,15 +100,6 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
             ctx.strokeStyle = obj.stroke;
             ctx.lineWidth = obj.strokeWidth || 2;
             ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
-          }
-          
-          // Draw selection highlight as outer border
-          if (isSelected) {
-            ctx.strokeStyle = '#007AFF';
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.8;
-            const offset = 3;
-            ctx.strokeRect(obj.x - offset, obj.y - offset, obj.width + (offset * 2), obj.height + (offset * 2));
           }
         }
         break;
@@ -78,7 +111,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           const centerX = obj.x + radius;
           const centerY = obj.y + radius;
           
-          // Draw the original object first
+          // Draw the original object
           ctx.beginPath();
           ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
           
@@ -91,16 +124,6 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
             ctx.lineWidth = obj.strokeWidth || 2;
             ctx.stroke();
           }
-          
-          // Draw selection highlight as outer circle
-          if (isSelected) {
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius + 3, 0, 2 * Math.PI);
-            ctx.strokeStyle = '#007AFF';
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.8;
-            ctx.stroke();
-          }
         }
         break;
       }
@@ -110,17 +133,6 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           ctx.fillStyle = obj.fill || '#000000';
           ctx.font = `${obj.data.fontSize || 16}px ${obj.data.fontFamily || 'Arial'}`;
           ctx.fillText(obj.data.content, obj.x, obj.y);
-          
-          // Draw selection highlight as bounding box for text
-          if (isSelected) {
-            const fontSize = obj.data.fontSize || 16;
-            const textWidth = ctx.measureText(obj.data.content).width;
-            ctx.strokeStyle = '#007AFF';
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.8;
-            const offset = 2;
-            ctx.strokeRect(obj.x - offset, obj.y - fontSize - offset, textWidth + (offset * 2), fontSize + (offset * 2));
-          }
         }
         break;
       }
