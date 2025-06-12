@@ -27,7 +27,8 @@ import {
   Star,
   Pentagon,
   Diamond,
-  ChevronDown
+  ChevronDown,
+  Stamp
 } from 'lucide-react';
 
 export const Toolbar: React.FC = () => {
@@ -54,6 +55,7 @@ export const Toolbar: React.FC = () => {
     { id: 'brush', icon: Brush, label: 'Brush' },
     { id: 'eraser', icon: Eraser, label: 'Eraser' },
     { id: 'text', icon: Type, label: 'Text' },
+    { id: 'stamp', icon: Stamp, label: 'Stamp' },
     { id: 'fill', icon: PaintBucket, label: 'Fill' },
   ];
 

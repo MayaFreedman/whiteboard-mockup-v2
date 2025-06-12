@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 
 export type Tool = 
@@ -12,6 +13,7 @@ export type Tool =
   | 'line'
   | 'triangle'
   | 'text'
+  | 'stamp'
   | 'fill'
   | 'hexagon'
   | 'star'

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
@@ -8,7 +7,7 @@ import { Slider } from '../ui/slider';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ScrollArea } from '../ui/scroll-area';
-import { Check, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Check, ChevronsLeft, ChevronsRight, Upload } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   Sidebar as SidebarRoot,
@@ -111,6 +110,114 @@ const ToolSettings: React.FC = () => {
               <option value="Courier New">Courier New</option>
               <option value="Georgia">Georgia</option>
             </select>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Stamp tool
+  if (activeTool === 'stamp') {
+    const regularStickers = [
+      {
+        name: 'Fruit Bowl',
+        url: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=100&h=100&fit=crop&auto=format',
+        preview: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=60&h=60&fit=crop&auto=format'
+      },
+      {
+        name: 'Orange Cat',
+        url: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=100&h=100&fit=crop&auto=format',
+        preview: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=60&h=60&fit=crop&auto=format'
+      },
+      {
+        name: 'Deer',
+        url: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=100&h=100&fit=crop&auto=format',
+        preview: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=60&h=60&fit=crop&auto=format'
+      },
+      {
+        name: 'Kitten',
+        url: 'https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=100&h=100&fit=crop&auto=format',
+        preview: 'https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=60&h=60&fit=crop&auto=format'
+      }
+    ];
+
+    const animatedStickers = [
+      {
+        name: 'Monkey',
+        url: 'https://images.unsplash.com/photo-1501286353178-1ec881214838?w=100&h=100&fit=crop&auto=format',
+        preview: 'https://images.unsplash.com/photo-1501286353178-1ec881214838?w=60&h=60&fit=crop&auto=format'
+      },
+      {
+        name: 'Penguins',
+        url: 'https://images.unsplash.com/photo-1441057206919-63d19fac2369?w=100&h=100&fit=crop&auto=format',
+        preview: 'https://images.unsplash.com/photo-1441057206919-63d19fac2369?w=60&h=60&fit=crop&auto=format'
+      }
+    ];
+
+    return (
+      <Card>
+        <CardHeader className="bg-muted/80 py-3">
+          <CardTitle className="text-lg">Stamp Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-6">
+          <div>
+            <label className="text-sm font-medium mb-3 block">Stickers</label>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {regularStickers.map((sticker) => (
+                <button
+                  key={sticker.name}
+                  className="relative w-full h-12 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
+                  title={sticker.name}
+                >
+                  <img 
+                    src={sticker.preview} 
+                    alt={sticker.name}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+            <Button variant="outline" size="sm" className="w-full gap-2">
+              <Upload className="w-4 h-4" />
+              Upload Custom Sticker
+            </Button>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-3 block">Animated Stickers</label>
+            <div className="grid grid-cols-3 gap-2">
+              {animatedStickers.map((sticker) => (
+                <button
+                  key={sticker.name}
+                  className="relative w-full h-12 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
+                  title={sticker.name}
+                >
+                  <img 
+                    src={sticker.preview} 
+                    alt={sticker.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-1 right-1">
+                    <span className="text-xs bg-primary text-primary-foreground px-1 rounded">
+                      GIF
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Stamp Size: {toolSettings.strokeWidth * 10}px
+            </label>
+            <Slider
+              value={[toolSettings.strokeWidth]}
+              onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
+              min={1}
+              max={10}
+              step={1}
+            />
           </div>
         </CardContent>
       </Card>
