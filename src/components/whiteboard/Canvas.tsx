@@ -32,6 +32,11 @@ export const Canvas: React.FC = () => {
       drawLinedPaper(ctx, canvas.width, canvas.height);
     }
 
+    // Draw dots if enabled
+    if (toolSettings.showDots) {
+      drawDots(ctx, canvas.width, canvas.height);
+    }
+
   }, [viewport, settings, toolSettings]);
 
   const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
@@ -64,6 +69,19 @@ export const Canvas: React.FC = () => {
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
       ctx.stroke();
+    }
+  };
+
+  const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const dotSpacing = 20;
+    ctx.fillStyle = '#d1d5db';
+    
+    for (let x = dotSpacing; x <= width; x += dotSpacing) {
+      for (let y = dotSpacing; y <= height; y += dotSpacing) {
+        ctx.beginPath();
+        ctx.arc(x, y, 1, 0, 2 * Math.PI);
+        ctx.fill();
+      }
     }
   };
 

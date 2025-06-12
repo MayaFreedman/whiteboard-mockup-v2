@@ -177,6 +177,27 @@ export const Sidebar: React.FC = () => {
   const { settings, updateSettings } = useWhiteboardStore();
   const { open, toggleSidebar } = useSidebar();
 
+  // Handle exclusive background options
+  const handleBackgroundToggle = (option: 'grid' | 'lines' | 'dots', enabled: boolean) => {
+    if (enabled) {
+      // Turn off all other background options
+      updateSettings({ gridVisible: option === 'grid' });
+      updateToolSettings({ 
+        showLinedPaper: option === 'lines',
+        showDots: option === 'dots'
+      });
+    } else {
+      // Turn off the current option
+      if (option === 'grid') {
+        updateSettings({ gridVisible: false });
+      } else if (option === 'lines') {
+        updateToolSettings({ showLinedPaper: false });
+      } else if (option === 'dots') {
+        updateToolSettings({ showDots: false });
+      }
+    }
+  };
+
   return (
     <>
       <SidebarRoot 
@@ -265,20 +286,32 @@ export const Sidebar: React.FC = () => {
                       <CardTitle className="text-lg">Canvas Settings</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium">Show Grid</label>
-                        <Switch
-                          checked={settings.gridVisible}
-                          onCheckedChange={(checked) => updateSettings({ gridVisible: checked })}
-                        />
-                      </div>
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">Background Options (choose one):</p>
+                        
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium">Show Grid</label>
+                          <Switch
+                            checked={settings.gridVisible}
+                            onCheckedChange={(checked) => handleBackgroundToggle('grid', checked)}
+                          />
+                        </div>
 
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium">Show Lined Paper</label>
-                        <Switch
-                          checked={toolSettings.showLinedPaper}
-                          onCheckedChange={(checked) => updateToolSettings({ showLinedPaper: checked })}
-                        />
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium">Show Lined Paper</label>
+                          <Switch
+                            checked={toolSettings.showLinedPaper}
+                            onCheckedChange={(checked) => handleBackgroundToggle('lines', checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium">Show Dots</label>
+                          <Switch
+                            checked={toolSettings.showDots || false}
+                            onCheckedChange={(checked) => handleBackgroundToggle('dots', checked)}
+                          />
+                        </div>
                       </div>
 
                       <div>
@@ -293,6 +326,20 @@ export const Sidebar: React.FC = () => {
                             />
                           ))}
                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* General Settings */}
+                  <Card>
+                    <CardHeader className="bg-muted/80 py-3">
+                      <CardTitle className="text-lg">General Settings</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-6">
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          Zoom controls and other general options will be added here.
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
