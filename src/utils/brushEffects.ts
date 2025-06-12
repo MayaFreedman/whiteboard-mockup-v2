@@ -171,8 +171,10 @@ export const renderCrayon = (
   
   const pathObj = new Path2D(path);
   
-  // Parse the path to get a deterministic seed for this stroke
-  const pathHash = path.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  // Use the first 50 characters of the path for a more stable hash during drawing
+  // This prevents the hash from changing too dramatically as the path grows
+  const stablePath = path.substring(0, 50);
+  const pathHash = stablePath.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   
   // Draw multiple offset strokes for texture with deterministic offsets
   const offsets = [
@@ -187,7 +189,7 @@ export const renderCrayon = (
     ctx.translate(offset.x, offset.y);
     ctx.globalAlpha = opacity * offset.alpha;
     ctx.strokeStyle = strokeColor;
-    // Use deterministic width variation based on path hash and offset index
+    // Use deterministic width variation based on stable path hash and offset index
     const widthSeed = pathHash + index * 100;
     const widthVariation = seededRandom(widthSeed) * 0.4;
     ctx.lineWidth = strokeWidth * (0.8 + widthVariation);
@@ -203,7 +205,7 @@ export const renderCrayon = (
   // Convert hex to HSL for color variation
   const hslColor = hexToHsl(strokeColor);
   if (hslColor) {
-    // Use deterministic hue variation based on path hash
+    // Use deterministic hue variation based on stable path hash
     const hueSeed = pathHash + 999;
     const hueVariation = (seededRandom(hueSeed) - 0.5) * 20;
     const variedHue = (hslColor.h + hueVariation) % 360;
