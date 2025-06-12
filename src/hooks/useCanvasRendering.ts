@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -28,43 +27,50 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     if (isSelected) {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.8;
+      ctx.globalAlpha = 0.6;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       
       switch (obj.type) {
         case 'path': {
           if (obj.data?.path) {
+            // Draw the exact same path but with a thicker blue stroke
             ctx.translate(obj.x, obj.y);
             const path = new Path2D(obj.data.path);
-            ctx.lineWidth = (obj.strokeWidth || 2) + 4;
+            ctx.lineWidth = (obj.strokeWidth || 2) + 6; // Add 6px to the original stroke width
             ctx.stroke(path);
           }
           break;
         }
         case 'rectangle': {
           if (obj.width && obj.height) {
-            const offset = 3;
-            ctx.strokeRect(obj.x - offset, obj.y - offset, obj.width + (offset * 2), obj.height + (offset * 2));
+            // Draw the exact same rectangle but with thicker blue stroke
+            ctx.lineWidth = (obj.strokeWidth || 2) + 6;
+            ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
           }
           break;
         }
         case 'circle': {
           if (obj.width) {
+            // Draw the exact same circle but with thicker blue stroke
             const radius = obj.width / 2;
             const centerX = obj.x + radius;
             const centerY = obj.y + radius;
             ctx.beginPath();
-            ctx.arc(centerX, centerY, radius + 3, 0, 2 * Math.PI);
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.lineWidth = (obj.strokeWidth || 2) + 6;
             ctx.stroke();
           }
           break;
         }
         case 'text': {
           if (obj.data?.content) {
+            // For text, draw a bounding box with blue outline
             const fontSize = obj.data.fontSize || 16;
             const textWidth = ctx.measureText(obj.data.content).width;
-            const offset = 2;
-            ctx.strokeRect(obj.x - offset, obj.y - fontSize - offset, textWidth + (offset * 2), fontSize + (offset * 2));
+            ctx.lineWidth = 3;
+            const padding = 3;
+            ctx.strokeRect(obj.x - padding, obj.y - fontSize - padding, textWidth + (padding * 2), fontSize + (padding * 2));
           }
           break;
         }
