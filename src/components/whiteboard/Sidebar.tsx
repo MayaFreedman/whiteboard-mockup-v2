@@ -10,7 +10,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Check, ChevronsLeft, ChevronsRight, Upload } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
-  Sidebar as SidebarRoot,
+  Sidebar as UISidebar,
   SidebarContent,
   SidebarHeader,
   useSidebar,
@@ -239,7 +239,7 @@ const ToolSettings: React.FC = () => {
     );
   }
 
-  // Shape tools
+  // Shape tools - simplified without stroke width
   if (['rectangle', 'circle', 'triangle', 'hexagon', 'star', 'pentagon', 'diamond'].includes(activeTool)) {
     return (
       <Card>
@@ -247,19 +247,6 @@ const ToolSettings: React.FC = () => {
           <CardTitle className="text-lg capitalize">{activeTool} Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Stroke Width: {toolSettings.strokeWidth}px
-            </label>
-            <Slider
-              value={[toolSettings.strokeWidth]}
-              onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
-              min={0}
-              max={10}
-              step={1}
-            />
-          </div>
-
           <div>
             <label className="text-sm font-medium mb-2 block">
               Opacity: {Math.round(toolSettings.opacity * 100)}%
@@ -294,7 +281,7 @@ const ToolSettings: React.FC = () => {
   );
 };
 
-export const Sidebar: React.FC = () => {
+export const WhiteboardSidebar: React.FC = () => {
   const { toolSettings, updateToolSettings, colorPalettes, activeColorPalette, setActiveColorPalette } = useToolStore();
   const { settings, updateSettings } = useWhiteboardStore();
   const { open, toggleSidebar } = useSidebar();
@@ -345,7 +332,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <>
-      <SidebarRoot 
+      <UISidebar 
         side="left" 
         className="border-r w-96" 
         collapsible="offcanvas"
@@ -511,7 +498,7 @@ export const Sidebar: React.FC = () => {
             </div>
           </ScrollArea>
         </SidebarContent>
-      </SidebarRoot>
+      </UISidebar>
 
       {/* Collapsed state button positioned just below toolbar */}
       {!open && (
