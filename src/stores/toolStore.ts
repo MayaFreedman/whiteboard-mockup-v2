@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 export type Tool = 
@@ -169,21 +168,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
 
   /**
    * Sets the active tool and updates the state version for multiplayer sync
-   * Also clears selection when switching away from select tool
    * @param tool - The tool to activate
    */
   setActiveTool: (tool) => {
     console.log('🔧 Setting active tool:', tool);
-    
-    // Import the whiteboard store to clear selection when switching away from select
-    const { useWhiteboardStore } = require('../stores/whiteboardStore');
-    const whiteboardStore = useWhiteboardStore.getState();
-    
-    // Clear selection when switching away from select tool
-    if (get().activeTool === 'select' && tool !== 'select') {
-      whiteboardStore.clearSelection();
-      console.log('🎯 Cleared selection when switching from select tool');
-    }
     
     set((state) => {
       const timestamp = Date.now();

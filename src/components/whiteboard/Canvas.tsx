@@ -1,9 +1,9 @@
-
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useCanvasInteractions } from '../../hooks/useCanvasInteractions';
 import { useCanvasRendering } from '../../hooks/useCanvasRendering';
+import { useToolSelection } from '../../hooks/useToolSelection';
 
 /**
  * Gets the appropriate cursor style based on the active tool
@@ -39,6 +39,9 @@ export const Canvas: React.FC = () => {
   
   // Custom hooks for canvas functionality
   const { redrawCanvas } = useCanvasRendering(canvasRef.current);
+  
+  // Handle tool selection logic (clearing selection when switching tools)
+  useToolSelection();
   
   const {
     handlePointerDown,
