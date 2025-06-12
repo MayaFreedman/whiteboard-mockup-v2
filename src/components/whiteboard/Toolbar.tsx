@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
+import { useIsMobile } from '../../hooks/use-mobile';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { 
@@ -40,6 +41,7 @@ export const Toolbar: React.FC = () => {
     getActiveColors
   } = useToolStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Update CSS custom property for toolbar height
   useEffect(() => {
@@ -81,8 +83,8 @@ export const Toolbar: React.FC = () => {
 
   return (
     <div ref={toolbarRef} className="bg-card border-b border-border relative">
-      {/* Action Buttons - Fixed to the right */}
-      <div className="absolute right-4 top-0 h-full flex items-center gap-2 z-10">
+      {/* Action Buttons - Fixed to the right, hide on mobile to save space */}
+      <div className={`absolute right-4 top-0 h-full items-center gap-2 z-10 ${isMobile ? 'hidden' : 'flex'}`}>
         <Button variant="ghost" size="sm">
           <Undo className="w-4 h-4" />
         </Button>
@@ -100,7 +102,7 @@ export const Toolbar: React.FC = () => {
       {/* Scrollable Content Container */}
       <div 
         className="overflow-x-auto scrollbar-hide"
-        style={{ paddingRight: '200px' }} // Reserve space for action buttons
+        style={{ paddingRight: isMobile ? '16px' : '200px' }} // Less padding on mobile
       >
         <style>{`
           .scrollbar-hide {
@@ -167,7 +169,7 @@ export const Toolbar: React.FC = () => {
 
           {/* Color Palette */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-sm font-medium whitespace-nowrap">Colors:</span>
+            <span className={`text-sm font-medium whitespace-nowrap ${isMobile ? 'hidden' : ''}`}>Colors:</span>
             <div className="flex gap-1 items-center">
               {allColors.map((color) => (
                 <button
@@ -183,6 +185,27 @@ export const Toolbar: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Mobile Action Buttons - Show at the end on mobile */}
+          {isMobile && (
+            <>
+              <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button variant="ghost" size="sm">
+                  <Undo className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Redo className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <ZoomOut className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
