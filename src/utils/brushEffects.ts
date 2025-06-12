@@ -1,4 +1,3 @@
-
 /**
  * Brush effects utility for rendering different brush types
  * Each brush type has its own unique visual characteristics
@@ -188,7 +187,7 @@ export const renderCrayon = (
     ctx.translate(offset.x, offset.y);
     ctx.globalAlpha = opacity * offset.alpha;
     ctx.strokeStyle = strokeColor;
-    // Use deterministic width variation
+    // Use deterministic width variation based on path hash and offset index
     const widthSeed = pathHash + index * 100;
     const widthVariation = seededRandom(widthSeed) * 0.4;
     ctx.lineWidth = strokeWidth * (0.8 + widthVariation);
@@ -204,7 +203,7 @@ export const renderCrayon = (
   // Convert hex to HSL for color variation
   const hslColor = hexToHsl(strokeColor);
   if (hslColor) {
-    // Use deterministic hue variation
+    // Use deterministic hue variation based on path hash
     const hueSeed = pathHash + 999;
     const hueVariation = (seededRandom(hueSeed) - 0.5) * 20;
     const variedHue = (hslColor.h + hueVariation) % 360;
