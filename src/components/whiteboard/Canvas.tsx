@@ -38,13 +38,14 @@ export const Canvas: React.FC = () => {
   const { activeTool } = useToolStore();
   
   // Custom hooks for canvas functionality
+  const { redrawCanvas } = useCanvasRendering(canvasRef.current);
+  
   const {
     handlePointerDown,
     handlePointerMove,
-    handlePointerUp
-  } = useCanvasInteractions();
-  
-  const { redrawCanvas } = useCanvasRendering(canvasRef.current);
+    handlePointerUp,
+    isDragging
+  } = useCanvasInteractions(redrawCanvas);
 
   /**
    * Handles mouse down events on the canvas
@@ -110,12 +111,12 @@ export const Canvas: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full relative bg-white overflow-hidden">
+    <div className="w-full h-full relative bg-background overflow-hidden">
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
         style={{
-          cursor: getCursorStyle(activeTool),
+          cursor: isDragging ? 'grabbing' : getCursorStyle(activeTool),
           touchAction: 'none' // Prevent default touch behaviors
         }}
         onMouseDown={onMouseDown}
@@ -129,7 +130,8 @@ export const Canvas: React.FC = () => {
       {/* Canvas Info Overlay */}
       <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
         Zoom: {Math.round(viewport.zoom * 100)}% | 
-        Tool: {activeTool}
+        Tool: {activeTool} |
+        {isDragging && ' Dragging'}
       </div>
     </div>
   );

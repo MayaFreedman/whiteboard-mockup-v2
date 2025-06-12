@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -7,7 +8,7 @@ import { WhiteboardObject } from '../types/whiteboard';
  * Custom hook for handling canvas mouse and touch interactions
  * Manages drawing state and coordinates tool-specific behaviors
  */
-export const useCanvasInteractions = () => {
+export const useCanvasInteractions = (redrawCanvas?: () => void) => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const isDrawingRef = useRef(false);
@@ -229,6 +230,12 @@ export const useCanvasInteractions = () => {
           });
           
           dragStartRef.current = coords;
+          
+          // Trigger canvas redraw for smooth dragging
+          if (redrawCanvas) {
+            redrawCanvas();
+          }
+          
           console.log('🔄 Dragging objects:', { deltaX, deltaY });
         }
         break;
@@ -257,7 +264,7 @@ export const useCanvasInteractions = () => {
         break;
       }
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, redrawCanvas]);
 
   /**
    * Handles the end of a drawing/interaction session
@@ -271,6 +278,9 @@ export const useCanvasInteractions = () => {
 
     switch (activeTool) {
       case 'select': {
+        if (isDraggingRef.current) {
+          console.log('🔄 Finished dragging objects');
+        }
         isDraggingRef.current = false;
         dragStartRef.current = null;
         break;
@@ -312,6 +322,7 @@ export const useCanvasInteractions = () => {
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
-    isDrawing: isDrawingRef.current
+    isDrawing: isDrawingRef.current,
+    isDragging: isDraggingRef.current
   };
 };
