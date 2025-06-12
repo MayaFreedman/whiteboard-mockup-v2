@@ -1,4 +1,3 @@
-
 export interface WhiteboardObject {
   id: string;
   type: 'path' | 'rectangle' | 'circle' | 'ellipse' | 'line' | 'triangle' | 'text' | 'image';
@@ -21,23 +20,29 @@ export interface WhiteboardObject {
 
 export interface DrawingPath extends WhiteboardObject {
   type: 'path';
-  path: string; // SVG path string
-  brushType: 'pencil' | 'chalk' | 'spray' | 'crayon';
+  data: {
+    path: string; // SVG path string
+    brushType: 'pencil' | 'chalk' | 'spray' | 'crayon';
+  };
 }
 
 export interface TextObject extends WhiteboardObject {
   type: 'text';
-  content: string;
-  fontSize: number;
-  fontFamily: string;
-  textAlign: 'left' | 'center' | 'right';
+  data: {
+    content: string;
+    fontSize: number;
+    fontFamily: string;
+    textAlign: 'left' | 'center' | 'right';
+  };
 }
 
 export interface ImageObject extends WhiteboardObject {
   type: 'image';
-  src: string;
-  originalWidth: number;
-  originalHeight: number;
+  data: {
+    src: string;
+    originalWidth: number;
+    originalHeight: number;
+  };
 }
 
 export interface WhiteboardState {
