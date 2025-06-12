@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 export type Tool = 
@@ -38,6 +37,9 @@ export interface ToolSettings {
   showGrid: boolean;
   showLinedPaper: boolean;
   showDots: boolean;
+  
+  // Stamp settings
+  selectedSticker?: string;
 }
 
 interface ToolStore {
@@ -75,7 +77,8 @@ const defaultToolSettings: ToolSettings = {
   fontFamily: 'Arial',
   showGrid: false,
   showLinedPaper: false,
-  showDots: false
+  showDots: false,
+  selectedSticker: undefined
 };
 
 const colorPalettes = {

@@ -154,6 +154,10 @@ const ToolSettings: React.FC = () => {
       }
     ];
 
+    const handleStickerSelect = (stickerUrl: string) => {
+      updateToolSettings({ selectedSticker: stickerUrl });
+    };
+
     return (
       <Card>
         <CardHeader className="bg-muted/80 py-3">
@@ -180,7 +184,12 @@ const ToolSettings: React.FC = () => {
               {regularStickers.map((sticker) => (
                 <button
                   key={sticker.name}
-                  className="relative w-full h-20 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
+                  className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden group ${
+                    toolSettings.selectedSticker === sticker.url
+                      ? 'border-primary ring-2 ring-primary/20'
+                      : 'border-border hover:border-primary'
+                  }`}
+                  onClick={() => handleStickerSelect(sticker.url)}
                   title={sticker.name}
                 >
                   <img 
@@ -203,7 +212,12 @@ const ToolSettings: React.FC = () => {
               {animatedStickers.map((sticker) => (
                 <button
                   key={sticker.name}
-                  className="relative w-full h-20 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
+                  className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden group ${
+                    toolSettings.selectedSticker === sticker.url
+                      ? 'border-primary ring-2 ring-primary/20'
+                      : 'border-border hover:border-primary'
+                  }`}
+                  onClick={() => handleStickerSelect(sticker.url)}
                   title={sticker.name}
                 >
                   <img 
