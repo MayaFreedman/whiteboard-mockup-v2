@@ -1,3 +1,4 @@
+
 /**
  * Brush effects utility for rendering different brush types
  * Each brush type has its own unique visual characteristics
@@ -177,9 +178,9 @@ export const renderCrayon = (
   // Draw multiple offset strokes for texture with deterministic offsets
   const offsets = [
     { x: 0, y: 0, alpha: 0.8 },
-    { x: 0.5, y: 0.3, alpha: 0.4 },
-    { x: -0.3, y: 0.5, alpha: 0.4 },
-    { x: 0.2, y: -0.4, alpha: 0.3 }
+    { x: seededRandom(pathHash + 1) * 1.0 - 0.5, y: seededRandom(pathHash + 2) * 0.6 - 0.3, alpha: 0.4 },
+    { x: seededRandom(pathHash + 3) * -0.6 + 0.3, y: seededRandom(pathHash + 4) * 1.0 - 0.5, alpha: 0.4 },
+    { x: seededRandom(pathHash + 5) * 0.4 - 0.2, y: seededRandom(pathHash + 6) * -0.8 + 0.4, alpha: 0.3 }
   ];
   
   offsets.forEach((offset, index) => {
