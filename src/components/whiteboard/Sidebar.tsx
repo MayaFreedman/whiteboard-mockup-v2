@@ -32,7 +32,7 @@ const ToolSettings: React.FC = () => {
             <div>
               <label className="text-sm font-medium mb-2 block">Brush Type</label>
               <div className="flex gap-2">
-                {['pencil', 'chalk', 'spray', 'crayon'].map((type) => (
+                {['paintbrush', 'chalk', 'spray', 'crayon'].map((type) => (
                   <Badge
                     key={type}
                     variant={toolSettings.brushType === type ? 'default' : 'outline'}
