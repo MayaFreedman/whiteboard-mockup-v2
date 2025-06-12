@@ -3,8 +3,6 @@ import React, { useRef, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
-import { Badge } from '../ui/badge';
-import { Slider } from '../ui/slider';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -41,10 +39,6 @@ export const Toolbar: React.FC = () => {
     getActiveColors
   } = useToolStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
-
-  // Tools that support width changes
-  const widthSupportingTools = ['pencil', 'brush', 'eraser'];
-  const showWidthControls = widthSupportingTools.includes(activeTool);
 
   // Update CSS custom property for toolbar height
   useEffect(() => {
@@ -187,27 +181,6 @@ export const Toolbar: React.FC = () => {
               ))}
             </div>
           </div>
-
-          {/* Stroke Width - Show only for width-supporting tools */}
-          {showWidthControls && (
-            <>
-              <Separator orientation="vertical" className="h-8 flex-shrink-0" />
-              <div className="flex items-center gap-2 min-w-32 flex-shrink-0">
-                <span className="text-sm font-medium whitespace-nowrap">Width:</span>
-                <Slider
-                  value={[toolSettings.strokeWidth]}
-                  onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
-                  min={1}
-                  max={20}
-                  step={1}
-                  className="w-20"
-                />
-                <Badge variant="outline" className="min-w-8 text-center">
-                  {toolSettings.strokeWidth}
-                </Badge>
-              </div>
-            </>
-          )}
         </div>
       </div>
     </div>
