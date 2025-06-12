@@ -198,6 +198,29 @@ export const Sidebar: React.FC = () => {
     }
   };
 
+  const backgroundImages = [
+    {
+      name: 'Forest',
+      url: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800&h=600&fit=crop&auto=format',
+      preview: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=80&h=60&fit=crop&auto=format'
+    },
+    {
+      name: 'Mountain Lake',
+      url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop&auto=format',
+      preview: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=80&h=60&fit=crop&auto=format'
+    },
+    {
+      name: 'Deer in Nature',
+      url: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=600&fit=crop&auto=format',
+      preview: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=80&h=60&fit=crop&auto=format'
+    },
+    {
+      name: 'Waterfall Bridge',
+      url: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop&auto=format',
+      preview: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=80&h=60&fit=crop&auto=format'
+    }
+  ];
+
   return (
     <>
       <SidebarRoot 
@@ -315,17 +338,35 @@ export const Sidebar: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium mb-2 block">Background Color</label>
-                        <div className="grid grid-cols-4 gap-2">
-                          {['#ffffff', '#f8f9fa', '#f1f3f4', '#e8eaed'].map((color) => (
+                        <label className="text-sm font-medium mb-3 block">Set Custom Background</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {backgroundImages.map((bg) => (
                             <button
-                              key={color}
-                              className="w-12 h-8 rounded border-2 border-border hover:border-primary"
-                              style={{ backgroundColor: color }}
-                              onClick={() => updateSettings({ backgroundColor: color })}
-                            />
+                              key={bg.name}
+                              className="relative w-full h-16 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
+                              onClick={() => updateSettings({ backgroundColor: `url(${bg.url})` })}
+                              title={bg.name}
+                            >
+                              <img 
+                                src={bg.preview} 
+                                alt={bg.name}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                              <div className="absolute bottom-1 left-1 right-1">
+                                <span className="text-xs text-white font-medium bg-black/50 px-1 rounded">
+                                  {bg.name}
+                                </span>
+                              </div>
+                            </button>
                           ))}
                         </div>
+                        <button
+                          className="mt-2 w-full h-8 rounded border-2 border-border hover:border-primary transition-colors bg-background"
+                          onClick={() => updateSettings({ backgroundColor: '#ffffff' })}
+                        >
+                          <span className="text-xs text-muted-foreground">Clear Background</span>
+                        </button>
                       </div>
                     </CardContent>
                   </Card>
