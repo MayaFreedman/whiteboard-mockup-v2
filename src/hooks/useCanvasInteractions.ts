@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -33,6 +32,62 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
+   * Checks if a point is inside a path using path intersection
+   * @param pathString - SVG path string
+   * @param x - X coordinate
+   * @param y - Y coordinate
+   * @param strokeWidth - Width of the stroke for hit area
+   * @returns True if point intersects with path
+   */
+  const isPointInPath = useCallback((pathString: string, x: number, y: number, strokeWidth: number = 2): boolean => {
+    try {
+      const path = new Path2D(pathString);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return false;
+
+      // Create a hit area around the stroke
+      ctx.lineWidth = Math.max(strokeWidth, 8); // Minimum 8px hit area
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      return ctx.isPointInStroke(path, x, y);
+    } catch (error) {
+      console.warn('Error checking path intersection:', error);
+      return false;
+    }
+  }, []);
+
+  /**
+   * Checks if a point is inside a rectangle
+   * @param obj - Rectangle object
+   * @param x - X coordinate
+   * @param y - Y coordinate
+   * @returns True if point is inside rectangle
+   */
+  const isPointInRectangle = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
+    if (!obj.width || !obj.height) return false;
+    return x >= obj.x && x <= obj.x + obj.width &&
+           y >= obj.y && y <= obj.y + obj.height;
+  }, []);
+
+  /**
+   * Checks if a point is inside a circle
+   * @param obj - Circle object
+   * @param x - X coordinate
+   * @param y - Y coordinate
+   * @returns True if point is inside circle
+   */
+  const isPointInCircle = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
+    if (!obj.width) return false;
+    const radius = obj.width / 2;
+    const centerX = obj.x + radius;
+    const centerY = obj.y + radius;
+    const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+    return distance <= radius;
+  }, []);
+
+  /**
    * Finds the topmost object at the given coordinates
    * @param x - X coordinate
    * @param y - Y coordinate
@@ -41,27 +96,69 @@ export const useCanvasInteractions = () => {
   const findObjectAt = useCallback((x: number, y: number): string | null => {
     const objects = Object.entries(whiteboardStore.objects);
     
-    // Check objects from top to bottom (reverse order)
+    console.log('🔍 Checking for objects at:', { x, y, totalObjects: objects.length });
+    
+    // Check objects from top to bottom (reverse order for z-index)
     for (let i = objects.length - 1; i >= 0; i--) {
       const [id, obj] = objects[i];
       
-      // Simple bounding box check for now
-      if (obj.width && obj.height) {
-        if (x >= obj.x && x <= obj.x + obj.width &&
-            y >= obj.y && y <= obj.y + obj.height) {
-          return id;
+      console.log('🎯 Checking object:', { 
+        id: id.slice(0, 8), 
+        type: obj.type, 
+        position: { x: obj.x, y: obj.y },
+        size: obj.width ? { width: obj.width, height: obj.height } : 'no size'
+      });
+      
+      let isHit = false;
+      
+      switch (obj.type) {
+        case 'path': {
+          if (obj.data?.path) {
+            isHit = isPointInPath(obj.data.path, x, y, obj.strokeWidth);
+            console.log('📏 Path hit test:', { id: id.slice(0, 8), isHit, strokeWidth: obj.strokeWidth });
+          }
+          break;
         }
-      } else {
-        // For points/paths, use a small hit area
-        const hitRadius = 5;
-        if (Math.abs(x - obj.x) <= hitRadius && Math.abs(y - obj.y) <= hitRadius) {
-          return id;
+        
+        case 'rectangle': {
+          isHit = isPointInRectangle(obj, x, y);
+          console.log('📦 Rectangle hit test:', { id: id.slice(0, 8), isHit });
+          break;
         }
+        
+        case 'circle': {
+          isHit = isPointInCircle(obj, x, y);
+          console.log('⭕ Circle hit test:', { id: id.slice(0, 8), isHit });
+          break;
+        }
+        
+        case 'text': {
+          // For text, use a simple bounding box (approximate)
+          const fontSize = obj.data?.fontSize || 16;
+          const textWidth = (obj.data?.content?.length || 0) * fontSize * 0.6; // Rough estimate
+          isHit = x >= obj.x && x <= obj.x + textWidth &&
+                  y >= obj.y - fontSize && y <= obj.y;
+          console.log('📝 Text hit test:', { id: id.slice(0, 8), isHit, textWidth, fontSize });
+          break;
+        }
+        
+        default: {
+          // Fallback for other types - use a small hit area around the point
+          const hitRadius = 10;
+          isHit = Math.abs(x - obj.x) <= hitRadius && Math.abs(y - obj.y) <= hitRadius;
+          console.log('❓ Default hit test:', { id: id.slice(0, 8), isHit, hitRadius });
+        }
+      }
+      
+      if (isHit) {
+        console.log('✅ Found object at coordinates:', { id: id.slice(0, 8), type: obj.type });
+        return id;
       }
     }
     
+    console.log('❌ No object found at coordinates');
     return null;
-  }, [whiteboardStore.objects]);
+  }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle]);
 
   /**
    * Handles the start of a drawing/interaction session
