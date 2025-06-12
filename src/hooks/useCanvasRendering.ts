@@ -1,7 +1,9 @@
+
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { WhiteboardObject } from '../types/whiteboard';
+import { renderPaintbrush, renderChalk, renderSpray, renderCrayon } from '../utils/brushEffects';
 
 /**
  * Custom hook for handling canvas rendering operations
@@ -85,12 +87,29 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           // For paths, we need to apply translation and then draw the relative path
           ctx.translate(obj.x, obj.y);
           
-          const path = new Path2D(obj.data.path);
-          ctx.strokeStyle = obj.stroke || '#000000';
-          ctx.lineWidth = obj.strokeWidth || 2;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.stroke(path);
+          const brushType = obj.data?.brushType;
+          const strokeColor = obj.stroke || '#000000';
+          const strokeWidth = obj.strokeWidth || 2;
+          const opacity = obj.opacity || 1;
+
+          // Render based on brush type
+          if (brushType === 'paintbrush') {
+            renderPaintbrush(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+          } else if (brushType === 'chalk') {
+            renderChalk(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+          } else if (brushType === 'spray') {
+            renderSpray(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+          } else if (brushType === 'crayon') {
+            renderCrayon(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+          } else {
+            // Default rendering for pencil or unknown brush types
+            const path = new Path2D(obj.data.path);
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke(path);
+          }
         }
         break;
       }
@@ -158,13 +177,27 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     ctx.save();
     ctx.translate(preview.startX, preview.startY);
     
-    const path = new Path2D(preview.path);
-    ctx.strokeStyle = preview.strokeColor;
-    ctx.lineWidth = preview.strokeWidth;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.globalAlpha = preview.opacity;
-    ctx.stroke(path);
+    const brushType = preview.brushType;
+    
+    // Render preview based on brush type
+    if (brushType === 'paintbrush') {
+      renderPaintbrush(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+    } else if (brushType === 'chalk') {
+      renderChalk(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+    } else if (brushType === 'spray') {
+      renderSpray(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+    } else if (brushType === 'crayon') {
+      renderCrayon(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+    } else {
+      // Default rendering for pencil
+      const path = new Path2D(preview.path);
+      ctx.strokeStyle = preview.strokeColor;
+      ctx.lineWidth = preview.strokeWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.globalAlpha = preview.opacity;
+      ctx.stroke(path);
+    }
     
     ctx.restore();
   }, []);
@@ -185,9 +218,6 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     });
   }, [objects, selectedObjectIds, renderObject]);
 
-  /**
-   * Clears and redraws the entire canvas
-   */
   const redrawCanvas = useCallback(() => {
     if (!canvas) return;
 

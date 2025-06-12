@@ -26,6 +26,7 @@ export const useCanvasInteractions = () => {
     strokeColor: string;
     strokeWidth: number;
     opacity: number;
+    brushType?: string;
   } | null>(null);
 
   /**
@@ -218,24 +219,26 @@ export const useCanvasInteractions = () => {
         break;
       }
 
-      case 'pencil': {
+      case 'pencil':
+      case 'brush': {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         // Start path relative to origin
         currentPathRef.current = `M 0 0`;
         
-        // Set up drawing preview
+        // Set up drawing preview with brush type
         currentDrawingPreviewRef.current = {
           path: currentPathRef.current,
           startX: coords.x,
           startY: coords.y,
           strokeColor: toolStore.toolSettings.strokeColor,
           strokeWidth: toolStore.toolSettings.strokeWidth,
-          opacity: toolStore.toolSettings.opacity
+          opacity: toolStore.toolSettings.opacity,
+          brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
         
-        console.log('✏️ Started drawing at:', coords, 'Preview set:', !!currentDrawingPreviewRef.current);
+        console.log('✏️ Started drawing at:', coords, 'Preview set:', !!currentDrawingPreviewRef.current, 'Brush type:', currentDrawingPreviewRef.current.brushType);
         break;
       }
 
@@ -282,7 +285,8 @@ export const useCanvasInteractions = () => {
         break;
       }
 
-      case 'pencil': {
+      case 'pencil':
+      case 'brush': {
         if (isDrawingRef.current && lastPointRef.current && pathStartRef.current) {
           // Calculate relative coordinates from the path start
           const relativeX = coords.x - pathStartRef.current.x;
@@ -327,7 +331,8 @@ export const useCanvasInteractions = () => {
         break;
       }
 
-      case 'pencil': {
+      case 'pencil':
+      case 'brush': {
         if (isDrawingRef.current && currentPathRef.current && pathStartRef.current) {
           // Create the drawing object with the path start position
           const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -340,12 +345,12 @@ export const useCanvasInteractions = () => {
             fill: 'none',
             data: {
               path: currentPathRef.current,
-              brushType: toolStore.toolSettings.brushType
+              brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
             }
           };
 
           const objectId = whiteboardStore.addObject(drawingObject);
-          console.log('✏️ Created drawing object:', objectId.slice(0, 8));
+          console.log('✏️ Created drawing object:', objectId.slice(0, 8), 'with brush type:', drawingObject.data.brushType);
           
           // Clear drawing preview
           currentDrawingPreviewRef.current = null;

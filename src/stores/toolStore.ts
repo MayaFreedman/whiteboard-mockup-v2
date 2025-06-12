@@ -19,7 +19,7 @@ export type Tool =
   | 'pentagon'
   | 'diamond';
 
-export type BrushType = 'pencil' | 'chalk' | 'spray' | 'crayon';
+export type BrushType = 'paintbrush' | 'chalk' | 'spray' | 'crayon';
 
 export interface ToolSettings {
   // Drawing settings
@@ -96,7 +96,7 @@ const defaultToolSettings: ToolSettings = {
   fillColor: '#ffffff',
   strokeWidth: 2,
   opacity: 1,
-  brushType: 'pencil',
+  brushType: 'paintbrush',
   fontSize: 16,
   fontFamily: 'Arial',
   showGrid: false,
@@ -166,10 +166,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   customColors: [],
   recentlyUsedColors: [],
 
-  /**
-   * Sets the active tool and updates the state version for multiplayer sync
-   * @param tool - The tool to activate
-   */
   setActiveTool: (tool) => {
     console.log('🔧 Setting active tool:', tool);
     
@@ -198,10 +194,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     });
   },
 
-  /**
-   * Updates tool settings and manages recently used colors
-   * @param settings - Partial settings object to update
-   */
   updateToolSettings: (settings) => {
     console.log('🎨 Updating tool settings:', settings);
     
@@ -229,10 +221,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     });
   },
 
-  /**
-   * Adds a color to the recently used colors list
-   * @param color - The color to add to recent colors
-   */
   updateRecentlyUsedColor: (color) => {
     console.log('🎨 Adding recent color:', color);
     
@@ -241,11 +229,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     }));
   },
 
-  /**
-   * Gets the most recently used colors from the active palette
-   * @param count - Number of recent colors to return
-   * @returns Array of recent colors
-   */
   getMostRecentColors: (count) => {
     const state = get();
     const paletteColors = state.colorPalettes[state.activeColorPalette];
@@ -261,10 +244,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     return [...recentColors, ...remainingColors].slice(0, count);
   },
 
-  /**
-   * Adds a custom color to the custom colors list
-   * @param color - The color to add
-   */
   addCustomColor: (color) => {
     console.log('🎨 Adding custom color:', color);
     
@@ -285,10 +264,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     });
   },
 
-  /**
-   * Sets the active color palette
-   * @param palette - The palette to activate
-   */
   setActiveColorPalette: (palette) => {
     console.log('🎨 Setting active color palette:', palette);
     
@@ -299,19 +274,11 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     }));
   },
 
-  /**
-   * Gets the colors from the currently active palette
-   * @returns Array of colors from active palette
-   */
   getActiveColors: () => {
     const state = get();
     return state.colorPalettes[state.activeColorPalette];
   },
 
-  /**
-   * Creates a snapshot of the current tool state for multiplayer sync
-   * @returns Tool state snapshot with version and timestamp
-   */
   getToolStateSnapshot: () => {
     const state = get();
     return {
@@ -322,19 +289,11 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     };
   },
 
-  /**
-   * Gets tool changes that occurred after a specific timestamp
-   * @param timestamp - The timestamp to filter changes after
-   * @returns Array of tool changes
-   */
   getToolChangesSince: (timestamp: number) => {
     const state = get();
     return state.toolChangeHistory.filter(change => change.timestamp > timestamp);
   },
 
-  /**
-   * Clears the tool change history
-   */
   clearToolHistory: () => {
     console.log('🧹 Clearing tool history');
     set((state) => ({
