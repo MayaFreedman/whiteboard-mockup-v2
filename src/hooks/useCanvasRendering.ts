@@ -36,6 +36,14 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           ctx.stroke(path);
+          
+          // Draw selection highlight for paths
+          if (isSelected) {
+            ctx.strokeStyle = '#007AFF';
+            ctx.lineWidth = (obj.strokeWidth || 2) + 4;
+            ctx.globalAlpha = 0.5;
+            ctx.stroke(path);
+          }
         }
         break;
       }
@@ -89,31 +97,19 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
 
     ctx.restore(); // This restores the context state, undoing any translations
     
-    // Draw selection indicators for all selected objects - only outer edge
-    if (isSelected) {
+    // Draw selection indicators for non-path selected objects only
+    if (isSelected && obj.type !== 'path') {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 5]);
       ctx.globalAlpha = 1;
       
-      if (obj.type === 'path' && obj.data?.path) {
-        // For paths, draw a selection outline around the path using a bounding box approach
-        ctx.translate(obj.x, obj.y);
-        const path = new Path2D(obj.data.path);
-        
-        // Create a slightly larger stroke for the selection outline
-        ctx.lineWidth = (obj.strokeWidth || 2) + 6;
-        ctx.globalAlpha = 0.7;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke(path);
-      } else if (obj.width && obj.height) {
-        // For shapes with defined dimensions
-        ctx.strokeRect(obj.x - 3, obj.y - 3, obj.width + 6, obj.height + 6);
+      if (obj.width && obj.height) {
+        ctx.strokeRect(obj.x - 2, obj.y - 2, obj.width + 4, obj.height + 4);
       } else {
-        // For points or objects without clear dimensions
-        ctx.strokeRect(obj.x - 8, obj.y - 8, 16, 16);
+        // For points, draw a small selection indicator
+        ctx.strokeRect(obj.x - 5, obj.y - 5, 10, 10);
       }
       
       ctx.setLineDash([]);
