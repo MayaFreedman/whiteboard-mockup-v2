@@ -1,4 +1,3 @@
-
 /**
  * Brush effects utility for rendering different brush types
  * Each brush type has its own unique visual characteristics
@@ -172,47 +171,56 @@ export const renderCrayon = (
   
   const pathObj = new Path2D(path);
   
-  // Parse the path to get a deterministic seed for this stroke
-  const pathHash = path.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  // Parse the path to get points for position-based texture generation
+  const pathCommands = path.split(/[ML]/).filter(cmd => cmd.trim());
   
-  // Draw multiple offset strokes for texture with deterministic offsets
-  const offsets = [
-    { x: 0, y: 0, alpha: 0.8 },
-    { x: seededRandom(pathHash + 1) * 1.0 - 0.5, y: seededRandom(pathHash + 2) * 0.6 - 0.3, alpha: 0.4 },
-    { x: seededRandom(pathHash + 3) * -0.6 + 0.3, y: seededRandom(pathHash + 4) * 1.0 - 0.5, alpha: 0.4 },
-    { x: seededRandom(pathHash + 5) * 0.4 - 0.2, y: seededRandom(pathHash + 6) * -0.8 + 0.4, alpha: 0.3 }
-  ];
-  
-  offsets.forEach((offset, index) => {
-    ctx.save();
-    ctx.translate(offset.x, offset.y);
-    ctx.globalAlpha = opacity * offset.alpha;
-    ctx.strokeStyle = strokeColor;
-    // Use deterministic width variation based on path hash and offset index
-    const widthSeed = pathHash + index * 100;
-    const widthVariation = seededRandom(widthSeed) * 0.4;
-    ctx.lineWidth = strokeWidth * (0.8 + widthVariation);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke(pathObj);
-    ctx.restore();
+  // Draw each segment with position-based texture offsets
+  pathCommands.forEach((cmd, cmdIndex) => {
+    if (cmdIndex === 0) return; // Skip the first empty element
+    
+    const coords = cmd.trim().split(' ').map(Number).filter(n => !isNaN(n));
+    if (coords.length >= 2) {
+      const [x, y] = coords;
+      
+      // Use position-based seed for consistent texture at each location
+      const positionSeed = Math.floor(x / 5) * 1000 + Math.floor(y / 5);
+      
+      // Generate consistent offsets based on position
+      const offsets = [
+        { x: 0, y: 0, alpha: 0.8 },
+        { x: seededRandom(positionSeed + 1) * 1.0 - 0.5, y: seededRandom(positionSeed + 2) * 0.6 - 0.3, alpha: 0.4 },
+        { x: seededRandom(positionSeed + 3) * -0.6 + 0.3, y: seededRandom(positionSeed + 4) * 1.0 - 0.5, alpha: 0.4 },
+        { x: seededRandom(positionSeed + 5) * 0.4 - 0.2, y: seededRandom(positionSeed + 6) * -0.8 + 0.4, alpha: 0.3 }
+      ];
+      
+      // Draw a small segment around this point with the position-based texture
+      const segmentPath = `M${x-2},${y-2} L${x+2},${y+2}`;
+      const segmentPathObj = new Path2D(segmentPath);
+      
+      offsets.forEach((offset, index) => {
+        ctx.save();
+        ctx.translate(offset.x, offset.y);
+        ctx.globalAlpha = opacity * offset.alpha;
+        ctx.strokeStyle = strokeColor;
+        // Use deterministic width variation based on position and offset index
+        const widthSeed = positionSeed + index * 100;
+        const widthVariation = seededRandom(widthSeed) * 0.4;
+        ctx.lineWidth = strokeWidth * (0.8 + widthVariation);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke(segmentPathObj);
+        ctx.restore();
+      });
+    }
   });
   
-  // Add slight color variations by adjusting hue (deterministic)
-  ctx.globalAlpha = opacity * 0.3;
-  
-  // Convert hex to HSL for color variation
-  const hslColor = hexToHsl(strokeColor);
-  if (hslColor) {
-    // Use deterministic hue variation based on path hash
-    const hueSeed = pathHash + 999;
-    const hueVariation = (seededRandom(hueSeed) - 0.5) * 20;
-    const variedHue = (hslColor.h + hueVariation) % 360;
-    const variedColor = hslToHex(variedHue, hslColor.s, hslColor.l);
-    ctx.strokeStyle = variedColor;
-    ctx.lineWidth = strokeWidth * 0.6;
-    ctx.stroke(pathObj);
-  }
+  // Draw the main path on top
+  ctx.globalAlpha = opacity * 0.9;
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = strokeWidth;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke(pathObj);
   
   ctx.restore();
 };
