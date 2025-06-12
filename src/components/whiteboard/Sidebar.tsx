@@ -28,7 +28,7 @@ const ToolSettings: React.FC = () => {
           <CardTitle className="text-lg capitalize">{activeTool} Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
-          {activeTool !== 'eraser' && (
+          {activeTool === 'brush' && (
             <div>
               <label className="text-sm font-medium mb-2 block">Brush Type</label>
               <div className="flex gap-2">
