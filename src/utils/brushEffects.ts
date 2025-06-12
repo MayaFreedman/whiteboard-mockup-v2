@@ -85,7 +85,15 @@ export const renderChalk = (
 };
 
 /**
- * Renders a spray stroke with dotted pattern
+ * Simple seeded random number generator for consistent spray patterns
+ */
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+/**
+ * Renders a spray stroke with dotted pattern using deterministic positioning
  */
 export const renderSpray = (
   ctx: CanvasRenderingContext2D,
@@ -101,8 +109,8 @@ export const renderSpray = (
   
   ctx.fillStyle = strokeColor;
   
-  pathCommands.forEach((cmd, index) => {
-    if (index === 0) return; // Skip the first empty element
+  pathCommands.forEach((cmd, cmdIndex) => {
+    if (cmdIndex === 0) return; // Skip the first empty element
     
     const coords = cmd.trim().split(' ').map(Number).filter(n => !isNaN(n));
     if (coords.length >= 2) {
@@ -113,11 +121,13 @@ export const renderSpray = (
       const dotCount = Math.floor(strokeWidth * 3);
       
       for (let i = 0; i < dotCount; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * sprayRadius;
+        // Use deterministic seed based on position and dot index
+        const seed = x * 1000 + y * 100 + i * 10 + cmdIndex;
+        const angle = seededRandom(seed) * Math.PI * 2;
+        const distance = seededRandom(seed + 1) * sprayRadius;
         const dotX = x + Math.cos(angle) * distance;
         const dotY = y + Math.sin(angle) * distance;
-        const dotSize = Math.random() * (strokeWidth * 0.15) + 0.5;
+        const dotSize = seededRandom(seed + 2) * (strokeWidth * 0.15) + 0.5;
         
         // Vary opacity based on distance from center
         const distanceRatio = distance / sprayRadius;
