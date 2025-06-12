@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -16,6 +15,7 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const currentPathRef = useRef<string>('');
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const pathStartRef = useRef<{ x: number; y: number } | null>(null);
 
   /**
    * Converts screen coordinates to canvas coordinates
@@ -193,7 +193,9 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
       case 'pencil': {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
-        currentPathRef.current = `M ${coords.x} ${coords.y}`;
+        pathStartRef.current = coords;
+        // Start path relative to origin
+        currentPathRef.current = `M 0 0`;
         console.log('✏️ Started drawing at:', coords);
         break;
       }
@@ -242,8 +244,12 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
       }
 
       case 'pencil': {
-        if (isDrawingRef.current && lastPointRef.current) {
-          currentPathRef.current += ` L ${coords.x} ${coords.y}`;
+        if (isDrawingRef.current && lastPointRef.current && pathStartRef.current) {
+          // Calculate relative coordinates from the path start
+          const relativeX = coords.x - pathStartRef.current.x;
+          const relativeY = coords.y - pathStartRef.current.y;
+          
+          currentPathRef.current += ` L ${relativeX} ${relativeY}`;
           lastPointRef.current = coords;
           
           // Draw preview on canvas
@@ -287,14 +293,12 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
       }
 
       case 'pencil': {
-        if (isDrawingRef.current && currentPathRef.current) {
-          const coords = getCanvasCoordinates(event, canvas);
-          
-          // Create the drawing object
+        if (isDrawingRef.current && currentPathRef.current && pathStartRef.current) {
+          // Create the drawing object with the path start position
           const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
             type: 'path',
-            x: lastPointRef.current?.x || coords.x,
-            y: lastPointRef.current?.y || coords.y,
+            x: pathStartRef.current.x,
+            y: pathStartRef.current.y,
             stroke: toolStore.toolSettings.strokeColor,
             strokeWidth: toolStore.toolSettings.strokeWidth,
             opacity: toolStore.toolSettings.opacity,
@@ -307,6 +311,11 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
 
           const objectId = whiteboardStore.addObject(drawingObject);
           console.log('✏️ Created drawing object:', objectId.slice(0, 8));
+          
+          // Trigger redraw to show the final object
+          if (redrawCanvas) {
+            redrawCanvas();
+          }
         }
         break;
       }
@@ -316,7 +325,8 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
     isDrawingRef.current = false;
     lastPointRef.current = null;
     currentPathRef.current = '';
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates]);
+    pathStartRef.current = null;
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, redrawCanvas]);
 
   return {
     handlePointerDown,

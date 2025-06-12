@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -26,11 +27,15 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
     switch (obj.type) {
       case 'path': {
         if (obj.data?.path) {
+          // For paths, we need to apply translation if the object position has changed
           const path = new Path2D(obj.data.path);
           ctx.strokeStyle = obj.stroke || '#000000';
           ctx.lineWidth = obj.strokeWidth || 2;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
+          
+          // Apply translation for moved objects
+          ctx.translate(obj.x, obj.y);
           ctx.stroke(path);
           
           // Draw selection highlight for paths
@@ -139,8 +144,11 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    // Clear the entire canvas
+    // Clear the entire canvas completely
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Reset any transformations
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     // Draw background patterns
     if (settings.gridVisible) {
@@ -155,7 +163,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
       drawDots(ctx, canvas.width, canvas.height);
     }
 
-    // Draw all objects
+    // Draw all objects with their current positions
     renderAllObjects(ctx);
 
     console.log('🎨 Canvas redrawn:', {
