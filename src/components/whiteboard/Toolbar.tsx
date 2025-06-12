@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
@@ -30,20 +31,50 @@ import {
   Stamp
 } from 'lucide-react';
 
-export const Toolbar: React.FC = () => {
-  const { 
-    activeTool, 
-    setActiveTool, 
-    toolSettings, 
-    updateToolSettings, 
-    getActiveColors,
-    activeColorPalette
-  } = useToolStore();
-  const toolbarRef = useRef<HTMLDivElement>(null);
+interface ToolItem {
+  id: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}
+
+/**
+ * Configuration for basic drawing tools
+ */
+const BASIC_TOOLS: ToolItem[] = [
+  { id: 'select', icon: MousePointer, label: 'Select' },
+  { id: 'pencil', icon: Pencil, label: 'Pencil' },
+  { id: 'brush', icon: Brush, label: 'Brush' },
+  { id: 'eraser', icon: Eraser, label: 'Eraser' },
+  { id: 'text', icon: Type, label: 'Text' },
+  { id: 'stamp', icon: Stamp, label: 'Stamp' },
+  { id: 'fill', icon: PaintBucket, label: 'Fill' },
+];
+
+/**
+ * Configuration for shape tools
+ */
+const SHAPE_TOOLS: ToolItem[] = [
+  { id: 'rectangle', icon: Square, label: 'Rectangle' },
+  { id: 'circle', icon: Circle, label: 'Circle' },
+  { id: 'triangle', icon: Triangle, label: 'Triangle' },
+  { id: 'hexagon', icon: Hexagon, label: 'Hexagon' },
+  { id: 'star', icon: Star, label: 'Star' },
+  { id: 'pentagon', icon: Pentagon, label: 'Pentagon' },
+  { id: 'diamond', icon: Diamond, label: 'Diamond' },
+];
+
+/**
+ * Hook to determine if the screen is mobile based on active color palette
+ * @param activeColorPalette - Current active color palette
+ * @returns Boolean indicating if screen should be treated as mobile
+ */
+const useResponsiveBreakpoint = (activeColorPalette: string) => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
-  // Custom breakpoint logic based on color palette
   useEffect(() => {
+    /**
+     * Checks if current screen width is below the responsive breakpoint
+     */
     const checkMobile = () => {
       const breakpoint = activeColorPalette === 'basic' ? 950 : 1100;
       setIsMobile(window.innerWidth < breakpoint);
@@ -54,66 +85,135 @@ export const Toolbar: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, [activeColorPalette]);
 
-  // Update CSS custom property for toolbar height
+  return isMobile;
+};
+
+/**
+ * Hook to update CSS custom property for toolbar height
+ * @param toolbarRef - Reference to the toolbar element
+ * @param activeTool - Current active tool (triggers recalculation)
+ */
+const useToolbarHeight = (toolbarRef: React.RefObject<HTMLDivElement>, activeTool: string) => {
   useEffect(() => {
     if (toolbarRef.current) {
       const height = toolbarRef.current.offsetHeight;
       document.documentElement.style.setProperty('--toolbar-height', `${height}px`);
     }
   }, [activeTool]);
+};
 
-  const basicTools = [
-    { id: 'select', icon: MousePointer, label: 'Select' },
-    { id: 'pencil', icon: Pencil, label: 'Pencil' },
-    { id: 'brush', icon: Brush, label: 'Brush' },
-    { id: 'eraser', icon: Eraser, label: 'Eraser' },
-    { id: 'text', icon: Type, label: 'Text' },
-    { id: 'stamp', icon: Stamp, label: 'Stamp' },
-    { id: 'fill', icon: PaintBucket, label: 'Fill' },
-  ];
+/**
+ * Renders a tool button with proper styling based on active state
+ */
+const ToolButton: React.FC<{
+  tool: ToolItem;
+  isActive: boolean;
+  onClick: () => void;
+}> = ({ tool, isActive, onClick }) => (
+  <Button
+    variant={isActive ? "default" : "ghost"}
+    size="sm"
+    onClick={onClick}
+    className="p-2"
+    title={tool.label}
+  >
+    <tool.icon className="w-4 h-4" />
+  </Button>
+);
 
-  const shapes = [
-    { id: 'rectangle', icon: Square, label: 'Rectangle' },
-    { id: 'circle', icon: Circle, label: 'Circle' },
-    { id: 'triangle', icon: Triangle, label: 'Triangle' },
-    { id: 'hexagon', icon: Hexagon, label: 'Hexagon' },
-    { id: 'star', icon: Star, label: 'Star' },
-    { id: 'pentagon', icon: Pentagon, label: 'Pentagon' },
-    { id: 'diamond', icon: Diamond, label: 'Diamond' },
-  ];
+/**
+ * Renders a color button for the color palette
+ */
+const ColorButton: React.FC<{
+  color: string;
+  isSelected: boolean;
+  onClick: () => void;
+}> = ({ color, isSelected, onClick }) => (
+  <button
+    className={`w-6 h-6 rounded border-2 transition-all flex-shrink-0 ${
+      isSelected 
+        ? 'border-primary scale-110' 
+        : 'border-border hover:border-muted-foreground/50'
+    }`}
+    style={{ backgroundColor: color }}
+    onClick={onClick}
+    title={`Select color: ${color}`}
+  />
+);
+
+/**
+ * Renders action buttons (undo, redo, zoom)
+ */
+const ActionButtons: React.FC = () => (
+  <div className="flex items-center gap-2">
+    <Button variant="ghost" size="sm" title="Undo">
+      <Undo className="w-4 h-4" />
+    </Button>
+    <Button variant="ghost" size="sm" title="Redo">
+      <Redo className="w-4 h-4" />
+    </Button>
+    <Button variant="ghost" size="sm" title="Zoom Out">
+      <ZoomOut className="w-4 h-4" />
+    </Button>
+    <Button variant="ghost" size="sm" title="Zoom In">
+      <ZoomIn className="w-4 h-4" />
+    </Button>
+  </div>
+);
+
+/**
+ * Main toolbar component for the whiteboard
+ * Provides tool selection, color palette, and action buttons
+ */
+export const Toolbar: React.FC = () => {
+  const { 
+    activeTool, 
+    setActiveTool, 
+    toolSettings, 
+    updateToolSettings, 
+    getActiveColors,
+    activeColorPalette
+  } = useToolStore();
+  
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const isMobile = useResponsiveBreakpoint(activeColorPalette);
+  
+  // Update CSS custom property for toolbar height
+  useToolbarHeight(toolbarRef, activeTool);
 
   const allColors = getActiveColors();
 
+  /**
+   * Handles color selection and updates tool settings
+   * @param color - The selected color
+   */
   const handleColorSelect = (color: string) => {
     updateToolSettings({ strokeColor: color });
   };
 
+  /**
+   * Handles tool selection
+   * @param toolId - The ID of the tool to select
+   */
+  const handleToolSelect = (toolId: string) => {
+    setActiveTool(toolId as any);
+  };
+
   // Find the currently selected shape for the dropdown button
-  const selectedShape = shapes.find(shape => shape.id === activeTool);
+  const selectedShape = SHAPE_TOOLS.find(shape => shape.id === activeTool);
   const isShapeSelected = !!selectedShape;
 
   return (
     <div ref={toolbarRef} className="bg-card border-b border-border relative">
-      {/* Action Buttons - Fixed to the right, hide on mobile to save space */}
+      {/* Desktop Action Buttons - Fixed to the right */}
       <div className={`absolute right-4 top-0 h-full items-center gap-2 z-10 ${isMobile ? 'hidden' : 'flex'}`}>
-        <Button variant="ghost" size="sm">
-          <Undo className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="sm">
-          <Redo className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="sm">
-          <ZoomOut className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="sm">
-          <ZoomIn className="w-4 h-4" />
-        </Button>
+        <ActionButtons />
       </div>
 
       {/* Scrollable Content Container */}
       <div 
         className="overflow-x-auto scrollbar-hide"
-        style={{ paddingRight: isMobile ? '16px' : '200px' }} // Less padding on mobile
+        style={{ paddingRight: isMobile ? '16px' : '200px' }}
       >
         <style>{`
           .scrollbar-hide {
@@ -125,26 +225,23 @@ export const Toolbar: React.FC = () => {
           }
         `}</style>
         
-        {/* Single Line - All Tools */}
+        {/* Main Toolbar Content */}
         <div className="min-h-16 flex items-center px-4 gap-4 w-max">
-          {/* Basic Tools */}
+          {/* Basic Tools Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {basicTools.map((tool) => (
-              <Button
+            {BASIC_TOOLS.map((tool) => (
+              <ToolButton
                 key={tool.id}
-                variant={activeTool === tool.id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveTool(tool.id as any)}
-                className="p-2"
-              >
-                <tool.icon className="w-4 h-4" />
-              </Button>
+                tool={tool}
+                isActive={activeTool === tool.id}
+                onClick={() => handleToolSelect(tool.id)}
+              />
             ))}
           </div>
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
-          {/* Shapes Dropdown */}
+          {/* Shapes Dropdown Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -152,6 +249,7 @@ export const Toolbar: React.FC = () => {
                   variant={isShapeSelected ? "default" : "ghost"}
                   size="sm"
                   className="p-2 gap-1"
+                  title={selectedShape ? selectedShape.label : "Select Shape"}
                 >
                   {selectedShape ? (
                     <selectedShape.icon className="w-4 h-4" />
@@ -162,10 +260,10 @@ export const Toolbar: React.FC = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="bg-popover">
-                {shapes.map((shape) => (
+                {SHAPE_TOOLS.map((shape) => (
                   <DropdownMenuItem
                     key={shape.id}
-                    onClick={() => setActiveTool(shape.id as any)}
+                    onClick={() => handleToolSelect(shape.id)}
                     className="flex items-center gap-2 cursor-pointer"
                   >
                     <shape.icon className="w-4 h-4" />
@@ -178,19 +276,17 @@ export const Toolbar: React.FC = () => {
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
-          {/* Color Palette */}
+          {/* Color Palette Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className={`text-sm font-medium whitespace-nowrap ${isMobile ? 'hidden' : ''}`}>Colors:</span>
+            <span className={`text-sm font-medium whitespace-nowrap ${isMobile ? 'hidden' : ''}`}>
+              Colors:
+            </span>
             <div className="flex gap-1 items-center">
               {allColors.map((color) => (
-                <button
+                <ColorButton
                   key={color}
-                  className={`w-6 h-6 rounded border-2 transition-all flex-shrink-0 ${
-                    toolSettings.strokeColor === color 
-                      ? 'border-primary scale-110' 
-                      : 'border-border hover:border-muted-foreground/50'
-                  }`}
-                  style={{ backgroundColor: color }}
+                  color={color}
+                  isSelected={toolSettings.strokeColor === color}
                   onClick={() => handleColorSelect(color)}
                 />
               ))}
@@ -202,18 +298,7 @@ export const Toolbar: React.FC = () => {
             <>
               <Separator orientation="vertical" className="h-8 flex-shrink-0" />
               <div className="flex items-center gap-2 flex-shrink-0">
-                <Button variant="ghost" size="sm">
-                  <Undo className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Redo className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <ZoomOut className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <ZoomIn className="w-4 h-4" />
-                </Button>
+                <ActionButtons />
               </div>
             </>
           )}

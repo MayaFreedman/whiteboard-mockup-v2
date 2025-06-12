@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 
 export type Tool = 
@@ -90,6 +91,7 @@ interface ToolStore {
   clearToolHistory: () => void;
 }
 
+/** Default settings for all tools */
 const defaultToolSettings: ToolSettings = {
   strokeColor: '#000000',
   fillColor: '#ffffff',
@@ -104,6 +106,7 @@ const defaultToolSettings: ToolSettings = {
   selectedSticker: undefined
 };
 
+/** Predefined color palettes for the whiteboard */
 const colorPalettes = {
   basic: [
     '#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff',
@@ -126,6 +129,33 @@ const colorPalettes = {
   ]
 };
 
+/**
+ * Limits the array to a maximum number of items, removing oldest items if necessary
+ * @param array - The array to limit
+ * @param maxItems - Maximum number of items to keep
+ * @returns The limited array
+ */
+const limitArraySize = <T>(array: T[], maxItems: number): T[] => {
+  if (array.length <= maxItems) return array;
+  return array.slice(-maxItems);
+};
+
+/**
+ * Adds an item to the beginning of an array, removing duplicates and limiting size
+ * @param array - The array to add to
+ * @param item - The item to add
+ * @param maxItems - Maximum number of items to keep
+ * @returns The updated array
+ */
+const addToRecentArray = <T>(array: T[], item: T, maxItems: number): T[] => {
+  const filtered = array.filter(existingItem => existingItem !== item);
+  const newArray = [item, ...filtered];
+  return limitArraySize(newArray, maxItems);
+};
+
+/**
+ * Tool store managing the active tool, settings, and state for multiplayer sync
+ */
 export const useToolStore = create<ToolStore>((set, get) => ({
   activeTool: 'select',
   toolSettings: defaultToolSettings,
@@ -137,6 +167,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   customColors: [],
   recentlyUsedColors: [],
 
+  /**
+   * Sets the active tool and updates the state version for multiplayer sync
+   * @param tool - The tool to activate
+   */
   setActiveTool: (tool) => {
     console.log('🔧 Setting active tool:', tool);
     
@@ -145,16 +179,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
       const newVersion = state.stateVersion + 1;
       
       // Add to history
-      const newHistory = [...state.toolChangeHistory, {
-        tool,
-        timestamp,
-        settings: state.toolSettings
-      }];
-      
-      // Keep only last 50 tool changes
-      if (newHistory.length > 50) {
-        newHistory.splice(0, newHistory.length - 50);
-      }
+      const newHistory = limitArraySize([
+        ...state.toolChangeHistory,
+        { tool, timestamp, settings: state.toolSettings }
+      ], 50);
       
       console.log('🔧 Tool state updated:', {
         tool,
@@ -171,15 +199,15 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     });
   },
 
+  /**
+   * Updates tool settings and manages recently used colors
+   * @param settings - Partial settings object to update
+   */
   updateToolSettings: (settings) => {
     console.log('🎨 Updating tool settings:', settings);
     
     set((state) => {
-      const newSettings = {
-        ...state.toolSettings,
-        ...settings
-      };
-      
+      const newSettings = { ...state.toolSettings, ...settings };
       const timestamp = Date.now();
       const newVersion = state.stateVersion + 1;
       
@@ -202,19 +230,23 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     });
   },
 
+  /**
+   * Adds a color to the recently used colors list
+   * @param color - The color to add to recent colors
+   */
   updateRecentlyUsedColor: (color) => {
     console.log('🎨 Adding recent color:', color);
     
-    set((state) => {
-      const newRecentColors = [color, ...state.recentlyUsedColors.filter(c => c !== color)];
-      // Keep only the last 10 recent colors
-      if (newRecentColors.length > 10) {
-        newRecentColors.pop();
-      }
-      return { recentlyUsedColors: newRecentColors };
-    });
+    set((state) => ({
+      recentlyUsedColors: addToRecentArray(state.recentlyUsedColors, color, 10)
+    }));
   },
 
+  /**
+   * Gets the most recently used colors from the active palette
+   * @param count - Number of recent colors to return
+   * @returns Array of recent colors
+   */
   getMostRecentColors: (count) => {
     const state = get();
     const paletteColors = state.colorPalettes[state.activeColorPalette];
@@ -230,6 +262,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     return [...recentColors, ...remainingColors].slice(0, count);
   },
 
+  /**
+   * Adds a custom color to the custom colors list
+   * @param color - The color to add
+   */
   addCustomColor: (color) => {
     console.log('🎨 Adding custom color:', color);
     
@@ -250,6 +286,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     });
   },
 
+  /**
+   * Sets the active color palette
+   * @param palette - The palette to activate
+   */
   setActiveColorPalette: (palette) => {
     console.log('🎨 Setting active color palette:', palette);
     
@@ -260,11 +300,19 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     }));
   },
 
+  /**
+   * Gets the colors from the currently active palette
+   * @returns Array of colors from active palette
+   */
   getActiveColors: () => {
     const state = get();
     return state.colorPalettes[state.activeColorPalette];
   },
 
+  /**
+   * Creates a snapshot of the current tool state for multiplayer sync
+   * @returns Tool state snapshot with version and timestamp
+   */
   getToolStateSnapshot: () => {
     const state = get();
     return {
@@ -275,11 +323,19 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     };
   },
 
+  /**
+   * Gets tool changes that occurred after a specific timestamp
+   * @param timestamp - The timestamp to filter changes after
+   * @returns Array of tool changes
+   */
   getToolChangesSince: (timestamp: number) => {
     const state = get();
     return state.toolChangeHistory.filter(change => change.timestamp > timestamp);
   },
 
+  /**
+   * Clears the tool change history
+   */
   clearToolHistory: () => {
     console.log('🧹 Clearing tool history');
     set((state) => ({
