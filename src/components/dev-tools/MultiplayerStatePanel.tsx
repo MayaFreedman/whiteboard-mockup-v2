@@ -9,11 +9,8 @@ import {
   Copy, 
   Download, 
   Trash2, 
-  Wifi, 
-  WifiOff, 
   Clock, 
   Hash,
-  Users,
   Activity
 } from 'lucide-react';
 
@@ -21,21 +18,6 @@ export const MultiplayerStatePanel: React.FC = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const [lastSync, setLastSync] = useState<number>(Date.now());
-  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
-
-  // Monitor online status
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
 
   // Get state snapshots
   const whiteboardSnapshot = whiteboardStore.getStateSnapshot();
@@ -86,26 +68,6 @@ export const MultiplayerStatePanel: React.FC = () => {
 
   return (
     <div className="space-y-4 text-xs">
-      {/* Connection Status */}
-      <div className="space-y-2">
-        <div className="font-medium">Network Status</div>
-        <div className="bg-muted/30 p-2 rounded space-y-2">
-          <div className="flex items-center gap-2">
-            {isOnline ? (
-              <Wifi className="w-4 h-4 text-green-500" />
-            ) : (
-              <WifiOff className="w-4 h-4 text-red-500" />
-            )}
-            <Badge variant={isOnline ? "default" : "destructive"}>
-              {isOnline ? "ONLINE" : "OFFLINE"}
-            </Badge>
-          </div>
-          <div className="text-muted-foreground">
-            Last Sync: {formatTimestamp(lastSync)}
-          </div>
-        </div>
-      </div>
-
       {/* State Versions */}
       <div className="space-y-2">
         <div className="font-medium">State Versions</div>
@@ -133,16 +95,27 @@ export const MultiplayerStatePanel: React.FC = () => {
         </div>
       </div>
 
-      {/* State Statistics */}
+      {/* Current State Summary */}
       <div className="space-y-2">
-        <div className="font-medium">State Statistics</div>
+        <div className="font-medium">Current State</div>
         <div className="bg-muted/30 p-2 rounded space-y-1">
           <div>Objects: {Object.keys(whiteboardSnapshot.state.objects).length}</div>
           <div>Selected: {whiteboardSnapshot.state.selectedObjectIds.length}</div>
-          <div>Actions: {whiteboardSnapshot.actionCount}</div>
-          <div>Tool Changes: {toolStore.toolChangeHistory.length}</div>
-          <div>Recent Actions: {recentActions.length}</div>
+          <div>Viewport: ({whiteboardSnapshot.state.viewport.x}, {whiteboardSnapshot.state.viewport.y}) @ {Math.round(whiteboardSnapshot.state.viewport.zoom * 100)}%</div>
           <div>Active Tool: <Badge variant="outline">{toolSnapshot.activeTool}</Badge></div>
+          <div>Stroke Color: <span className="inline-block w-3 h-3 border rounded ml-1" style={{ backgroundColor: toolSnapshot.settings.strokeColor }}></span> {toolSnapshot.settings.strokeColor}</div>
+        </div>
+      </div>
+
+      {/* Action History Stats */}
+      <div className="space-y-2">
+        <div className="font-medium">History Tracking</div>
+        <div className="bg-muted/30 p-2 rounded space-y-1">
+          <div>Total Actions: {whiteboardSnapshot.actionCount}</div>
+          <div>Tool Changes: {toolStore.toolChangeHistory.length}</div>
+          <div>Recent Activity (30s): {recentActions.length + recentToolChanges.length}</div>
+          <div>Can Undo: <Badge variant={whiteboardStore.canUndo() ? "default" : "secondary"}>{whiteboardStore.canUndo() ? "YES" : "NO"}</Badge></div>
+          <div>Can Redo: <Badge variant={whiteboardStore.canRedo() ? "default" : "secondary"}>{whiteboardStore.canRedo() ? "YES" : "NO"}</Badge></div>
         </div>
       </div>
 
@@ -176,7 +149,7 @@ export const MultiplayerStatePanel: React.FC = () => {
                 )}
                 {item.type === 'ADD_OBJECT' && item.payload.object && (
                   <div className="text-muted-foreground">
-                    Added: {item.payload.object.type}
+                    Added: {item.payload.object.type} at ({item.payload.object.x}, {item.payload.object.y})
                   </div>
                 )}
               </div>
@@ -185,23 +158,16 @@ export const MultiplayerStatePanel: React.FC = () => {
         </ScrollArea>
       </div>
 
-      {/* Multiplayer Simulation */}
+      {/* State Synchronization Readiness */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2 font-medium">
-          <Users className="w-4 h-4" />
-          Multiplayer Simulation
-        </div>
-        <div className="bg-muted/30 p-2 rounded space-y-2">
-          <div className="text-muted-foreground">
-            This panel tracks all state changes that would be synchronized in a multiplayer environment.
-          </div>
-          <div className="space-y-1">
-            <div>• Action-based state management ✓</div>
-            <div>• State versioning ✓</div>
-            <div>• Timestamp tracking ✓</div>
-            <div>• Serializable state ✓</div>
-            <div>• History management ✓</div>
-          </div>
+        <div className="font-medium">Sync Readiness</div>
+        <div className="bg-muted/30 p-2 rounded text-xs space-y-1">
+          <div>✓ Action-based state management</div>
+          <div>✓ State versioning</div>
+          <div>✓ Timestamp tracking</div>
+          <div>✓ Serializable state</div>
+          <div>✓ History management</div>
+          <div>✓ Undo/Redo support</div>
         </div>
       </div>
 
@@ -237,20 +203,6 @@ export const MultiplayerStatePanel: React.FC = () => {
           <Trash2 className="w-3 h-3" />
           Clear History
         </Button>
-      </div>
-
-      {/* Colyseus Integration Notes */}
-      <div className="space-y-2">
-        <div className="font-medium">Colyseus Integration Notes</div>
-        <div className="bg-muted/30 p-2 rounded text-xs space-y-1">
-          <div className="font-medium">Ready for:</div>
-          <div>• Room state synchronization</div>
-          <div>• Client prediction</div>
-          <div>• Server reconciliation</div>
-          <div>• Action replay</div>
-          <div>• Conflict resolution</div>
-          <div>• User presence tracking</div>
-        </div>
       </div>
     </div>
   );
