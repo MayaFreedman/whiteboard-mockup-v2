@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -17,6 +16,16 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
   const currentPathRef = useRef<string>('');
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
+  
+  // Store the current drawing preview for rendering
+  const currentDrawingPreviewRef = useRef<{
+    path: string;
+    startX: number;
+    startY: number;
+    strokeColor: string;
+    strokeWidth: number;
+    opacity: number;
+  } | null>(null);
 
   /**
    * Converts screen coordinates to canvas coordinates
@@ -207,6 +216,17 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
         pathStartRef.current = coords;
         // Start path relative to origin
         currentPathRef.current = `M 0 0`;
+        
+        // Set up drawing preview
+        currentDrawingPreviewRef.current = {
+          path: currentPathRef.current,
+          startX: coords.x,
+          startY: coords.y,
+          strokeColor: toolStore.toolSettings.strokeColor,
+          strokeWidth: toolStore.toolSettings.strokeWidth,
+          opacity: toolStore.toolSettings.opacity
+        };
+        
         console.log('✏️ Started drawing at:', coords);
         break;
       }
@@ -214,7 +234,7 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, whiteboardStore, findObjectAt, getCanvasCoordinates]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates]);
 
   /**
    * Handles pointer movement during interaction
@@ -263,19 +283,14 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
           currentPathRef.current += ` L ${relativeX} ${relativeY}`;
           lastPointRef.current = coords;
           
-          // Draw preview on canvas
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.strokeStyle = toolStore.toolSettings.strokeColor;
-            ctx.lineWidth = toolStore.toolSettings.strokeWidth;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.globalAlpha = toolStore.toolSettings.opacity;
-            
-            ctx.beginPath();
-            ctx.moveTo(lastPointRef.current.x, lastPointRef.current.y);
-            ctx.lineTo(coords.x, coords.y);
-            ctx.stroke();
+          // Update drawing preview
+          if (currentDrawingPreviewRef.current) {
+            currentDrawingPreviewRef.current.path = currentPathRef.current;
+          }
+          
+          // Trigger canvas redraw to show smooth preview
+          if (redrawCanvas) {
+            redrawCanvas();
           }
         }
         break;
@@ -323,6 +338,9 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
           const objectId = whiteboardStore.addObject(drawingObject);
           console.log('✏️ Created drawing object:', objectId.slice(0, 8));
           
+          // Clear drawing preview
+          currentDrawingPreviewRef.current = null;
+          
           // Trigger redraw to show the final object
           if (redrawCanvas) {
             redrawCanvas();
@@ -339,11 +357,20 @@ export const useCanvasInteractions = (redrawCanvas?: () => void) => {
     pathStartRef.current = null;
   }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, redrawCanvas]);
 
+  /**
+   * Gets the current drawing preview for rendering
+   * @returns Current drawing preview or null
+   */
+  const getCurrentDrawingPreview = useCallback(() => {
+    return currentDrawingPreviewRef.current;
+  }, []);
+
   return {
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
     isDrawing: isDrawingRef.current,
-    isDragging: isDraggingRef.current
+    isDragging: isDraggingRef.current,
+    getCurrentDrawingPreview
   };
 };

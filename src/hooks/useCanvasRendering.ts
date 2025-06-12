@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -7,7 +8,7 @@ import { WhiteboardObject } from '../types/whiteboard';
  * Custom hook for handling canvas rendering operations
  * Manages drawing of objects, backgrounds, and selection indicators
  */
-export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
+export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentDrawingPreview?: () => any) => {
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
 
@@ -117,6 +118,28 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
   }, []);
 
   /**
+   * Renders the current drawing preview (work-in-progress path)
+   * @param ctx - Canvas rendering context
+   * @param preview - Drawing preview data
+   */
+  const renderDrawingPreview = useCallback((ctx: CanvasRenderingContext2D, preview: any) => {
+    if (!preview) return;
+    
+    ctx.save();
+    ctx.translate(preview.startX, preview.startY);
+    
+    const path = new Path2D(preview.path);
+    ctx.strokeStyle = preview.strokeColor;
+    ctx.lineWidth = preview.strokeWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = preview.opacity;
+    ctx.stroke(path);
+    
+    ctx.restore();
+  }, []);
+
+  /**
    * Renders all whiteboard objects on the canvas
    * @param ctx - Canvas rendering context
    */
@@ -167,12 +190,21 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
     // Draw all objects with their current positions
     renderAllObjects(ctx);
 
+    // Draw current drawing preview if available
+    if (getCurrentDrawingPreview) {
+      const preview = getCurrentDrawingPreview();
+      if (preview) {
+        renderDrawingPreview(ctx, preview);
+      }
+    }
+
     console.log('🎨 Canvas redrawn:', {
       objectCount: Object.keys(objects).length,
       selectedCount: selectedObjectIds.length,
-      canvasSize: { width: canvas.width, height: canvas.height }
+      canvasSize: { width: canvas.width, height: canvas.height },
+      hasPreview: !!getCurrentDrawingPreview?.()
     });
-  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects]);
+  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, getCurrentDrawingPreview]);
 
   // Auto-redraw when state changes
   useEffect(() => {
@@ -216,12 +248,6 @@ const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number):
   }
 };
 
-/**
- * Draws lined paper pattern on the canvas
- * @param ctx - Canvas rendering context
- * @param width - Canvas width
- * @param height - Canvas height
- */
 const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
   const LINE_SPACING = 24;
   const LINE_COLOR = '#ddd6fe';
@@ -237,12 +263,6 @@ const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: nu
   }
 };
 
-/**
- * Draws a dot pattern on the canvas
- * @param ctx - Canvas rendering context
- * @param width - Canvas width
- * @param height - Canvas height
- */
 const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
   const DOT_SPACING = 20;
   const DOT_COLOR = '#d1d5db';

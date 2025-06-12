@@ -37,9 +37,6 @@ export const Canvas: React.FC = () => {
   const { viewport } = useWhiteboardStore();
   const { activeTool } = useToolStore();
   
-  // Custom hooks for canvas functionality
-  const { redrawCanvas } = useCanvasRendering(canvasRef.current);
-  
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
   
@@ -47,7 +44,19 @@ export const Canvas: React.FC = () => {
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
-    isDragging
+    isDragging,
+    getCurrentDrawingPreview
+  } = useCanvasInteractions();
+
+  // Custom hooks for canvas functionality - pass the drawing preview function
+  const { redrawCanvas } = useCanvasRendering(canvasRef.current, getCurrentDrawingPreview);
+  
+  // Update the interactions hook with redraw function
+  const {
+    handlePointerDown: finalHandlePointerDown,
+    handlePointerMove: finalHandlePointerMove,
+    handlePointerUp: finalHandlePointerUp,
+    isDragging: finalIsDragging
   } = useCanvasInteractions(redrawCanvas);
 
   /**
@@ -56,7 +65,7 @@ export const Canvas: React.FC = () => {
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      handlePointerDown(event.nativeEvent, canvasRef.current);
+      finalHandlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -66,7 +75,7 @@ export const Canvas: React.FC = () => {
    */
   const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      handlePointerMove(event.nativeEvent, canvasRef.current);
+      finalHandlePointerMove(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -76,7 +85,7 @@ export const Canvas: React.FC = () => {
    */
   const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      handlePointerUp(event.nativeEvent, canvasRef.current);
+      finalHandlePointerUp(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -87,7 +96,7 @@ export const Canvas: React.FC = () => {
   const onTouchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
     event.preventDefault();
     if (canvasRef.current) {
-      handlePointerDown(event.nativeEvent, canvasRef.current);
+      finalHandlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -98,7 +107,7 @@ export const Canvas: React.FC = () => {
   const onTouchMove = (event: React.TouchEvent<HTMLCanvasElement>) => {
     event.preventDefault();
     if (canvasRef.current) {
-      handlePointerMove(event.nativeEvent, canvasRef.current);
+      finalHandlePointerMove(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -109,7 +118,7 @@ export const Canvas: React.FC = () => {
   const onTouchEnd = (event: React.TouchEvent<HTMLCanvasElement>) => {
     event.preventDefault();
     if (canvasRef.current) {
-      handlePointerUp(event.nativeEvent, canvasRef.current);
+      finalHandlePointerUp(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -119,7 +128,7 @@ export const Canvas: React.FC = () => {
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
         style={{
-          cursor: isDragging ? 'grabbing' : getCursorStyle(activeTool),
+          cursor: finalIsDragging ? 'grabbing' : getCursorStyle(activeTool),
           touchAction: 'none' // Prevent default touch behaviors
         }}
         onMouseDown={onMouseDown}
@@ -134,7 +143,7 @@ export const Canvas: React.FC = () => {
       <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
         Zoom: {Math.round(viewport.zoom * 100)}% | 
         Tool: {activeTool} |
-        {isDragging && ' Dragging'}
+        {finalIsDragging && ' Dragging'}
       </div>
     </div>
   );
