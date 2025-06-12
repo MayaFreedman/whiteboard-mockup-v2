@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -99,8 +98,7 @@ export const Canvas: React.FC = () => {
       {/* Canvas Info Overlay - Moved to right side */}
       <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
         Zoom: {Math.round(viewport.zoom * 100)}% | 
-        Tool: {activeTool} | 
-        Size: {toolSettings.strokeWidth}px
+        Tool: {activeTool}
       </div>
     </div>
   );
