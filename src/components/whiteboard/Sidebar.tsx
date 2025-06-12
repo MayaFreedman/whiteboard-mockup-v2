@@ -24,7 +24,7 @@ const animatedStickers = [
   { name: 'Fire', url: '/stickers/fire.gif' },
 ];
 
-export const Sidebar: React.FC = () => {
+export const WhiteboardSidebar: React.FC = () => {
   const { activeTool, setActiveTool, toolSettings, updateToolSettings } = useToolStore();
   const { settings, updateSettings } = useWhiteboardStore();
   const [backgroundColor, setBackgroundColor] = useState(settings.backgroundColor || '#ffffff');
@@ -326,3 +326,6 @@ export const Sidebar: React.FC = () => {
     </Sidebar>
   );
 };
+
+// Keep the old export name for backwards compatibility
+export const Sidebar = WhiteboardSidebar;
