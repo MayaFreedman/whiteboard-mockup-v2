@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -33,6 +32,14 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           ctx.stroke(path);
+          
+          // Draw selection highlight for paths
+          if (isSelected) {
+            ctx.strokeStyle = '#007AFF';
+            ctx.lineWidth = (obj.strokeWidth || 2) + 4;
+            ctx.globalAlpha = 0.5;
+            ctx.stroke(path);
+          }
         }
         break;
       }
@@ -84,16 +91,17 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
       }
     }
 
-    // Draw selection indicators
-    if (isSelected) {
+    // Draw selection indicators for non-path objects
+    if (isSelected && obj.type !== 'path') {
       ctx.strokeStyle = '#007AFF';
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 5]);
+      ctx.globalAlpha = 1;
       
       if (obj.width && obj.height) {
         ctx.strokeRect(obj.x - 2, obj.y - 2, obj.width + 4, obj.height + 4);
       } else {
-        // For paths and points, draw a small selection indicator
+        // For points, draw a small selection indicator
         ctx.strokeRect(obj.x - 5, obj.y - 5, 10, 10);
       }
       ctx.setLineDash([]);

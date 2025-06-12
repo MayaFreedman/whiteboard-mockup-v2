@@ -11,8 +11,10 @@ export const useCanvasInteractions = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const isDrawingRef = useRef(false);
+  const isDraggingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const currentPathRef = useRef<string>('');
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
   /**
    * Converts screen coordinates to canvas coordinates
@@ -177,7 +179,9 @@ export const useCanvasInteractions = () => {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
           whiteboardStore.selectObjects([objectId]);
-          console.log('🎯 Selected object:', objectId.slice(0, 8));
+          isDraggingRef.current = true;
+          dragStartRef.current = coords;
+          console.log('🎯 Selected object for dragging:', objectId.slice(0, 8));
         } else {
           whiteboardStore.clearSelection();
           console.log('🎯 Cleared selection');
@@ -204,14 +208,34 @@ export const useCanvasInteractions = () => {
    * @param canvas - Canvas element
    */
   const handlePointerMove = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
-    if (!isDrawingRef.current) return;
-
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
 
     switch (activeTool) {
+      case 'select': {
+        if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+          const deltaX = coords.x - dragStartRef.current.x;
+          const deltaY = coords.y - dragStartRef.current.y;
+          
+          // Update selected objects position
+          whiteboardStore.selectedObjectIds.forEach(objectId => {
+            const obj = whiteboardStore.objects[objectId];
+            if (obj) {
+              whiteboardStore.updateObject(objectId, {
+                x: obj.x + deltaX,
+                y: obj.y + deltaY
+              });
+            }
+          });
+          
+          dragStartRef.current = coords;
+          console.log('🔄 Dragging objects:', { deltaX, deltaY });
+        }
+        break;
+      }
+
       case 'pencil': {
-        if (lastPointRef.current) {
+        if (isDrawingRef.current && lastPointRef.current) {
           currentPathRef.current += ` L ${coords.x} ${coords.y}`;
           lastPointRef.current = coords;
           
@@ -233,7 +257,7 @@ export const useCanvasInteractions = () => {
         break;
       }
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, getCanvasCoordinates]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates]);
 
   /**
    * Handles the end of a drawing/interaction session
@@ -243,9 +267,15 @@ export const useCanvasInteractions = () => {
   const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const activeTool = toolStore.activeTool;
 
-    console.log('🖱️ Pointer up:', { tool: activeTool, wasDrawing: isDrawingRef.current });
+    console.log('🖱️ Pointer up:', { tool: activeTool, wasDrawing: isDrawingRef.current, wasDragging: isDraggingRef.current });
 
     switch (activeTool) {
+      case 'select': {
+        isDraggingRef.current = false;
+        dragStartRef.current = null;
+        break;
+      }
+
       case 'pencil': {
         if (isDrawingRef.current && currentPathRef.current) {
           const coords = getCanvasCoordinates(event, canvas);
