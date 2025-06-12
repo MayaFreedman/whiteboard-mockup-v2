@@ -27,15 +27,14 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
     switch (obj.type) {
       case 'path': {
         if (obj.data?.path) {
-          // For paths, we need to apply translation if the object position has changed
+          // For paths, we need to apply translation and then draw the relative path
+          ctx.translate(obj.x, obj.y);
+          
           const path = new Path2D(obj.data.path);
           ctx.strokeStyle = obj.stroke || '#000000';
           ctx.lineWidth = obj.strokeWidth || 2;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
-          
-          // Apply translation for moved objects
-          ctx.translate(obj.x, obj.y);
           ctx.stroke(path);
           
           // Draw selection highlight for paths
@@ -96,23 +95,30 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
       }
     }
 
-    // Draw selection indicators for non-path objects
-    if (isSelected && obj.type !== 'path') {
+    ctx.restore(); // This restores the context state, undoing any translations
+    
+    // Draw selection indicators for all selected objects (after restoring context)
+    if (isSelected) {
+      ctx.save();
       ctx.strokeStyle = '#007AFF';
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 5]);
       ctx.globalAlpha = 1;
       
-      if (obj.width && obj.height) {
+      if (obj.type === 'path') {
+        // For paths, draw a bounding box around the translated path area
+        // We'll approximate this for now - in a real app you'd calculate the actual path bounds
+        ctx.strokeRect(obj.x - 10, obj.y - 10, 20, 20);
+      } else if (obj.width && obj.height) {
         ctx.strokeRect(obj.x - 2, obj.y - 2, obj.width + 4, obj.height + 4);
       } else {
         // For points, draw a small selection indicator
         ctx.strokeRect(obj.x - 5, obj.y - 5, 10, 10);
       }
+      
       ctx.setLineDash([]);
+      ctx.restore();
     }
-    
-    ctx.restore();
   }, []);
 
   /**
