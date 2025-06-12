@@ -52,40 +52,61 @@ export const renderChalk = (
 ) => {
   ctx.save();
   
-  // Main chalk stroke with reduced opacity
-  ctx.globalAlpha = opacity * 0.7;
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  
   const pathObj = new Path2D(path);
-  ctx.stroke(pathObj);
   
-  // Add chalk dust effect by drawing random small circles along the path
-  ctx.globalAlpha = opacity * 0.3;
+  // Draw the main stroke multiple times with slight offsets for rough texture
+  const roughnessOffsets = [
+    { x: 0, y: 0, alpha: 0.7, width: 1.0 },
+    { x: 0.3, y: 0.2, alpha: 0.4, width: 0.9 },
+    { x: -0.2, y: 0.4, alpha: 0.4, width: 0.8 },
+    { x: 0.4, y: -0.3, alpha: 0.3, width: 0.9 },
+    { x: -0.3, y: -0.2, alpha: 0.3, width: 0.85 }
+  ];
+  
+  // Apply each rough stroke layer
+  roughnessOffsets.forEach((offset) => {
+    ctx.save();
+    ctx.translate(offset.x, offset.y);
+    ctx.globalAlpha = opacity * offset.alpha;
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = strokeWidth * offset.width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    // Add slight blur for softer chalk edge
+    ctx.shadowColor = strokeColor;
+    ctx.shadowBlur = strokeWidth * 0.2;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    ctx.stroke(pathObj);
+    ctx.restore();
+  });
+  
+  // Add chalk dust effect along the path
+  ctx.globalAlpha = opacity * 0.25;
   ctx.fillStyle = strokeColor;
+  ctx.shadowBlur = 0;
   
-  // Parse the path to get approximate points for deterministic dust placement
+  // Parse path to get points for dust placement
   const pathCommands = path.split(/[ML]/).filter(cmd => cmd.trim());
   
   pathCommands.forEach((cmd, cmdIndex) => {
-    if (cmdIndex === 0) return; // Skip the first empty element
+    if (cmdIndex === 0) return;
     
     const coords = cmd.trim().split(' ').map(Number).filter(n => !isNaN(n));
     if (coords.length >= 2) {
       const [x, y] = coords;
       
-      // Get dust density based on stroke width
-      const dustDensity = Math.max(1, Math.floor(strokeWidth / 3));
-      for (let i = 0; i < dustDensity * 5; i++) {
-        // Use deterministic seed based on position and dust index
+      // Create dense dust pattern around each point
+      const dustCount = Math.max(3, Math.floor(strokeWidth / 2));
+      for (let i = 0; i < dustCount; i++) {
         const seed = x * 1000 + y * 100 + i * 10 + cmdIndex;
         const angle = seededRandom(seed) * Math.PI * 2;
-        const distance = seededRandom(seed + 1) * strokeWidth * 0.8;
+        const distance = seededRandom(seed + 1) * strokeWidth * 0.6;
         const dustX = x + Math.cos(angle) * distance;
         const dustY = y + Math.sin(angle) * distance;
-        const dustSize = seededRandom(seed + 2) * (strokeWidth * 0.2) + 1;
+        const dustSize = seededRandom(seed + 2) * (strokeWidth * 0.15) + 0.5;
         
         ctx.beginPath();
         ctx.arc(dustX, dustY, dustSize, 0, 2 * Math.PI);
@@ -171,53 +192,47 @@ export const renderCrayon = (
   
   const pathObj = new Path2D(path);
   
-  // Parse the path to get points for position-based texture generation
-  const pathCommands = path.split(/[ML]/).filter(cmd => cmd.trim());
+  // Create waxy texture by drawing multiple layers with varying properties
+  const waxLayers = [
+    { alpha: 0.6, width: 1.1, offset: { x: 0, y: 0 }, composite: 'source-over' },
+    { alpha: 0.4, width: 0.9, offset: { x: 0.4, y: 0.3 }, composite: 'multiply' },
+    { alpha: 0.4, width: 0.8, offset: { x: -0.3, y: 0.4 }, composite: 'multiply' },
+    { alpha: 0.3, width: 1.0, offset: { x: 0.2, y: -0.3 }, composite: 'source-over' },
+    { alpha: 0.3, width: 0.85, offset: { x: -0.4, y: -0.2 }, composite: 'source-over' }
+  ];
   
-  // Draw each segment with position-based texture offsets
-  pathCommands.forEach((cmd, cmdIndex) => {
-    if (cmdIndex === 0) return; // Skip the first empty element
+  // Apply each waxy layer
+  waxLayers.forEach((layer, index) => {
+    ctx.save();
+    ctx.globalCompositeOperation = layer.composite as GlobalCompositeOperation;
+    ctx.translate(layer.offset.x, layer.offset.y);
+    ctx.globalAlpha = opacity * layer.alpha;
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = strokeWidth * layer.width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     
-    const coords = cmd.trim().split(' ').map(Number).filter(n => !isNaN(n));
-    if (coords.length >= 2) {
-      const [x, y] = coords;
-      
-      // Use position-based seed for consistent texture at each location
-      const positionSeed = Math.floor(x / 5) * 1000 + Math.floor(y / 5);
-      
-      // Generate consistent offsets based on position
-      const offsets = [
-        { x: 0, y: 0, alpha: 0.8 },
-        { x: seededRandom(positionSeed + 1) * 1.0 - 0.5, y: seededRandom(positionSeed + 2) * 0.6 - 0.3, alpha: 0.4 },
-        { x: seededRandom(positionSeed + 3) * -0.6 + 0.3, y: seededRandom(positionSeed + 4) * 1.0 - 0.5, alpha: 0.4 },
-        { x: seededRandom(positionSeed + 5) * 0.4 - 0.2, y: seededRandom(positionSeed + 6) * -0.8 + 0.4, alpha: 0.3 }
-      ];
-      
-      // Draw a small segment around this point with the position-based texture
-      const segmentPath = `M${x-2},${y-2} L${x+2},${y+2}`;
-      const segmentPathObj = new Path2D(segmentPath);
-      
-      offsets.forEach((offset, index) => {
-        ctx.save();
-        ctx.translate(offset.x, offset.y);
-        ctx.globalAlpha = opacity * offset.alpha;
-        ctx.strokeStyle = strokeColor;
-        // Use deterministic width variation based on position and offset index
-        const widthSeed = positionSeed + index * 100;
-        const widthVariation = seededRandom(widthSeed) * 0.4;
-        ctx.lineWidth = strokeWidth * (0.8 + widthVariation);
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke(segmentPathObj);
-        ctx.restore();
-      });
+    // Add subtle color variation for some layers
+    if (index > 0) {
+      const hslColor = hexToHsl(strokeColor);
+      if (hslColor) {
+        const hueVariation = (index - 2) * 3; // Slight hue shift
+        const lightnessVariation = index * 2; // Slight lightness variation
+        const variedHue = (hslColor.h + hueVariation) % 360;
+        const variedLightness = Math.max(0, Math.min(100, hslColor.l + lightnessVariation));
+        const variedColor = hslToHex(variedHue, hslColor.s, variedLightness);
+        ctx.strokeStyle = variedColor;
+      }
     }
+    
+    ctx.stroke(pathObj);
+    ctx.restore();
   });
   
-  // Draw the main path on top
-  ctx.globalAlpha = opacity * 0.9;
+  // Add final clean layer on top for definition
+  ctx.globalAlpha = opacity * 0.8;
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth;
+  ctx.lineWidth = strokeWidth * 0.9;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.stroke(pathObj);
