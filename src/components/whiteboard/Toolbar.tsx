@@ -1,7 +1,5 @@
-
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
-import { useIsMobile } from '../../hooks/use-mobile';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { 
@@ -38,10 +36,23 @@ export const Toolbar: React.FC = () => {
     setActiveTool, 
     toolSettings, 
     updateToolSettings, 
-    getActiveColors
+    getActiveColors,
+    activeColorPalette
   } = useToolStore();
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  // Custom breakpoint logic based on color palette
+  useEffect(() => {
+    const checkMobile = () => {
+      const breakpoint = activeColorPalette === 'basic' ? 950 : 1100;
+      setIsMobile(window.innerWidth < breakpoint);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [activeColorPalette]);
 
   // Update CSS custom property for toolbar height
   useEffect(() => {
