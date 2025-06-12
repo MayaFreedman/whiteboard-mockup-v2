@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -97,19 +96,15 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null) => {
 
     ctx.restore(); // This restores the context state, undoing any translations
     
-    // Draw selection indicators for all selected objects (after restoring context)
-    if (isSelected) {
+    // Draw selection indicators for non-path selected objects only
+    if (isSelected && obj.type !== 'path') {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 5]);
       ctx.globalAlpha = 1;
       
-      if (obj.type === 'path') {
-        // For paths, draw a bounding box around the translated path area
-        // We'll approximate this for now - in a real app you'd calculate the actual path bounds
-        ctx.strokeRect(obj.x - 10, obj.y - 10, 20, 20);
-      } else if (obj.width && obj.height) {
+      if (obj.width && obj.height) {
         ctx.strokeRect(obj.x - 2, obj.y - 2, obj.width + 4, obj.height + 4);
       } else {
         // For points, draw a small selection indicator
