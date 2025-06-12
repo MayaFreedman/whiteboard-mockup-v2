@@ -35,6 +35,7 @@ export interface ToolSettings {
   // UI settings
   showGrid: boolean;
   showLinedPaper: boolean;
+  showDots: boolean;
 }
 
 interface ToolStore {
@@ -71,7 +72,8 @@ const defaultToolSettings: ToolSettings = {
   fontSize: 16,
   fontFamily: 'Arial',
   showGrid: false,
-  showLinedPaper: false
+  showLinedPaper: false,
+  showDots: false
 };
 
 const colorPalettes = {
