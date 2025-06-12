@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { Sidebar, SidebarContent } from '../ui/sidebar';
+import { Sidebar as UISidebar, SidebarContent } from '../ui/sidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
@@ -42,7 +42,7 @@ export const WhiteboardSidebar: React.FC = () => {
   };
 
   return (
-    <Sidebar>
+    <UISidebar>
       <SidebarContent className="p-4">
         {/* Basic Tools Section */}
         <Card>
@@ -188,7 +188,7 @@ export const WhiteboardSidebar: React.FC = () => {
                   {regularStickers.map((sticker) => (
                     <button
                       key={sticker.name}
-                      className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden group ${
+                      className={`relative w-full h-24 rounded border-2 transition-colors overflow-hidden group ${
                         toolSettings.selectedSticker === sticker.name 
                           ? 'border-gray-400 ring-2 ring-gray-300' 
                           : 'border-border hover:border-primary'
@@ -204,7 +204,7 @@ export const WhiteboardSidebar: React.FC = () => {
                     </button>
                   ))}
                   <button
-                    className="w-full h-20 rounded border-2 border-dashed border-border hover:border-primary transition-colors flex flex-col items-center justify-center gap-1 group"
+                    className="w-full h-24 rounded border-2 border-dashed border-border hover:border-primary transition-colors flex flex-col items-center justify-center gap-1 group"
                     title="Upload Custom Sticker"
                   >
                     <Upload className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
@@ -219,7 +219,7 @@ export const WhiteboardSidebar: React.FC = () => {
                   {animatedStickers.map((sticker) => (
                     <button
                       key={sticker.name}
-                      className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden group ${
+                      className={`relative w-full h-24 rounded border-2 transition-colors overflow-hidden group ${
                         toolSettings.selectedSticker === sticker.name 
                           ? 'border-gray-400 ring-2 ring-gray-300' 
                           : 'border-border hover:border-primary'
@@ -323,7 +323,7 @@ export const WhiteboardSidebar: React.FC = () => {
           </CardContent>
         </Card>
       </SidebarContent>
-    </Sidebar>
+    </UISidebar>
   );
 };
 
