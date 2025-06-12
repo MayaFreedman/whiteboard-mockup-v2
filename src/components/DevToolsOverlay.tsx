@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { Button } from './ui/button';
+import { ScrollArea } from './ui/scroll-area';
 import { Eye, EyeOff, Layers, Settings, Search, Wifi } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { WhiteboardStatePanel } from './dev-tools/WhiteboardStatePanel';
@@ -61,13 +63,13 @@ export const DevToolsOverlay: React.FC<DevToolsOverlayProps> = ({ className }) =
 
   return (
     <div className={cn(
-      "fixed top-4 right-4 z-50 bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg",
+      "fixed top-4 right-4 z-50 bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg flex flex-col",
       "transition-all duration-300",
       isMinimized ? "w-64 h-12" : "w-96 h-[600px]",
       className
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b">
+      <div className="flex items-center justify-between p-3 border-b flex-shrink-0">
         <div className="text-sm font-medium flex items-center gap-2">
           <Search className="h-4 w-4" />
           Dev Tools
@@ -95,7 +97,7 @@ export const DevToolsOverlay: React.FC<DevToolsOverlayProps> = ({ className }) =
       {!isMinimized && (
         <>
           {/* Tab Navigation */}
-          <div className="flex border-b">
+          <div className="flex border-b flex-shrink-0">
             {panels.map((panel) => (
               <button
                 key={panel.id}
@@ -114,14 +116,16 @@ export const DevToolsOverlay: React.FC<DevToolsOverlayProps> = ({ className }) =
             ))}
           </div>
 
-          {/* Panel Content */}
-          <div className="flex-1 overflow-auto p-3">
-            {activePanel === 'multiplayer' && <MultiplayerStatePanel />}
-            {activePanel === 'whiteboard' && <WhiteboardStatePanel />}
-            {activePanel === 'tools' && <ToolStatePanel />}
-            {activePanel === 'actions' && <ActionHistoryPanel />}
-            {activePanel === 'strokes' && <StrokeTrackingPanel />}
-          </div>
+          {/* Panel Content with Scroll */}
+          <ScrollArea className="flex-1 min-h-0">
+            <div className="p-3">
+              {activePanel === 'multiplayer' && <MultiplayerStatePanel />}
+              {activePanel === 'whiteboard' && <WhiteboardStatePanel />}
+              {activePanel === 'tools' && <ToolStatePanel />}
+              {activePanel === 'actions' && <ActionHistoryPanel />}
+              {activePanel === 'strokes' && <StrokeTrackingPanel />}
+            </div>
+          </ScrollArea>
         </>
       )}
 
