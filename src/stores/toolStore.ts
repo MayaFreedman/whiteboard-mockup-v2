@@ -34,9 +34,6 @@ export interface ToolSettings {
   fontSize: number;
   fontFamily: string;
   
-  // Stamp settings
-  selectedSticker?: string;
-  
   // UI settings
   showGrid: boolean;
   showLinedPaper: boolean;
