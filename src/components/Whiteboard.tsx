@@ -4,12 +4,16 @@ import { Toolbar } from './whiteboard/Toolbar';
 import { Canvas } from './whiteboard/Canvas';
 import { WhiteboardSidebar } from './whiteboard/Sidebar';
 import { SidebarProvider, SidebarInset } from './ui/sidebar';
+import { useMultiplayerSync } from '../hooks/useMultiplayerSync';
 
 /**
  * Main whiteboard application component
  * Orchestrates the layout and provides the sidebar context
  */
 export const Whiteboard: React.FC = () => {
+  // Initialize multiplayer sync
+  useMultiplayerSync();
+
   return (
     <SidebarProvider>
       <div className="h-screen flex flex-col bg-background w-full">
