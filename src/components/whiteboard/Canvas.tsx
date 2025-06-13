@@ -50,6 +50,38 @@ export const Canvas: React.FC = () => {
   // Update interactions hook with redraw function
   interactions.setRedrawCanvas(redrawCanvas);
 
+  // Set up non-passive touch event listeners
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleTouchStart = (event: TouchEvent) => {
+      event.preventDefault();
+      interactions.handlePointerDown(event, canvas);
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      event.preventDefault();
+      interactions.handlePointerMove(event, canvas);
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      event.preventDefault();
+      interactions.handlePointerUp(event, canvas);
+    };
+
+    // Add touch event listeners with { passive: false } to allow preventDefault
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [interactions]);
+
   /**
    * Handles mouse down events on the canvas
    * @param event - Mouse event
@@ -80,39 +112,6 @@ export const Canvas: React.FC = () => {
     }
   };
 
-  /**
-   * Handles touch start events on the canvas
-   * @param event - Touch event
-   */
-  const onTouchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
-    event.preventDefault();
-    if (canvasRef.current) {
-      interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
-    }
-  };
-
-  /**
-   * Handles touch move events on the canvas
-   * @param event - Touch event
-   */
-  const onTouchMove = (event: React.TouchEvent<HTMLCanvasElement>) => {
-    event.preventDefault();
-    if (canvasRef.current) {
-      interactions.handlePointerMove(event.nativeEvent, canvasRef.current);
-    }
-  };
-
-  /**
-   * Handles touch end events on the canvas
-   * @param event - Touch event
-   */
-  const onTouchEnd = (event: React.TouchEvent<HTMLCanvasElement>) => {
-    event.preventDefault();
-    if (canvasRef.current) {
-      interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
-    }
-  };
-
   return (
     <div className="w-full h-full relative bg-background overflow-hidden">
       <canvas
@@ -125,9 +124,6 @@ export const Canvas: React.FC = () => {
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
       />
       
       {/* Canvas Info Overlay */}
