@@ -13,6 +13,22 @@ export class ServerClass {
     console.log('📋 Room ID:', colyseusRoomID)
     console.log('👑 Is Moderator:', isModerator)
 
+    // First, let's test if the server is reachable
+    try {
+      console.log('🌐 Testing server connectivity...')
+      const testResponse = await fetch('http://localhost:4001', { 
+        method: 'GET',
+        signal: AbortSignal.timeout(5000) // 5 second timeout
+      })
+      console.log('✅ Server is reachable, status:', testResponse.status)
+    } catch (fetchError) {
+      console.error('❌ Server connectivity test failed:', fetchError)
+      console.error('📊 Fetch error type:', typeof fetchError)
+      console.error('📊 Fetch error name:', fetchError?.name)
+      console.error('📊 Fetch error message:', fetchError?.message)
+      throw new Error(`Cannot reach Colyseus server at localhost:4001. Is the server running? Error: ${fetchError?.message || 'Unknown network error'}`)
+    }
+
     try {
       console.log('🔍 Joining room by ID...')
       
@@ -74,6 +90,11 @@ export class ServerClass {
       if (error && typeof error === 'object') {
         console.error('📊 Error keys:', Object.keys(error))
         console.error('📊 Error values:', Object.values(error))
+      }
+      
+      // More specific error messages
+      if (error && 'type' in error && error.type === 'error') {
+        throw new Error('WebSocket connection failed. The Colyseus server may not be running on localhost:4001 or may not be accepting WebSocket connections.')
       }
       
       throw error
