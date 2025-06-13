@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useCallback, ReactNode } from 'react'
 import { ServerClass } from '../server'
 import { WhiteboardAction } from '../types/whiteboard'
@@ -55,7 +54,27 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       console.log('✅ Connection successful!')
     } catch (error) {
       console.error('❌ Connection failed:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown connection error'
+      
+      let errorMessage = 'Unknown connection error'
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      } else if (error && typeof error === 'object') {
+        // Try to extract meaningful info from the error object
+        if ('message' in error) {
+          errorMessage = String(error.message)
+        } else if ('code' in error) {
+          errorMessage = `Connection failed with code: ${error.code}`
+        } else if ('type' in error) {
+          errorMessage = `Connection failed with type: ${error.type}`
+        } else {
+          errorMessage = `Connection failed: ${JSON.stringify(error)}`
+        }
+      }
+      
+      console.error('📊 Processed error message:', errorMessage)
       setConnectionError(errorMessage)
       setServerInstance(null)
       setIsConnected(false)

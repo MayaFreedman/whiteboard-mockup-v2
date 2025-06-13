@@ -6,7 +6,6 @@ import { Client } from 'colyseus.js'
 export class ServerClass {
   constructor() {}
   server: any = {}
-  //need to change this too
   client = new Client('http://localhost:4001')
 
   async connectToColyseusServer(colyseusRoomID: string, isModerator: boolean) {
@@ -16,10 +15,22 @@ export class ServerClass {
 
     try {
       console.log('🔍 Joining room by ID...')
-      this.server.room = await this.client.joinById(colyseusRoomID, {
+      
+      // Add timeout to the join request
+      const joinPromise = this.client.joinById(colyseusRoomID, {
         type: 'videoSession',
         moderator: isModerator,
       })
+
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Connection timeout after 10 seconds'))
+        }, 10000)
+      })
+
+      // Race between join and timeout
+      this.server.room = await Promise.race([joinPromise, timeoutPromise])
 
       console.log('✅ Successfully connected to room:', colyseusRoomID)
       console.log('🏠 Room object:', this.server.room)
@@ -47,11 +58,24 @@ export class ServerClass {
 
     } catch (error) {
       console.error('💥 Failed to connect to Colyseus server:', error)
-      console.error('📊 Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      })
+      console.error('📊 Error type:', typeof error)
+      console.error('📊 Error constructor:', error?.constructor?.name)
+      
+      // Better error inspection
+      if (error instanceof Error) {
+        console.error('📊 Error name:', error.name)
+        console.error('📊 Error message:', error.message)
+        console.error('📊 Error stack:', error.stack)
+      } else {
+        console.error('📊 Raw error object:', JSON.stringify(error, null, 2))
+      }
+      
+      // Check if it's a network error
+      if (error && typeof error === 'object') {
+        console.error('📊 Error keys:', Object.keys(error))
+        console.error('📊 Error values:', Object.values(error))
+      }
+      
       throw error
     }
   }
