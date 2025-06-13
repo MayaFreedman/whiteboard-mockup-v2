@@ -10,90 +10,67 @@ export class ServerClass {
   client = new Client('http://localhost:4001')
 
   async connectToColyseusServer(colyseusRoomID: string, isModerator: boolean) {
-    // colyseusRoomID = 'azRwzJneM'
-    console.log('Connecting to colyseus server...')
+    console.log('🔌 Attempting to connect to Colyseus server at http://localhost:4001')
+    console.log('📋 Room ID:', colyseusRoomID)
+    console.log('👑 Is Moderator:', isModerator)
 
-    this.server.room = await this.client.joinById(colyseusRoomID, {
-      type: 'videoSession',
-      moderator: isModerator,
-    })
+    try {
+      console.log('🔍 Joining room by ID...')
+      this.server.room = await this.client.joinById(colyseusRoomID, {
+        type: 'videoSession',
+        moderator: isModerator,
+      })
 
-    console.log('Connected to colyseus server', colyseusRoomID)
+      console.log('✅ Successfully connected to room:', colyseusRoomID)
+      console.log('🏠 Room object:', this.server.room)
 
-    this.server.room.onStateChange((state) => {
-      console.log('State changed:', state.playspaceGameState)
-      console.log('HERE')
-      const parsedObject = JSON.parse(state.playspaceGameState.state)
+      this.server.room.onStateChange((state) => {
+        console.log('📡 State changed:', state)
+        if (state.playspaceGameState) {
+          console.log('🎮 Game state:', state.playspaceGameState)
+          const parsedObject = JSON.parse(state.playspaceGameState.state)
+          console.log('📦 Parsed object:', parsedObject)
+        }
+      })
 
-      // if (Object.keys(parsedObject).length > 0) {
-      //   main.handleStateChange(parsedObject)
-      // }
-    })
+      this.server.room.onMessage('broadcast', (message) => {
+        console.log('📨 Broadcast message received:', message)
+      })
 
-    this.server.room.onMessage('broadcast', (message) => {
-      console.log('Message received:', message)
-      // main.messageReceivedColyseus(message)
-    })
+      this.server.room.onError((code, message) => {
+        console.error('❌ Room error:', { code, message })
+      })
+
+      this.server.room.onLeave((code) => {
+        console.log('👋 Left room with code:', code)
+      })
+
+    } catch (error) {
+      console.error('💥 Failed to connect to Colyseus server:', error)
+      console.error('📊 Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      })
+      throw error
+    }
   }
 
   sendState(payload: any) {
+    console.log('📤 Sending state:', payload)
+    if (!this.server.room) {
+      console.error('❌ Cannot send state: room not connected')
+      throw new Error('Cannot send stateUpdate message as this.room does not exist')
+    }
     this.server.room.send('stateUpdate', payload)
   }
 
   sendEvent(payload: any) {
-    this.server.room.send('broadcast', payload)
+    console.log('📡 Sending event:', payload)
+    if (this.server.room) {
+      this.server.room.send('broadcast', payload)
+    } else {
+      console.error('❌ Cannot send event: room not connected')
+    }
   }
 }
-
-// export async function setUpServer(main) {
-//   console.log('is running', main)
-//   const server: any = {}
-//   //need to change this too
-//   console.log('BOOGLYBOO')
-//   const client = new Client('http://localhost:4001')
-//   console.log(client)
-
-//   async function connectToColyseusServer(colyseusRoomID, isModerator) {
-//     colyseusRoomID = 'CKl8xAvIY'
-//     console.log('Connecting to colyseus server...')
-//     server.room = await client.joinById(colyseusRoomID, {
-//       type: 'videoSession',
-//       moderator: isModerator,
-//     })
-//     console.log('Connected to colyseus server', colyseusRoomID)
-
-//     server.room.onStateChange((state) => {
-//       console.log('State changed:', state.playspaceGameState)
-//       const parsedObject = JSON.parse(state.playspaceGameState.state)
-
-//       if (Object.keys(parsedObject).length > 0) {
-//         main.handleStateChange(parsedObject)
-//       }
-//     })
-
-//     server.room.onMessage('broadcast', (message) => {
-//       console.log('Message received:', message)
-//       main.messageReceivedColyseus(message)
-//     })
-//   }
-
-//   connectToColyseusServer('CKl8xAvIY', true)
-
-//   server.sendState = (payload) => {
-//     console.log('Sending state:', payload)
-//     if (!server.room) {
-//       throw new Error(
-//         'Cannot send stateUpdate message as this.room does not exist'
-//       )
-//     }
-//     server.room.send('stateUpdate', payload)
-//   }
-
-//   server.sendevent = (payload) => {
-//     if (server.room) {
-//       server.room.send('broadcast', payload)
-//     }
-//   }
-
-//   // return server
-// }

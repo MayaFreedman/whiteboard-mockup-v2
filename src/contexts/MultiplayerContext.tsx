@@ -16,6 +16,7 @@ interface MultiplayerContextType {
   isConnected: boolean
   roomId: string | null
   connectedUsers: User[]
+  connectionError: string | null
   connect: (roomId: string, isModerator?: boolean) => Promise<void>
   disconnect: () => void
   sendWhiteboardAction: (action: WhiteboardAction) => void
@@ -36,10 +37,12 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   const [isConnected, setIsConnected] = useState(false)
   const [roomId, setRoomId] = useState<string | null>(null)
   const [connectedUsers, setConnectedUsers] = useState<User[]>([])
+  const [connectionError, setConnectionError] = useState<string | null>(null)
 
   const connect = useCallback(async (targetRoomId: string, isModerator: boolean = false) => {
     try {
-      console.log('🔌 Connecting to Colyseus room:', targetRoomId)
+      console.log('🔌 Starting connection process to room:', targetRoomId)
+      setConnectionError(null)
       
       const newServerInstance = new ServerClass()
       await newServerInstance.connectToColyseusServer(targetRoomId, isModerator)
@@ -47,10 +50,16 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setServerInstance(newServerInstance)
       setRoomId(targetRoomId)
       setIsConnected(true)
+      setConnectionError(null)
 
-      console.log('✅ Connected to room:', targetRoomId)
+      console.log('✅ Connection successful!')
     } catch (error) {
-      console.error('❌ Failed to connect to room:', error)
+      console.error('❌ Connection failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown connection error'
+      setConnectionError(errorMessage)
+      setServerInstance(null)
+      setIsConnected(false)
+      setRoomId(null)
       throw error
     }
   }, [])
@@ -63,6 +72,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     setIsConnected(false)
     setRoomId(null)
     setConnectedUsers([])
+    setConnectionError(null)
     console.log('🔌 Disconnected from room')
   }, [serverInstance])
 
@@ -83,6 +93,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     isConnected,
     roomId,
     connectedUsers,
+    connectionError,
     connect,
     disconnect,
     sendWhiteboardAction,
