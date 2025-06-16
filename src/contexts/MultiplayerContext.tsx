@@ -11,9 +11,12 @@ interface User {
   isActive?: boolean
 }
 
+type ConnectionPhase = 'disconnected' | 'connecting' | 'handshake' | 'ready'
+
 interface MultiplayerContextType {
   serverInstance: ServerClass | null
   isConnected: boolean
+  connectionPhase: ConnectionPhase
   roomId: string | null
   connectedUsers: User[]
   connectionError: string | null
@@ -36,6 +39,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
 }) => {
   const [serverInstance, setServerInstance] = useState<ServerClass | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  const [connectionPhase, setConnectionPhase] = useState<ConnectionPhase>('disconnected')
   const [roomId, setRoomId] = useState<string | null>(null)
   const [connectedUsers, setConnectedUsers] = useState<User[]>([])
   const [connectionError, setConnectionError] = useState<string | null>(null)
@@ -46,11 +50,11 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     const urlParams = new URLSearchParams(window.location.search)
     const roomParam = urlParams.get('room') || urlParams.get('roomId')
     
-    if (roomParam && !isConnected && !serverInstance) {
+    if (roomParam && !isConnected && !serverInstance && connectionPhase === 'disconnected') {
       console.log('🔗 Auto-connecting to room from URL:', roomParam)
       setIsAutoConnecting(true)
       
-      connect(roomParam, false) // Connect as regular user, not moderator
+      connect(roomParam, false)
         .then(() => {
           console.log('✅ Auto-connection successful')
         })
@@ -61,12 +65,13 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
           setIsAutoConnecting(false)
         })
     }
-  }, [isConnected, serverInstance]) // Fixed: Added proper dependencies
+  }, [isConnected, serverInstance, connectionPhase])
 
   const connect = useCallback(async (targetRoomId: string, isModerator: boolean = false) => {
     try {
-      console.log('🔌 Starting connection process to room:', targetRoomId)
+      console.log('🔌 Starting pure message-based connection to room:', targetRoomId)
       setConnectionError(null)
+      setConnectionPhase('connecting')
       
       const newServerInstance = new ServerClass()
       await newServerInstance.connectToColyseusServer(targetRoomId, isModerator)
@@ -74,9 +79,10 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setServerInstance(newServerInstance)
       setRoomId(targetRoomId)
       setIsConnected(true)
+      setConnectionPhase('handshake') // Will be updated to 'ready' by useMultiplayerSync
       setConnectionError(null)
 
-      console.log('✅ Connection successful!')
+      console.log('✅ Message-based connection established!')
     } catch (error) {
       console.error('❌ Connection failed:', error)
       
@@ -87,7 +93,6 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       } else if (typeof error === 'string') {
         errorMessage = error
       } else if (error && typeof error === 'object') {
-        // Try to extract meaningful info from the error object
         if ('message' in error) {
           errorMessage = String(error.message)
         } else if ('code' in error) {
@@ -103,6 +108,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setConnectionError(errorMessage)
       setServerInstance(null)
       setIsConnected(false)
+      setConnectionPhase('disconnected')
       setRoomId(null)
       throw error
     }
@@ -114,6 +120,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     }
     setServerInstance(null)
     setIsConnected(false)
+    setConnectionPhase('disconnected')
     setRoomId(null)
     setConnectedUsers([])
     setConnectionError(null)
@@ -121,8 +128,8 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   }, [serverInstance])
 
   const sendWhiteboardAction = useCallback((action: WhiteboardAction) => {
-    if (serverInstance && isConnected) {
-      console.log('📤 Sending whiteboard action via ServerClass:', action.type, action.id)
+    if (serverInstance && isConnected && connectionPhase === 'ready') {
+      console.log('📤 Sending whiteboard action via message:', action.type, action.id)
       try {
         serverInstance.sendEvent({
           type: 'whiteboard_action',
@@ -130,16 +137,20 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
         })
       } catch (error) {
         console.error('❌ Failed to send action:', error)
-        // Could set an error state here if needed
       }
     } else {
-      console.warn('⚠️ Cannot send action: not connected to server')
+      console.warn('⚠️ Cannot send action: connection not ready', {
+        hasInstance: !!serverInstance,
+        isConnected,
+        phase: connectionPhase
+      })
     }
-  }, [serverInstance, isConnected])
+  }, [serverInstance, isConnected, connectionPhase])
 
   const value: MultiplayerContextType = {
     serverInstance,
     isConnected,
+    connectionPhase,
     roomId,
     connectedUsers,
     connectionError,
