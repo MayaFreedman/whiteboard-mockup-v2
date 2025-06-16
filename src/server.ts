@@ -1,4 +1,5 @@
 
+
 /* global getConfigurationServerURL, jsonClone, simpleRequest, Colyseus */
 'use strict'
 import { Client } from 'colyseus.js'
@@ -32,8 +33,7 @@ export class ServerClass {
     try {
       console.log('🔍 Joining room by ID...')
       console.log('📡 Client state before join:', {
-        client: !!this.client,
-        endpoint: this.client.endpoint
+        client: !!this.client
       })
       
       // Add timeout to the join request
@@ -135,3 +135,4 @@ export class ServerClass {
     }
   }
 }
+
