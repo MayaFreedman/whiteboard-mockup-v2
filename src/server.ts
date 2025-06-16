@@ -31,6 +31,10 @@ export class ServerClass {
 
     try {
       console.log('🔍 Joining room by ID...')
+      console.log('📡 Client state before join:', {
+        client: !!this.client,
+        endpoint: this.client.endpoint
+      })
       
       // Add timeout to the join request
       const joinPromise = this.client.joinById(colyseusRoomID, {
@@ -38,19 +42,29 @@ export class ServerClass {
         moderator: isModerator,
       })
 
+      console.log('⏳ Join promise created, waiting for resolution...')
+
       // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
+          console.error('⏰ Join timeout reached after 10 seconds')
           reject(new Error('Connection timeout after 10 seconds'))
         }, 10000)
       })
 
       // Race between join and timeout
+      console.log('🏁 Starting promise race...')
       this.server.room = await Promise.race([joinPromise, timeoutPromise])
 
       console.log('✅ Successfully connected to room:', colyseusRoomID)
       console.log('🏠 Room object:', this.server.room)
+      console.log('🔗 Room connection state:', {
+        id: this.server.room.id,
+        sessionId: this.server.room.sessionId,
+        name: this.server.room.name
+      })
 
+      // Set up event handlers AFTER successful connection
       this.server.room.onStateChange((state) => {
         console.log('📡 State changed:', state)
         if (state.playspaceGameState) {
@@ -71,6 +85,8 @@ export class ServerClass {
       this.server.room.onLeave((code) => {
         console.log('👋 Left room with code:', code)
       })
+
+      console.log('🎯 All event handlers set up successfully')
 
     } catch (error) {
       console.error('💥 Failed to connect to Colyseus server:', error)
