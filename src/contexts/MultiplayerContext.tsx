@@ -67,6 +67,39 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     }
   }, [isConnected, serverInstance, connectionPhase])
 
+  // Monitor server instance for room readiness and update connection phase
+  useEffect(() => {
+    if (!serverInstance || !isConnected || !serverInstance.server?.room) {
+      if (connectionPhase !== 'disconnected' && connectionPhase !== 'connecting') {
+        setConnectionPhase('disconnected')
+      }
+      return
+    }
+
+    const room = serverInstance.server.room
+    
+    // Set up listeners to track when we receive initial state
+    const handleInitialState = () => {
+      console.log('🎯 Initial state received, connection ready')
+      setConnectionPhase('ready')
+    }
+
+    const handleRoomReady = () => {
+      console.log('🏠 Room connection established, waiting for initial state')
+      setConnectionPhase('handshake')
+    }
+
+    // Listen for the first defaultRoomState message to know we're ready
+    room.onMessage('defaultRoomState', handleInitialState)
+    
+    // Mark as handshake phase immediately when room is available
+    handleRoomReady()
+
+    return () => {
+      room.removeAllListeners('defaultRoomState')
+    }
+  }, [serverInstance, isConnected, connectionPhase])
+
   const connect = useCallback(async (targetRoomId: string, isModerator: boolean = false) => {
     try {
       console.log('🔌 Starting pure message-based connection to room:', targetRoomId)
@@ -79,7 +112,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setServerInstance(newServerInstance)
       setRoomId(targetRoomId)
       setIsConnected(true)
-      setConnectionPhase('handshake') // Will be updated to 'ready' by useMultiplayerSync
+      // connectionPhase will be updated by the useEffect above
       setConnectionError(null)
 
       console.log('✅ Message-based connection established!')

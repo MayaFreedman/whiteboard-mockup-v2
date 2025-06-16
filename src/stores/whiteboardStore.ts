@@ -135,7 +135,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         updatedAt: Date.now()
       };
       
-      console.log('➕ Adding object:', { id, type: object.type, position: { x: object.x, y: object.y } });
+      console.log('➕ Adding object locally:', { id, type: object.type, position: { x: object.x, y: object.y } });
       
       const action: AddObjectAction = {
         type: 'ADD_OBJECT',
@@ -149,7 +149,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     updateObject: (id, updates) => {
-      console.log('📝 Updating object:', { id: id.slice(0, 8), updates });
+      console.log('📝 Updating object locally:', { id: id.slice(0, 8), updates });
       
       const action: UpdateObjectAction = {
         type: 'UPDATE_OBJECT',

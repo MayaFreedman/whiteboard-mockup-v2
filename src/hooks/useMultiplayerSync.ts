@@ -4,13 +4,10 @@ import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
 
-type ConnectionPhase = 'disconnected' | 'connecting' | 'handshake' | 'ready'
-
 export const useMultiplayerSync = () => {
   const multiplayerContext = useContext(MultiplayerContext)
   const whiteboardStore = useWhiteboardStore()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
-  const [connectionPhase, setConnectionPhase] = useState<ConnectionPhase>('disconnected')
   const actionQueueRef = useRef<WhiteboardAction[]>([])
 
   // Guard clause for context
@@ -20,17 +17,14 @@ export const useMultiplayerSync = () => {
     )
   }
 
-  const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext
+  const { serverInstance, isConnected, sendWhiteboardAction, connectionPhase } = multiplayerContext
 
-  // Handle connection phase changes
+  // Handle connection phase changes and room setup
   useEffect(() => {
     if (!serverInstance || !isConnected || !serverInstance.server?.room) {
-      setConnectionPhase('disconnected')
       return
     }
 
-    setConnectionPhase('connecting')
-    
     const room = serverInstance.server.room
     console.log('🔄 Setting up message-based sync for room:', room.roomId)
 
@@ -46,31 +40,24 @@ export const useMultiplayerSync = () => {
       if (message && message.whiteboardState) {
         console.log('📥 Loading full whiteboard state from server')
         whiteboardStore.loadFullState(message.whiteboardState)
-        setConnectionPhase('ready')
-        
-        // Process any queued actions now that we're ready
-        if (actionQueueRef.current.length > 0) {
-          console.log('📤 Processing queued actions:', actionQueueRef.current.length)
-          actionQueueRef.current.forEach(action => {
-            sendWhiteboardAction(action)
-            sentActionIdsRef.current.add(action.id)
-          })
-          actionQueueRef.current = []
-        }
       } else {
         console.log('✅ No initial whiteboard state, starting fresh')
-        setConnectionPhase('ready')
+      }
+      
+      // Process any queued actions now that we're ready
+      if (actionQueueRef.current.length > 0) {
+        console.log('📤 Processing queued actions:', actionQueueRef.current.length)
+        actionQueueRef.current.forEach(action => {
+          sendWhiteboardAction(action)
+          sentActionIdsRef.current.add(action.id)
+        })
+        actionQueueRef.current = []
       }
     }
 
     // Handle broadcast messages (collaborative actions)
     const handleBroadcastMessage = (message: any) => {
       console.log('📨 Received broadcast message:', message)
-      
-      if (connectionPhase !== 'ready') {
-        console.log('⏳ Connection not ready, ignoring broadcast')
-        return
-      }
 
       // Handle whiteboard actions
       if (message.type === 'whiteboard_action' && message.action) {
@@ -98,17 +85,14 @@ export const useMultiplayerSync = () => {
     room.onMessage('defaultRoomState', handleDefaultRoomState)
     room.onMessage('broadcast', handleBroadcastMessage)
 
-    // Move to handshake phase
-    setConnectionPhase('handshake')
     console.log('✅ Message handlers set up, waiting for initial state')
 
     return () => {
       console.log('🧹 Cleaning up message-based sync')
       room.removeAllListeners('defaultRoomState')
       room.removeAllListeners('broadcast')
-      setConnectionPhase('disconnected')
     }
-  }, [serverInstance, isConnected, whiteboardStore])
+  }, [serverInstance, isConnected, whiteboardStore, sendWhiteboardAction])
 
   // Send local actions - queue until ready
   useEffect(() => {
