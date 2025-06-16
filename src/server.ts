@@ -32,74 +32,113 @@ export class ServerClass {
         client: !!this.client
       })
       
-      // Add timeout to the join request
+      // Create the join promise with detailed logging
+      console.log('🚀 Creating join promise...')
       const joinPromise = this.client.joinById(colyseusRoomID, {
         type: 'videoSession',
         moderator: isModerator,
       })
 
-      console.log('⏳ Join promise created, waiting for resolution...')
+      console.log('⏳ Join promise created, adding listeners...')
 
-      // Create a timeout promise
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          console.error('⏰ Join timeout reached after 15 seconds')
-          reject(new Error('Connection timeout after 15 seconds - likely a schema decode error'))
-        }, 15000) // Increased timeout to 15 seconds
+      // Add temporary listeners to track connection progress
+      const tempRoom = await new Promise((resolve, reject) => {
+        // Set up a timeout that will reject the promise
+        const timeout = setTimeout(() => {
+          console.error('⏰ Connection timeout after 20 seconds')
+          reject(new Error('Connection timeout after 20 seconds - likely a schema decode error'))
+        }, 20000)
+
+        // When the join promise resolves, we'll get the room object
+        joinPromise.then((room) => {
+          console.log('✅ Join promise resolved, room object received')
+          console.log('🏠 Room details:', {
+            id: room.id,
+            sessionId: room.sessionId,
+            name: room.name,
+            state: room.state ? 'has state' : 'no state'
+          })
+
+          // Set up detailed event logging BEFORE clearing timeout
+          console.log('📡 Setting up room event listeners...')
+          
+          room.onStateChange.once((state) => {
+            console.log('🎯 FIRST state change received')
+            console.log('📊 State structure:', {
+              hasState: !!state,
+              stateKeys: state ? Object.keys(state) : [],
+              hasPlayers: state && state.players ? 'yes' : 'no',
+              hasPlayspaceGameState: state && state.playspaceGameState ? 'yes' : 'no'
+            })
+            
+            if (state && state.playspaceGameState) {
+              console.log('🎮 PlayspaceGameState details:', {
+                hasState: !!state.playspaceGameState.state,
+                stateLength: state.playspaceGameState.state ? state.playspaceGameState.state.length : 0,
+                statePreview: state.playspaceGameState.state ? state.playspaceGameState.state.substring(0, 100) : 'empty'
+              })
+            }
+          })
+
+          room.onMessage('defaultRoomState', (message) => {
+            console.log('🏠 Default room state message received')
+            console.log('📦 Message structure:', {
+              hasMessage: !!message,
+              messageKeys: message ? Object.keys(message) : [],
+              messageType: typeof message
+            })
+          })
+
+          room.onMessage('broadcast', (message) => {
+            console.log('📨 Broadcast message received:', message)
+          })
+
+          room.onError((code, message) => {
+            console.error('❌ Room error occurred:', { code, message })
+            console.error('🔍 Error details:', {
+              errorString: String(message),
+              includesRefId: String(message).includes('refId'),
+              errorCode: code
+            })
+          })
+
+          room.onLeave((code) => {
+            console.log('👋 Left room with code:', code)
+          })
+
+          clearTimeout(timeout)
+          resolve(room)
+        }).catch((error) => {
+          console.error('💥 Join promise rejected:', error)
+          console.error('🔍 Error type:', typeof error)
+          console.error('🔍 Error message:', error.message || 'no message')
+          console.error('🔍 Error stack:', error.stack)
+          
+          clearTimeout(timeout)
+          reject(error)
+        })
       })
 
-      // Race between join and timeout
-      console.log('🏁 Starting promise race...')
-      this.server.room = await Promise.race([joinPromise, timeoutPromise])
-
-      console.log('✅ Successfully connected to room:', colyseusRoomID)
-      console.log('🏠 Room object:', {
-        id: this.server.room.id,
-        sessionId: this.server.room.sessionId,
-        name: this.server.room.name
-      })
-
-      // Set up event handlers AFTER successful connection
-      this.server.room.onStateChange((state) => {
-        console.log('📡 State changed - keys:', Object.keys(state || {}))
-        try {
-          if (state && state.playspaceGameState && state.playspaceGameState.state) {
-            console.log('🎮 Game state received:', state.playspaceGameState.state)
-            const parsedObject = JSON.parse(state.playspaceGameState.state)
-            console.log('📦 Parsed object:', parsedObject)
-          }
-        } catch (parseError) {
-          console.error('❌ Error parsing game state:', parseError)
-        }
-      })
-
-      this.server.room.onMessage('broadcast', (message) => {
-        console.log('📨 Broadcast message received:', message)
-      })
-
-      this.server.room.onMessage('defaultRoomState', (message) => {
-        console.log('🏠 Default room state received:', message)
-      })
-
-      this.server.room.onError((code, message) => {
-        console.error('❌ Room error:', { code, message })
-        if (message && message.includes('refId')) {
-          console.error('🔍 Schema decode error detected - this is likely a server/client schema mismatch')
-        }
-      })
-
-      this.server.room.onLeave((code) => {
-        console.log('👋 Left room with code:', code)
-      })
-
-      console.log('🎯 All event handlers set up successfully')
+      this.server.room = tempRoom
+      console.log('🎯 All setup complete, connection established')
 
     } catch (error) {
       console.error('💥 Failed to connect to Colyseus server:', error)
       
+      // Enhanced error analysis
+      const errorString = String(error.message || error)
+      console.error('🔍 Detailed error analysis:', {
+        hasRefId: errorString.includes('refId'),
+        hasTimeout: errorString.includes('timeout'),
+        hasSchema: errorString.includes('schema'),
+        hasDecode: errorString.includes('decode'),
+        errorType: typeof error,
+        errorConstructor: error.constructor.name
+      })
+      
       // Check for schema-related errors
-      if (error && error.message && error.message.includes('refId')) {
-        throw new Error('Schema decode error: The server and client have mismatched schemas. Check that your server-side State schema matches what the client expects.')
+      if (errorString.includes('refId')) {
+        throw new Error('Schema decode error: The server and client have mismatched schemas. The server is sending state data that the client cannot decode. Check the server-side State schema definition.')
       }
       
       // Check if it's a network error
