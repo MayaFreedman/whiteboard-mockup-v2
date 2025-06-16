@@ -53,7 +53,7 @@ export class ServerClass {
         joinPromise.then((room) => {
           console.log('✅ Join promise resolved, room object received')
           console.log('🏠 Room details:', {
-            id: room.id,
+            roomId: room.roomId,
             sessionId: room.sessionId,
             name: room.name,
             state: room.state ? 'has state' : 'no state'
@@ -62,7 +62,7 @@ export class ServerClass {
           // Set up detailed event logging BEFORE clearing timeout
           console.log('📡 Setting up room event listeners...')
           
-          room.onStateChange.once((state) => {
+          room.onStateChange.once((state: any) => {
             console.log('🎯 FIRST state change received')
             console.log('📊 State structure:', {
               hasState: !!state,
@@ -80,7 +80,7 @@ export class ServerClass {
             }
           })
 
-          room.onMessage('defaultRoomState', (message) => {
+          room.onMessage('defaultRoomState', (message: any) => {
             console.log('🏠 Default room state message received')
             console.log('📦 Message structure:', {
               hasMessage: !!message,
@@ -89,20 +89,27 @@ export class ServerClass {
             })
           })
 
-          room.onMessage('broadcast', (message) => {
+          room.onMessage('broadcast', (message: any) => {
             console.log('📨 Broadcast message received:', message)
           })
 
-          room.onError((code, message) => {
+          room.onError((code: any, message: any) => {
             console.error('❌ Room error occurred:', { code, message })
             console.error('🔍 Error details:', {
               errorString: String(message),
               includesRefId: String(message).includes('refId'),
               errorCode: code
             })
+            
+            // Enhanced refId error detection
+            if (String(message).includes('refId')) {
+              console.error('🚨 DETECTED REFID ERROR - This is a schema decode error!')
+              console.error('💡 This usually means the server sent state data before the client was ready')
+              console.error('💡 Or there was a schema mismatch between client and server')
+            }
           })
 
-          room.onLeave((code) => {
+          room.onLeave((code: any) => {
             console.log('👋 Left room with code:', code)
           })
 
@@ -113,6 +120,11 @@ export class ServerClass {
           console.error('🔍 Error type:', typeof error)
           console.error('🔍 Error message:', error.message || 'no message')
           console.error('🔍 Error stack:', error.stack)
+          
+          // Check for refId error in the join error
+          if (String(error.message || error).includes('refId')) {
+            console.error('🚨 REFID ERROR DETECTED IN JOIN PROCESS!')
+          }
           
           clearTimeout(timeout)
           reject(error)
