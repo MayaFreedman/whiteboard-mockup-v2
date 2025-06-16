@@ -1,5 +1,4 @@
 
-
 /* global getConfigurationServerURL, jsonClone, simpleRequest, Colyseus */
 'use strict'
 import { Client } from 'colyseus.js'
@@ -7,10 +6,10 @@ import { Client } from 'colyseus.js'
 export class ServerClass {
   constructor() {}
   server: any = {}
-  client = new Client('http://localhost:4001')
+  client = new Client('ws://localhost:4001')
 
   async connectToColyseusServer(colyseusRoomID: string, isModerator: boolean) {
-    console.log('🔌 Attempting to connect to Colyseus server at http://localhost:4001')
+    console.log('🔌 Attempting to connect to Colyseus server at ws://localhost:4001')
     console.log('📋 Room ID:', colyseusRoomID)
     console.log('👑 Is Moderator:', isModerator)
 
@@ -24,9 +23,6 @@ export class ServerClass {
       console.log('✅ Server is reachable, status:', testResponse.status)
     } catch (fetchError) {
       console.error('❌ Server connectivity test failed:', fetchError)
-      console.error('📊 Fetch error type:', typeof fetchError)
-      console.error('📊 Fetch error name:', fetchError?.name)
-      console.error('📊 Fetch error message:', fetchError?.message)
       throw new Error(`Cannot reach Colyseus server at localhost:4001. Is the server running? Error: ${fetchError?.message || 'Unknown network error'}`)
     }
 
@@ -47,9 +43,9 @@ export class ServerClass {
       // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
-          console.error('⏰ Join timeout reached after 10 seconds')
-          reject(new Error('Connection timeout after 10 seconds'))
-        }, 10000)
+          console.error('⏰ Join timeout reached after 15 seconds')
+          reject(new Error('Connection timeout after 15 seconds - likely a schema decode error'))
+        }, 15000) // Increased timeout to 15 seconds
       })
 
       // Race between join and timeout
@@ -57,8 +53,7 @@ export class ServerClass {
       this.server.room = await Promise.race([joinPromise, timeoutPromise])
 
       console.log('✅ Successfully connected to room:', colyseusRoomID)
-      console.log('🏠 Room object:', this.server.room)
-      console.log('🔗 Room connection state:', {
+      console.log('🏠 Room object:', {
         id: this.server.room.id,
         sessionId: this.server.room.sessionId,
         name: this.server.room.name
@@ -66,11 +61,15 @@ export class ServerClass {
 
       // Set up event handlers AFTER successful connection
       this.server.room.onStateChange((state) => {
-        console.log('📡 State changed:', state)
-        if (state.playspaceGameState) {
-          console.log('🎮 Game state:', state.playspaceGameState)
-          const parsedObject = JSON.parse(state.playspaceGameState.state)
-          console.log('📦 Parsed object:', parsedObject)
+        console.log('📡 State changed - keys:', Object.keys(state || {}))
+        try {
+          if (state && state.playspaceGameState && state.playspaceGameState.state) {
+            console.log('🎮 Game state received:', state.playspaceGameState.state)
+            const parsedObject = JSON.parse(state.playspaceGameState.state)
+            console.log('📦 Parsed object:', parsedObject)
+          }
+        } catch (parseError) {
+          console.error('❌ Error parsing game state:', parseError)
         }
       })
 
@@ -78,8 +77,15 @@ export class ServerClass {
         console.log('📨 Broadcast message received:', message)
       })
 
+      this.server.room.onMessage('defaultRoomState', (message) => {
+        console.log('🏠 Default room state received:', message)
+      })
+
       this.server.room.onError((code, message) => {
         console.error('❌ Room error:', { code, message })
+        if (message && message.includes('refId')) {
+          console.error('🔍 Schema decode error detected - this is likely a server/client schema mismatch')
+        }
       })
 
       this.server.room.onLeave((code) => {
@@ -90,26 +96,14 @@ export class ServerClass {
 
     } catch (error) {
       console.error('💥 Failed to connect to Colyseus server:', error)
-      console.error('📊 Error type:', typeof error)
-      console.error('📊 Error constructor:', error?.constructor?.name)
       
-      // Better error inspection
-      if (error instanceof Error) {
-        console.error('📊 Error name:', error.name)
-        console.error('📊 Error message:', error.message)
-        console.error('📊 Error stack:', error.stack)
-      } else {
-        console.error('📊 Raw error object:', JSON.stringify(error, null, 2))
+      // Check for schema-related errors
+      if (error && error.message && error.message.includes('refId')) {
+        throw new Error('Schema decode error: The server and client have mismatched schemas. Check that your server-side State schema matches what the client expects.')
       }
       
       // Check if it's a network error
-      if (error && typeof error === 'object') {
-        console.error('📊 Error keys:', Object.keys(error))
-        console.error('📊 Error values:', Object.values(error))
-      }
-      
-      // More specific error messages
-      if (error && 'type' in error && error.type === 'error') {
+      if (error && typeof error === 'object' && 'type' in error && error.type === 'error') {
         throw new Error('WebSocket connection failed. The Colyseus server may not be running on localhost:4001 or may not be accepting WebSocket connections.')
       }
       
@@ -135,4 +129,3 @@ export class ServerClass {
     }
   }
 }
-
