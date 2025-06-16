@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
@@ -60,9 +61,6 @@ interface WhiteboardStore extends WhiteboardState {
   };
   getActionsSince: (timestamp: number) => WhiteboardAction[];
   clearActionHistory: () => void;
-  
-  // NEW: Load full state from server message (replaces schema sync)
-  loadFullState: (serverState: any) => void;
 }
 
 const initialState: WhiteboardState = {
@@ -135,7 +133,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         updatedAt: Date.now()
       };
       
-      console.log('➕ Adding object locally:', { id, type: object.type, position: { x: object.x, y: object.y } });
+      console.log('➕ Adding object:', { id, type: object.type, position: { x: object.x, y: object.y } });
       
       const action: AddObjectAction = {
         type: 'ADD_OBJECT',
@@ -149,7 +147,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     updateObject: (id, updates) => {
-      console.log('📝 Updating object locally:', { id: id.slice(0, 8), updates });
+      console.log('📝 Updating object:', { id: id.slice(0, 8), updates });
       
       const action: UpdateObjectAction = {
         type: 'UPDATE_OBJECT',
@@ -316,48 +314,6 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         stateVersion: state.stateVersion + 1,
         lastStateUpdate: Date.now()
       }));
-    },
-
-    loadFullState: (serverState: any) => {
-      console.log('📥 Loading full state from server:', {
-        hasObjects: serverState && serverState.objects ? 'yes' : 'no',
-        objectCount: serverState && serverState.objects ? Object.keys(serverState.objects).length : 0,
-        hasViewport: serverState && serverState.viewport ? 'yes' : 'no',
-        hasSettings: serverState && serverState.settings ? 'yes' : 'no'
-      });
-
-      if (!serverState) {
-        console.log('✅ No server state provided, keeping initial state');
-        return;
-      }
-
-      // Validate and apply server state
-      const validatedState = {
-        objects: serverState.objects || {},
-        selectedObjectIds: serverState.selectedObjectIds || [],
-        viewport: {
-          x: serverState.viewport?.x || 0,
-          y: serverState.viewport?.y || 0,
-          zoom: serverState.viewport?.zoom || 1
-        },
-        settings: {
-          gridVisible: serverState.settings?.gridVisible || false,
-          linedPaperVisible: serverState.settings?.linedPaperVisible || false,
-          backgroundColor: serverState.settings?.backgroundColor || '#ffffff'
-        }
-      };
-
-      set((state) => ({
-        ...state,
-        ...validatedState,
-        stateVersion: state.stateVersion + 1,
-        lastStateUpdate: Date.now(),
-        // Clear action history when loading from server to prevent conflicts
-        actionHistory: [],
-        currentHistoryIndex: -1
-      }));
-
-      console.log('✅ Full state loaded successfully');
     },
 
     getStateSnapshot: () => {

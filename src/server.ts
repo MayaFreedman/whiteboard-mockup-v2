@@ -9,7 +9,7 @@ export class ServerClass {
   client = new Client('ws://localhost:4001')
 
   async connectToColyseusServer(colyseusRoomID: string, isModerator: boolean) {
-    console.log('🔌 Attempting PURE MESSAGE-BASED connection to Colyseus server at ws://localhost:4001')
+    console.log('🔌 Attempting to connect to Colyseus server at ws://localhost:4001')
     console.log('📋 Room ID:', colyseusRoomID)
     console.log('👑 Is Moderator:', isModerator)
 
@@ -18,7 +18,7 @@ export class ServerClass {
       console.log('🌐 Testing server connectivity...')
       const testResponse = await fetch('http://localhost:4001', { 
         method: 'GET',
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(5000) // 5 second timeout
       })
       console.log('✅ Server is reachable, status:', testResponse.status)
     } catch (fetchError) {
@@ -27,36 +27,61 @@ export class ServerClass {
     }
 
     try {
-      console.log('🔍 Joining room by ID (message-based mode)...')
+      console.log('🔍 Joining room by ID...')
+      console.log('📡 Client state before join:', {
+        client: !!this.client
+      })
       
+      // Create the join promise with detailed logging
+      console.log('🚀 Creating join promise...')
       const joinPromise = this.client.joinById(colyseusRoomID, {
         type: 'videoSession',
         moderator: isModerator,
       })
 
-      console.log('⏳ Join promise created, setting up message-only handlers...')
+      console.log('⏳ Join promise created, adding listeners...')
 
+      // Add temporary listeners to track connection progress
       const tempRoom = await new Promise((resolve, reject) => {
+        // Set up a timeout that will reject the promise
         const timeout = setTimeout(() => {
           console.error('⏰ Connection timeout after 20 seconds')
-          reject(new Error('Connection timeout after 20 seconds'))
+          reject(new Error('Connection timeout after 20 seconds - likely a schema decode error'))
         }, 20000)
 
+        // When the join promise resolves, we'll get the room object
         joinPromise.then((room) => {
-          console.log('✅ Room joined successfully (message-based)')
+          console.log('✅ Join promise resolved, room object received')
           console.log('🏠 Room details:', {
             roomId: room.roomId,
             sessionId: room.sessionId,
-            name: room.name
+            name: room.name,
+            state: room.state ? 'has state' : 'no state'
           })
 
-          console.log('📡 Setting up MESSAGE-ONLY event listeners...')
+          // Set up detailed event logging BEFORE clearing timeout
+          console.log('📡 Setting up room event listeners...')
           
-          // REMOVED: room.onStateChange - this was causing refId errors
-          // The server will send state via 'defaultRoomState' message instead
+          room.onStateChange.once((state: any) => {
+            console.log('🎯 FIRST state change received')
+            console.log('📊 State structure:', {
+              hasState: !!state,
+              stateKeys: state ? Object.keys(state) : [],
+              hasPlayers: state && state.players ? 'yes' : 'no',
+              hasPlayspaceGameState: state && state.playspaceGameState ? 'yes' : 'no'
+            })
+            
+            if (state && state.playspaceGameState) {
+              console.log('🎮 PlayspaceGameState details:', {
+                hasState: !!state.playspaceGameState.state,
+                stateLength: state.playspaceGameState.state ? state.playspaceGameState.state.length : 0,
+                statePreview: state.playspaceGameState.state ? state.playspaceGameState.state.substring(0, 100) : 'empty'
+              })
+            }
+          })
 
           room.onMessage('defaultRoomState', (message: any) => {
-            console.log('🏠 Default room state message received (replacing schema sync)')
+            console.log('🏠 Default room state message received')
             console.log('📦 Message structure:', {
               hasMessage: !!message,
               messageKeys: message ? Object.keys(message) : [],
@@ -70,11 +95,17 @@ export class ServerClass {
 
           room.onError((code: any, message: any) => {
             console.error('❌ Room error occurred:', { code, message })
+            console.error('🔍 Error details:', {
+              errorString: String(message),
+              includesRefId: String(message).includes('refId'),
+              errorCode: code
+            })
             
-            // This should no longer happen with pure message-based approach
+            // Enhanced refId error detection
             if (String(message).includes('refId')) {
-              console.error('🚨 UNEXPECTED REFID ERROR - This should not happen in message-only mode!')
-              console.error('💡 Check if server is still trying to send schema data')
+              console.error('🚨 DETECTED REFID ERROR - This is a schema decode error!')
+              console.error('💡 This usually means the server sent state data before the client was ready')
+              console.error('💡 Or there was a schema mismatch between client and server')
             }
           })
 
@@ -86,12 +117,13 @@ export class ServerClass {
           resolve(room)
         }).catch((error) => {
           console.error('💥 Join promise rejected:', error)
+          console.error('🔍 Error type:', typeof error)
+          console.error('🔍 Error message:', error.message || 'no message')
+          console.error('🔍 Error stack:', error.stack)
           
-          // Enhanced error analysis for message-based mode
+          // Check for refId error in the join error
           if (String(error.message || error).includes('refId')) {
-            console.error('🚨 REFID ERROR IN MESSAGE-BASED MODE!')
-            console.error('💡 This suggests the server is still sending schema data')
-            console.error('💡 Verify server is configured for pure message-based communication')
+            console.error('🚨 REFID ERROR DETECTED IN JOIN PROCESS!')
           }
           
           clearTimeout(timeout)
@@ -100,22 +132,30 @@ export class ServerClass {
       })
 
       this.server.room = tempRoom
-      console.log('🎯 Pure message-based connection established successfully')
+      console.log('🎯 All setup complete, connection established')
 
     } catch (error) {
-      console.error('💥 Failed to establish message-based connection:', error)
+      console.error('💥 Failed to connect to Colyseus server:', error)
       
+      // Enhanced error analysis
       const errorString = String(error.message || error)
-      console.error('🔍 Error analysis for message-based mode:', {
+      console.error('🔍 Detailed error analysis:', {
         hasRefId: errorString.includes('refId'),
         hasTimeout: errorString.includes('timeout'),
         hasSchema: errorString.includes('schema'),
         hasDecode: errorString.includes('decode'),
-        errorType: typeof error
+        errorType: typeof error,
+        errorConstructor: error.constructor.name
       })
       
+      // Check for schema-related errors
       if (errorString.includes('refId')) {
-        throw new Error('Schema error in message-based mode: The server is still trying to send schema data. Ensure server uses only custom messages for state synchronization.')
+        throw new Error('Schema decode error: The server and client have mismatched schemas. The server is sending state data that the client cannot decode. Check the server-side State schema definition.')
+      }
+      
+      // Check if it's a network error
+      if (error && typeof error === 'object' && 'type' in error && error.type === 'error') {
+        throw new Error('WebSocket connection failed. The Colyseus server may not be running on localhost:4001 or may not be accepting WebSocket connections.')
       }
       
       throw error
@@ -123,7 +163,7 @@ export class ServerClass {
   }
 
   sendState(payload: any) {
-    console.log('📤 Sending state via message:', payload)
+    console.log('📤 Sending state:', payload)
     if (!this.server.room) {
       console.error('❌ Cannot send state: room not connected')
       throw new Error('Cannot send stateUpdate message as this.room does not exist')
@@ -132,7 +172,7 @@ export class ServerClass {
   }
 
   sendEvent(payload: any) {
-    console.log('📡 Sending event via message:', payload)
+    console.log('📡 Sending event:', payload)
     if (this.server.room) {
       this.server.room.send('broadcast', payload)
     } else {

@@ -1,5 +1,5 @@
 
-import { useEffect, useContext, useRef, useState } from 'react'
+import { useEffect, useContext, useRef } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
@@ -8,7 +8,6 @@ export const useMultiplayerSync = () => {
   const multiplayerContext = useContext(MultiplayerContext)
   const whiteboardStore = useWhiteboardStore()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
-  const actionQueueRef = useRef<WhiteboardAction[]>([])
 
   // Guard clause for context
   if (!multiplayerContext) {
@@ -17,87 +16,12 @@ export const useMultiplayerSync = () => {
     )
   }
 
-  const { serverInstance, isConnected, sendWhiteboardAction, connectionPhase } = multiplayerContext
+  const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext
 
-  // Handle connection phase changes and room setup
+  // Send local actions to other clients - only when fully connected
   useEffect(() => {
     if (!serverInstance || !isConnected || !serverInstance.server?.room) {
-      return
-    }
-
-    const room = serverInstance.server.room
-    console.log('🔄 Setting up message-based sync for room:', room.roomId)
-
-    // Handle initial room state (replaces schema onStateChange)
-    const handleDefaultRoomState = (message: any) => {
-      console.log('🏠 Received initial room state via message')
-      console.log('📦 State data:', {
-        hasData: !!message,
-        dataKeys: message ? Object.keys(message) : [],
-        hasWhiteboardState: message && message.whiteboardState ? 'yes' : 'no'
-      })
-
-      if (message && message.whiteboardState) {
-        console.log('📥 Loading full whiteboard state from server')
-        whiteboardStore.loadFullState(message.whiteboardState)
-      } else {
-        console.log('✅ No initial whiteboard state, starting fresh')
-      }
-      
-      // Process any queued actions now that we're ready
-      if (actionQueueRef.current.length > 0) {
-        console.log('📤 Processing queued actions:', actionQueueRef.current.length)
-        actionQueueRef.current.forEach(action => {
-          sendWhiteboardAction(action)
-          sentActionIdsRef.current.add(action.id)
-        })
-        actionQueueRef.current = []
-      }
-    }
-
-    // Handle broadcast messages (collaborative actions)
-    const handleBroadcastMessage = (message: any) => {
-      console.log('📨 Received broadcast message:', message)
-
-      // Handle whiteboard actions
-      if (message.type === 'whiteboard_action' && message.action) {
-        const action: WhiteboardAction = message.action
-        console.log('📥 Processing remote whiteboard action:', action.type, action.id)
-        
-        // Prevent echoing our own actions
-        if (!sentActionIdsRef.current.has(action.id)) {
-          whiteboardStore.applyRemoteAction(action)
-        } else {
-          console.log('🔄 Ignoring echo of our own action:', action.id)
-        }
-      }
-      
-      // Handle state sync messages
-      if (message.type === 'state_sync' && message.data) {
-        console.log('📥 Processing state sync message')
-        if (message.data.actions && Array.isArray(message.data.actions)) {
-          whiteboardStore.batchUpdate(message.data.actions)
-        }
-      }
-    }
-
-    // Set up message handlers
-    room.onMessage('defaultRoomState', handleDefaultRoomState)
-    room.onMessage('broadcast', handleBroadcastMessage)
-
-    console.log('✅ Message handlers set up, waiting for initial state')
-
-    return () => {
-      console.log('🧹 Cleaning up message-based sync')
-      room.removeAllListeners('defaultRoomState')
-      room.removeAllListeners('broadcast')
-    }
-  }, [serverInstance, isConnected, whiteboardStore, sendWhiteboardAction])
-
-  // Send local actions - queue until ready
-  useEffect(() => {
-    if (!serverInstance || !isConnected || !serverInstance.server?.room) {
-      console.log('🔄 Skipping action sync setup - not connected')
+      console.log('🔄 Skipping action sync setup - not fully connected')
       return
     }
 
@@ -107,19 +31,18 @@ export const useMultiplayerSync = () => {
       (state) => state.lastAction,
       (lastAction) => {
         if (lastAction && !sentActionIdsRef.current.has(lastAction.id)) {
-          if (connectionPhase === 'ready') {
-            console.log('📤 Sending action immediately:', lastAction.type, lastAction.id)
-            sendWhiteboardAction(lastAction)
-            sentActionIdsRef.current.add(lastAction.id)
-          } else {
-            console.log('⏳ Queueing action until connection ready:', lastAction.type, lastAction.id)
-            actionQueueRef.current.push(lastAction)
-          }
+          console.log(
+            '📤 Sending action to room:',
+            lastAction.type,
+            lastAction.id
+          )
+          sendWhiteboardAction(lastAction)
+          sentActionIdsRef.current.add(lastAction.id)
           
-          // Clean up old IDs to prevent memory leak
+          // Clean up old IDs to prevent memory leak (keep last 1000)
           if (sentActionIdsRef.current.size > 1000) {
             const idsArray = Array.from(sentActionIdsRef.current)
-            const idsToKeep = idsArray.slice(-500)
+            const idsToKeep = idsArray.slice(-500) // Keep last 500
             sentActionIdsRef.current = new Set(idsToKeep)
           }
         }
@@ -127,11 +50,57 @@ export const useMultiplayerSync = () => {
     )
 
     return unsubscribe
-  }, [serverInstance, isConnected, sendWhiteboardAction, connectionPhase])
+  }, [serverInstance, isConnected, sendWhiteboardAction])
+
+  // Receive actions from other clients - only when fully connected
+  useEffect(() => {
+    if (!serverInstance?.server?.room || !isConnected) {
+      console.log('📥 Skipping inbound message setup - not fully connected')
+      return
+    }
+
+    const room = serverInstance.server.room
+    console.log('📥 Setting up inbound message handlers for room:', room.id)
+
+    const handleBroadcastMessage = (message: any) => {
+      console.log('📥 Received broadcast message:', message)
+      
+      // Handle whiteboard actions
+      if (message.type === 'whiteboard_action' && message.action) {
+        const action: WhiteboardAction = message.action
+        console.log('📥 Processing whiteboard action:', action.type, action.id)
+        
+        // Prevent echoing our own actions back using the sent IDs set
+        if (!sentActionIdsRef.current.has(action.id)) {
+          whiteboardStore.applyRemoteAction(action)
+        } else {
+          console.log('🔄 Ignoring echo of our own action:', action.id)
+        }
+      }
+      
+      // Handle state sync
+      if (message.type === 'state_sync' && message.data) {
+        console.log('📥 Processing state sync')
+        if (message.data.actions && Array.isArray(message.data.actions)) {
+          whiteboardStore.batchUpdate(message.data.actions)
+        }
+      }
+    }
+
+    // Use the existing message handler pattern from your ServerClass
+    room.onMessage('broadcast', handleBroadcastMessage)
+
+    console.log('✅ Message handlers set up successfully')
+
+    return () => {
+      console.log('🧹 Cleaning up message handlers')
+      // Clean up the specific message handler
+      room.removeAllListeners('broadcast')
+    }
+  }, [serverInstance, isConnected, whiteboardStore])
 
   return {
     isConnected,
-    connectionPhase,
     serverInstance,
     sendWhiteboardAction,
   }
