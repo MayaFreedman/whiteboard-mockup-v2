@@ -4,6 +4,7 @@ import { Toolbar } from './whiteboard/Toolbar';
 import { Canvas } from './whiteboard/Canvas';
 import { WhiteboardSidebar } from './whiteboard/Sidebar';
 import { SidebarProvider, SidebarInset } from './ui/sidebar';
+import { ConnectionStatus } from './ConnectionStatus';
 import { useMultiplayerSync } from '../hooks/useMultiplayerSync';
 
 /**
@@ -17,6 +18,9 @@ export const Whiteboard: React.FC = () => {
   return (
     <SidebarProvider>
       <div className="h-screen flex flex-col bg-background w-full">
+        {/* Connection Status - Fixed overlay */}
+        <ConnectionStatus />
+        
         {/* Top Toolbar - Fixed at the top */}
         <Toolbar />
         

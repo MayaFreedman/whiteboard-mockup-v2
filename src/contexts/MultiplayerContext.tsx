@@ -1,4 +1,5 @@
-import React, { createContext, useState, useCallback, ReactNode } from 'react'
+
+import React, { createContext, useState, useCallback, useEffect, ReactNode } from 'react'
 import { ServerClass } from '../server'
 import { WhiteboardAction } from '../types/whiteboard'
 
@@ -16,6 +17,7 @@ interface MultiplayerContextType {
   roomId: string | null
   connectedUsers: User[]
   connectionError: string | null
+  isAutoConnecting: boolean
   connect: (roomId: string, isModerator?: boolean) => Promise<void>
   disconnect: () => void
   sendWhiteboardAction: (action: WhiteboardAction) => void
@@ -37,6 +39,29 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   const [roomId, setRoomId] = useState<string | null>(null)
   const [connectedUsers, setConnectedUsers] = useState<User[]>([])
   const [connectionError, setConnectionError] = useState<string | null>(null)
+  const [isAutoConnecting, setIsAutoConnecting] = useState(false)
+
+  // Auto-connection logic
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const roomParam = urlParams.get('room') || urlParams.get('roomId')
+    
+    if (roomParam && !isConnected && !serverInstance) {
+      console.log('🔗 Auto-connecting to room from URL:', roomParam)
+      setIsAutoConnecting(true)
+      
+      connect(roomParam, false) // Connect as regular user, not moderator
+        .then(() => {
+          console.log('✅ Auto-connection successful')
+        })
+        .catch((error) => {
+          console.error('❌ Auto-connection failed:', error)
+        })
+        .finally(() => {
+          setIsAutoConnecting(false)
+        })
+    }
+  }, [])
 
   const connect = useCallback(async (targetRoomId: string, isModerator: boolean = false) => {
     try {
@@ -113,6 +138,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     roomId,
     connectedUsers,
     connectionError,
+    isAutoConnecting,
     connect,
     disconnect,
     sendWhiteboardAction,
