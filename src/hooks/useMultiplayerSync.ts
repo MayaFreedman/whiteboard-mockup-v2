@@ -1,4 +1,3 @@
-
 import { useEffect, useContext, useRef } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { WhiteboardAction } from '../types/whiteboard'
@@ -7,7 +6,7 @@ import { MultiplayerContext } from '../contexts/MultiplayerContext'
 export const useMultiplayerSync = () => {
   const multiplayerContext = useContext(MultiplayerContext)
   const whiteboardStore = useWhiteboardStore()
-  const lastActionIdRef = useRef<string | null>(null)
+  const sentActionIdsRef = useRef<Set<string>>(new Set())
 
   // Guard clause for context
   if (!multiplayerContext) {
@@ -25,14 +24,21 @@ export const useMultiplayerSync = () => {
     const unsubscribe = useWhiteboardStore.subscribe(
       (state) => state.lastAction,
       (lastAction) => {
-        if (lastAction && lastAction.id !== lastActionIdRef.current) {
+        if (lastAction && !sentActionIdsRef.current.has(lastAction.id)) {
           console.log(
             '📤 Sending action to room:',
             lastAction.type,
             lastAction.id
           )
           sendWhiteboardAction(lastAction)
-          lastActionIdRef.current = lastAction.id
+          sentActionIdsRef.current.add(lastAction.id)
+          
+          // Clean up old IDs to prevent memory leak (keep last 1000)
+          if (sentActionIdsRef.current.size > 1000) {
+            const idsArray = Array.from(sentActionIdsRef.current)
+            const idsToKeep = idsArray.slice(-500) // Keep last 500
+            sentActionIdsRef.current = new Set(idsToKeep)
+          }
         }
       }
     )
@@ -54,9 +60,11 @@ export const useMultiplayerSync = () => {
         const action: WhiteboardAction = message.action
         console.log('📥 Processing whiteboard action:', action.type, action.id)
         
-        // Prevent echoing our own actions back
-        if (action.id !== lastActionIdRef.current) {
+        // Prevent echoing our own actions back using the sent IDs set
+        if (!sentActionIdsRef.current.has(action.id)) {
           whiteboardStore.applyRemoteAction(action)
+        } else {
+          console.log('🔄 Ignoring echo of our own action:', action.id)
         }
       }
       

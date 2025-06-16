@@ -61,7 +61,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
           setIsAutoConnecting(false)
         })
     }
-  }, [])
+  }, [isConnected, serverInstance]) // Fixed: Added proper dependencies
 
   const connect = useCallback(async (targetRoomId: string, isModerator: boolean = false) => {
     try {
@@ -122,11 +122,16 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
 
   const sendWhiteboardAction = useCallback((action: WhiteboardAction) => {
     if (serverInstance && isConnected) {
-      console.log('📤 Sending whiteboard action via ServerClass:', action.type)
-      serverInstance.sendEvent({
-        type: 'whiteboard_action',
-        action: action
-      })
+      console.log('📤 Sending whiteboard action via ServerClass:', action.type, action.id)
+      try {
+        serverInstance.sendEvent({
+          type: 'whiteboard_action',
+          action: action
+        })
+      } catch (error) {
+        console.error('❌ Failed to send action:', error)
+        // Could set an error state here if needed
+      }
     } else {
       console.warn('⚠️ Cannot send action: not connected to server')
     }
