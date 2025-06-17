@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for path manipulation and intersection detection
  */
@@ -172,8 +173,27 @@ export const lineSegmentIntersectsCircle = (
 };
 
 /**
- * Optimized version: removes points from a path that intersect with eraser circles
- * Fixed to only erase points actually within eraser radius, not consecutive chunks
+ * Interpolates additional points into a path for smoother erasing
+ * @param points - Original path points
+ * @param maxDistance - Maximum distance between points
+ * @returns Array of points with interpolated points added
+ */
+export const interpolatePathPoints = (points: Point[], maxDistance: number = 3): Point[] => {
+  if (points.length < 2) return points;
+  
+  const interpolatedPoints: Point[] = [points[0]];
+  
+  for (let i = 1; i < points.length; i++) {
+    const interpolated = interpolatePoints(points[i - 1], points[i], maxDistance);
+    // Skip the first point since it's already in the array
+    interpolatedPoints.push(...interpolated.slice(1));
+  }
+  
+  return interpolatedPoints;
+};
+
+/**
+ * Fixed version: Only erases points that are actually within the eraser circles
  * @param points - Original path points
  * @param eraserPoints - Array of eraser center points with radius
  * @returns Array of disconnected path segments
@@ -184,43 +204,36 @@ export const erasePointsFromPathBatch = (
 ): PathSegment[] => {
   if (points.length === 0 || eraserPoints.length === 0) return [];
   
+  // First, interpolate points for smoother erasing
+  const interpolatedPoints = interpolatePathPoints(points, 2);
+  
   const segments: PathSegment[] = [];
   let currentSegment: Point[] = [];
   
   console.log('🧹 Starting eraser batch processing:', {
-    totalPoints: points.length,
+    originalPoints: points.length,
+    interpolatedPoints: interpolatedPoints.length,
     eraserPoints: eraserPoints.length,
     eraserSizes: eraserPoints.map(e => e.radius * 2) // Show diameters for debugging
   });
   
   let totalErasedPoints = 0;
   
-  for (let i = 0; i < points.length; i++) {
-    const currentPoint = points[i];
-    let shouldErase = false;
+  for (let i = 0; i < interpolatedPoints.length; i++) {
+    const currentPoint = interpolatedPoints[i];
     
-    // Check if current point is directly within any eraser circle
-    shouldErase = eraserPoints.some(eraser => 
-      isPointInCircle(currentPoint, eraser.x, eraser.y, eraser.radius)
-    );
-    
-    // Also check if the line segment from previous point intersects any eraser
-    if (!shouldErase && i > 0) {
-      const previousPoint = points[i - 1];
-      shouldErase = eraserPoints.some(eraser =>
-        lineSegmentIntersectsCircle(
-          previousPoint, 
-          currentPoint, 
-          eraser.x, 
-          eraser.y, 
-          eraser.radius
-        )
-      );
-    }
+    // ONLY check if current point is directly within any eraser circle
+    // Remove line segment intersection check to prevent over-erasing
+    const shouldErase = eraserPoints.some(eraser => {
+      const inCircle = isPointInCircle(currentPoint, eraser.x, eraser.y, eraser.radius);
+      if (inCircle) {
+        console.log(`🎯 Point ${i} (${currentPoint.x.toFixed(1)}, ${currentPoint.y.toFixed(1)}) is within eraser at (${eraser.x.toFixed(1)}, ${eraser.y.toFixed(1)}) radius ${eraser.radius}`);
+      }
+      return inCircle;
+    });
     
     if (shouldErase) {
       totalErasedPoints++;
-      console.log(`🧹 Erasing point ${i}:`, { x: currentPoint.x, y: currentPoint.y });
       
       // If we were building a segment, end it here
       if (currentSegment.length > 0) {
@@ -252,6 +265,7 @@ export const erasePointsFromPathBatch = (
   
   console.log('✅ Eraser processing complete:', {
     originalPoints: points.length,
+    interpolatedPoints: interpolatedPoints.length,
     erasedPoints: totalErasedPoints,
     resultingSegments: filteredSegments.length,
     totalRemainingPoints: filteredSegments.reduce((sum, seg) => sum + seg.points.length, 0)
