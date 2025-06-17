@@ -1,6 +1,8 @@
+import { Point } from '../utils/pathUtils';
+
 export interface WhiteboardObject {
   id: string;
-  type: 'path' | 'rectangle' | 'circle' | 'ellipse' | 'line' | 'triangle' | 'text' | 'image';
+  type: 'path' | 'rectangle' | 'circle' | 'text';
   x: number;
   y: number;
   width?: number;
@@ -9,44 +11,13 @@ export interface WhiteboardObject {
   stroke?: string;
   strokeWidth?: number;
   opacity?: number;
-  rotation?: number;
-  scaleX?: number;
-  scaleY?: number;
-  data?: any; // For storing tool-specific data
+  data?: any;
   createdAt: number;
   updatedAt: number;
-  createdBy?: string; // For multiplayer user tracking
-}
-
-export interface DrawingPath extends WhiteboardObject {
-  type: 'path';
-  data: {
-    path: string; // SVG path string
-    brushType: 'pencil' | 'chalk' | 'spray' | 'crayon';
-  };
-}
-
-export interface TextObject extends WhiteboardObject {
-  type: 'text';
-  data: {
-    content: string;
-    fontSize: number;
-    fontFamily: string;
-    textAlign: 'left' | 'center' | 'right';
-  };
-}
-
-export interface ImageObject extends WhiteboardObject {
-  type: 'image';
-  data: {
-    src: string;
-    originalWidth: number;
-    originalHeight: number;
-  };
 }
 
 export interface WhiteboardState {
-  objects: Record<string, WhiteboardObject>;
+  objects: { [id: string]: WhiteboardObject };
   selectedObjectIds: string[];
   viewport: {
     x: number;
@@ -61,36 +32,21 @@ export interface WhiteboardState {
   lastAction?: WhiteboardAction;
 }
 
-export interface WhiteboardAction {
+interface BaseAction {
   type: string;
   payload: any;
   timestamp: number;
-  userId?: string;
   id: string;
 }
 
-// Action types for multiplayer synchronization
-export type WhiteboardActionType =
-  | 'ADD_OBJECT'
-  | 'UPDATE_OBJECT' 
-  | 'DELETE_OBJECT'
-  | 'SELECT_OBJECTS'
-  | 'CLEAR_SELECTION'
-  | 'UPDATE_VIEWPORT'
-  | 'UPDATE_SETTINGS'
-  | 'CLEAR_CANVAS'
-  | 'BATCH_UPDATE'
-  | 'ERASE_PIXELS'
-  | 'DELETE_OBJECTS_IN_AREA';
-
-export interface AddObjectAction extends WhiteboardAction {
+export interface AddObjectAction extends BaseAction {
   type: 'ADD_OBJECT';
   payload: {
     object: WhiteboardObject;
   };
 }
 
-export interface UpdateObjectAction extends WhiteboardAction {
+export interface UpdateObjectAction extends BaseAction {
   type: 'UPDATE_OBJECT';
   payload: {
     id: string;
@@ -98,47 +54,43 @@ export interface UpdateObjectAction extends WhiteboardAction {
   };
 }
 
-export interface DeleteObjectAction extends WhiteboardAction {
+export interface DeleteObjectAction extends BaseAction {
   type: 'DELETE_OBJECT';
   payload: {
     id: string;
   };
 }
 
-export interface SelectObjectsAction extends WhiteboardAction {
+export interface SelectObjectsAction extends BaseAction {
   type: 'SELECT_OBJECTS';
   payload: {
     objectIds: string[];
   };
 }
 
-export interface UpdateViewportAction extends WhiteboardAction {
+export interface UpdateViewportAction extends BaseAction {
   type: 'UPDATE_VIEWPORT';
-  payload: {
-    x?: number;
-    y?: number;
-    zoom?: number;
-  };
+  payload: Partial<WhiteboardState['viewport']>;
 }
 
-export interface UpdateSettingsAction extends WhiteboardAction {
+export interface UpdateSettingsAction extends BaseAction {
   type: 'UPDATE_SETTINGS';
   payload: Partial<WhiteboardState['settings']>;
 }
 
-export interface ClearCanvasAction extends WhiteboardAction {
+export interface ClearCanvasAction extends BaseAction {
   type: 'CLEAR_CANVAS';
   payload: {};
 }
 
-export interface BatchUpdateAction extends WhiteboardAction {
+export interface BatchUpdateAction extends BaseAction {
   type: 'BATCH_UPDATE';
   payload: {
     actions: WhiteboardAction[];
   };
 }
 
-export interface ErasePixelsAction extends WhiteboardAction {
+export interface ErasePixelsAction extends BaseAction {
   type: 'ERASE_PIXELS';
   payload: {
     eraserPath: {
@@ -151,7 +103,7 @@ export interface ErasePixelsAction extends WhiteboardAction {
   };
 }
 
-export interface DeleteObjectsInAreaAction extends WhiteboardAction {
+export interface DeleteObjectsInAreaAction extends BaseAction {
   type: 'DELETE_OBJECTS_IN_AREA';
   payload: {
     objectIds: string[];
@@ -163,3 +115,33 @@ export interface DeleteObjectsInAreaAction extends WhiteboardAction {
     };
   };
 }
+
+export interface ErasePathAction extends BaseAction {
+  type: 'ERASE_PATH';
+  payload: {
+    originalObjectId: string;
+    eraserPath: {
+      x: number;
+      y: number;
+      size: number;
+      path: string;
+    };
+    resultingSegments: Array<{
+      points: Array<{ x: number; y: number }>;
+      id: string;
+    }>;
+  };
+}
+
+export type WhiteboardAction = 
+  | AddObjectAction
+  | UpdateObjectAction
+  | DeleteObjectAction
+  | SelectObjectsAction
+  | UpdateViewportAction
+  | UpdateSettingsAction
+  | ClearCanvasAction
+  | BatchUpdateAction
+  | ErasePixelsAction
+  | DeleteObjectsInAreaAction
+  | ErasePathAction;

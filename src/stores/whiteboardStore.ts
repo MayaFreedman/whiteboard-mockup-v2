@@ -14,9 +14,10 @@ import {
   ClearCanvasAction,
   BatchUpdateAction,
   ErasePixelsAction,
-  DeleteObjectsInAreaAction
+  DeleteObjectsInAreaAction,
+  ErasePathAction
 } from '../types/whiteboard';
-import { erasePointsFromPath, pointsToPath, doesPathIntersectEraser, pathToPoints } from '../utils/pathUtils';
+import { erasePointsFromPathBatch, pointsToPath, doesPathIntersectEraserBatch, pathToPoints } from '../utils/pathUtils';
 
 interface WhiteboardStore extends WhiteboardState {
   // Action history for undo/redo
@@ -356,14 +357,66 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }) => {
       console.log('🧹 Erasing pixels at:', { x: eraserPath.x, y: eraserPath.y, size: eraserPath.size });
       
-      const action: ErasePixelsAction = {
-        type: 'ERASE_PIXELS',
-        payload: { eraserPath },
-        timestamp: Date.now(),
-        id: nanoid()
-      };
+      const state = get();
+      const eraserRadius = eraserPath.size / 2;
+      const eraserPoints = [{ x: eraserPath.x, y: eraserPath.y, radius: eraserRadius }];
       
-      get().dispatch(action);
+      // Find all path objects that intersect with the eraser
+      const affectedObjects: Array<{ id: string; object: WhiteboardObject; segments: any[] }> = [];
+      
+      Object.entries(state.objects).forEach(([id, obj]) => {
+        if (obj.type === 'path' && obj.data?.path && !obj.data?.isEraser) {
+          // Check if this path intersects with the eraser
+          const intersects = doesPathIntersectEraserBatch(
+            obj.data.path,
+            obj.x,
+            obj.y,
+            eraserPoints,
+            obj.strokeWidth || 2
+          );
+          
+          if (intersects) {
+            console.log('🎯 Path intersects with eraser, processing:', id.slice(0, 8));
+            
+            // Convert path to points and erase intersecting points
+            const points = pathToPoints(obj.data.path);
+            
+            // Convert eraser coordinates to path-relative coordinates
+            const relativeEraserX = eraserPath.x - obj.x;
+            const relativeEraserY = eraserPath.y - obj.y;
+            
+            // Get remaining segments after erasing
+            const segments = erasePointsFromPathBatch(
+              points, 
+              [{ x: relativeEraserX, y: relativeEraserY, radius: eraserRadius }],
+              obj.strokeWidth || 2
+            );
+            
+            affectedObjects.push({ id, object: obj, segments });
+          }
+        }
+      });
+      
+      // Create atomic erase actions for each affected object
+      affectedObjects.forEach(({ id, object, segments }) => {
+        const action: ErasePathAction = {
+          type: 'ERASE_PATH',
+          payload: {
+            originalObjectId: id,
+            eraserPath: {
+              x: eraserPath.x,
+              y: eraserPath.y,
+              size: eraserPath.size,
+              path: eraserPath.path
+            },
+            resultingSegments: segments
+          },
+          timestamp: Date.now(),
+          id: nanoid()
+        };
+        
+        get().dispatch(action);
+      });
     },
 
     deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }) => {
@@ -466,7 +519,54 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
       return newState;
     }
     
+    case 'ERASE_PATH': {
+      const { originalObjectId, resultingSegments } = (action as ErasePathAction).payload;
+      const newObjects = { ...state.objects };
+      
+      // Remove the original object
+      delete newObjects[originalObjectId];
+      
+      // Add all resulting segments atomically
+      const newSegmentObjects: WhiteboardObject[] = [];
+      resultingSegments.forEach((segment) => {
+        if (segment.points.length >= 2) {
+          const originalObject = state.objects[originalObjectId];
+          if (originalObject) {
+            const newPath = pointsToPath(segment.points);
+            const newObject: WhiteboardObject = {
+              ...originalObject,
+              id: segment.id,
+              data: {
+                ...originalObject.data,
+                path: newPath
+              },
+              updatedAt: Date.now()
+            };
+            newObjects[segment.id] = newObject;
+            newSegmentObjects.push(newObject);
+          }
+        }
+      });
+      
+      // Update selected objects list to exclude removed object
+      const newSelectedObjectIds = state.selectedObjectIds.filter(
+        objId => objId !== originalObjectId
+      );
+      
+      console.log('✂️ Atomic path erase completed:', {
+        originalObjectId: originalObjectId.slice(0, 8),
+        segmentsCreated: newSegmentObjects.length,
+        totalObjects: Object.keys(newObjects).length
+      });
+      
+      return {
+        objects: newObjects,
+        selectedObjectIds: newSelectedObjectIds
+      };
+    }
+    
     case 'ERASE_PIXELS': {
+      // Keep the old ERASE_PIXELS logic for backward compatibility or other eraser modes
       const { eraserPath } = (action as ErasePixelsAction).payload;
       const eraserRadius = eraserPath.size / 2;
       
@@ -478,13 +578,12 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
       Object.entries(state.objects).forEach(([id, obj]) => {
         if (obj.type === 'path' && obj.data?.path && !obj.data?.isEraser) {
           // Check if this path intersects with the eraser
-          const intersects = doesPathIntersectEraser(
+          const intersects = doesPathIntersectEraserBatch(
             obj.data.path,
             obj.x,
             obj.y,
-            eraserPath.x,
-            eraserPath.y,
-            eraserRadius
+            [{ x: eraserPath.x, y: eraserPath.y, radius: eraserRadius }],
+            obj.strokeWidth || 2
           );
           
           if (intersects) {
@@ -498,7 +597,11 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
             const relativeEraserY = eraserPath.y - obj.y;
             
             // Get remaining segments after erasing
-            const segments = erasePointsFromPath(points, relativeEraserX, relativeEraserY, eraserRadius);
+            const segments = erasePointsFromPathBatch(
+              points, 
+              [{ x: relativeEraserX, y: relativeEraserY, radius: eraserRadius }],
+              obj.strokeWidth || 2
+            );
             
             // Mark original object for removal
             objectsToRemove.push(id);
