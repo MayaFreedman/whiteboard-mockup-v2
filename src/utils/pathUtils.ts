@@ -69,6 +69,35 @@ export const pointsToPath = (points: Point[]): string => {
 };
 
 /**
+ * Interpolates points between two points to ensure continuous coverage
+ * @param point1 - Start point
+ * @param point2 - End point
+ * @param maxDistance - Maximum distance between interpolated points
+ * @returns Array of interpolated points including start and end
+ */
+export const interpolatePoints = (point1: Point, point2: Point, maxDistance: number = 5): Point[] => {
+  const distance = Math.sqrt((point2.x - point1.x) ** 2 + (point2.y - point1.y) ** 2);
+  
+  if (distance <= maxDistance) {
+    return [point1, point2];
+  }
+  
+  const steps = Math.ceil(distance / maxDistance);
+  const points: Point[] = [point1];
+  
+  for (let i = 1; i < steps; i++) {
+    const t = i / steps;
+    points.push({
+      x: point1.x + (point2.x - point1.x) * t,
+      y: point1.y + (point2.y - point1.y) * t
+    });
+  }
+  
+  points.push(point2);
+  return points;
+};
+
+/**
  * Checks if a point is within a circle (eraser area)
  * @param point - Point to check
  * @param centerX - Circle center X
@@ -82,26 +111,25 @@ export const isPointInCircle = (point: Point, centerX: number, centerY: number, 
 };
 
 /**
- * Removes points from a path that intersect with an eraser circle
+ * Optimized version: removes points from a path that intersect with multiple eraser circles
  * @param points - Original path points
- * @param eraserX - Eraser center X (relative to path origin)
- * @param eraserY - Eraser center Y (relative to path origin)
- * @param eraserRadius - Eraser radius
+ * @param eraserPoints - Array of eraser center points with radius
  * @returns Array of disconnected path segments
  */
-export const erasePointsFromPath = (
+export const erasePointsFromPathBatch = (
   points: Point[], 
-  eraserX: number, 
-  eraserY: number, 
-  eraserRadius: number
+  eraserPoints: Array<{ x: number; y: number; radius: number }>
 ): PathSegment[] => {
-  if (points.length === 0) return [];
+  if (points.length === 0 || eraserPoints.length === 0) return [];
   
   const segments: PathSegment[] = [];
   let currentSegment: Point[] = [];
   
   points.forEach((point, index) => {
-    const isErased = isPointInCircle(point, eraserX, eraserY, eraserRadius);
+    // Check if this point is erased by any of the eraser positions
+    const isErased = eraserPoints.some(eraser => 
+      isPointInCircle(point, eraser.x, eraser.y, eraser.radius)
+    );
     
     if (!isErased) {
       // Point survives erasing
@@ -131,14 +159,46 @@ export const erasePointsFromPath = (
 };
 
 /**
- * Checks if a path intersects with an eraser circle at any point
+ * Legacy function for single eraser point - now uses the batch version
+ */
+export const erasePointsFromPath = (
+  points: Point[], 
+  eraserX: number, 
+  eraserY: number, 
+  eraserRadius: number
+): PathSegment[] => {
+  return erasePointsFromPathBatch(points, [{ x: eraserX, y: eraserY, radius: eraserRadius }]);
+};
+
+/**
+ * Optimized: checks if a path intersects with any of multiple eraser circles
  * @param pathString - SVG path string
  * @param pathX - Path origin X
  * @param pathY - Path origin Y
- * @param eraserX - Eraser center X (absolute coordinates)
- * @param eraserY - Eraser center Y (absolute coordinates)
- * @param eraserRadius - Eraser radius
- * @returns True if path intersects with eraser
+ * @param eraserPoints - Array of eraser positions with radius (absolute coordinates)
+ * @returns True if path intersects with any eraser
+ */
+export const doesPathIntersectEraserBatch = (
+  pathString: string,
+  pathX: number,
+  pathY: number,
+  eraserPoints: Array<{ x: number; y: number; radius: number }>
+): boolean => {
+  const points = pathToPoints(pathString);
+  
+  return eraserPoints.some(eraser => {
+    // Convert eraser coordinates to path-relative coordinates
+    const relativeEraserX = eraser.x - pathX;
+    const relativeEraserY = eraser.y - pathY;
+    
+    return points.some(point => 
+      isPointInCircle(point, relativeEraserX, relativeEraserY, eraser.radius)
+    );
+  });
+};
+
+/**
+ * Legacy function - now uses the batch version
  */
 export const doesPathIntersectEraser = (
   pathString: string,
@@ -148,13 +208,7 @@ export const doesPathIntersectEraser = (
   eraserY: number,
   eraserRadius: number
 ): boolean => {
-  const points = pathToPoints(pathString);
-  
-  // Convert eraser coordinates to path-relative coordinates
-  const relativeEraserX = eraserX - pathX;
-  const relativeEraserY = eraserY - pathY;
-  
-  return points.some(point => 
-    isPointInCircle(point, relativeEraserX, relativeEraserY, eraserRadius)
-  );
+  return doesPathIntersectEraserBatch(pathString, pathX, pathY, [
+    { x: eraserX, y: eraserY, radius: eraserRadius }
+  ]);
 };
