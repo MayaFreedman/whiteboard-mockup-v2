@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
@@ -17,7 +16,7 @@ import {
   ErasePixelsAction,
   DeleteObjectsInAreaAction
 } from '../types/whiteboard';
-import { erasePointsFromPath, pointsToPath, doesPathIntersectEraser } from '../utils/pathUtils';
+import { erasePointsFromPath, pointsToPath, doesPathIntersectEraser, pathToPoints } from '../utils/pathUtils';
 
 interface WhiteboardStore extends WhiteboardState {
   // Action history for undo/redo
@@ -492,7 +491,6 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
             console.log('🎯 Path intersects with eraser, processing:', id.slice(0, 8));
             
             // Convert path to points and erase intersecting points
-            const { pathToPoints } = require('../utils/pathUtils');
             const points = pathToPoints(obj.data.path);
             
             // Convert eraser coordinates to path-relative coordinates
