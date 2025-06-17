@@ -172,8 +172,8 @@ export const lineSegmentIntersectsCircle = (
 };
 
 /**
- * Optimized version: removes points from a path that intersect with multiple eraser circles using line segment intersection
- * Now properly erases continuous chunks instead of just breaking at individual points
+ * Optimized version: removes points from a path that intersect with eraser circles
+ * Fixed to only erase points actually within eraser radius, not consecutive chunks
  * @param points - Original path points
  * @param eraserPoints - Array of eraser center points with radius
  * @returns Array of disconnected path segments
@@ -193,19 +193,18 @@ export const erasePointsFromPathBatch = (
     eraserSizes: eraserPoints.map(e => e.radius * 2) // Show diameters for debugging
   });
   
-  // Track erasing state to properly handle continuous chunks
-  let consecutiveErasedCount = 0;
+  let totalErasedPoints = 0;
   
   for (let i = 0; i < points.length; i++) {
     const currentPoint = points[i];
     let shouldErase = false;
     
-    // Check if current point is directly erased
+    // Check if current point is directly within any eraser circle
     shouldErase = eraserPoints.some(eraser => 
       isPointInCircle(currentPoint, eraser.x, eraser.y, eraser.radius)
     );
     
-    // If not directly erased, check if the line segment to this point intersects any eraser
+    // Also check if the line segment from previous point intersects any eraser
     if (!shouldErase && i > 0) {
       const previousPoint = points[i - 1];
       shouldErase = eraserPoints.some(eraser =>
@@ -220,24 +219,21 @@ export const erasePointsFromPathBatch = (
     }
     
     if (shouldErase) {
-      consecutiveErasedCount++;
+      totalErasedPoints++;
+      console.log(`🧹 Erasing point ${i}:`, { x: currentPoint.x, y: currentPoint.y });
       
-      // If we were building a segment, end it before the erased area
+      // If we were building a segment, end it here
       if (currentSegment.length > 0) {
         segments.push({
           points: [...currentSegment],
           id: `segment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         });
+        console.log('🔗 Ended segment before erased point, segment had', currentSegment.length, 'points');
         currentSegment = [];
-        console.log('🔗 Ended segment before erased area, points:', currentSegment.length);
       }
+      // Skip this point (don't add to any segment)
     } else {
-      // Point survives erasing
-      if (consecutiveErasedCount > 0) {
-        console.log('🧹 Erased consecutive chunk of', consecutiveErasedCount, 'points');
-        consecutiveErasedCount = 0;
-      }
-      
+      // Point survives erasing - add to current segment
       currentSegment.push(currentPoint);
     }
   }
@@ -251,16 +247,12 @@ export const erasePointsFromPathBatch = (
     console.log('🔗 Added final segment, points:', currentSegment.length);
   }
   
-  // Final erased count if we ended on erased points
-  if (consecutiveErasedCount > 0) {
-    console.log('🧹 Ended on erased chunk of', consecutiveErasedCount, 'points');
-  }
-  
   // Filter out segments that are too small to be meaningful
   const filteredSegments = segments.filter(segment => segment.points.length >= 2);
   
   console.log('✅ Eraser processing complete:', {
     originalPoints: points.length,
+    erasedPoints: totalErasedPoints,
     resultingSegments: filteredSegments.length,
     totalRemainingPoints: filteredSegments.reduce((sum, seg) => sum + seg.points.length, 0)
   });
