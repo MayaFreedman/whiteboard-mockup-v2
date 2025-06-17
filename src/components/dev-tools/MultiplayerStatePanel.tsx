@@ -142,12 +142,12 @@ export const MultiplayerStatePanel: React.FC = () => {
                     {formatTimestamp(item.timestamp)}
                   </span>
                 </div>
-                {item.type === 'TOOL_CHANGE' && (
+                {item.type === 'TOOL_CHANGE' && 'tool' in item.payload && (
                   <div className="text-muted-foreground">
                     Tool: {item.payload.tool}
                   </div>
                 )}
-                {item.type === 'ADD_OBJECT' && item.payload.object && (
+                {item.type === 'ADD_OBJECT' && 'object' in item.payload && item.payload.object && (
                   <div className="text-muted-foreground">
                     Added: {item.payload.object.type} at ({item.payload.object.x}, {item.payload.object.y})
                   </div>

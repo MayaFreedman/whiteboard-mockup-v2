@@ -11,13 +11,10 @@ export function fabricToWhiteboardObject(fabricObj: any): Partial<WhiteboardObje
     fill: fabricObj.fill as string,
     stroke: fabricObj.stroke as string,
     strokeWidth: fabricObj.strokeWidth,
-    opacity: fabricObj.opacity,
-    rotation: fabricObj.angle || 0,
-    scaleX: fabricObj.scaleX,
-    scaleY: fabricObj.scaleY
+    opacity: fabricObj.opacity
   };
 
-  // Type-specific handling
+  // Type-specific handling - only support types defined in WhiteboardObject
   switch (fabricObj.type) {
     case 'rect':
       return {
@@ -28,16 +25,6 @@ export function fabricToWhiteboardObject(fabricObj: any): Partial<WhiteboardObje
       return {
         ...baseProps,
         type: 'circle'
-      };
-    case 'ellipse':
-      return {
-        ...baseProps,
-        type: 'ellipse'
-      };
-    case 'line':
-      return {
-        ...baseProps,
-        type: 'line'
       };
     case 'path':
       return {
@@ -58,18 +45,12 @@ export function fabricToWhiteboardObject(fabricObj: any): Partial<WhiteboardObje
           fontFamily: (fabricObj as any).fontFamily
         }
       };
-    case 'image':
+    default:
+      // For unsupported types, default to path
       return {
         ...baseProps,
-        type: 'image',
-        data: {
-          src: (fabricObj as any).getSrc(),
-          originalWidth: (fabricObj as any).width,
-          originalHeight: (fabricObj as any).height
-        }
+        type: 'path'
       };
-    default:
-      return baseProps;
   }
 }
 
@@ -84,9 +65,6 @@ export function whiteboardObjectToFabricProps(obj: WhiteboardObject): any {
     stroke: obj.stroke,
     strokeWidth: obj.strokeWidth,
     opacity: obj.opacity,
-    angle: obj.rotation || 0,
-    scaleX: obj.scaleX || 1,
-    scaleY: obj.scaleY || 1,
     selectable: true,
     evented: true
   };
@@ -103,11 +81,6 @@ export function whiteboardObjectToFabricProps(obj: WhiteboardObject): any {
       return {
         ...baseProps,
         path: obj.data?.path
-      };
-    case 'image':
-      return {
-        ...baseProps,
-        src: obj.data?.src
       };
     default:
       return baseProps;
