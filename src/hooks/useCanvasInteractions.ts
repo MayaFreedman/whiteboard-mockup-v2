@@ -172,8 +172,19 @@ export const useCanvasInteractions = () => {
     if (eraserPointsRef.current.length === 0) return;
     
     const objects = Object.entries(whiteboardStore.objects);
-    const objectsToModify: Array<{ id: string; segments: any[] }> = [];
-    const objectsToDelete: string[] = [];
+    const eraserActions: Array<{
+      originalObjectId: string;
+      eraserPath: {
+        x: number;
+        y: number;
+        size: number;
+        path: string;
+      };
+      resultingSegments: Array<{
+        points: Array<{ x: number; y: number }>;
+        id: string;
+      }>;
+    }> = [];
     
     objects.forEach(([id, obj]) => {
       if (obj.type === 'path' && obj.data?.path && !obj.data?.isEraser) {
@@ -203,52 +214,34 @@ export const useCanvasInteractions = () => {
           // Get remaining segments after erasing with stroke-width-aware detection
           const segments = erasePointsFromPathBatch(points, relativeEraserPoints, strokeWidth);
           
-          if (segments.length === 0) {
-            // Object is completely erased
-            objectsToDelete.push(id);
-          } else {
-            // Object has remaining segments
-            objectsToModify.push({ id, segments });
-          }
+          // Create eraser path representation
+          const eraserPath = eraserPointsRef.current.reduce((path, eraser, index) => {
+            const command = index === 0 ? 'M' : 'L';
+            return `${path} ${command} ${eraser.x} ${eraser.y}`;
+          }, '');
+          
+          eraserActions.push({
+            originalObjectId: id,
+            eraserPath: {
+              x: eraserPointsRef.current[0]?.x || 0,
+              y: eraserPointsRef.current[0]?.y || 0,
+              size: eraserPointsRef.current[0]?.radius * 2 || 20,
+              path: eraserPath
+            },
+            resultingSegments: segments
+          });
         }
       }
     });
     
-    // Apply modifications
-    objectsToDelete.forEach(id => {
-      whiteboardStore.deleteObject(id);
-    });
-    
-    objectsToModify.forEach(({ id, segments }) => {
-      const originalObj = whiteboardStore.objects[id];
-      if (!originalObj) return;
-      
-      // Delete original object
-      whiteboardStore.deleteObject(id);
-      
-      // Create new objects for each segment
-      segments.forEach((segment, index) => {
-        if (segment.points.length >= 2) {
-          const newPath = segment.points.reduce((path: string, point: any, i: number) => {
-            return i === 0 ? `M ${point.x} ${point.y}` : `${path} L ${point.x} ${point.y}`;
-          }, '');
-          
-          const newObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
-            ...originalObj,
-            data: {
-              ...originalObj.data,
-              path: newPath
-            }
-          };
-          whiteboardStore.addObject(newObject);
-        }
-      });
+    // Apply all eraser actions atomically
+    eraserActions.forEach(action => {
+      whiteboardStore.erasePath(action);
     });
     
     console.log('🧹 Processed stroke-aware eraser batch:', {
       eraserPoints: eraserPointsRef.current.length,
-      deleted: objectsToDelete.length,
-      modified: objectsToModify.length
+      eraserActions: eraserActions.length
     });
   }, [whiteboardStore]);
 

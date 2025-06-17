@@ -97,7 +97,7 @@ export const interpolatePoints = (point1: Point, point2: Point, maxDistance: num
 };
 
 /**
- * Checks if a point is within a circle (eraser area) with stroke width compensation
+ * Checks if a point is within a circle (eraser area) with toned-down stroke width compensation
  * @param point - Point to check
  * @param centerX - Circle center X
  * @param centerY - Circle center Y
@@ -108,8 +108,20 @@ export const interpolatePoints = (point1: Point, point2: Point, maxDistance: num
 export const isPointInCircle = (point: Point, centerX: number, centerY: number, radius: number, strokeWidth: number = 0): boolean => {
   const distance = Math.sqrt((point.x - centerX) ** 2 + (point.y - centerY) ** 2);
   
-  // Reduce stroke compensation - more subtle effect
-  const strokeCompensation = strokeWidth / 4; // Reduced from strokeWidth / 2
+  // Calculate size ratio for dynamic compensation
+  const eraserDiameter = radius * 2;
+  const sizeRatio = Math.min(strokeWidth, eraserDiameter) / Math.max(strokeWidth, eraserDiameter);
+  
+  // Toned down stroke compensation that reduces as sizes become similar
+  let strokeCompensation: number;
+  if (sizeRatio > 0.7) { // Very similar sizes (within 30%)
+    strokeCompensation = strokeWidth * 0.1; // Minimal compensation
+  } else if (sizeRatio > 0.4) { // Moderately different sizes
+    strokeCompensation = strokeWidth * 0.2; // Reduced compensation
+  } else { // Very different sizes
+    strokeCompensation = strokeWidth * 0.3; // Still toned down from original /2
+  }
+  
   const effectiveRadius = radius + strokeCompensation;
   
   return distance <= effectiveRadius;
@@ -157,7 +169,7 @@ export const distanceFromPointToLineSegment = (point: Point, lineStart: Point, l
 };
 
 /**
- * Checks if a line segment intersects with a circle (eraser area) with stroke width compensation
+ * Checks if a line segment intersects with a circle (eraser area) with toned-down stroke width compensation
  * @param lineStart - Start point of the line segment
  * @param lineEnd - End point of the line segment
  * @param centerX - Circle center X
@@ -177,8 +189,20 @@ export const lineSegmentIntersectsCircle = (
   const center = { x: centerX, y: centerY };
   const distance = distanceFromPointToLineSegment(center, lineStart, lineEnd);
   
-  // Reduce stroke compensation - more subtle effect
-  const strokeCompensation = strokeWidth / 4; // Reduced from strokeWidth / 2
+  // Calculate size ratio for dynamic compensation
+  const eraserDiameter = radius * 2;
+  const sizeRatio = Math.min(strokeWidth, eraserDiameter) / Math.max(strokeWidth, eraserDiameter);
+  
+  // Toned down stroke compensation that reduces as sizes become similar
+  let strokeCompensation: number;
+  if (sizeRatio > 0.7) { // Very similar sizes (within 30%)
+    strokeCompensation = strokeWidth * 0.1; // Minimal compensation
+  } else if (sizeRatio > 0.4) { // Moderately different sizes
+    strokeCompensation = strokeWidth * 0.2; // Reduced compensation
+  } else { // Very different sizes
+    strokeCompensation = strokeWidth * 0.3; // Still toned down from original /2
+  }
+  
   const effectiveRadius = radius + strokeCompensation;
   
   return distance <= effectiveRadius;
@@ -256,8 +280,7 @@ export const preprocessPathForSmallErasers = (points: Point[], minEraserRadius: 
 };
 
 /**
- * Ultra-aggressive fallback detection for very small erasers
- * Checks if any line segments pass close to eraser centers with very generous thresholds
+ * Toned-down fallback detection for very small erasers with size-aware thresholds
  * @param points - Path points to check
  * @param eraserPoints - Eraser positions and sizes
  * @param strokeWidth - Stroke width of the target line
@@ -274,7 +297,7 @@ export const fallbackEraserDetection = (
   const verySmallErasers = eraserPoints.filter(e => e.radius < 12);
   if (verySmallErasers.length === 0) return pointsToErase;
   
-  console.log(`🔍 Running stroke-aware fallback detection for ${verySmallErasers.length} very small erasers on ${strokeWidth}px stroke`);
+  console.log(`🔍 Running toned-down fallback detection for ${verySmallErasers.length} very small erasers on ${strokeWidth}px stroke`);
   
   for (let i = 1; i < points.length; i++) {
     for (const eraser of verySmallErasers) {
@@ -284,18 +307,36 @@ export const fallbackEraserDetection = (
         points[i]
       );
       
-      // More subtle stroke-width-aware threshold
-      const strokeCompensation = strokeWidth / 4; // Reduced from strokeWidth / 2
-      const baseThreshold = eraser.radius * 2.5; // Reduced from 3
-      const threshold = baseThreshold + strokeCompensation;
+      // Calculate size ratio for dynamic threshold
+      const eraserDiameter = eraser.radius * 2;
+      const sizeRatio = Math.min(strokeWidth, eraserDiameter) / Math.max(strokeWidth, eraserDiameter);
+      
+      // Toned down threshold calculation
+      let baseMultiplier: number;
+      let strokeCompensation: number;
+      
+      if (sizeRatio > 0.7) { // Very similar sizes
+        baseMultiplier = 1.8; // Much more conservative
+        strokeCompensation = strokeWidth * 0.1;
+      } else if (sizeRatio > 0.4) { // Moderately different
+        baseMultiplier = 2.0; // Reduced from 2.5
+        strokeCompensation = strokeWidth * 0.2;
+      } else { // Very different sizes
+        baseMultiplier = 2.2; // Reduced from 2.5
+        strokeCompensation = strokeWidth * 0.3;
+      }
+      
+      const threshold = eraser.radius * baseMultiplier + strokeCompensation;
       
       if (lineDistance <= threshold) {
-        console.log(`🎯 Stroke-aware fallback: Line segment ${i-1}-${i} within ${lineDistance.toFixed(1)}px of eraser (threshold: ${threshold.toFixed(1)}px, stroke: ${strokeWidth}px)`);
+        console.log(`🎯 Toned-down fallback: Line segment ${i-1}-${i} within ${lineDistance.toFixed(1)}px of eraser (threshold: ${threshold.toFixed(1)}px, sizeRatio: ${sizeRatio.toFixed(2)})`);
         pointsToErase.push(i-1, i);
         
-        // Also mark neighboring points for very small erasers
-        if (i > 1) pointsToErase.push(i-2);
-        if (i < points.length - 1) pointsToErase.push(i+1);
+        // Reduced neighboring point marking for similar sizes
+        if (sizeRatio <= 0.4) { // Only for very different sizes
+          if (i > 1) pointsToErase.push(i-2);
+          if (i < points.length - 1) pointsToErase.push(i+1);
+        }
       }
     }
   }
@@ -304,8 +345,7 @@ export const fallbackEraserDetection = (
 };
 
 /**
- * Ultra-responsive eraser for small sizes with comprehensive stroke-width-aware detection
- * Multi-layered approach: preprocessing + ultra-dense interpolation + stroke-aware detection + fallback
+ * Toned-down eraser with size-aware detection thresholds
  * @param points - Original path points
  * @param eraserPoints - Array of eraser center points with radius
  * @param strokeWidth - Stroke width of the target line
@@ -322,12 +362,12 @@ export const erasePointsFromPathBatch = (
   const isSmallEraser = minRadius < 15;
   const isVerySmallEraser = minRadius < 10;
   
-  // Check if eraser size is similar to stroke width (within 50%)
-  const isSimilarSize = eraserPoints.some(e => 
-    Math.abs(e.radius * 2 - strokeWidth) / Math.max(e.radius * 2, strokeWidth) < 0.5
-  );
+  // Check if eraser size is similar to stroke width
+  const avgEraserDiameter = eraserPoints.reduce((sum, e) => sum + e.radius * 2, 0) / eraserPoints.length;
+  const sizeRatio = Math.min(strokeWidth, avgEraserDiameter) / Math.max(strokeWidth, avgEraserDiameter);
+  const isSimilarSize = sizeRatio > 0.7; // Within 30% of each other
   
-  console.log('🧹 Starting stroke-aware eraser batch processing:', {
+  console.log('🧹 Starting toned-down eraser batch processing:', {
     originalPoints: points.length,
     eraserPoints: eraserPoints.length,
     eraserSizes: eraserPoints.map(e => e.radius * 2),
@@ -335,26 +375,27 @@ export const erasePointsFromPathBatch = (
     minRadius,
     isSmallEraser,
     isVerySmallEraser,
-    isSimilarSize
+    isSimilarSize,
+    sizeRatio: sizeRatio.toFixed(2)
   });
   
-  // Step 1: Pre-process path for small erasers (even more aggressive)
+  // Step 1: Pre-process path for small erasers (less aggressive for similar sizes)
   let processedPoints = points;
-  if (isSmallEraser) {
+  if (isSmallEraser && !isSimilarSize) {
     processedPoints = preprocessPathForSmallErasers(points, minRadius);
   }
   
-  // Step 2: Ultra-dense interpolation for very small erasers or similar-sized erasers
+  // Step 2: Size-aware interpolation
   let interpolationDistance: number;
   if (isSimilarSize) {
-    // More subtle density for similar-sized erasers
-    interpolationDistance = Math.max(0.5, Math.min(minRadius, strokeWidth) / 8); // Reduced from /10
+    // Much more conservative for similar sizes
+    interpolationDistance = Math.max(1.5, Math.min(minRadius, strokeWidth) / 4);
   } else if (isVerySmallEraser) {
-    // Less ultra-dense for very small erasers
-    interpolationDistance = Math.max(0.8, minRadius / 6); // Reduced from /8
+    // Less dense for very small erasers
+    interpolationDistance = Math.max(1.0, minRadius / 5);
   } else if (isSmallEraser) {
-    // Less dense for small erasers
-    interpolationDistance = Math.max(1.5, minRadius / 5); // Reduced from /6
+    // Normal density for small erasers
+    interpolationDistance = Math.max(1.5, minRadius / 4);
   } else {
     // Normal density for larger erasers
     interpolationDistance = Math.max(2, minRadius / 3);
@@ -362,12 +403,13 @@ export const erasePointsFromPathBatch = (
   
   const interpolatedPoints = interpolatePathPoints(processedPoints, interpolationDistance);
   
-  console.log('🔧 Stroke-aware point processing complete:', {
+  console.log('🔧 Toned-down point processing complete:', {
     originalPoints: points.length,
     processedPoints: processedPoints.length,
     interpolatedPoints: interpolatedPoints.length,
     interpolationDistance,
-    strokeWidth
+    strokeWidth,
+    isSimilarSize
   });
   
   const segments: PathSegment[] = [];
@@ -379,9 +421,9 @@ export const erasePointsFromPathBatch = (
     fallbackHits: 0
   };
   
-  // Step 3: Run stroke-aware fallback detection for very small erasers
+  // Step 3: Toned-down fallback detection
   let fallbackErasedIndices: Set<number> = new Set();
-  if (isVerySmallEraser || isSimilarSize) {
+  if (isVerySmallEraser && !isSimilarSize) { // Skip fallback for similar sizes
     const fallbackIndices = fallbackEraserDetection(interpolatedPoints, eraserPoints, strokeWidth);
     fallbackErasedIndices = new Set(fallbackIndices);
     detectionStats.fallbackHits = fallbackIndices.length;
@@ -398,50 +440,52 @@ export const erasePointsFromPathBatch = (
       detectionMethod = 'fallback';
     }
     
-    // Primary check: Is point directly within any eraser circle? (stroke-width-aware)
+    // Primary check: Is point directly within any eraser circle? (size-aware)
     if (!shouldErase) {
       shouldErase = eraserPoints.some(eraser => {
-        // Calculate stroke compensation - more subtle
-        const strokeCompensation = strokeWidth / 4; // Reduced from strokeWidth / 2
+        // Calculate size ratio for this specific eraser
+        const eraserDiameter = eraser.radius * 2;
+        const localSizeRatio = Math.min(strokeWidth, eraserDiameter) / Math.max(strokeWidth, eraserDiameter);
         
-        // More subtle generosity for similar-sized erasers
-        let generosityMultiplier = 1.0;
-        if (isSimilarSize) {
-          generosityMultiplier = 1.15; // Reduced from 1.3
-        } else if (isVerySmallEraser) {
-          generosityMultiplier = 1.1; // Reduced from 1.2
+        // Toned down generosity multiplier
+        let generosityMultiplier: number;
+        if (localSizeRatio > 0.7) { // Very similar sizes
+          generosityMultiplier = 1.05; // Minimal boost
+        } else if (localSizeRatio > 0.4) { // Moderately different
+          generosityMultiplier = 1.08; // Small boost
+        } else { // Very different sizes
+          generosityMultiplier = 1.1; // Moderate boost
         }
         
-        const effectiveRadius = (eraser.radius + strokeCompensation) * generosityMultiplier;
         const inCircle = isPointInCircle(currentPoint, eraser.x, eraser.y, eraser.radius, strokeWidth * generosityMultiplier);
         
         if (inCircle) {
           detectionMethod = 'direct';
           detectionStats.directHits++;
-          if (isSmallEraser || isSimilarSize) {
-            console.log(`🎯 Stroke-aware direct hit at point ${i}: effective radius ${effectiveRadius.toFixed(1)}px (base: ${eraser.radius}px + stroke: ${strokeCompensation.toFixed(1)}px)`);
-          }
         }
         return inCircle;
       });
     }
     
-    // Secondary check: Line segment intersection (stroke-width-aware)
+    // Secondary check: Line segment intersection (size-aware)
     if (!shouldErase && i > 0) {
       const previousPoint = interpolatedPoints[i - 1];
       
       shouldErase = eraserPoints.some(eraser => {
-        // Calculate stroke compensation - more subtle
-        const strokeCompensation = strokeWidth / 4; // Reduced from strokeWidth / 2
+        // Calculate size ratio for this specific eraser
+        const eraserDiameter = eraser.radius * 2;
+        const localSizeRatio = Math.min(strokeWidth, eraserDiameter) / Math.max(strokeWidth, eraserDiameter);
         
-        // More subtle proximity check
+        // Toned down proximity check
         let proximityMultiplier: number;
-        if (isSimilarSize) {
-          proximityMultiplier = 3.5; // Reduced from 5.0
+        if (localSizeRatio > 0.7) { // Very similar sizes
+          proximityMultiplier = 2.5; // Much more conservative
+        } else if (localSizeRatio > 0.4) { // Moderately different
+          proximityMultiplier = 2.8; // Conservative
         } else if (isVerySmallEraser) {
-          proximityMultiplier = 3.0; // Reduced from 4.0
+          proximityMultiplier = 3.0; // Moderate
         } else if (isSmallEraser) {
-          proximityMultiplier = 2.5; // Reduced from 3.5
+          proximityMultiplier = 2.5;
         } else {
           proximityMultiplier = 2.0;
         }
@@ -449,6 +493,16 @@ export const erasePointsFromPathBatch = (
         const distanceToCenter = Math.sqrt(
           (currentPoint.x - eraser.x) ** 2 + (currentPoint.y - eraser.y) ** 2
         );
+        
+        // Use the toned-down stroke compensation from lineSegmentIntersectsCircle
+        let strokeCompensation: number;
+        if (localSizeRatio > 0.7) {
+          strokeCompensation = strokeWidth * 0.1;
+        } else if (localSizeRatio > 0.4) {
+          strokeCompensation = strokeWidth * 0.2;
+        } else {
+          strokeCompensation = strokeWidth * 0.3;
+        }
         
         const proximityThreshold = (eraser.radius + strokeCompensation) * proximityMultiplier;
         
@@ -459,14 +513,16 @@ export const erasePointsFromPathBatch = (
             currentPoint
           );
           
-          // More subtle stroke-aware line threshold
+          // Toned down line threshold
           let lineThreshold: number;
-          if (isSimilarSize) {
-            lineThreshold = eraser.radius * 1.1 + strokeCompensation; // Reduced from 1.2
+          if (localSizeRatio > 0.7) { // Very similar sizes
+            lineThreshold = eraser.radius * 0.95 + strokeCompensation; // More conservative
+          } else if (localSizeRatio > 0.4) { // Moderately different
+            lineThreshold = eraser.radius * 1.0 + strokeCompensation;
           } else if (isVerySmallEraser) {
-            lineThreshold = eraser.radius * 1.05 + strokeCompensation; // Reduced from 1.1
+            lineThreshold = eraser.radius * 1.05 + strokeCompensation;
           } else if (isSmallEraser) {
-            lineThreshold = eraser.radius * 0.95 + strokeCompensation; // Reduced from 0.98
+            lineThreshold = eraser.radius * 0.95 + strokeCompensation;
           } else {
             lineThreshold = eraser.radius * 0.85 + strokeCompensation;
           }
@@ -476,9 +532,6 @@ export const erasePointsFromPathBatch = (
           if (isLineClose) {
             detectionMethod = 'line-segment';
             detectionStats.lineSegmentHits++;
-            if (isSmallEraser || isSimilarSize) {
-              console.log(`🎯 Stroke-aware line hit at point ${i}: line distance ${lineDistance.toFixed(1)}px <= ${lineThreshold.toFixed(1)}px (stroke: ${strokeWidth}px)`);
-            }
           }
           
           return isLineClose;
@@ -516,7 +569,7 @@ export const erasePointsFromPathBatch = (
   // Filter out segments that are too small to be meaningful
   const filteredSegments = segments.filter(segment => segment.points.length >= 2);
   
-  console.log('✅ Stroke-aware eraser processing complete:', {
+  console.log('✅ Toned-down eraser processing complete:', {
     originalPoints: points.length,
     interpolatedPoints: interpolatedPoints.length,
     erasedPoints: totalErasedPoints,
@@ -524,7 +577,8 @@ export const erasePointsFromPathBatch = (
     resultingSegments: filteredSegments.length,
     totalRemainingPoints: filteredSegments.reduce((sum, seg) => sum + seg.points.length, 0),
     strokeWidth,
-    isSimilarSize
+    isSimilarSize,
+    sizeRatio: sizeRatio.toFixed(2)
   });
   
   return filteredSegments;
@@ -566,14 +620,14 @@ export const doesPathIntersectEraserBatch = (
     const relativeEraserX = eraser.x - pathX;
     const relativeEraserY = eraser.y - pathY;
     
-    // Check point intersections with stroke width awareness
+    // Check point intersections with toned-down stroke width awareness
     const pointIntersection = points.some(point => 
       isPointInCircle(point, relativeEraserX, relativeEraserY, eraser.radius, strokeWidth)
     );
     
     if (pointIntersection) return true;
     
-    // Check line segment intersections with stroke width awareness
+    // Check line segment intersections with toned-down stroke width awareness
     for (let i = 1; i < points.length; i++) {
       if (lineSegmentIntersectsCircle(
         points[i - 1], 
