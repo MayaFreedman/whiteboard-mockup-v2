@@ -249,8 +249,8 @@ export const useCanvasInteractions = () => {
    */
   const performRealTimeErase = useCallback((x: number, y: number) => {
     const now = Date.now();
-    // Throttle erasing to avoid too many actions (every 100ms max for pixel mode)
-    if (now - lastEraseTimeRef.current < 100) return;
+    // Reduce throttling for smoother pixel erasing (every 50ms instead of 100ms)
+    if (now - lastEraseTimeRef.current < 50) return;
     
     lastEraseTimeRef.current = now;
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -411,9 +411,14 @@ export const useCanvasInteractions = () => {
 
       case 'eraser': {
         if (isDrawingRef.current && lastPointRef.current) {
-          // Perform real-time erasing at current position
+          // Perform continuous real-time erasing during drag
           performRealTimeErase(coords.x, coords.y);
           lastPointRef.current = coords;
+          
+          // Trigger canvas redraw to show erasing effects immediately
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
         }
         break;
       }
