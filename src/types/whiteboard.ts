@@ -79,7 +79,9 @@ export type WhiteboardActionType =
   | 'UPDATE_VIEWPORT'
   | 'UPDATE_SETTINGS'
   | 'CLEAR_CANVAS'
-  | 'BATCH_UPDATE';
+  | 'BATCH_UPDATE'
+  | 'ERASE_PIXELS'
+  | 'DELETE_OBJECTS_IN_AREA';
 
 export interface AddObjectAction extends WhiteboardAction {
   type: 'ADD_OBJECT';
@@ -133,5 +135,31 @@ export interface BatchUpdateAction extends WhiteboardAction {
   type: 'BATCH_UPDATE';
   payload: {
     actions: WhiteboardAction[];
+  };
+}
+
+export interface ErasePixelsAction extends WhiteboardAction {
+  type: 'ERASE_PIXELS';
+  payload: {
+    eraserPath: {
+      path: string;
+      x: number;
+      y: number;
+      size: number;
+      opacity: number;
+    };
+  };
+}
+
+export interface DeleteObjectsInAreaAction extends WhiteboardAction {
+  type: 'DELETE_OBJECTS_IN_AREA';
+  payload: {
+    objectIds: string[];
+    eraserArea: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
   };
 }

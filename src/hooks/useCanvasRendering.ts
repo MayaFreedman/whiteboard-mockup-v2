@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -25,8 +24,15 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     // Apply object transformations
     ctx.globalAlpha = obj.opacity || 1;
     
-    // Draw selection highlight FIRST (behind the object) if selected
-    if (isSelected) {
+    // Check if this is an eraser object
+    const isEraser = obj.data?.isEraser;
+    if (isEraser) {
+      // Set blend mode for eraser objects
+      ctx.globalCompositeOperation = 'destination-out';
+    }
+    
+    // Draw selection highlight FIRST (behind the object) if selected and not an eraser
+    if (isSelected && !isEraser) {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
       ctx.globalAlpha = 0.6;
@@ -92,8 +98,16 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           const strokeWidth = obj.strokeWidth || 2;
           const opacity = obj.opacity || 1;
 
-          // Render based on brush type
-          if (brushType === 'paintbrush') {
+          // Render based on brush type or if it's an eraser
+          if (isEraser) {
+            // Render eraser as a solid path
+            const path = new Path2D(obj.data.path);
+            ctx.strokeStyle = '#000000'; // Color doesn't matter for destination-out
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke(path);
+          } else if (brushType === 'paintbrush') {
             renderPaintbrush(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
           } else if (brushType === 'chalk') {
             renderChalk(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
@@ -177,26 +191,39 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     ctx.save();
     ctx.translate(preview.startX, preview.startY);
     
-    const brushType = preview.brushType;
-    
-    // Render preview based on brush type
-    if (brushType === 'paintbrush') {
-      renderPaintbrush(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
-    } else if (brushType === 'chalk') {
-      renderChalk(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
-    } else if (brushType === 'spray') {
-      renderSpray(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
-    } else if (brushType === 'crayon') {
-      renderCrayon(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
-    } else {
-      // Default rendering for pencil
-      const path = new Path2D(preview.path);
+    // Check if this is an eraser preview
+    if (preview.isEraser) {
+      ctx.globalCompositeOperation = 'source-over'; // Normal blend for preview
       ctx.strokeStyle = preview.strokeColor;
       ctx.lineWidth = preview.strokeWidth;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.globalAlpha = preview.opacity;
+      
+      const path = new Path2D(preview.path);
       ctx.stroke(path);
+    } else {
+      const brushType = preview.brushType;
+      
+      // Render preview based on brush type
+      if (brushType === 'paintbrush') {
+        renderPaintbrush(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+      } else if (brushType === 'chalk') {
+        renderChalk(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+      } else if (brushType === 'spray') {
+        renderSpray(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+      } else if (brushType === 'crayon') {
+        renderCrayon(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+      } else {
+        // Default rendering for pencil
+        const path = new Path2D(preview.path);
+        ctx.strokeStyle = preview.strokeColor;
+        ctx.lineWidth = preview.strokeWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.globalAlpha = preview.opacity;
+        ctx.stroke(path);
+      }
     }
     
     ctx.restore();

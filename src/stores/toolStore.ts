@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 
 export type Tool = 
@@ -21,6 +22,8 @@ export type Tool =
 
 export type BrushType = 'paintbrush' | 'chalk' | 'spray' | 'crayon';
 
+export type EraserMode = 'pixel' | 'object';
+
 export interface ToolSettings {
   // Drawing settings
   strokeColor: string;
@@ -28,6 +31,11 @@ export interface ToolSettings {
   strokeWidth: number;
   opacity: number;
   brushType: BrushType;
+  
+  // Eraser settings
+  eraserMode: EraserMode;
+  eraserSize: number;
+  eraserOpacity: number;
   
   // Text settings
   fontSize: number;
@@ -97,6 +105,9 @@ const defaultToolSettings: ToolSettings = {
   strokeWidth: 2,
   opacity: 1,
   brushType: 'paintbrush',
+  eraserMode: 'pixel',
+  eraserSize: 20,
+  eraserOpacity: 1,
   fontSize: 16,
   fontFamily: 'Arial',
   showGrid: false,

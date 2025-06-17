@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
@@ -13,7 +12,9 @@ import {
   UpdateViewportAction,
   UpdateSettingsAction,
   ClearCanvasAction,
-  BatchUpdateAction
+  BatchUpdateAction,
+  ErasePixelsAction,
+  DeleteObjectsInAreaAction
 } from '../types/whiteboard';
 
 interface WhiteboardStore extends WhiteboardState {
@@ -38,6 +39,10 @@ interface WhiteboardStore extends WhiteboardState {
   updateViewport: (viewport: Partial<WhiteboardState['viewport']>) => void;
   updateSettings: (settings: Partial<WhiteboardState['settings']>) => void;
   clearCanvas: () => void;
+  
+  // Eraser methods
+  erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }) => void;
+  deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }) => void;
   
   // Undo/Redo
   undo: () => void;
@@ -345,7 +350,33 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         stateVersion: state.stateVersion + 1,
         lastStateUpdate: Date.now()
       }));
-    }
+    },
+
+    erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }) => {
+      console.log('🧹 Erasing pixels at:', { x: eraserPath.x, y: eraserPath.y, size: eraserPath.size });
+      
+      const action: ErasePixelsAction = {
+        type: 'ERASE_PIXELS',
+        payload: { eraserPath },
+        timestamp: Date.now(),
+        id: nanoid()
+      };
+      
+      get().dispatch(action);
+    },
+
+    deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }) => {
+      console.log('🗑️ Deleting objects in area:', { objectCount: objectIds.length, area: eraserArea });
+      
+      const action: DeleteObjectsInAreaAction = {
+        type: 'DELETE_OBJECTS_IN_AREA',
+        payload: { objectIds, eraserArea },
+        timestamp: Date.now(),
+        id: nanoid()
+      };
+      
+      get().dispatch(action);
+    },
   }))
 );
 
@@ -432,6 +463,49 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
       }
       
       return newState;
+    }
+    
+    case 'ERASE_PIXELS': {
+      const { eraserPath } = (action as ErasePixelsAction).payload;
+      
+      // Create an eraser object that will be rendered with destination-out blend mode
+      const eraserObject: WhiteboardObject = {
+        id: nanoid(),
+        type: 'path',
+        x: eraserPath.x,
+        y: eraserPath.y,
+        stroke: '#000000',
+        strokeWidth: eraserPath.size,
+        opacity: eraserPath.opacity,
+        fill: 'none',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        data: {
+          path: eraserPath.path,
+          isEraser: true
+        }
+      };
+      
+      return {
+        objects: {
+          ...state.objects,
+          [eraserObject.id]: eraserObject
+        }
+      };
+    }
+    
+    case 'DELETE_OBJECTS_IN_AREA': {
+      const { objectIds } = (action as DeleteObjectsInAreaAction).payload;
+      const newObjects = { ...state.objects };
+      
+      objectIds.forEach(id => {
+        delete newObjects[id];
+      });
+      
+      return {
+        objects: newObjects,
+        selectedObjectIds: state.selectedObjectIds.filter(objId => !objectIds.includes(objId))
+      };
     }
     
     default:
