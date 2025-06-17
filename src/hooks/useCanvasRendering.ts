@@ -27,7 +27,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     // Check if this is an eraser object
     const isEraser = obj.data?.isEraser;
     if (isEraser) {
-      // Set blend mode for eraser objects
+      // Set blend mode for eraser objects - this removes pixels
       ctx.globalCompositeOperation = 'destination-out';
     }
     
@@ -100,7 +100,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
 
           // Render based on brush type or if it's an eraser
           if (isEraser) {
-            // Render eraser as a solid path
+            // Render eraser as a solid path with round caps for smooth erasing
             const path = new Path2D(obj.data.path);
             ctx.strokeStyle = '#000000'; // Color doesn't matter for destination-out
             ctx.lineWidth = strokeWidth;
@@ -193,6 +193,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     
     // Check if this is an eraser preview
     if (preview.isEraser) {
+      // Render eraser preview with a semi-transparent red outline to show where it will erase
       ctx.globalCompositeOperation = 'source-over'; // Normal blend for preview
       ctx.strokeStyle = preview.strokeColor;
       ctx.lineWidth = preview.strokeWidth;
