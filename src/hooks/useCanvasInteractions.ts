@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -249,8 +248,8 @@ export const useCanvasInteractions = () => {
    */
   const performRealTimeErase = useCallback((x: number, y: number) => {
     const now = Date.now();
-    // Reduce throttling for smoother pixel erasing (every 50ms instead of 100ms)
-    if (now - lastEraseTimeRef.current < 50) return;
+    // Remove throttling for smooth pixel erasing - let it erase as fast as mouse moves
+    if (now - lastEraseTimeRef.current < 16) return; // ~60fps max
     
     lastEraseTimeRef.current = now;
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -282,6 +281,30 @@ export const useCanvasInteractions = () => {
       console.log('✂️ Real-time pixel erase at:', { x, y });
     }
   }, [toolStore.toolSettings, whiteboardStore, findObjectsInEraserArea]);
+
+  /**
+   * Interpolates points between two coordinates to ensure continuous erasing
+   * @param x1 - Start X coordinate
+   * @param y1 - Start Y coordinate
+   * @param x2 - End X coordinate
+   * @param y2 - End Y coordinate
+   * @returns Array of interpolated points
+   */
+  const interpolatePoints = useCallback((x1: number, y1: number, x2: number, y2: number): Array<{x: number, y: number}> => {
+    const points = [];
+    const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    const steps = Math.max(1, Math.floor(distance / 5)); // Point every 5 pixels
+    
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      points.push({
+        x: x1 + (x2 - x1) * t,
+        y: y1 + (y2 - y1) * t
+      });
+    }
+    
+    return points;
+  }, []);
 
   /**
    * Handles the start of a drawing/interaction session
@@ -411,8 +434,19 @@ export const useCanvasInteractions = () => {
 
       case 'eraser': {
         if (isDrawingRef.current && lastPointRef.current) {
-          // Perform continuous real-time erasing during drag
-          performRealTimeErase(coords.x, coords.y);
+          // Interpolate points between last and current position for continuous erasing
+          const interpolatedPoints = interpolatePoints(
+            lastPointRef.current.x, 
+            lastPointRef.current.y, 
+            coords.x, 
+            coords.y
+          );
+          
+          // Erase at all interpolated points to ensure no gaps
+          interpolatedPoints.forEach(point => {
+            performRealTimeErase(point.x, point.y);
+          });
+          
           lastPointRef.current = coords;
           
           // Trigger canvas redraw to show erasing effects immediately
@@ -423,7 +457,7 @@ export const useCanvasInteractions = () => {
         break;
       }
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, performRealTimeErase]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, performRealTimeErase, interpolatePoints]);
 
   /**
    * Handles the end of a drawing/interaction session
