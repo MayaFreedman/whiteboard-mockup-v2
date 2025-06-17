@@ -18,8 +18,9 @@ export const useCanvasInteractions = () => {
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
   const redrawCanvasRef = useRef<(() => void) | null>(null);
   const erasedObjectsRef = useRef<Set<string>>(new Set());
+  const lastEraseTimeRef = useRef<number>(0);
   
-  // Store the current drawing preview for rendering
+  // Store the current drawing preview for rendering (not used for eraser anymore)
   const currentDrawingPreviewRef = useRef<{
     path: string;
     startX: number;
@@ -28,7 +29,6 @@ export const useCanvasInteractions = () => {
     strokeWidth: number;
     opacity: number;
     brushType?: string;
-    isEraser?: boolean;
   } | null>(null);
 
   /**
@@ -120,18 +120,9 @@ export const useCanvasInteractions = () => {
   const findObjectAt = useCallback((x: number, y: number): string | null => {
     const objects = Object.entries(whiteboardStore.objects);
     
-    console.log('🔍 Checking for objects at:', { x, y, totalObjects: objects.length });
-    
     // Check objects from top to bottom (reverse order for z-index)
     for (let i = objects.length - 1; i >= 0; i--) {
       const [id, obj] = objects[i];
-      
-      console.log('🎯 Checking object:', { 
-        id: id.slice(0, 8), 
-        type: obj.type, 
-        position: { x: obj.x, y: obj.y },
-        size: obj.width ? { width: obj.width, height: obj.height } : 'no size'
-      });
       
       let isHit = false;
       
@@ -142,27 +133,17 @@ export const useCanvasInteractions = () => {
             const relativeX = x - obj.x;
             const relativeY = y - obj.y;
             isHit = isPointInPath(obj.data.path, relativeX, relativeY, obj.strokeWidth);
-            console.log('📏 Path hit test:', { 
-              id: id.slice(0, 8), 
-              isHit, 
-              strokeWidth: obj.strokeWidth,
-              screenCoords: { x, y },
-              pathOrigin: { x: obj.x, y: obj.y },
-              relativeCoords: { x: relativeX, y: relativeY }
-            });
           }
           break;
         }
         
         case 'rectangle': {
           isHit = isPointInRectangle(obj, x, y);
-          console.log('📦 Rectangle hit test:', { id: id.slice(0, 8), isHit });
           break;
         }
         
         case 'circle': {
           isHit = isPointInCircle(obj, x, y);
-          console.log('⭕ Circle hit test:', { id: id.slice(0, 8), isHit });
           break;
         }
         
@@ -172,7 +153,6 @@ export const useCanvasInteractions = () => {
           const textWidth = (obj.data?.content?.length || 0) * fontSize * 0.6; // Rough estimate
           isHit = x >= obj.x && x <= obj.x + textWidth &&
                   y >= obj.y - fontSize && y <= obj.y;
-          console.log('📝 Text hit test:', { id: id.slice(0, 8), isHit, textWidth, fontSize });
           break;
         }
         
@@ -180,41 +160,30 @@ export const useCanvasInteractions = () => {
           // Fallback for other types - use a small hit area around the point
           const hitRadius = 10;
           isHit = Math.abs(x - obj.x) <= hitRadius && Math.abs(y - obj.y) <= hitRadius;
-          console.log('❓ Default hit test:', { id: id.slice(0, 8), isHit, hitRadius });
         }
       }
       
       if (isHit) {
-        console.log('✅ Found object at coordinates:', { id: id.slice(0, 8), type: obj.type });
         return id;
       }
     }
     
-    console.log('❌ No object found at coordinates');
     return null;
   }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle]);
 
   /**
    * Finds objects that intersect with the eraser area
-   * @param eraserPath - The eraser path
-   * @param eraserStart - Starting position of eraser
+   * @param eraserX - X coordinate of eraser center
+   * @param eraserY - Y coordinate of eraser center
    * @param eraserSize - Size of eraser
    * @returns Array of object IDs that should be erased
    */
-  const findObjectsInEraserPath = useCallback((eraserPath: string, eraserStart: { x: number; y: number }, eraserSize: number): string[] => {
+  const findObjectsInEraserArea = useCallback((eraserX: number, eraserY: number, eraserSize: number): string[] => {
     const objectsToErase: string[] = [];
     const objects = Object.entries(whiteboardStore.objects);
     
-    // Create a temporary canvas to test eraser path intersections
-    const testCanvas = document.createElement('canvas');
-    const testCtx = testCanvas.getContext('2d');
-    if (!testCtx) return objectsToErase;
+    const eraserRadius = eraserSize / 2;
     
-    testCtx.lineWidth = eraserSize;
-    testCtx.lineCap = 'round';
-    testCtx.lineJoin = 'round';
-    
-    // Test each object for intersection with eraser path
     objects.forEach(([id, obj]) => {
       if (obj.data?.isEraser) return; // Skip existing eraser objects
       
@@ -223,23 +192,13 @@ export const useCanvasInteractions = () => {
       switch (obj.type) {
         case 'path': {
           if (obj.data?.path) {
-            // Check if the eraser path intersects with the object path
-            // For simplicity, we'll check if any points along the eraser path hit the object
-            const path = new Path2D(eraserPath);
-            const objPath = new Path2D(obj.data.path);
+            // Check if any part of the path is within the eraser circle
+            const relativeX = eraserX - obj.x;
+            const relativeY = eraserY - obj.y;
             
-            // Sample points along the eraser path and test intersection
-            const samplePoints = 10;
-            for (let i = 0; i <= samplePoints; i++) {
-              const t = i / samplePoints;
-              // This is a simplified intersection test - in a production app you'd want more sophisticated geometry
-              const relativeX = eraserStart.x - obj.x;
-              const relativeY = eraserStart.y - obj.y;
-              
-              if (testCtx.isPointInStroke(objPath, relativeX, relativeY)) {
-                intersects = true;
-                break;
-              }
+            // Use a simplified check - if the center point is within stroke area
+            if (isPointInPath(obj.data.path, relativeX, relativeY, obj.strokeWidth || 2)) {
+              intersects = true;
             }
           }
           break;
@@ -247,26 +206,30 @@ export const useCanvasInteractions = () => {
         
         case 'rectangle': {
           if (obj.width && obj.height) {
-            // Check if eraser overlaps with rectangle
-            const eraserLeft = eraserStart.x - eraserSize / 2;
-            const eraserRight = eraserStart.x + eraserSize / 2;
-            const eraserTop = eraserStart.y - eraserSize / 2;
-            const eraserBottom = eraserStart.y + eraserSize / 2;
-            
-            intersects = !(eraserRight < obj.x || eraserLeft > obj.x + obj.width ||
-                          eraserBottom < obj.y || eraserTop > obj.y + obj.height);
+            // Check if eraser circle overlaps with rectangle
+            const closestX = Math.max(obj.x, Math.min(eraserX, obj.x + obj.width));
+            const closestY = Math.max(obj.y, Math.min(eraserY, obj.y + obj.height));
+            const distance = Math.sqrt((eraserX - closestX) ** 2 + (eraserY - closestY) ** 2);
+            intersects = distance <= eraserRadius;
           }
           break;
         }
         
         case 'circle': {
           if (obj.width) {
-            const radius = obj.width / 2;
-            const centerX = obj.x + radius;
-            const centerY = obj.y + radius;
-            const distance = Math.sqrt((eraserStart.x - centerX) ** 2 + (eraserStart.y - centerY) ** 2);
-            intersects = distance <= (radius + eraserSize / 2);
+            const objRadius = obj.width / 2;
+            const centerX = obj.x + objRadius;
+            const centerY = obj.y + objRadius;
+            const distance = Math.sqrt((eraserX - centerX) ** 2 + (eraserY - centerY) ** 2);
+            intersects = distance <= (objRadius + eraserRadius);
           }
+          break;
+        }
+        
+        case 'text': {
+          // Simple distance check for text
+          const distance = Math.sqrt((eraserX - obj.x) ** 2 + (eraserY - obj.y) ** 2);
+          intersects = distance <= eraserRadius;
           break;
         }
       }
@@ -277,7 +240,50 @@ export const useCanvasInteractions = () => {
     });
     
     return objectsToErase;
-  }, [whiteboardStore.objects]);
+  }, [whiteboardStore.objects, isPointInPath]);
+
+  /**
+   * Performs real-time erasing at the given coordinates
+   * @param x - X coordinate
+   * @param y - Y coordinate
+   */
+  const performRealTimeErase = useCallback((x: number, y: number) => {
+    const now = Date.now();
+    // Throttle erasing to avoid too many actions (every 50ms max)
+    if (now - lastEraseTimeRef.current < 50) return;
+    
+    lastEraseTimeRef.current = now;
+    const eraserMode = toolStore.toolSettings.eraserMode;
+    const eraserSize = toolStore.toolSettings.eraserSize;
+    
+    if (eraserMode === 'object') {
+      // Find and delete objects in the eraser area
+      const objectsToErase = findObjectsInEraserArea(x, y, eraserSize);
+      const newObjectsToErase = objectsToErase.filter(id => !erasedObjectsRef.current.has(id));
+      
+      if (newObjectsToErase.length > 0) {
+        newObjectsToErase.forEach(id => erasedObjectsRef.current.add(id));
+        whiteboardStore.deleteObjectsInArea(newObjectsToErase, {
+          x: x - eraserSize / 2,
+          y: y - eraserSize / 2,
+          width: eraserSize,
+          height: eraserSize
+        });
+        console.log('🗑️ Real-time deleted objects:', newObjectsToErase.length);
+      }
+    } else {
+      // Create pixel eraser - a small circle at current position
+      const eraserPath = `M 0 0 A ${eraserSize/2} ${eraserSize/2} 0 1 0 0.1 0 Z`;
+      whiteboardStore.erasePixels({
+        path: eraserPath,
+        x: x,
+        y: y,
+        size: eraserSize,
+        opacity: toolStore.toolSettings.eraserOpacity
+      });
+      console.log('🧹 Real-time pixel erase at:', { x, y });
+    }
+  }, [toolStore.toolSettings, whiteboardStore, findObjectsInEraserArea]);
 
   /**
    * Handles the start of a drawing/interaction session
@@ -325,29 +331,18 @@ export const useCanvasInteractions = () => {
           brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
         
-        console.log('✏️ Started drawing at:', coords, 'Preview set:', !!currentDrawingPreviewRef.current, 'Brush type:', currentDrawingPreviewRef.current.brushType);
+        console.log('✏️ Started drawing at:', coords);
         break;
       }
 
       case 'eraser': {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
-        pathStartRef.current = coords;
         erasedObjectsRef.current = new Set();
+        lastEraseTimeRef.current = 0;
         
-        // Start eraser path
-        currentPathRef.current = `M 0 0`;
-        
-        // Set up eraser preview
-        currentDrawingPreviewRef.current = {
-          path: currentPathRef.current,
-          startX: coords.x,
-          startY: coords.y,
-          strokeColor: '#ff0000', // Red preview for eraser
-          strokeWidth: toolStore.toolSettings.eraserSize,
-          opacity: 0.5, // Semi-transparent preview
-          isEraser: true
-        };
+        // Perform initial erase at starting position
+        performRealTimeErase(coords.x, coords.y);
         
         console.log('🧹 Started erasing at:', coords, 'Mode:', toolStore.toolSettings.eraserMode);
         break;
@@ -356,7 +351,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, findObjectsInEraserPath]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, performRealTimeErase]);
 
   /**
    * Handles pointer movement during interaction
@@ -390,8 +385,6 @@ export const useCanvasInteractions = () => {
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
-          
-          console.log('🔄 Dragging objects:', { deltaX, deltaY });
         }
         break;
       }
@@ -409,7 +402,6 @@ export const useCanvasInteractions = () => {
           // Update drawing preview
           if (currentDrawingPreviewRef.current) {
             currentDrawingPreviewRef.current.path = currentPathRef.current;
-            console.log('🖊️ Updated drawing preview path length:', currentPathRef.current.length);
           }
           
           // Trigger canvas redraw to show smooth preview
@@ -421,40 +413,15 @@ export const useCanvasInteractions = () => {
       }
 
       case 'eraser': {
-        if (isDrawingRef.current && lastPointRef.current && pathStartRef.current) {
-          // Calculate relative coordinates from the path start
-          const relativeX = coords.x - pathStartRef.current.x;
-          const relativeY = coords.y - pathStartRef.current.y;
-          
-          currentPathRef.current += ` L ${relativeX} ${relativeY}`;
-          
-          // For object eraser mode, find and mark objects for deletion
-          if (toolStore.toolSettings.eraserMode === 'object') {
-            const objectsToErase = findObjectsInEraserPath(
-              currentPathRef.current,
-              coords,
-              toolStore.toolSettings.eraserSize
-            );
-            
-            objectsToErase.forEach(id => erasedObjectsRef.current.add(id));
-          }
-          
+        if (isDrawingRef.current && lastPointRef.current) {
+          // Perform real-time erasing at current position
+          performRealTimeErase(coords.x, coords.y);
           lastPointRef.current = coords;
-          
-          // Update eraser preview
-          if (currentDrawingPreviewRef.current) {
-            currentDrawingPreviewRef.current.path = currentPathRef.current;
-          }
-          
-          // Trigger canvas redraw to show smooth preview
-          if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
-          }
         }
         break;
       }
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, findObjectsInEraserPath]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, performRealTimeErase]);
 
   /**
    * Handles the end of a drawing/interaction session
@@ -495,11 +462,10 @@ export const useCanvasInteractions = () => {
           };
 
           const objectId = whiteboardStore.addObject(drawingObject);
-          console.log('✏️ Created drawing object:', objectId.slice(0, 8), 'with brush type:', drawingObject.data.brushType);
+          console.log('✏️ Created drawing object:', objectId.slice(0, 8));
           
           // Clear drawing preview
           currentDrawingPreviewRef.current = null;
-          console.log('🧹 Cleared drawing preview');
           
           // Trigger redraw to show the final object
           if (redrawCanvasRef.current) {
@@ -510,41 +476,10 @@ export const useCanvasInteractions = () => {
       }
 
       case 'eraser': {
-        if (isDrawingRef.current && currentPathRef.current && pathStartRef.current) {
-          const eraserMode = toolStore.toolSettings.eraserMode;
-          
-          if (eraserMode === 'pixel') {
-            // Create pixel eraser action
-            whiteboardStore.erasePixels({
-              path: currentPathRef.current,
-              x: pathStartRef.current.x,
-              y: pathStartRef.current.y,
-              size: toolStore.toolSettings.eraserSize,
-              opacity: toolStore.toolSettings.eraserOpacity
-            });
-            console.log('🧹 Created pixel eraser');
-          } else if (eraserMode === 'object') {
-            // Create object deletion action
-            const objectIds = Array.from(erasedObjectsRef.current);
-            if (objectIds.length > 0) {
-              whiteboardStore.deleteObjectsInArea(objectIds, {
-                x: pathStartRef.current.x - toolStore.toolSettings.eraserSize / 2,
-                y: pathStartRef.current.y - toolStore.toolSettings.eraserSize / 2,
-                width: toolStore.toolSettings.eraserSize,
-                height: toolStore.toolSettings.eraserSize
-              });
-              console.log('🗑️ Deleted objects:', objectIds.length);
-            }
-          }
-          
-          // Clear eraser preview
-          currentDrawingPreviewRef.current = null;
+        if (isDrawingRef.current) {
+          console.log('🧹 Finished erasing');
+          // Clear erased objects set for next erase session
           erasedObjectsRef.current.clear();
-          
-          // Trigger redraw to show final result
-          if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
-          }
         }
         break;
       }
@@ -555,14 +490,13 @@ export const useCanvasInteractions = () => {
     lastPointRef.current = null;
     currentPathRef.current = '';
     pathStartRef.current = null;
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore]);
 
   /**
-   * Gets the current drawing preview for rendering
+   * Gets the current drawing preview for rendering (excludes eraser)
    * @returns Current drawing preview or null
    */
   const getCurrentDrawingPreview = useCallback(() => {
-    console.log('📋 Getting drawing preview:', !!currentDrawingPreviewRef.current);
     return currentDrawingPreviewRef.current;
   }, []);
 
