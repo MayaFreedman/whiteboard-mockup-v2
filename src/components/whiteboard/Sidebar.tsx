@@ -15,13 +15,28 @@ import {
   SidebarHeader,
   useSidebar,
 } from '../ui/sidebar';
+import { EraserSettings } from './EraserSettings';
 
 // Context-sensitive tool settings component
 const ToolSettings: React.FC = () => {
   const { activeTool, toolSettings, updateToolSettings } = useToolStore();
 
-  // Drawing tools (pencil, brush, eraser)
-  if (['pencil', 'brush', 'eraser'].includes(activeTool)) {
+  // Eraser tool
+  if (activeTool === 'eraser') {
+    return (
+      <Card>
+        <CardHeader className="bg-muted/80 py-3">
+          <CardTitle className="text-lg">Eraser Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <EraserSettings />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Drawing tools (pencil, brush)
+  if (['pencil', 'brush'].includes(activeTool)) {
     return (
       <Card>
         <CardHeader className="bg-muted/80 py-3">
@@ -48,13 +63,13 @@ const ToolSettings: React.FC = () => {
 
           <div>
             <label className="text-sm font-medium mb-2 block">
-              {activeTool === 'eraser' ? 'Size' : 'Stroke Width'}: {toolSettings.strokeWidth}px
+              Stroke Width: {toolSettings.strokeWidth}px
             </label>
             <Slider
               value={[toolSettings.strokeWidth]}
               onValueChange={(value) => updateToolSettings({ strokeWidth: value[0] })}
               min={1}
-              max={activeTool === 'eraser' ? 50 : 20}
+              max={20}
               step={1}
             />
           </div>
