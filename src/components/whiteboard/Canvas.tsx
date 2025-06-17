@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
-import { useCanvasInteractions } from '../../hooks/useCanvasInteractions';
+import { useCanvasInteractions } from '../../hooks/canvas/useCanvasInteractions';
 import { useCanvasRendering } from '../../hooks/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
 import { CustomCursor } from './CustomCursor';
