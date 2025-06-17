@@ -45,6 +45,7 @@ interface WhiteboardStore extends WhiteboardState {
   // Eraser methods
   erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }) => void;
   deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }) => void;
+  erasePath: (action: { originalObjectId: string; eraserPath: { x: number; y: number; size: number; path: string }; resultingSegments: Array<{ points: Array<{ x: number; y: number }>; id: string }> }) => void;
   
   // Undo/Redo
   undo: () => void;
@@ -242,6 +243,19 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       const action: BatchUpdateAction = {
         type: 'BATCH_UPDATE',
         payload: { actions },
+        timestamp: Date.now(),
+        id: nanoid()
+      };
+      
+      get().dispatch(action);
+    },
+
+    erasePath: (eraserAction: { originalObjectId: string; eraserPath: { x: number; y: number; size: number; path: string }; resultingSegments: Array<{ points: Array<{ x: number; y: number }>; id: string }> }) => {
+      console.log('✂️ Atomic path erase:', { originalObjectId: eraserAction.originalObjectId.slice(0, 8), segmentsCreated: eraserAction.resultingSegments.length });
+      
+      const action: ErasePathAction = {
+        type: 'ERASE_PATH',
+        payload: eraserAction,
         timestamp: Date.now(),
         id: nanoid()
       };
@@ -668,7 +682,7 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
     }
     
     default:
-      console.warn('Unknown action type:', action.type);
+      console.warn('Unknown action type:', (action as any).type);
       return {};
   }
 }
