@@ -1,12 +1,9 @@
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
-import {
-  interpolatePoints,
-  doesPathIntersectEraserBatch,
-  erasePointsFromPathBatch,
-  pathToPoints
-} from '../../utils/pathUtils';
+import { interpolatePoints } from '../../utils/path/pathInterpolation';
+import { doesPathIntersectEraserBatch, erasePointsFromPathBatch } from '../../utils/path/pathErasing';
+import { pathToPoints } from '../../utils/path/pathConversion';
 
 /**
  * Hook for handling eraser logic and batch processing

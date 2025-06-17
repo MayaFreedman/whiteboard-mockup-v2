@@ -1,4 +1,4 @@
-import { Point } from '../utils/pathUtils';
+import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
   id: string;

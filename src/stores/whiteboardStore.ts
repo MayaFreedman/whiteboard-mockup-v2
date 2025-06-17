@@ -17,7 +17,8 @@ import {
   DeleteObjectsInAreaAction,
   ErasePathAction
 } from '../types/whiteboard';
-import { erasePointsFromPathBatch, pointsToPath, doesPathIntersectEraserBatch, pathToPoints } from '../utils/pathUtils';
+import { erasePointsFromPathBatch, doesPathIntersectEraserBatch } from '../utils/path/pathErasing';
+import { pointsToPath, pathToPoints } from '../utils/path/pathConversion';
 
 interface WhiteboardStore extends WhiteboardState {
   // Action history for undo/redo
