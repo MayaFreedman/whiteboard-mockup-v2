@@ -111,7 +111,69 @@ export const isPointInCircle = (point: Point, centerX: number, centerY: number, 
 };
 
 /**
- * Optimized version: removes points from a path that intersect with multiple eraser circles
+ * Calculates the shortest distance from a point to a line segment
+ * @param point - The point to check
+ * @param lineStart - Start point of the line segment
+ * @param lineEnd - End point of the line segment
+ * @returns Distance from point to line segment
+ */
+export const distanceFromPointToLineSegment = (point: Point, lineStart: Point, lineEnd: Point): number => {
+  const A = point.x - lineStart.x;
+  const B = point.y - lineStart.y;
+  const C = lineEnd.x - lineStart.x;
+  const D = lineEnd.y - lineStart.y;
+
+  const dot = A * C + B * D;
+  const lenSq = C * C + D * D;
+  
+  if (lenSq === 0) {
+    // Line segment is actually a point
+    return Math.sqrt(A * A + B * B);
+  }
+  
+  let param = dot / lenSq;
+  
+  let xx: number, yy: number;
+  
+  if (param < 0) {
+    xx = lineStart.x;
+    yy = lineStart.y;
+  } else if (param > 1) {
+    xx = lineEnd.x;
+    yy = lineEnd.y;
+  } else {
+    xx = lineStart.x + param * C;
+    yy = lineStart.y + param * D;
+  }
+  
+  const dx = point.x - xx;
+  const dy = point.y - yy;
+  return Math.sqrt(dx * dx + dy * dy);
+};
+
+/**
+ * Checks if a line segment intersects with a circle (eraser area)
+ * @param lineStart - Start point of the line segment
+ * @param lineEnd - End point of the line segment
+ * @param centerX - Circle center X
+ * @param centerY - Circle center Y
+ * @param radius - Circle radius
+ * @returns True if line segment intersects the circle
+ */
+export const lineSegmentIntersectsCircle = (
+  lineStart: Point, 
+  lineEnd: Point, 
+  centerX: number, 
+  centerY: number, 
+  radius: number
+): boolean => {
+  const center = { x: centerX, y: centerY };
+  const distance = distanceFromPointToLineSegment(center, lineStart, lineEnd);
+  return distance <= radius;
+};
+
+/**
+ * Optimized version: removes points from a path that intersect with multiple eraser circles using line segment intersection
  * @param points - Original path points
  * @param eraserPoints - Array of eraser center points with radius
  * @returns Array of disconnected path segments
@@ -125,17 +187,34 @@ export const erasePointsFromPathBatch = (
   const segments: PathSegment[] = [];
   let currentSegment: Point[] = [];
   
-  points.forEach((point, index) => {
-    // Check if this point is erased by any of the eraser positions
-    const isErased = eraserPoints.some(eraser => 
-      isPointInCircle(point, eraser.x, eraser.y, eraser.radius)
+  for (let i = 0; i < points.length; i++) {
+    const currentPoint = points[i];
+    let isErased = false;
+    
+    // Check if current point is directly erased
+    isErased = eraserPoints.some(eraser => 
+      isPointInCircle(currentPoint, eraser.x, eraser.y, eraser.radius)
     );
     
+    // If not directly erased, check if the line segment to this point intersects any eraser
+    if (!isErased && i > 0) {
+      const previousPoint = points[i - 1];
+      isErased = eraserPoints.some(eraser =>
+        lineSegmentIntersectsCircle(
+          previousPoint, 
+          currentPoint, 
+          eraser.x, 
+          eraser.y, 
+          eraser.radius
+        )
+      );
+    }
+    
     if (!isErased) {
-      // Point survives erasing
-      currentSegment.push(point);
+      // Point and line segment survive erasing
+      currentSegment.push(currentPoint);
     } else {
-      // Point is erased - end current segment if it has points
+      // Point or line segment is erased - end current segment if it has points
       if (currentSegment.length > 0) {
         segments.push({
           points: [...currentSegment],
@@ -144,7 +223,7 @@ export const erasePointsFromPathBatch = (
         currentSegment = [];
       }
     }
-  });
+  }
   
   // Add final segment if it has points
   if (currentSegment.length > 0) {
@@ -171,7 +250,7 @@ export const erasePointsFromPath = (
 };
 
 /**
- * Optimized: checks if a path intersects with any of multiple eraser circles
+ * Optimized: checks if a path intersects with any of multiple eraser circles using line segment intersection
  * @param pathString - SVG path string
  * @param pathX - Path origin X
  * @param pathY - Path origin Y
@@ -191,9 +270,27 @@ export const doesPathIntersectEraserBatch = (
     const relativeEraserX = eraser.x - pathX;
     const relativeEraserY = eraser.y - pathY;
     
-    return points.some(point => 
+    // Check point intersections
+    const pointIntersection = points.some(point => 
       isPointInCircle(point, relativeEraserX, relativeEraserY, eraser.radius)
     );
+    
+    if (pointIntersection) return true;
+    
+    // Check line segment intersections
+    for (let i = 1; i < points.length; i++) {
+      if (lineSegmentIntersectsCircle(
+        points[i - 1], 
+        points[i], 
+        relativeEraserX, 
+        relativeEraserY, 
+        eraser.radius
+      )) {
+        return true;
+      }
+    }
+    
+    return false;
   });
 };
 

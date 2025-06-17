@@ -1,8 +1,16 @@
 import { useRef, useCallback } from 'react';
-import { useWhiteboardStore } from '../stores/whiteboardStore';
+import {
+  useWhiteboardStore
+} from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { WhiteboardObject } from '../types/whiteboard';
-import { interpolatePoints, doesPathIntersectEraserBatch, erasePointsFromPathBatch, pathToPoints } from '../utils/pathUtils';
+import {
+  interpolatePoints,
+  doesPathIntersectEraserBatch,
+  erasePointsFromPathBatch,
+  pathToPoints,
+  lineSegmentIntersectsCircle
+} from '../utils/pathUtils';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -19,7 +27,7 @@ export const useCanvasInteractions = () => {
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
   const redrawCanvasRef = useRef<(() => void) | null>(null);
   
-  // For real-time eraser: batch processing
+  // For real-time eraser: batch processing with line segment intersection
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
   const lastEraserProcessRef = useRef<number>(0);
   const ERASER_BATCH_SIZE = 3; // Process every N points
@@ -158,7 +166,7 @@ export const useCanvasInteractions = () => {
   }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle]);
 
   /**
-   * Processes accumulated eraser points against all objects
+   * Processes accumulated eraser points against all objects using line segment intersection
    */
   const processEraserBatch = useCallback(() => {
     if (eraserPointsRef.current.length === 0) return;
@@ -188,7 +196,7 @@ export const useCanvasInteractions = () => {
             radius: eraser.radius
           }));
           
-          // Get remaining segments after erasing
+          // Get remaining segments after erasing with line segment intersection
           const segments = erasePointsFromPathBatch(points, relativeEraserPoints);
           
           if (segments.length === 0) {
@@ -395,7 +403,9 @@ export const useCanvasInteractions = () => {
           
           if (shouldProcess) {
             processEraserBatch();
-            eraserPointsRef.current = []; // Clear processed points
+            // Don't clear all points - keep the last one for continuity
+            const lastPoint = eraserPointsRef.current[eraserPointsRef.current.length - 1];
+            eraserPointsRef.current = lastPoint ? [lastPoint] : [];
             lastEraserProcessRef.current = now;
             
             // Trigger canvas redraw

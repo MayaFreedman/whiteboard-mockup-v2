@@ -11,7 +11,7 @@ import { useToolSelection } from '../../hooks/useToolSelection';
  * @param activeTool - The currently active tool
  * @returns CSS cursor value
  */
-const getCursorStyle = (activeTool: string): string => {
+const getCursorStyle = (activeTool: string, eraserSize: number = 20): string => {
   switch (activeTool) {
     case 'select':
       return 'default';
@@ -23,6 +23,7 @@ const getCursorStyle = (activeTool: string): string => {
     case 'brush':
       return 'crosshair';
     case 'eraser':
+      // We'll still use crosshair for eraser - the visual feedback will be provided by the renderer
       return 'crosshair';
     default:
       return 'crosshair';
@@ -36,7 +37,7 @@ const getCursorStyle = (activeTool: string): string => {
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { viewport } = useWhiteboardStore();
-  const { activeTool } = useToolStore();
+  const { activeTool, toolSettings } = useToolStore();
   
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
@@ -118,7 +119,7 @@ export const Canvas: React.FC = () => {
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
         style={{
-          cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
+          cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool, toolSettings.eraserSize),
           touchAction: 'none' // Prevent default touch behaviors
         }}
         onMouseDown={onMouseDown}
