@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for path manipulation and intersection detection
  */
@@ -172,7 +173,8 @@ export const lineSegmentIntersectsCircle = (
 };
 
 /**
- * Interpolates additional points into a path for smoother erasing
+ * Enhanced interpolation for eraser-size-adaptive point density
+ * Creates ultra-dense points for small erasers to ensure detection
  * @param points - Original path points
  * @param maxDistance - Maximum distance between points
  * @returns Array of points with interpolated points added
@@ -192,8 +194,96 @@ export const interpolatePathPoints = (points: Point[], maxDistance: number = 3):
 };
 
 /**
- * Adjusted sensitivity: More responsive for smaller erasers while maintaining precision
- * Uses hybrid approach: direct point-in-circle + more generous line proximity for better sensitivity
+ * Pre-processes long line segments by breaking them into smaller chunks
+ * This ensures small erasers can detect paths with large gaps between points
+ * @param points - Original path points
+ * @param minEraserRadius - Smallest eraser radius for scaling
+ * @returns Array of points with additional breakdown points
+ */
+export const preprocessPathForSmallErasers = (points: Point[], minEraserRadius: number): Point[] => {
+  if (points.length < 2 || minEraserRadius >= 15) return points;
+  
+  // For small erasers, break long segments into chunks no larger than the eraser radius
+  const maxSegmentLength = Math.max(1, minEraserRadius / 2);
+  
+  console.log(`🔧 Pre-processing path for small eraser (${minEraserRadius}px radius):`, {
+    originalPoints: points.length,
+    maxSegmentLength
+  });
+  
+  const processedPoints: Point[] = [points[0]];
+  
+  for (let i = 1; i < points.length; i++) {
+    const distance = Math.sqrt(
+      (points[i].x - points[i-1].x) ** 2 + 
+      (points[i].y - points[i-1].y) ** 2
+    );
+    
+    if (distance > maxSegmentLength) {
+      // Break this segment into smaller pieces
+      const steps = Math.ceil(distance / maxSegmentLength);
+      for (let j = 1; j < steps; j++) {
+        const t = j / steps;
+        processedPoints.push({
+          x: points[i-1].x + (points[i].x - points[i-1].x) * t,
+          y: points[i-1].y + (points[i].y - points[i-1].y) * t
+        });
+      }
+    }
+    
+    processedPoints.push(points[i]);
+  }
+  
+  console.log(`🔧 Path pre-processing complete:`, {
+    originalPoints: points.length,
+    processedPoints: processedPoints.length,
+    pointsAdded: processedPoints.length - points.length
+  });
+  
+  return processedPoints;
+};
+
+/**
+ * Fallback detection for when no points are found within eraser circles
+ * Checks if any line segments pass close to eraser centers
+ * @param points - Path points to check
+ * @param eraserPoints - Eraser positions and sizes
+ * @returns Array of point indices that should be erased
+ */
+export const fallbackEraserDetection = (
+  points: Point[], 
+  eraserPoints: Array<{ x: number; y: number; radius: number }>
+): number[] => {
+  const pointsToErase: number[] = [];
+  
+  // Only use fallback for small erasers
+  const smallErasers = eraserPoints.filter(e => e.radius < 15);
+  if (smallErasers.length === 0) return pointsToErase;
+  
+  console.log(`🔍 Running fallback detection for ${smallErasers.length} small erasers`);
+  
+  for (let i = 1; i < points.length; i++) {
+    for (const eraser of smallErasers) {
+      const lineDistance = distanceFromPointToLineSegment(
+        { x: eraser.x, y: eraser.y },
+        points[i-1],
+        points[i]
+      );
+      
+      // Very generous fallback threshold - 2x eraser radius
+      if (lineDistance <= eraser.radius * 2) {
+        console.log(`🎯 Fallback detection: Line segment ${i-1}-${i} within ${lineDistance.toFixed(1)}px of eraser (threshold: ${(eraser.radius * 2).toFixed(1)}px)`);
+        pointsToErase.push(i-1, i);
+      }
+    }
+  }
+  
+  return [...new Set(pointsToErase)]; // Remove duplicates
+};
+
+/**
+ * Ultra-responsive eraser for small sizes with comprehensive detection
+ * Multi-layered approach: preprocessing + dense interpolation + aggressive detection + fallback
  * @param points - Original path points
  * @param eraserPoints - Array of eraser center points with radius
  * @returns Array of disconnected path segments
@@ -204,48 +294,92 @@ export const erasePointsFromPathBatch = (
 ): PathSegment[] => {
   if (points.length === 0 || eraserPoints.length === 0) return [];
   
-  // First, interpolate points for smoother erasing - adjust based on smallest eraser
   const minRadius = Math.min(...eraserPoints.map(e => e.radius));
-  const interpolationDistance = Math.max(2, minRadius / 3); // More dense for smaller erasers
-  const interpolatedPoints = interpolatePathPoints(points, interpolationDistance);
+  const isSmallEraser = minRadius < 15;
   
-  const segments: PathSegment[] = [];
-  let currentSegment: Point[] = [];
-  
-  console.log('🧹 Starting eraser batch processing:', {
+  console.log('🧹 Starting enhanced eraser batch processing:', {
     originalPoints: points.length,
-    interpolatedPoints: interpolatedPoints.length,
     eraserPoints: eraserPoints.length,
-    eraserSizes: eraserPoints.map(e => e.radius * 2), // Show diameters for debugging
+    eraserSizes: eraserPoints.map(e => e.radius * 2),
     minRadius,
+    isSmallEraser
+  });
+  
+  // Step 1: Pre-process path for small erasers
+  let processedPoints = points;
+  if (isSmallEraser) {
+    processedPoints = preprocessPathForSmallErasers(points, minRadius);
+  }
+  
+  // Step 2: Dynamic interpolation based on eraser size
+  let interpolationDistance: number;
+  if (isSmallEraser) {
+    // Ultra-dense for small erasers - every 1-2 pixels
+    interpolationDistance = Math.max(1, minRadius / 5);
+  } else {
+    // Normal density for larger erasers
+    interpolationDistance = Math.max(2, minRadius / 3);
+  }
+  
+  const interpolatedPoints = interpolatePathPoints(processedPoints, interpolationDistance);
+  
+  console.log('🔧 Point processing complete:', {
+    originalPoints: points.length,
+    processedPoints: processedPoints.length,
+    interpolatedPoints: interpolatedPoints.length,
     interpolationDistance
   });
   
+  const segments: PathSegment[] = [];
+  let currentSegment: Point[] = [];
   let totalErasedPoints = 0;
+  let detectionStats = {
+    directHits: 0,
+    lineSegmentHits: 0,
+    fallbackHits: 0
+  };
+  
+  // Step 3: Run fallback detection for small erasers
+  let fallbackErasedIndices: Set<number> = new Set();
+  if (isSmallEraser) {
+    const fallbackIndices = fallbackEraserDetection(interpolatedPoints, eraserPoints);
+    fallbackErasedIndices = new Set(fallbackIndices);
+    detectionStats.fallbackHits = fallbackIndices.length;
+  }
   
   for (let i = 0; i < interpolatedPoints.length; i++) {
     const currentPoint = interpolatedPoints[i];
-    
     let shouldErase = false;
+    let detectionMethod = '';
+    
+    // Check if this point was marked for fallback erasing
+    if (fallbackErasedIndices.has(i)) {
+      shouldErase = true;
+      detectionMethod = 'fallback';
+    }
     
     // Primary check: Is point directly within any eraser circle?
-    shouldErase = eraserPoints.some(eraser => {
-      const inCircle = isPointInCircle(currentPoint, eraser.x, eraser.y, eraser.radius);
-      if (inCircle) {
-        console.log(`🎯 Point ${i} directly in eraser circle`);
-      }
-      return inCircle;
-    });
+    if (!shouldErase) {
+      shouldErase = eraserPoints.some(eraser => {
+        const inCircle = isPointInCircle(currentPoint, eraser.x, eraser.y, eraser.radius);
+        if (inCircle) {
+          detectionMethod = 'direct';
+          detectionStats.directHits++;
+          if (isSmallEraser) {
+            console.log(`🎯 Small eraser direct hit at point ${i}: distance ${Math.sqrt((currentPoint.x - eraser.x) ** 2 + (currentPoint.y - eraser.y) ** 2).toFixed(1)}px <= ${eraser.radius}px`);
+          }
+        }
+        return inCircle;
+      });
+    }
     
-    // Secondary check: If point is close to eraser AND we have a previous point,
-    // check if the line segment passes close to the eraser center
-    // Make this more generous for smaller erasers
+    // Secondary check: Line segment intersection (more aggressive for small erasers)
     if (!shouldErase && i > 0) {
       const previousPoint = interpolatedPoints[i - 1];
       
       shouldErase = eraserPoints.some(eraser => {
-        // More generous proximity check - within 2x the eraser radius for small erasers
-        const proximityMultiplier = eraser.radius < 15 ? 2.5 : 2.0;
+        // Much more generous proximity for small erasers
+        const proximityMultiplier = isSmallEraser ? 3.0 : 2.0;
         const distanceToCenter = Math.sqrt(
           (currentPoint.x - eraser.x) ** 2 + (currentPoint.y - eraser.y) ** 2
         );
@@ -257,12 +391,16 @@ export const erasePointsFromPathBatch = (
             currentPoint
           );
           
-          // More generous line threshold - 85% of radius (was 70%)
-          const lineThreshold = eraser.radius * 0.85;
+          // Much more aggressive line threshold for small erasers
+          const lineThreshold = isSmallEraser ? eraser.radius * 0.95 : eraser.radius * 0.85;
           const isLineClose = lineDistance <= lineThreshold;
           
           if (isLineClose) {
-            console.log(`🎯 Point ${i} erased via close line segment (distance: ${lineDistance.toFixed(1)}, threshold: ${lineThreshold.toFixed(1)})`);
+            detectionMethod = 'line-segment';
+            detectionStats.lineSegmentHits++;
+            if (isSmallEraser) {
+              console.log(`🎯 Small eraser line hit at point ${i}: line distance ${lineDistance.toFixed(1)}px <= ${lineThreshold.toFixed(1)}px`);
+            }
           }
           
           return isLineClose;
@@ -281,10 +419,8 @@ export const erasePointsFromPathBatch = (
           points: [...currentSegment],
           id: `segment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         });
-        console.log('🔗 Ended segment before erased point, segment had', currentSegment.length, 'points');
         currentSegment = [];
       }
-      // Skip this point (don't add to any segment)
     } else {
       // Point survives erasing - add to current segment
       currentSegment.push(currentPoint);
@@ -297,18 +433,19 @@ export const erasePointsFromPathBatch = (
       points: currentSegment,
       id: `segment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     });
-    console.log('🔗 Added final segment, points:', currentSegment.length);
   }
   
   // Filter out segments that are too small to be meaningful
   const filteredSegments = segments.filter(segment => segment.points.length >= 2);
   
-  console.log('✅ Eraser processing complete:', {
+  console.log('✅ Enhanced eraser processing complete:', {
     originalPoints: points.length,
     interpolatedPoints: interpolatedPoints.length,
     erasedPoints: totalErasedPoints,
+    detectionStats,
     resultingSegments: filteredSegments.length,
-    totalRemainingPoints: filteredSegments.reduce((sum, seg) => sum + seg.points.length, 0)
+    totalRemainingPoints: filteredSegments.reduce((sum, seg) => sum + seg.points.length, 0),
+    isSmallEraser
   });
   
   return filteredSegments;
