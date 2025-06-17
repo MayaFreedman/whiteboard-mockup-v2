@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
@@ -16,6 +17,7 @@ import {
   ErasePixelsAction,
   DeleteObjectsInAreaAction
 } from '../types/whiteboard';
+import { erasePointsFromPath, pointsToPath, doesPathIntersectEraser } from '../utils/pathUtils';
 
 interface WhiteboardStore extends WhiteboardState {
   // Action history for undo/redo
@@ -467,30 +469,86 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
     
     case 'ERASE_PIXELS': {
       const { eraserPath } = (action as ErasePixelsAction).payload;
+      const eraserRadius = eraserPath.size / 2;
       
-      // Create an eraser object that will be rendered with destination-out blend mode
-      const eraserObject: WhiteboardObject = {
-        id: nanoid(),
-        type: 'path',
-        x: eraserPath.x,
-        y: eraserPath.y,
-        stroke: '#000000',
-        strokeWidth: eraserPath.size,
-        opacity: eraserPath.opacity,
-        fill: 'none',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        data: {
-          path: eraserPath.path,
-          isEraser: true
+      const newObjects = { ...state.objects };
+      const objectsToRemove: string[] = [];
+      const objectsToAdd: WhiteboardObject[] = [];
+      
+      // Process each path object that might intersect with the eraser
+      Object.entries(state.objects).forEach(([id, obj]) => {
+        if (obj.type === 'path' && obj.data?.path && !obj.data?.isEraser) {
+          // Check if this path intersects with the eraser
+          const intersects = doesPathIntersectEraser(
+            obj.data.path,
+            obj.x,
+            obj.y,
+            eraserPath.x,
+            eraserPath.y,
+            eraserRadius
+          );
+          
+          if (intersects) {
+            console.log('🎯 Path intersects with eraser, processing:', id.slice(0, 8));
+            
+            // Convert path to points and erase intersecting points
+            const { pathToPoints } = require('../utils/pathUtils');
+            const points = pathToPoints(obj.data.path);
+            
+            // Convert eraser coordinates to path-relative coordinates
+            const relativeEraserX = eraserPath.x - obj.x;
+            const relativeEraserY = eraserPath.y - obj.y;
+            
+            // Get remaining segments after erasing
+            const segments = erasePointsFromPath(points, relativeEraserX, relativeEraserY, eraserRadius);
+            
+            // Mark original object for removal
+            objectsToRemove.push(id);
+            
+            // Create new objects for each remaining segment
+            segments.forEach((segment, index) => {
+              if (segment.points.length >= 2) {
+                const newPath = pointsToPath(segment.points);
+                const newObject: WhiteboardObject = {
+                  ...obj,
+                  id: nanoid(),
+                  data: {
+                    ...obj.data,
+                    path: newPath
+                  },
+                  updatedAt: Date.now()
+                };
+                objectsToAdd.push(newObject);
+                console.log('➕ Created path segment:', newObject.id.slice(0, 8), 'with', segment.points.length, 'points');
+              }
+            });
+          }
         }
-      };
+      });
+      
+      // Apply changes: remove original objects and add new segments
+      objectsToRemove.forEach(id => {
+        delete newObjects[id];
+      });
+      
+      objectsToAdd.forEach(obj => {
+        newObjects[obj.id] = obj;
+      });
+      
+      // Update selected objects list to exclude removed objects
+      const newSelectedObjectIds = state.selectedObjectIds.filter(
+        objId => !objectsToRemove.includes(objId)
+      );
+      
+      console.log('✂️ Pixel erase completed:', {
+        removed: objectsToRemove.length,
+        added: objectsToAdd.length,
+        totalObjects: Object.keys(newObjects).length
+      });
       
       return {
-        objects: {
-          ...state.objects,
-          [eraserObject.id]: eraserObject
-        }
+        objects: newObjects,
+        selectedObjectIds: newSelectedObjectIds
       };
     }
     

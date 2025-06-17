@@ -17,10 +17,9 @@ export const useCanvasInteractions = () => {
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
   const redrawCanvasRef = useRef<(() => void) | null>(null);
-  const erasedObjectsRef = useRef<Set<string>>(new Set());
   const lastEraseTimeRef = useRef<number>(0);
   
-  // Store the current drawing preview for rendering (not used for eraser anymore)
+  // Store the current drawing preview for rendering
   const currentDrawingPreviewRef = useRef<{
     path: string;
     startX: number;
@@ -249,8 +248,8 @@ export const useCanvasInteractions = () => {
    */
   const performRealTimeErase = useCallback((x: number, y: number) => {
     const now = Date.now();
-    // Throttle erasing to avoid too many actions (every 50ms max)
-    if (now - lastEraseTimeRef.current < 50) return;
+    // Throttle erasing to avoid too many actions (every 100ms max for pixel mode)
+    if (now - lastEraseTimeRef.current < 100) return;
     
     lastEraseTimeRef.current = now;
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -259,20 +258,18 @@ export const useCanvasInteractions = () => {
     if (eraserMode === 'object') {
       // Find and delete objects in the eraser area
       const objectsToErase = findObjectsInEraserArea(x, y, eraserSize);
-      const newObjectsToErase = objectsToErase.filter(id => !erasedObjectsRef.current.has(id));
       
-      if (newObjectsToErase.length > 0) {
-        newObjectsToErase.forEach(id => erasedObjectsRef.current.add(id));
-        whiteboardStore.deleteObjectsInArea(newObjectsToErase, {
+      if (objectsToErase.length > 0) {
+        whiteboardStore.deleteObjectsInArea(objectsToErase, {
           x: x - eraserSize / 2,
           y: y - eraserSize / 2,
           width: eraserSize,
           height: eraserSize
         });
-        console.log('🗑️ Real-time deleted objects:', newObjectsToErase.length);
+        console.log('🗑️ Real-time deleted objects:', objectsToErase.length);
       }
     } else {
-      // Create pixel eraser - a small circle at current position
+      // Pixel eraser mode - directly modify paths
       const eraserPath = `M 0 0 A ${eraserSize/2} ${eraserSize/2} 0 1 0 0.1 0 Z`;
       whiteboardStore.erasePixels({
         path: eraserPath,
@@ -281,7 +278,7 @@ export const useCanvasInteractions = () => {
         size: eraserSize,
         opacity: toolStore.toolSettings.eraserOpacity
       });
-      console.log('🧹 Real-time pixel erase at:', { x, y });
+      console.log('✂️ Real-time pixel erase at:', { x, y });
     }
   }, [toolStore.toolSettings, whiteboardStore, findObjectsInEraserArea]);
 
