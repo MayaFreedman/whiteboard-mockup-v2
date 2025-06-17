@@ -300,18 +300,37 @@ export const useCanvasInteractions = () => {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         
-        // Initialize eraser batch processing
-        eraserPointsRef.current = [{
-          x: coords.x,
-          y: coords.y,
-          radius: toolStore.toolSettings.eraserSize / 2
-        }];
-        lastEraserProcessRef.current = Date.now();
+        const eraserMode = toolStore.toolSettings.eraserMode;
         
-        // Process initial eraser point immediately
-        processEraserBatch();
+        if (eraserMode === 'object') {
+          // Object eraser - find and delete entire objects
+          const objectId = findObjectAt(coords.x, coords.y);
+          if (objectId) {
+            whiteboardStore.deleteObject(objectId);
+            console.log('🗑️ Object eraser deleted:', objectId.slice(0, 8));
+            
+            // Trigger canvas redraw
+            if (redrawCanvasRef.current) {
+              redrawCanvasRef.current();
+            }
+          }
+        } else {
+          // Pixel eraser - use the size as diameter, not radius
+          const eraserRadius = toolStore.toolSettings.eraserSize / 2;
+          
+          // Initialize eraser batch processing
+          eraserPointsRef.current = [{
+            x: coords.x,
+            y: coords.y,
+            radius: eraserRadius
+          }];
+          lastEraserProcessRef.current = Date.now();
+          
+          // Process initial eraser point immediately
+          processEraserBatch();
+        }
         
-        console.log('🧹 Started real-time erasing at:', coords);
+        console.log('🧹 Started erasing:', { mode: eraserMode, coords });
         break;
       }
 
@@ -379,40 +398,57 @@ export const useCanvasInteractions = () => {
 
       case 'eraser': {
         if (isDrawingRef.current && lastPointRef.current) {
-          const eraserRadius = toolStore.toolSettings.eraserSize / 2;
+          const eraserMode = toolStore.toolSettings.eraserMode;
           
-          // Add interpolated points for continuous coverage
-          const interpolatedPoints = interpolatePoints(lastPointRef.current, coords, eraserRadius / 2);
-          
-          // Add each interpolated point to the batch
-          interpolatedPoints.slice(1).forEach(point => {
-            eraserPointsRef.current.push({
-              x: point.x,
-              y: point.y,
-              radius: eraserRadius
-            });
-          });
-          
-          lastPointRef.current = coords;
-          
-          // Process eraser batch if we have enough points or enough time has passed
-          const now = Date.now();
-          const shouldProcess = 
-            eraserPointsRef.current.length >= ERASER_BATCH_SIZE ||
-            now - lastEraserProcessRef.current >= ERASER_THROTTLE_MS;
-          
-          if (shouldProcess) {
-            processEraserBatch();
-            // Don't clear all points - keep the last one for continuity
-            const lastPoint = eraserPointsRef.current[eraserPointsRef.current.length - 1];
-            eraserPointsRef.current = lastPoint ? [lastPoint] : [];
-            lastEraserProcessRef.current = now;
+          if (eraserMode === 'object') {
+            // Object eraser - find and delete objects during drag
+            const objectId = findObjectAt(coords.x, coords.y);
+            if (objectId) {
+              whiteboardStore.deleteObject(objectId);
+              console.log('🗑️ Object eraser deleted during drag:', objectId.slice(0, 8));
+              
+              // Trigger canvas redraw
+              if (redrawCanvasRef.current) {
+                redrawCanvasRef.current();
+              }
+            }
+          } else {
+            // Pixel eraser - use the size as diameter, not radius
+            const eraserRadius = toolStore.toolSettings.eraserSize / 2;
             
-            // Trigger canvas redraw
-            if (redrawCanvasRef.current) {
-              redrawCanvasRef.current();
+            // Add interpolated points for continuous coverage
+            const interpolatedPoints = interpolatePoints(lastPointRef.current, coords, eraserRadius / 2);
+            
+            // Add each interpolated point to the batch
+            interpolatedPoints.slice(1).forEach(point => {
+              eraserPointsRef.current.push({
+                x: point.x,
+                y: point.y,
+                radius: eraserRadius
+              });
+            });
+            
+            // Process eraser batch if we have enough points or enough time has passed
+            const now = Date.now();
+            const shouldProcess = 
+              eraserPointsRef.current.length >= ERASER_BATCH_SIZE ||
+              now - lastEraserProcessRef.current >= ERASER_THROTTLE_MS;
+            
+            if (shouldProcess) {
+              processEraserBatch();
+              // Don't clear all points - keep the last one for continuity
+              const lastPoint = eraserPointsRef.current[eraserPointsRef.current.length - 1];
+              eraserPointsRef.current = lastPoint ? [lastPoint] : [];
+              lastEraserProcessRef.current = now;
+              
+              // Trigger canvas redraw
+              if (redrawCanvasRef.current) {
+                redrawCanvasRef.current();
+              }
             }
           }
+          
+          lastPointRef.current = coords;
         }
         break;
       }
@@ -471,18 +507,22 @@ export const useCanvasInteractions = () => {
 
       case 'eraser': {
         if (isDrawingRef.current) {
-          // Process any remaining eraser points
-          if (eraserPointsRef.current.length > 0) {
-            processEraserBatch();
-            eraserPointsRef.current = [];
-            
-            // Trigger final redraw
-            if (redrawCanvasRef.current) {
-              redrawCanvasRef.current();
+          const eraserMode = toolStore.toolSettings.eraserMode;
+          
+          if (eraserMode === 'pixel') {
+            // Process any remaining eraser points for pixel eraser
+            if (eraserPointsRef.current.length > 0) {
+              processEraserBatch();
+              eraserPointsRef.current = [];
+              
+              // Trigger final redraw
+              if (redrawCanvasRef.current) {
+                redrawCanvasRef.current();
+              }
             }
           }
           
-          console.log('🧹 Finished real-time erasing');
+          console.log('🧹 Finished erasing:', { mode: eraserMode });
         }
         break;
       }

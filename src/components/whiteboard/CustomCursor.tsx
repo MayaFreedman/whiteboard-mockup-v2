@@ -25,7 +25,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ canvas }) => {
       case 'brush':
         return toolSettings.strokeWidth * 2; // Make it a bit more visible
       case 'eraser':
-        return toolSettings.eraserSize;
+        return toolSettings.eraserSize; // Use the full size (diameter), not radius
       default:
         return 20;
     }
