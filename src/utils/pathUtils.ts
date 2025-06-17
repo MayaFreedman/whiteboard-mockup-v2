@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for path manipulation and intersection detection
  */
@@ -193,8 +192,8 @@ export const interpolatePathPoints = (points: Point[], maxDistance: number = 3):
 };
 
 /**
- * Fixed version: Only erases points that are actually within the eraser circles
- * Uses hybrid approach: direct point-in-circle + conservative line proximity for better sensitivity
+ * Adjusted sensitivity: More responsive for smaller erasers while maintaining precision
+ * Uses hybrid approach: direct point-in-circle + more generous line proximity for better sensitivity
  * @param points - Original path points
  * @param eraserPoints - Array of eraser center points with radius
  * @returns Array of disconnected path segments
@@ -205,8 +204,10 @@ export const erasePointsFromPathBatch = (
 ): PathSegment[] => {
   if (points.length === 0 || eraserPoints.length === 0) return [];
   
-  // First, interpolate points for smoother erasing, but less aggressively
-  const interpolatedPoints = interpolatePathPoints(points, 3);
+  // First, interpolate points for smoother erasing - adjust based on smallest eraser
+  const minRadius = Math.min(...eraserPoints.map(e => e.radius));
+  const interpolationDistance = Math.max(2, minRadius / 3); // More dense for smaller erasers
+  const interpolatedPoints = interpolatePathPoints(points, interpolationDistance);
   
   const segments: PathSegment[] = [];
   let currentSegment: Point[] = [];
@@ -215,7 +216,9 @@ export const erasePointsFromPathBatch = (
     originalPoints: points.length,
     interpolatedPoints: interpolatedPoints.length,
     eraserPoints: eraserPoints.length,
-    eraserSizes: eraserPoints.map(e => e.radius * 2) // Show diameters for debugging
+    eraserSizes: eraserPoints.map(e => e.radius * 2), // Show diameters for debugging
+    minRadius,
+    interpolationDistance
   });
   
   let totalErasedPoints = 0;
@@ -234,29 +237,32 @@ export const erasePointsFromPathBatch = (
       return inCircle;
     });
     
-    // Secondary check: If point is very close to eraser AND we have a previous point,
-    // check if the line segment passes very close to the eraser center
+    // Secondary check: If point is close to eraser AND we have a previous point,
+    // check if the line segment passes close to the eraser center
+    // Make this more generous for smaller erasers
     if (!shouldErase && i > 0) {
       const previousPoint = interpolatedPoints[i - 1];
       
       shouldErase = eraserPoints.some(eraser => {
-        // Only check line proximity if the point is within 1.5x the eraser radius
+        // More generous proximity check - within 2x the eraser radius for small erasers
+        const proximityMultiplier = eraser.radius < 15 ? 2.5 : 2.0;
         const distanceToCenter = Math.sqrt(
           (currentPoint.x - eraser.x) ** 2 + (currentPoint.y - eraser.y) ** 2
         );
         
-        if (distanceToCenter <= eraser.radius * 1.5) {
+        if (distanceToCenter <= eraser.radius * proximityMultiplier) {
           const lineDistance = distanceFromPointToLineSegment(
             { x: eraser.x, y: eraser.y }, 
             previousPoint, 
             currentPoint
           );
           
-          // Only erase if line passes very close to eraser center (within 70% of radius)
-          const isLineClose = lineDistance <= eraser.radius * 0.7;
+          // More generous line threshold - 85% of radius (was 70%)
+          const lineThreshold = eraser.radius * 0.85;
+          const isLineClose = lineDistance <= lineThreshold;
           
           if (isLineClose) {
-            console.log(`🎯 Point ${i} erased via close line segment (distance: ${lineDistance.toFixed(1)}, threshold: ${(eraser.radius * 0.7).toFixed(1)})`);
+            console.log(`🎯 Point ${i} erased via close line segment (distance: ${lineDistance.toFixed(1)}, threshold: ${lineThreshold.toFixed(1)})`);
           }
           
           return isLineClose;
