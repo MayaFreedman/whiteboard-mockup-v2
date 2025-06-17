@@ -166,7 +166,7 @@ export const useCanvasInteractions = () => {
   }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle]);
 
   /**
-   * Processes accumulated eraser points against all objects using line segment intersection
+   * Processes accumulated eraser points against all objects using stroke-width-aware line segment intersection
    */
   const processEraserBatch = useCallback(() => {
     if (eraserPointsRef.current.length === 0) return;
@@ -177,12 +177,16 @@ export const useCanvasInteractions = () => {
     
     objects.forEach(([id, obj]) => {
       if (obj.type === 'path' && obj.data?.path && !obj.data?.isEraser) {
-        // Check if this path intersects with any eraser points
+        // Get the stroke width for this object
+        const strokeWidth = obj.strokeWidth || 2;
+        
+        // Check if this path intersects with any eraser points (stroke-width-aware)
         const intersects = doesPathIntersectEraserBatch(
           obj.data.path,
           obj.x,
           obj.y,
-          eraserPointsRef.current
+          eraserPointsRef.current,
+          strokeWidth
         );
         
         if (intersects) {
@@ -196,8 +200,8 @@ export const useCanvasInteractions = () => {
             radius: eraser.radius
           }));
           
-          // Get remaining segments after erasing with line segment intersection
-          const segments = erasePointsFromPathBatch(points, relativeEraserPoints);
+          // Get remaining segments after erasing with stroke-width-aware detection
+          const segments = erasePointsFromPathBatch(points, relativeEraserPoints, strokeWidth);
           
           if (segments.length === 0) {
             // Object is completely erased
@@ -241,7 +245,7 @@ export const useCanvasInteractions = () => {
       });
     });
     
-    console.log('🧹 Processed eraser batch:', {
+    console.log('🧹 Processed stroke-aware eraser batch:', {
       eraserPoints: eraserPointsRef.current.length,
       deleted: objectsToDelete.length,
       modified: objectsToModify.length
