@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -335,7 +336,6 @@ export const useCanvasInteractions = () => {
       case 'eraser': {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
-        erasedObjectsRef.current = new Set();
         lastEraseTimeRef.current = 0;
         
         // Perform initial erase at starting position
@@ -475,8 +475,6 @@ export const useCanvasInteractions = () => {
       case 'eraser': {
         if (isDrawingRef.current) {
           console.log('🧹 Finished erasing');
-          // Clear erased objects set for next erase session
-          erasedObjectsRef.current.clear();
         }
         break;
       }
