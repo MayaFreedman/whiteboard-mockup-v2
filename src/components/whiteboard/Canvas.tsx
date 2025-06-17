@@ -5,13 +5,14 @@ import { useToolStore } from '../../stores/toolStore';
 import { useCanvasInteractions } from '../../hooks/useCanvasInteractions';
 import { useCanvasRendering } from '../../hooks/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
+import { CustomCursor } from './CustomCursor';
 
 /**
  * Gets the appropriate cursor style based on the active tool
  * @param activeTool - The currently active tool
  * @returns CSS cursor value
  */
-const getCursorStyle = (activeTool: string, eraserSize: number = 20): string => {
+const getCursorStyle = (activeTool: string): string => {
   switch (activeTool) {
     case 'select':
       return 'default';
@@ -21,10 +22,8 @@ const getCursorStyle = (activeTool: string, eraserSize: number = 20): string => 
       return 'grab';
     case 'pencil':
     case 'brush':
-      return 'crosshair';
     case 'eraser':
-      // We'll still use crosshair for eraser - the visual feedback will be provided by the renderer
-      return 'crosshair';
+      return 'none'; // Hide default cursor for tools with custom cursor
     default:
       return 'crosshair';
   }
@@ -37,7 +36,7 @@ const getCursorStyle = (activeTool: string, eraserSize: number = 20): string => 
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { viewport } = useWhiteboardStore();
-  const { activeTool, toolSettings } = useToolStore();
+  const { activeTool } = useToolStore();
   
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
@@ -119,13 +118,16 @@ export const Canvas: React.FC = () => {
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
         style={{
-          cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool, toolSettings.eraserSize),
+          cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
           touchAction: 'none' // Prevent default touch behaviors
         }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
       />
+      
+      {/* Custom Cursor */}
+      <CustomCursor canvas={canvasRef.current} />
       
       {/* Canvas Info Overlay */}
       <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
