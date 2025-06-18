@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -287,7 +288,8 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       case 'diamond':
       case 'pentagon':
       case 'hexagon':
-      case 'star': {
+      case 'star':
+      case 'heart': {
         const shapePath = generateShapePathPreview(preview.type, x, y, width, height);
         if (shapePath) {
           const path = new Path2D(shapePath);
@@ -361,6 +363,23 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           starPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
         }
         return starPoints.join(' ') + ' Z';
+      }
+      
+      case 'heart': {
+        // Heart shape using cubic bezier curves
+        const heartWidth = width;
+        const heartHeight = height;
+        const topCurveHeight = heartHeight * 0.3;
+        const centerXHeart = x + width / 2;
+        const centerYHeart = y + height / 2;
+        
+        return `M ${centerXHeart} ${y + heartHeight * 0.3}
+                C ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.2} ${y}, ${centerXHeart - heartWidth * 0.4} ${y}
+                C ${centerXHeart - heartWidth * 0.6} ${y}, ${centerXHeart - heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}
+                C ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart} ${y + heartHeight}
+                C ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}
+                C ${centerXHeart + heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart + heartWidth * 0.6} ${y}, ${centerXHeart + heartWidth * 0.4} ${y}
+                C ${centerXHeart + heartWidth * 0.2} ${y}, ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart} ${y + heartHeight * 0.3} Z`;
       }
       
       default:

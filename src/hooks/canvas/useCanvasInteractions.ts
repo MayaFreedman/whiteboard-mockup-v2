@@ -1,4 +1,3 @@
-
 import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -183,6 +182,9 @@ export const useCanvasInteractions = () => {
     strokeWidth: number,
     opacity: number
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
+    // Use shape-specific border weight instead of brush stroke width
+    const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
+    
     switch (shapeType) {
       case 'rectangle':
         return {
@@ -192,8 +194,8 @@ export const useCanvasInteractions = () => {
           width,
           height,
           stroke: strokeColor,
-          fill: fillColor === 'transparent' ? 'none' : fillColor,
-          strokeWidth,
+          fill: 'none', // Always empty fill
+          strokeWidth: shapeBorderWeight,
           opacity
         };
       
@@ -206,8 +208,8 @@ export const useCanvasInteractions = () => {
           width: radius * 2,
           height: radius * 2,
           stroke: strokeColor,
-          fill: fillColor === 'transparent' ? 'none' : fillColor,
-          strokeWidth,
+          fill: 'none', // Always empty fill
+          strokeWidth: shapeBorderWeight,
           opacity
         };
       
@@ -216,6 +218,7 @@ export const useCanvasInteractions = () => {
       case 'star':
       case 'pentagon':
       case 'diamond':
+      case 'heart':
         // Create these as path objects with custom shape data
         const shapeData = generateShapePath(shapeType, width, height);
         return {
@@ -223,8 +226,8 @@ export const useCanvasInteractions = () => {
           x,
           y,
           stroke: strokeColor,
-          fill: fillColor === 'transparent' ? 'none' : fillColor,
-          strokeWidth,
+          fill: 'none', // Always empty fill
+          strokeWidth: shapeBorderWeight,
           opacity,
           data: {
             path: shapeData,
@@ -237,7 +240,7 @@ export const useCanvasInteractions = () => {
         console.warn('Unknown shape type:', shapeType);
         return null;
     }
-  }, []);
+  }, [toolStore.toolSettings.shapeBorderWeight]);
 
   /**
    * Generates SVG path data for complex shapes
@@ -292,6 +295,20 @@ export const useCanvasInteractions = () => {
           starPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return starPoints.join(' ') + ' Z';
+      
+      case 'heart':
+        // Heart shape using cubic bezier curves
+        const heartWidth = width;
+        const heartHeight = height;
+        const topCurveHeight = heartHeight * 0.3;
+        
+        return `M ${centerX} ${heartHeight * 0.3}
+                C ${centerX} ${topCurveHeight * 0.5}, ${centerX - heartWidth * 0.2} 0, ${centerX - heartWidth * 0.4} 0
+                C ${centerX - heartWidth * 0.6} 0, ${centerX - heartWidth * 0.8} ${topCurveHeight * 0.5}, ${centerX - heartWidth * 0.5} ${topCurveHeight}
+                C ${centerX - heartWidth * 0.5} ${topCurveHeight}, ${centerX} ${heartHeight * 0.6}, ${centerX} ${heartHeight}
+                C ${centerX} ${heartHeight * 0.6}, ${centerX + heartWidth * 0.5} ${topCurveHeight}, ${centerX + heartWidth * 0.5} ${topCurveHeight}
+                C ${centerX + heartWidth * 0.8} ${topCurveHeight * 0.5}, ${centerX + heartWidth * 0.6} 0, ${centerX + heartWidth * 0.4} 0
+                C ${centerX + heartWidth * 0.2} 0, ${centerX} ${topCurveHeight * 0.5}, ${centerX} ${heartHeight * 0.3} Z`;
       
       default:
         return '';
@@ -357,12 +374,14 @@ export const useCanvasInteractions = () => {
       case 'hexagon':
       case 'star':
       case 'pentagon':
-      case 'diamond': {
+      case 'diamond':
+      case 'heart': {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
-        // Set up shape preview
+        // Set up shape preview with shape-specific border weight
+        const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
         currentShapePreviewRef.current = {
           type: activeTool,
           startX: coords.x,
@@ -370,8 +389,8 @@ export const useCanvasInteractions = () => {
           endX: coords.x,
           endY: coords.y,
           strokeColor: toolStore.toolSettings.strokeColor,
-          fillColor: toolStore.toolSettings.fillColor,
-          strokeWidth: toolStore.toolSettings.strokeWidth,
+          fillColor: 'transparent', // Always transparent fill
+          strokeWidth: shapeBorderWeight,
           opacity: toolStore.toolSettings.opacity
         };
         
@@ -463,7 +482,8 @@ export const useCanvasInteractions = () => {
       case 'hexagon':
       case 'star':
       case 'pentagon':
-      case 'diamond': {
+      case 'diamond':
+      case 'heart': {
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           // Update shape preview end coordinates
           currentShapePreviewRef.current.endX = coords.x;
@@ -554,7 +574,8 @@ export const useCanvasInteractions = () => {
       case 'hexagon':
       case 'star':
       case 'pentagon':
-      case 'diamond': {
+      case 'diamond':
+      case 'heart': {
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           const preview = currentShapePreviewRef.current;
           const width = Math.abs(preview.endX - preview.startX);
