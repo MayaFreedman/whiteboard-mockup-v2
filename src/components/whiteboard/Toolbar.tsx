@@ -29,8 +29,7 @@ import {
   Pentagon,
   Diamond,
   ChevronDown,
-  Stamp,
-  Heart
+  Stamp
 } from 'lucide-react';
 
 interface ToolItem {
@@ -63,7 +62,6 @@ const SHAPE_TOOLS: ToolItem[] = [
   { id: 'star', icon: Star, label: 'Star' },
   { id: 'pentagon', icon: Pentagon, label: 'Pentagon' },
   { id: 'diamond', icon: Diamond, label: 'Diamond' },
-  { id: 'heart', icon: Heart, label: 'Heart' },
 ];
 
 /**

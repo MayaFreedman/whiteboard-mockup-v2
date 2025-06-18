@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 export type Tool = 
@@ -18,8 +17,7 @@ export type Tool =
   | 'hexagon'
   | 'star'
   | 'pentagon'
-  | 'diamond'
-  | 'heart';
+  | 'diamond';
 
 export type BrushType = 'paintbrush' | 'chalk' | 'spray' | 'crayon';
 

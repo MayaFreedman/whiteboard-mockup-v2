@@ -218,7 +218,6 @@ export const useCanvasInteractions = () => {
       case 'star':
       case 'pentagon':
       case 'diamond':
-      case 'heart':
         // Create these as path objects with custom shape data
         const shapeData = generateShapePath(shapeType, width, height);
         return {
@@ -296,20 +295,6 @@ export const useCanvasInteractions = () => {
         }
         return starPoints.join(' ') + ' Z';
       
-      case 'heart':
-        // Heart shape using cubic bezier curves
-        const heartWidth = width;
-        const heartHeight = height;
-        const topCurveHeight = heartHeight * 0.3;
-        
-        return `M ${centerX} ${heartHeight * 0.3}
-                C ${centerX} ${topCurveHeight * 0.5}, ${centerX - heartWidth * 0.2} 0, ${centerX - heartWidth * 0.4} 0
-                C ${centerX - heartWidth * 0.6} 0, ${centerX - heartWidth * 0.8} ${topCurveHeight * 0.5}, ${centerX - heartWidth * 0.5} ${topCurveHeight}
-                C ${centerX - heartWidth * 0.5} ${topCurveHeight}, ${centerX} ${heartHeight * 0.6}, ${centerX} ${heartHeight}
-                C ${centerX} ${heartHeight * 0.6}, ${centerX + heartWidth * 0.5} ${topCurveHeight}, ${centerX + heartWidth * 0.5} ${topCurveHeight}
-                C ${centerX + heartWidth * 0.8} ${topCurveHeight * 0.5}, ${centerX + heartWidth * 0.6} 0, ${centerX + heartWidth * 0.4} 0
-                C ${centerX + heartWidth * 0.2} 0, ${centerX} ${topCurveHeight * 0.5}, ${centerX} ${heartHeight * 0.3} Z`;
-      
       default:
         return '';
     }
@@ -374,8 +359,7 @@ export const useCanvasInteractions = () => {
       case 'hexagon':
       case 'star':
       case 'pentagon':
-      case 'diamond':
-      case 'heart': {
+      case 'diamond': {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
@@ -482,8 +466,7 @@ export const useCanvasInteractions = () => {
       case 'hexagon':
       case 'star':
       case 'pentagon':
-      case 'diamond':
-      case 'heart': {
+      case 'diamond': {
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           // Update shape preview end coordinates
           currentShapePreviewRef.current.endX = coords.x;
@@ -574,8 +557,7 @@ export const useCanvasInteractions = () => {
       case 'hexagon':
       case 'star':
       case 'pentagon':
-      case 'diamond':
-      case 'heart': {
+      case 'diamond': {
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           const preview = currentShapePreviewRef.current;
           const width = Math.abs(preview.endX - preview.startX);
@@ -627,6 +609,222 @@ export const useCanvasInteractions = () => {
     pathStartRef.current = null;
     pathBuilderRef.current = null;
   }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject]);
+
+  /**
+   * Ends current drawing session and saves the path if valid
+   */
+  const endCurrentDrawing = useCallback(() => {
+    const activeTool = toolStore.activeTool;
+    
+    if ((activeTool === 'pencil' || activeTool === 'brush') && 
+        isDrawingRef.current && 
+        pathBuilderRef.current && 
+        pathStartRef.current &&
+        pathBuilderRef.current.getPointCount() > 1) {
+      
+      // Get the final smooth path from the builder
+      const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
+      
+      // Create the drawing object with the smooth path
+      const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
+        type: 'path',
+        x: pathStartRef.current.x,
+        y: pathStartRef.current.y,
+        stroke: toolStore.toolSettings.strokeColor,
+        strokeWidth: toolStore.toolSettings.strokeWidth,
+        opacity: toolStore.toolSettings.opacity,
+        fill: 'none',
+        data: {
+          path: finalSmoothPath,
+          brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
+        }
+      };
+
+      const objectId = whiteboardStore.addObject(drawingObject);
+      console.log('✏️ Auto-saved drawing on mouse leave:', objectId.slice(0, 8));
+    }
+    
+    if (activeTool === 'eraser' && isDrawingRef.current) {
+      handleEraserEnd(redrawCanvasRef.current || undefined);
+      console.log('🧹 Auto-ended erasing on mouse leave');
+    }
+
+    // Handle shape completion
+    if (['rectangle', 'circle', 'triangle', 'hexagon', 'star', 'pentagon', 'diamond'].includes(activeTool) && 
+        isDrawingRef.current && 
+        currentShapePreviewRef.current) {
+      
+      const preview = currentShapePreviewRef.current;
+      const width = Math.abs(preview.endX - preview.startX);
+      const height = Math.abs(preview.endY - preview.startY);
+      
+      if (width > 5 && height > 5) { // Only create shape if it's big enough
+        const shapeObject = createShapeObject(
+          activeTool,
+          Math.min(preview.startX, preview.endX),
+          Math.min(preview.startY, preview.endY),
+          width,
+          height,
+          preview.strokeColor,
+          preview.fillColor,
+          preview.strokeWidth,
+          preview.opacity
+        );
+
+        if (shapeObject) {
+          const objectId = whiteboardStore.addObject(shapeObject);
+          console.log('🔷 Auto-saved shape on mouse leave:', objectId.slice(0, 8));
+        }
+      }
+    }
+    
+    // Reset all drawing state
+    isDrawingRef.current = false;
+    isDraggingRef.current = false;
+    lastPointRef.current = null;
+    pathStartRef.current = null;
+    pathBuilderRef.current = null;
+    dragStartRef.current = null;
+    currentDrawingPreviewRef.current = null;
+    currentShapePreviewRef.current = null;
+    
+    // Trigger redraw to clear preview
+    if (redrawCanvasRef.current) {
+      redrawCanvasRef.current();
+    }
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd]);
+
+  /**
+   * Creates a shape object based on the tool type
+   */
+  const createShapeObject = useCallback((
+    shapeType: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    strokeColor: string,
+    fillColor: string,
+    strokeWidth: number,
+    opacity: number
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
+    // Use shape-specific border weight instead of brush stroke width
+    const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
+    
+    switch (shapeType) {
+      case 'rectangle':
+        return {
+          type: 'rectangle',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none', // Always empty fill
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      case 'circle':
+        const radius = Math.min(width, height) / 2;
+        return {
+          type: 'circle',
+          x: x + width / 2 - radius,
+          y: y + height / 2 - radius,
+          width: radius * 2,
+          height: radius * 2,
+          stroke: strokeColor,
+          fill: 'none', // Always empty fill
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      case 'triangle':
+      case 'hexagon':
+      case 'star':
+      case 'pentagon':
+      case 'diamond':
+        // Create these as path objects with custom shape data
+        const shapeData = generateShapePath(shapeType, width, height);
+        return {
+          type: 'path',
+          x,
+          y,
+          stroke: strokeColor,
+          fill: 'none', // Always empty fill
+          strokeWidth: shapeBorderWeight,
+          opacity,
+          data: {
+            path: shapeData,
+            shapeType,
+            isShape: true
+          }
+        };
+      
+      default:
+        console.warn('Unknown shape type:', shapeType);
+        return null;
+    }
+  }, [toolStore.toolSettings.shapeBorderWeight]);
+
+  /**
+   * Generates SVG path data for complex shapes
+   */
+  const generateShapePath = useCallback((shapeType: string, width: number, height: number): string => {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    switch (shapeType) {
+      case 'triangle':
+        return `M ${centerX} 0 L ${width} ${height} L 0 ${height} Z`;
+      
+      case 'diamond':
+        return `M ${centerX} 0 L ${width} ${centerY} L ${centerX} ${height} L 0 ${centerY} Z`;
+      
+      case 'pentagon':
+        const pentagonPoints = [];
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+          // Use separate width and height scaling instead of circular radius
+          const x = centerX + (width / 2) * Math.cos(angle);
+          const y = centerY + (height / 2) * Math.sin(angle);
+          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
+        }
+        return pentagonPoints.join(' ') + ' Z';
+      
+      case 'hexagon':
+        const hexagonPoints = [];
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * 2 * Math.PI) / 6;
+          // Use separate width and height scaling instead of circular radius
+          const x = centerX + (width / 2) * Math.cos(angle);
+          const y = centerY + (height / 2) * Math.sin(angle);
+          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
+        }
+        return hexagonPoints.join(' ') + ' Z';
+      
+      case 'star':
+        const starPoints = [];
+        const outerRadiusX = width / 2;
+        const outerRadiusY = height / 2;
+        const innerRadiusX = outerRadiusX * 0.4;
+        const innerRadiusY = outerRadiusY * 0.4;
+        
+        for (let i = 0; i < 10; i++) {
+          const angle = (i * Math.PI) / 5 - Math.PI / 2;
+          // Use separate X and Y scaling for non-circular stars
+          const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
+          const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
+          const x = centerX + radiusX * Math.cos(angle);
+          const y = centerY + radiusY * Math.sin(angle);
+          starPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
+        }
+        return starPoints.join(' ') + ' Z';
+      
+      default:
+        return '';
+    }
+  }, []);
 
   /**
    * Gets the current drawing preview for rendering

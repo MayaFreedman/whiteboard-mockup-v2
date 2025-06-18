@@ -14,7 +14,7 @@ export const ShapeSettings: React.FC = () => {
   // Check if current tool is a shape tool
   const isShapeTool = [
     'rectangle', 'circle', 'triangle', 'hexagon', 
-    'star', 'pentagon', 'diamond', 'heart'
+    'star', 'pentagon', 'diamond'
   ].includes(activeTool);
   
   if (!isShapeTool) {
