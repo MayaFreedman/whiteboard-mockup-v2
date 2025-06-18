@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -5,8 +6,7 @@ import { WhiteboardObject } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
-import { interpolatePoints } from '../../utils/path/pathInterpolation';
-import { smoothDrawingPath } from '../../utils/path/pathSmoothing';
+import { RealTimeCurveBuilder } from '../../utils/path/curveSmoothing';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -22,15 +22,14 @@ export const useCanvasInteractions = () => {
   const isDrawingRef = useRef(false);
   const isDraggingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
-  const currentPathRef = useRef<string>('');
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
   const redrawCanvasRef = useRef<(() => void) | null>(null);
   
-  // Track all points in the current drawing for better interpolation
-  const drawingPointsRef = useRef<{ x: number; y: number }[]>([]);
+  // Real-time curve builder for smooth drawing
+  const curveBuilderRef = useRef<RealTimeCurveBuilder | null>(null);
   
-  // Store the current drawing preview for rendering (not used for eraser anymore)
+  // Store the current drawing preview for rendering
   const currentDrawingPreviewRef = useRef<{
     path: string;
     startX: number;
@@ -79,15 +78,16 @@ export const useCanvasInteractions = () => {
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
-        // Initialize drawing points tracking
-        drawingPointsRef.current = [{ x: 0, y: 0 }]; // Start relative to origin
+        // Initialize real-time curve builder with appropriate smoothing
+        const smoothingFactor = activeTool === 'brush' ? 0.5 : 0.3; // More smoothing for brush
+        curveBuilderRef.current = new RealTimeCurveBuilder(smoothingFactor);
         
-        // Start path relative to origin
-        currentPathRef.current = `M 0 0`;
+        // Add the first point (relative to origin)
+        const initialPath = curveBuilderRef.current.addPoint({ x: 0, y: 0 });
         
-        // Set up drawing preview with brush type
+        // Set up drawing preview
         currentDrawingPreviewRef.current = {
-          path: currentPathRef.current,
+          path: initialPath,
           startX: coords.x,
           startY: coords.y,
           strokeColor: toolStore.toolSettings.strokeColor,
@@ -96,7 +96,7 @@ export const useCanvasInteractions = () => {
           brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
         
-        console.log('✏️ Started drawing at:', coords);
+        console.log('✏️ Started smooth drawing at:', coords);
         break;
       }
 
@@ -151,40 +151,22 @@ export const useCanvasInteractions = () => {
 
       case 'pencil':
       case 'brush': {
-        if (isDrawingRef.current && lastPointRef.current && pathStartRef.current) {
+        if (isDrawingRef.current && lastPointRef.current && pathStartRef.current && curveBuilderRef.current) {
           // Calculate relative coordinates from the path start
           const relativeX = coords.x - pathStartRef.current.x;
           const relativeY = coords.y - pathStartRef.current.y;
           
-          // Add current point to drawing points
-          drawingPointsRef.current.push({ x: relativeX, y: relativeY });
-          
-          // Apply simple interpolation between last point and current point for smoothness
-          const lastDrawingPoint = drawingPointsRef.current[drawingPointsRef.current.length - 2];
-          const currentDrawingPoint = { x: relativeX, y: relativeY };
-          
-          if (lastDrawingPoint) {
-            // Interpolate points for smooth lines during fast movement - but keep it simple
-            const interpolatedPoints = interpolatePoints(lastDrawingPoint, currentDrawingPoint, 8);
-            
-            // Add interpolated points to the path (skip first as it's already in the path)
-            interpolatedPoints.slice(1).forEach(point => {
-              currentPathRef.current += ` L ${point.x} ${point.y}`;
-            });
-          } else {
-            // First point after start
-            currentPathRef.current += ` L ${relativeX} ${relativeY}`;
-          }
+          // Add point to curve builder and get smooth path
+          const smoothPath = curveBuilderRef.current.addPoint({ x: relativeX, y: relativeY });
           
           lastPointRef.current = coords;
           
-          // Update drawing preview WITHOUT triggering immediate redraw
+          // Update drawing preview with smooth path
           if (currentDrawingPreviewRef.current) {
-            currentDrawingPreviewRef.current.path = currentPathRef.current;
+            currentDrawingPreviewRef.current.path = smoothPath;
           }
           
-          // Only trigger redraw occasionally to avoid infinite loops
-          // Use requestAnimationFrame to throttle redraws
+          // Throttle redraws for performance
           if (redrawCanvasRef.current) {
             requestAnimationFrame(() => {
               if (redrawCanvasRef.current && isDrawingRef.current) {
@@ -226,8 +208,11 @@ export const useCanvasInteractions = () => {
 
       case 'pencil':
       case 'brush': {
-        if (isDrawingRef.current && currentPathRef.current && pathStartRef.current) {
-          // Create the drawing object with the current path (no additional smoothing for now)
+        if (isDrawingRef.current && curveBuilderRef.current && pathStartRef.current) {
+          // Get the final smooth path from the curve builder
+          const finalSmoothPath = curveBuilderRef.current.getCurrentPath();
+          
+          // Create the drawing object with the smooth path
           const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
             type: 'path',
             x: pathStartRef.current.x,
@@ -237,17 +222,20 @@ export const useCanvasInteractions = () => {
             opacity: toolStore.toolSettings.opacity,
             fill: 'none',
             data: {
-              path: currentPathRef.current,
+              path: finalSmoothPath,
               brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
             }
           };
 
           const objectId = whiteboardStore.addObject(drawingObject);
-          console.log('✏️ Created drawing object:', objectId.slice(0, 8));
+          console.log('✏️ Created smooth drawing object:', objectId.slice(0, 8), {
+            pointCount: curveBuilderRef.current.getPointCount(),
+            pathLength: finalSmoothPath.length
+          });
           
-          // Clear drawing preview and points
+          // Clear drawing preview and curve builder
           currentDrawingPreviewRef.current = null;
-          drawingPointsRef.current = [];
+          curveBuilderRef.current = null;
           
           // Trigger redraw to show the final object
           if (redrawCanvasRef.current) {
@@ -269,13 +257,12 @@ export const useCanvasInteractions = () => {
     // Reset drawing state
     isDrawingRef.current = false;
     lastPointRef.current = null;
-    currentPathRef.current = '';
     pathStartRef.current = null;
-    drawingPointsRef.current = [];
+    curveBuilderRef.current = null;
   }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd]);
 
   /**
-   * Gets the current drawing preview for rendering (not used for eraser)
+   * Gets the current drawing preview for rendering
    */
   const getCurrentDrawingPreview = useCallback(() => {
     return currentDrawingPreviewRef.current;
