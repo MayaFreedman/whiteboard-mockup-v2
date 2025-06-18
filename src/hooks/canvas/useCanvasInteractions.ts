@@ -103,25 +103,32 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
       }
       
       case 'heart': {
-        // Classic heart shape that stretches proportionally
-        const scaleX = width / 100; // Base size of 100
-        const scaleY = height / 100;
-        
-        // Classic heart proportions - two circles at top and triangle bottom
-        const leftCenterX = x + width * 0.25;
-        const rightCenterX = x + width * 0.75;
-        const topCenterY = y + height * 0.25;
+        // Classic heart shape - two rounded lobes at top, pointed bottom
         const bottomPointX = centerX;
         const bottomPointY = y + height * 0.9;
         
-        // Create classic heart using smooth curves
+        // Left and right lobe centers (positioned to create the classic heart shape)
+        const leftLobeX = x + width * 0.25;
+        const rightLobeX = x + width * 0.75;
+        const lobeY = y + height * 0.3;
+        
+        // Control points for the curves that create the heart shape
+        const leftTopControlX = leftLobeX;
+        const leftTopControlY = y + height * 0.1;
+        const rightTopControlX = rightLobeX;
+        const rightTopControlY = y + height * 0.1;
+        
+        // Side control points for the curves going down to the bottom point
+        const leftSideControlX = x + width * 0.1;
+        const leftSideControlY = y + height * 0.6;
+        const rightSideControlX = x + width * 0.9;
+        const rightSideControlY = y + height * 0.6;
+        
         return `M ${bottomPointX} ${bottomPointY}
-                C ${bottomPointX - width * 0.35} ${y + height * 0.65}, ${leftCenterX - width * 0.2} ${topCenterY + height * 0.1}, ${leftCenterX} ${topCenterY}
-                C ${leftCenterX - width * 0.15} ${y + height * 0.05}, ${leftCenterX + width * 0.15} ${y + height * 0.05}, ${leftCenterX + width * 0.25} ${topCenterY}
-                L ${centerX} ${y + height * 0.4}
-                L ${rightCenterX - width * 0.25} ${topCenterY}
-                C ${rightCenterX - width * 0.15} ${y + height * 0.05}, ${rightCenterX + width * 0.15} ${y + height * 0.05}, ${rightCenterX} ${topCenterY}
-                C ${rightCenterX + width * 0.2} ${topCenterY + height * 0.1}, ${bottomPointX + width * 0.35} ${y + height * 0.65}, ${bottomPointX} ${bottomPointY} Z`;
+                C ${leftSideControlX} ${leftSideControlY}, ${leftTopControlX} ${leftTopControlY}, ${leftLobeX} ${lobeY}
+                C ${leftLobeX - width * 0.1} ${y + height * 0.15}, ${leftLobeX + width * 0.1} ${y + height * 0.15}, ${centerX} ${y + height * 0.4}
+                C ${rightLobeX - width * 0.1} ${y + height * 0.15}, ${rightLobeX + width * 0.1} ${y + height * 0.15}, ${rightLobeX} ${lobeY}
+                C ${rightTopControlX} ${leftTopControlY}, ${rightSideControlX} ${rightSideControlY}, ${bottomPointX} ${bottomPointY} Z`;
       }
       
       default:
