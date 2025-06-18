@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
+import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { 
@@ -28,7 +29,8 @@ import {
   Pentagon,
   Diamond,
   ChevronDown,
-  Stamp
+  Stamp,
+  Trash2
 } from 'lucide-react';
 
 interface ToolItem {
@@ -175,6 +177,8 @@ export const Toolbar: React.FC = () => {
     activeColorPalette
   } = useToolStore();
   
+  const { clearCanvas } = useWhiteboardStore();
+  
   const toolbarRef = useRef<HTMLDivElement>(null);
   const isMobile = useResponsiveBreakpoint(activeColorPalette);
   
@@ -197,6 +201,13 @@ export const Toolbar: React.FC = () => {
    */
   const handleToolSelect = (toolId: string) => {
     setActiveTool(toolId as any);
+  };
+
+  /**
+   * Handles clearing the entire canvas
+   */
+  const handleClearCanvas = () => {
+    clearCanvas();
   };
 
   // Find the currently selected shape for the dropdown button
@@ -273,6 +284,25 @@ export const Toolbar: React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          {/* Clear Canvas Button - Show only when eraser is active */}
+          {activeTool === 'eraser' && (
+            <>
+              <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleClearCanvas}
+                  className="flex items-center gap-2"
+                  title="Clear entire canvas"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className={isMobile ? 'hidden' : ''}>Clear Canvas</span>
+                </Button>
+              </div>
+            </>
+          )}
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 

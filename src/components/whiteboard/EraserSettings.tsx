@@ -8,7 +8,7 @@ import { Separator } from '../ui/separator';
 
 /**
  * Eraser settings component for the sidebar
- * Allows users to configure eraser mode, size, and opacity
+ * Allows users to configure eraser mode and size
  */
 export const EraserSettings: React.FC = () => {
   const { toolSettings, updateToolSettings } = useToolStore();
@@ -19,10 +19,6 @@ export const EraserSettings: React.FC = () => {
 
   const handleSizeChange = (value: number[]) => {
     updateToolSettings({ eraserSize: value[0] });
-  };
-
-  const handleOpacityChange = (value: number[]) => {
-    updateToolSettings({ eraserOpacity: value[0] / 100 });
   };
 
   return (
@@ -67,20 +63,6 @@ export const EraserSettings: React.FC = () => {
           min={5}
           max={100}
           step={5}
-          className="mt-2"
-        />
-      </div>
-
-      <div>
-        <Label className="text-sm font-medium">
-          Opacity: {Math.round(toolSettings.eraserOpacity * 100)}%
-        </Label>
-        <Slider
-          value={[toolSettings.eraserOpacity * 100]}
-          onValueChange={handleOpacityChange}
-          min={10}
-          max={100}
-          step={10}
           className="mt-2"
         />
       </div>
