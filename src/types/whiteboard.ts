@@ -37,6 +37,7 @@ interface BaseAction {
   payload: any;
   timestamp: number;
   id: string;
+  userId: string; // Added userId to track which user performed the action
 }
 
 export interface AddObjectAction extends BaseAction {

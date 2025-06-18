@@ -25,6 +25,10 @@ interface WhiteboardStore extends WhiteboardState {
   actionHistory: WhiteboardAction[];
   currentHistoryIndex: number;
   
+  // User-specific action tracking
+  userActionHistories: Map<string, WhiteboardAction[]>;
+  userHistoryIndices: Map<string, number>;
+  
   // State tracking for multiplayer
   stateVersion: number;
   lastStateUpdate: number;
@@ -34,25 +38,25 @@ interface WhiteboardStore extends WhiteboardState {
   dispatch: (action: WhiteboardAction) => void;
   
   // Convenience methods for common operations
-  addObject: (object: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'>) => string;
-  updateObject: (id: string, updates: Partial<WhiteboardObject>) => void;
-  deleteObject: (id: string) => void;
-  selectObjects: (objectIds: string[]) => void;
-  clearSelection: () => void;
-  updateViewport: (viewport: Partial<WhiteboardState['viewport']>) => void;
-  updateSettings: (settings: Partial<WhiteboardState['settings']>) => void;
-  clearCanvas: () => void;
+  addObject: (object: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'>, userId?: string) => string;
+  updateObject: (id: string, updates: Partial<WhiteboardObject>, userId?: string) => void;
+  deleteObject: (id: string, userId?: string) => void;
+  selectObjects: (objectIds: string[], userId?: string) => void;
+  clearSelection: (userId?: string) => void;
+  updateViewport: (viewport: Partial<WhiteboardState['viewport']>, userId?: string) => void;
+  updateSettings: (settings: Partial<WhiteboardState['settings']>, userId?: string) => void;
+  clearCanvas: (userId?: string) => void;
   
   // Eraser methods
-  erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }) => void;
-  deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }) => void;
-  erasePath: (action: { originalObjectId: string; eraserPath: { x: number; y: number; size: number; path: string }; resultingSegments: Array<{ points: Array<{ x: number; y: number }>; id: string }> }) => void;
+  erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }, userId?: string) => void;
+  deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }, userId?: string) => void;
+  erasePath: (action: { originalObjectId: string; eraserPath: { x: number; y: number; size: number; path: string }; resultingSegments: Array<{ points: Array<{ x: number; y: number }>; id: string }> }, userId?: string) => void;
   
-  // Undo/Redo
-  undo: () => void;
-  redo: () => void;
-  canUndo: () => boolean;
-  canRedo: () => boolean;
+  // User-specific Undo/Redo
+  undo: (userId: string) => void;
+  redo: (userId: string) => void;
+  canUndo: (userId: string) => boolean;
+  canRedo: (userId: string) => boolean;
   
   // State serialization for multiplayer
   getSerializableState: () => Omit<WhiteboardState, 'lastAction'>;
@@ -87,11 +91,23 @@ const initialState: WhiteboardState = {
   }
 };
 
+// Get a default user ID for when no user context is available
+const getDefaultUserId = () => {
+  let userId = localStorage.getItem('whiteboard-user-id');
+  if (!userId) {
+    userId = nanoid();
+    localStorage.setItem('whiteboard-user-id', userId);
+  }
+  return userId;
+};
+
 export const useWhiteboardStore = create<WhiteboardStore>()(
   subscribeWithSelector((set, get) => ({
     ...initialState,
     actionHistory: [],
     currentHistoryIndex: -1,
+    userActionHistories: new Map(),
+    userHistoryIndices: new Map(),
     stateVersion: 0,
     lastStateUpdate: Date.now(),
     pendingActions: [],
@@ -100,6 +116,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       console.log('🔄 Dispatching action:', {
         type: action.type,
         id: action.id,
+        userId: action.userId,
         timestamp: action.timestamp,
         payload: action.payload
       });
@@ -107,9 +124,23 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       set((state) => {
         const newState = applyAction(state, action);
         
-        // Add to history (for undo/redo)
+        // Add to global history (for undo/redo)
         const newHistory = state.actionHistory.slice(0, state.currentHistoryIndex + 1);
         newHistory.push(action);
+        
+        // Add to user-specific history
+        const userHistories = new Map(state.userActionHistories);
+        const userIndices = new Map(state.userHistoryIndices);
+        
+        const userHistory = userHistories.get(action.userId) || [];
+        const userIndex = userIndices.get(action.userId) ?? -1;
+        
+        // Trim user history at current index and add new action
+        const newUserHistory = userHistory.slice(0, userIndex + 1);
+        newUserHistory.push(action);
+        
+        userHistories.set(action.userId, newUserHistory);
+        userIndices.set(action.userId, newUserHistory.length - 1);
         
         // Update state tracking
         const newVersion = state.stateVersion + 1;
@@ -119,13 +150,16 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
           version: newVersion,
           objectCount: Object.keys(newState.objects || state.objects).length,
           selectedCount: (newState.selectedObjectIds || state.selectedObjectIds).length,
-          historyLength: newHistory.length
+          historyLength: newHistory.length,
+          userHistoryLength: newUserHistory.length
         });
         
         return {
           ...newState,
           actionHistory: newHistory,
           currentHistoryIndex: newHistory.length - 1,
+          userActionHistories: userHistories,
+          userHistoryIndices: userIndices,
           lastAction: action,
           stateVersion: newVersion,
           lastStateUpdate: timestamp
@@ -133,7 +167,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       });
     },
 
-    addObject: (objectData) => {
+    addObject: (objectData, userId = getDefaultUserId()) => {
       const id = nanoid();
       const object: WhiteboardObject = {
         ...objectData,
@@ -142,97 +176,104 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         updatedAt: Date.now()
       };
       
-      console.log('➕ Adding object:', { id, type: object.type, position: { x: object.x, y: object.y } });
+      console.log('➕ Adding object:', { id, type: object.type, position: { x: object.x, y: object.y }, userId });
       
       const action: AddObjectAction = {
         type: 'ADD_OBJECT',
         payload: { object },
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId
       };
       
       get().dispatch(action);
       return id;
     },
 
-    updateObject: (id, updates) => {
-      console.log('📝 Updating object:', { id: id.slice(0, 8), updates });
+    updateObject: (id, updates, userId = getDefaultUserId()) => {
+      console.log('📝 Updating object:', { id: id.slice(0, 8), updates, userId });
       
       const action: UpdateObjectAction = {
         type: 'UPDATE_OBJECT',
         payload: { id, updates: { ...updates, updatedAt: Date.now() } },
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId
       };
       
       get().dispatch(action);
     },
 
-    deleteObject: (id) => {
-      console.log('🗑️ Deleting object:', { id: id.slice(0, 8) });
+    deleteObject: (id, userId = getDefaultUserId()) => {
+      console.log('🗑️ Deleting object:', { id: id.slice(0, 8), userId });
       
       const action: DeleteObjectAction = {
         type: 'DELETE_OBJECT',
         payload: { id },
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId
       };
       
       get().dispatch(action);
     },
 
-    selectObjects: (objectIds) => {
-      console.log('🎯 Selecting objects:', { count: objectIds.length, ids: objectIds.map(id => id.slice(0, 8)) });
+    selectObjects: (objectIds, userId = getDefaultUserId()) => {
+      console.log('🎯 Selecting objects:', { count: objectIds.length, ids: objectIds.map(id => id.slice(0, 8)), userId });
       
       const action: SelectObjectsAction = {
         type: 'SELECT_OBJECTS',
         payload: { objectIds },
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId
       };
       
       get().dispatch(action);
     },
 
-    clearSelection: () => {
+    clearSelection: (userId = getDefaultUserId()) => {
       console.log('🎯 Clearing selection');
-      get().selectObjects([]);
+      get().selectObjects([], userId);
     },
 
-    updateViewport: (viewport) => {
+    updateViewport: (viewport, userId = getDefaultUserId()) => {
       console.log('🔍 Updating viewport:', viewport);
       
       const action: UpdateViewportAction = {
         type: 'UPDATE_VIEWPORT',
         payload: viewport,
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId
       };
       
       get().dispatch(action);
     },
 
-    updateSettings: (settings) => {
+    updateSettings: (settings, userId = getDefaultUserId()) => {
       console.log('⚙️ Updating settings:', settings);
       
       const action: UpdateSettingsAction = {
         type: 'UPDATE_SETTINGS',
         payload: settings,
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId
       };
       
       get().dispatch(action);
     },
 
-    clearCanvas: () => {
+    clearCanvas: (userId = getDefaultUserId()) => {
       console.log('🧹 Clearing canvas');
       
       const action: ClearCanvasAction = {
         type: 'CLEAR_CANVAS',
         payload: {},
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId
       };
       
       get().dispatch(action);
@@ -245,78 +286,100 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         type: 'BATCH_UPDATE',
         payload: { actions },
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId: getDefaultUserId()
       };
       
       get().dispatch(action);
     },
 
-    erasePath: (eraserAction: { originalObjectId: string; eraserPath: { x: number; y: number; size: number; path: string }; resultingSegments: Array<{ points: Array<{ x: number; y: number }>; id: string }> }) => {
+    erasePath: (eraserAction: { originalObjectId: string; eraserPath: { x: number; y: number; size: number; path: string }; resultingSegments: Array<{ points: Array<{ x: number; y: number }>; id: string }> }, userId = getDefaultUserId()) => {
       console.log('✂️ Atomic path erase:', { originalObjectId: eraserAction.originalObjectId.slice(0, 8), segmentsCreated: eraserAction.resultingSegments.length });
       
       const action: ErasePathAction = {
         type: 'ERASE_PATH',
         payload: eraserAction,
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId
       };
       
       get().dispatch(action);
     },
 
-    undo: () => {
+    undo: (userId: string) => {
       const state = get();
-      if (state.canUndo()) {
-        console.log('↶ Undoing action');
+      if (state.canUndo(userId)) {
+        console.log('↶ Undoing action for user:', userId);
         
-        set((prevState) => ({
-          ...prevState,
-          currentHistoryIndex: prevState.currentHistoryIndex - 1
-        }));
+        const userHistory = state.userActionHistories.get(userId) || [];
+        const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
         
-        // Rebuild state from history
-        const newIndex = state.currentHistoryIndex - 1;
-        const newState = rebuildStateFromHistory(state.actionHistory.slice(0, newIndex + 1));
-        
-        set((prevState) => ({
-          ...prevState,
-          ...newState,
-          currentHistoryIndex: newIndex,
-          stateVersion: prevState.stateVersion + 1,
-          lastStateUpdate: Date.now()
-        }));
-      }
-    },
-
-    redo: () => {
-      const state = get();
-      if (state.canRedo()) {
-        console.log('↷ Redoing action');
-        
-        const newIndex = state.currentHistoryIndex + 1;
-        const action = state.actionHistory[newIndex];
-        
-        set((prevState) => {
-          const newState = applyAction(prevState, action);
-          return {
-            ...newState,
-            currentHistoryIndex: newIndex,
+        if (currentIndex >= 0) {
+          const actionToUndo = userHistory[currentIndex];
+          console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
+          
+          // Update user's history index
+          const newIndices = new Map(state.userHistoryIndices);
+          newIndices.set(userId, currentIndex - 1);
+          
+          set((prevState) => ({
+            ...prevState,
+            userHistoryIndices: newIndices,
             stateVersion: prevState.stateVersion + 1,
             lastStateUpdate: Date.now()
-          };
-        });
+          }));
+          
+          // Rebuild state from all user actions up to the new indices
+          rebuildStateFromUserHistories();
+        }
       }
     },
 
-    canUndo: () => {
+    redo: (userId: string) => {
       const state = get();
-      return state.currentHistoryIndex >= 0;
+      if (state.canRedo(userId)) {
+        console.log('↷ Redoing action for user:', userId);
+        
+        const userHistory = state.userActionHistories.get(userId) || [];
+        const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
+        const newIndex = currentIndex + 1;
+        
+        if (newIndex < userHistory.length) {
+          const actionToRedo = userHistory[newIndex];
+          console.log('↷ Redoing action:', actionToRedo.type, actionToRedo.id);
+          
+          // Update user's history index
+          const newIndices = new Map(state.userHistoryIndices);
+          newIndices.set(userId, newIndex);
+          
+          set((prevState) => ({
+            ...prevState,
+            userHistoryIndices: newIndices,
+            stateVersion: prevState.stateVersion + 1,
+            lastStateUpdate: Date.now()
+          }));
+          
+          // Rebuild state from all user actions up to the new indices
+          rebuildStateFromUserHistories();
+        }
+      }
     },
 
-    canRedo: () => {
+    canUndo: (userId: string) => {
       const state = get();
-      return state.currentHistoryIndex < state.actionHistory.length - 1;
+      const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
+      return currentIndex >= 0;
     },
+
+    canRedo: (userId: string) => {
+      const state = get();
+      const userHistory = state.userActionHistories.get(userId) || [];
+      const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
+      return currentIndex < userHistory.length - 1;
+    },
+
+    // ... keep existing code (getSerializableState, applyRemoteAction, getStateSnapshot, getActionsSince, clearActionHistory methods)
 
     getSerializableState: () => {
       const state = get();
@@ -364,12 +427,14 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         ...state,
         actionHistory: [],
         currentHistoryIndex: -1,
+        userActionHistories: new Map(),
+        userHistoryIndices: new Map(),
         stateVersion: state.stateVersion + 1,
         lastStateUpdate: Date.now()
       }));
     },
 
-    erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }) => {
+    erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }, userId = getDefaultUserId()) => {
       console.log('🧹 Erasing pixels at:', { x: eraserPath.x, y: eraserPath.y, size: eraserPath.size });
       
       const state = get();
@@ -427,27 +492,60 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
             resultingSegments: segments
           },
           timestamp: Date.now(),
-          id: nanoid()
+          id: nanoid(),
+          userId
         };
         
         get().dispatch(action);
       });
     },
 
-    deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }) => {
+    deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }, userId = getDefaultUserId()) => {
       console.log('🗑️ Deleting objects in area:', { objectCount: objectIds.length, area: eraserArea });
       
       const action: DeleteObjectsInAreaAction = {
         type: 'DELETE_OBJECTS_IN_AREA',
         payload: { objectIds, eraserArea },
         timestamp: Date.now(),
-        id: nanoid()
+        id: nanoid(),
+        userId
       };
       
       get().dispatch(action);
     },
   }))
 );
+
+// Helper function to rebuild state from all user histories up to their current indices
+function rebuildStateFromUserHistories() {
+  const store = useWhiteboardStore.getState();
+  let newState = { ...initialState };
+  
+  // Collect all actions from all users up to their current indices
+  const allActiveActions: WhiteboardAction[] = [];
+  
+  store.userActionHistories.forEach((userHistory, userId) => {
+    const currentIndex = store.userHistoryIndices.get(userId) ?? -1;
+    const activeActions = userHistory.slice(0, currentIndex + 1);
+    allActiveActions.push(...activeActions);
+  });
+  
+  // Sort actions by timestamp to maintain chronological order
+  allActiveActions.sort((a, b) => a.timestamp - b.timestamp);
+  
+  // Apply all actions in order
+  for (const action of allActiveActions) {
+    newState = { ...newState, ...applyAction(newState as WhiteboardStore, action) };
+  }
+  
+  // Update the store with the rebuilt state
+  useWhiteboardStore.setState((prevState) => ({
+    ...prevState,
+    ...newState,
+    stateVersion: prevState.stateVersion + 1,
+    lastStateUpdate: Date.now()
+  }));
+}
 
 // Helper function to apply an action to the state
 function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<WhiteboardStore> {

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
+import { useUser } from '../../contexts/UserContext';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { 
@@ -144,22 +145,67 @@ const ColorButton: React.FC<{
 /**
  * Renders action buttons (undo, redo, zoom)
  */
-const ActionButtons: React.FC = () => (
-  <div className="flex items-center gap-2">
-    <Button variant="ghost" size="sm" title="Undo">
-      <Undo className="w-4 h-4" />
-    </Button>
-    <Button variant="ghost" size="sm" title="Redo">
-      <Redo className="w-4 h-4" />
-    </Button>
-    <Button variant="ghost" size="sm" title="Zoom Out">
-      <ZoomOut className="w-4 h-4" />
-    </Button>
-    <Button variant="ghost" size="sm" title="Zoom In">
-      <ZoomIn className="w-4 h-4" />
-    </Button>
-  </div>
-);
+const ActionButtons: React.FC = () => {
+  const { userId } = useUser();
+  const { undo, redo, canUndo, canRedo } = useWhiteboardStore();
+  
+  const handleUndo = () => {
+    if (canUndo(userId)) {
+      undo(userId);
+    }
+  };
+  
+  const handleRedo = () => {
+    if (canRedo(userId)) {
+      redo(userId);
+    }
+  };
+
+  // Add keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [userId]);
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        title="Undo (Ctrl+Z)"
+        onClick={handleUndo}
+        disabled={!canUndo(userId)}
+      >
+        <Undo className="w-4 h-4" />
+      </Button>
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        title="Redo (Ctrl+Y)"
+        onClick={handleRedo}
+        disabled={!canRedo(userId)}
+      >
+        <Redo className="w-4 h-4" />
+      </Button>
+      <Button variant="ghost" size="sm" title="Zoom Out">
+        <ZoomOut className="w-4 h-4" />
+      </Button>
+      <Button variant="ghost" size="sm" title="Zoom In">
+        <ZoomIn className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+};
 
 /**
  * Main toolbar component for the whiteboard
@@ -174,8 +220,6 @@ export const Toolbar: React.FC = () => {
     getActiveColors,
     activeColorPalette
   } = useToolStore();
-  
-  const { clearCanvas } = useWhiteboardStore();
   
   const toolbarRef = useRef<HTMLDivElement>(null);
   const isMobile = useResponsiveBreakpoint(activeColorPalette);

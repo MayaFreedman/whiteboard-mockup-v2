@@ -1,12 +1,14 @@
 
 import { useEffect, useContext, useRef } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
+import { useUser } from '../contexts/UserContext'
 import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
 
 export const useMultiplayerSync = () => {
   const multiplayerContext = useContext(MultiplayerContext)
   const whiteboardStore = useWhiteboardStore()
+  const { userId } = useUser()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const actionQueueRef = useRef<WhiteboardAction[]>([])
 
@@ -71,7 +73,8 @@ export const useMultiplayerSync = () => {
         type: message.type,
         hasAction: !!message.action,
         actionId: message.action?.id,
-        actionType: message.action?.type
+        actionType: message.action?.type,
+        actionUserId: message.action?.userId
       })
       
       // Handle whiteboard actions
@@ -80,7 +83,9 @@ export const useMultiplayerSync = () => {
         console.log('📥 Processing remote whiteboard action:', {
           type: action.type,
           id: action.id,
-          fromOwnAction: sentActionIdsRef.current.has(action.id)
+          userId: action.userId,
+          fromOwnAction: sentActionIdsRef.current.has(action.id),
+          isOwnUser: action.userId === userId
         })
         
         // Prevent echoing our own actions back
@@ -112,7 +117,7 @@ export const useMultiplayerSync = () => {
       console.log('🧹 Cleaning up message-based sync for room:', room.id)
       room.removeAllListeners('broadcast')
     }
-  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore])
+  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId])
 
   // Send local actions to other clients
   useEffect(() => {
@@ -125,6 +130,7 @@ export const useMultiplayerSync = () => {
           console.log('📤 New local action detected:', {
             type: lastAction.type,
             id: lastAction.id,
+            userId: lastAction.userId,
             isReadyToSend: isReadyToSend()
           })
           
