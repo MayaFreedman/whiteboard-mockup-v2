@@ -1,3 +1,4 @@
+
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -205,6 +206,7 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
 
   const handlePointerUp = useCallback(() => {
     if (isDrawing && startPoint && currentPath) {
+      const timestamp = Date.now();
       const newObject: WhiteboardObject = {
         id: nanoid(),
         type: 'path',
@@ -213,7 +215,8 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
         stroke: toolSettings.strokeColor,
         strokeWidth: activeTool === 'eraser' ? toolSettings.eraserSize : toolSettings.strokeWidth,
         opacity: activeTool === 'eraser' ? toolSettings.eraserOpacity : toolSettings.opacity,
-        createdAt: Date.now(),
+        createdAt: timestamp,
+        updatedAt: timestamp,
         userId,
         data: {
           path: currentPath.replace(`M ${startPoint.x} ${startPoint.y}`, 'M 0 0'),
@@ -231,6 +234,8 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
       const y = Math.min(shapeStart.y, shapeEnd.y);
       
       if (width > 5 && height > 5) { // Minimum size threshold
+        const timestamp = Date.now();
+        
         if (activeTool === 'rectangle') {
           const newObject: WhiteboardObject = {
             id: nanoid(),
@@ -243,7 +248,8 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
             strokeWidth: toolSettings.shapeBorderWeight || 2,
             fill: 'transparent',
             opacity: toolSettings.opacity,
-            createdAt: Date.now(),
+            createdAt: timestamp,
+            updatedAt: timestamp,
             userId
           };
           addObject(newObject);
@@ -259,7 +265,8 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
             strokeWidth: toolSettings.shapeBorderWeight || 2,
             fill: 'transparent',
             opacity: toolSettings.opacity,
-            createdAt: Date.now(),
+            createdAt: timestamp,
+            updatedAt: timestamp,
             userId
           };
           addObject(newObject);
@@ -276,7 +283,8 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
             strokeWidth: toolSettings.shapeBorderWeight || 2,
             fill: 'transparent',
             opacity: toolSettings.opacity,
-            createdAt: Date.now(),
+            createdAt: timestamp,
+            updatedAt: timestamp,
             userId,
             data: {
               path: shapePath,
