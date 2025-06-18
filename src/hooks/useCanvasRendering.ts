@@ -365,26 +365,21 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       }
       
       case 'heart': {
-        // Improved heart shape that looks more like the lucide heart icon
-        // The heart shape maintains its proportions when stretched
-        const heartWidth = width;
-        const heartHeight = height;
+        // Classic heart shape that stretches proportionally - same as in useCanvasInteractions
+        const leftCenterX = x + width * 0.25;
+        const rightCenterX = x + width * 0.75;
+        const topCenterY = y + height * 0.25;
+        const bottomPointX = centerX;
+        const bottomPointY = y + height * 0.9;
         
-        // Calculate control points based on the bounding box
-        const leftCurveX = x + heartWidth * 0.25;
-        const rightCurveX = x + heartWidth * 0.75;
-        const topY = y + heartHeight * 0.3;
-        const bottomPointX = x + heartWidth * 0.5;
-        const bottomPointY = y + heartHeight;
-        
-        // Create heart shape using cubic bezier curves
+        // Create classic heart using smooth curves
         return `M ${bottomPointX} ${bottomPointY}
-                C ${bottomPointX - heartWidth * 0.25} ${y + heartHeight * 0.7}, ${leftCurveX - heartWidth * 0.15} ${topY + heartHeight * 0.1}, ${leftCurveX} ${topY}
-                C ${leftCurveX - heartWidth * 0.1} ${y + heartHeight * 0.15}, ${leftCurveX + heartWidth * 0.05} ${y + heartHeight * 0.05}, ${leftCurveX + heartWidth * 0.15} ${y + heartHeight * 0.1}
-                C ${bottomPointX - heartWidth * 0.1} ${y + heartHeight * 0.25}, ${bottomPointX} ${y + heartHeight * 0.4}, ${bottomPointX} ${y + heartHeight * 0.4}
-                C ${bottomPointX} ${y + heartHeight * 0.4}, ${bottomPointX + heartWidth * 0.1} ${y + heartHeight * 0.25}, ${rightCurveX - heartWidth * 0.15} ${y + heartHeight * 0.1}
-                C ${rightCurveX - heartWidth * 0.05} ${y + heartHeight * 0.05}, ${rightCurveX + heartWidth * 0.1} ${y + heartHeight * 0.15}, ${rightCurveX} ${topY}
-                C ${rightCurveX + heartWidth * 0.15} ${topY + heartHeight * 0.1}, ${bottomPointX + heartWidth * 0.25} ${y + heartHeight * 0.7}, ${bottomPointX} ${bottomPointY} Z`;
+                C ${bottomPointX - width * 0.35} ${y + height * 0.65}, ${leftCenterX - width * 0.2} ${topCenterY + height * 0.1}, ${leftCenterX} ${topCenterY}
+                C ${leftCenterX - width * 0.15} ${y + height * 0.05}, ${leftCenterX + width * 0.15} ${y + height * 0.05}, ${leftCenterX + width * 0.25} ${topCenterY}
+                L ${centerX} ${y + height * 0.4}
+                L ${rightCenterX - width * 0.25} ${topCenterY}
+                C ${rightCenterX - width * 0.15} ${y + height * 0.05}, ${rightCenterX + width * 0.15} ${y + height * 0.05}, ${rightCenterX} ${topCenterY}
+                C ${rightCenterX + width * 0.2} ${topCenterY + height * 0.1}, ${bottomPointX + width * 0.35} ${y + height * 0.65}, ${bottomPointX} ${bottomPointY} Z`;
       }
       
       default:
