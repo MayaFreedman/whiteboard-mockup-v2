@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
@@ -309,60 +310,84 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
 
     undo: (userId: string) => {
       const state = get();
-      if (state.canUndo(userId)) {
-        console.log('↶ Undoing action for user:', userId);
+      if (!state.canUndo(userId)) {
+        console.log('↶ Cannot undo for user:', userId);
+        return;
+      }
+
+      console.log('↶ Undoing action for user:', userId);
+      
+      const userHistory = state.userActionHistories.get(userId) || [];
+      const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
+      
+      if (currentIndex >= 0) {
+        const actionToUndo = userHistory[currentIndex];
+        console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
         
-        const userHistory = state.userActionHistories.get(userId) || [];
-        const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
-        
-        if (currentIndex >= 0) {
-          const actionToUndo = userHistory[currentIndex];
-          console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
-          
-          // Update user's history index
-          const newIndices = new Map(state.userHistoryIndices);
-          newIndices.set(userId, currentIndex - 1);
-          
-          set((prevState) => ({
-            ...prevState,
-            userHistoryIndices: newIndices,
-            stateVersion: prevState.stateVersion + 1,
-            lastStateUpdate: Date.now()
-          }));
-          
-          // Rebuild state from all user actions up to the new indices
-          rebuildStateFromUserHistories();
+        // Create and apply the inverse action
+        const inverseAction = createInverseAction(actionToUndo, state);
+        if (inverseAction) {
+          // Apply the inverse action directly to the state
+          set((prevState) => {
+            const newState = applyAction(prevState, inverseAction);
+            
+            // Update user's history index
+            const newIndices = new Map(prevState.userHistoryIndices);
+            newIndices.set(userId, currentIndex - 1);
+            
+            return {
+              ...newState,
+              userHistoryIndices: newIndices,
+              stateVersion: prevState.stateVersion + 1,
+              lastStateUpdate: Date.now()
+            };
+          });
+          console.log('✅ Undo completed for user:', userId);
+        } else {
+          console.warn('⚠️ Could not create inverse action for:', actionToUndo.type);
         }
       }
     },
 
     redo: (userId: string) => {
       const state = get();
-      if (state.canRedo(userId)) {
-        console.log('↷ Redoing action for user:', userId);
+      if (!state.canRedo(userId)) {
+        console.log('↷ Cannot redo for user:', userId);
+        return;
+      }
+
+      console.log('↷ Redoing action for user:', userId);
+      
+      const userHistory = state.userActionHistories.get(userId) || [];
+      const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
+      const newIndex = currentIndex + 1;
+      
+      if (newIndex < userHistory.length) {
+        const actionToRedo = userHistory[newIndex];
+        console.log('↷ Redoing action:', actionToRedo.type, actionToRedo.id);
         
-        const userHistory = state.userActionHistories.get(userId) || [];
-        const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
-        const newIndex = currentIndex + 1;
+        // Check for conflicts before redoing
+        if (hasConflict(actionToRedo, state)) {
+          console.warn('⚠️ Conflict detected, skipping redo for action:', actionToRedo.id);
+          return;
+        }
         
-        if (newIndex < userHistory.length) {
-          const actionToRedo = userHistory[newIndex];
-          console.log('↷ Redoing action:', actionToRedo.type, actionToRedo.id);
+        // Apply the original action directly to the state
+        set((prevState) => {
+          const newState = applyAction(prevState, actionToRedo);
           
           // Update user's history index
-          const newIndices = new Map(state.userHistoryIndices);
+          const newIndices = new Map(prevState.userHistoryIndices);
           newIndices.set(userId, newIndex);
           
-          set((prevState) => ({
-            ...prevState,
+          return {
+            ...newState,
             userHistoryIndices: newIndices,
             stateVersion: prevState.stateVersion + 1,
             lastStateUpdate: Date.now()
-          }));
-          
-          // Rebuild state from all user actions up to the new indices
-          rebuildStateFromUserHistories();
-        }
+          };
+        });
+        console.log('✅ Redo completed for user:', userId);
       }
     },
 
@@ -379,8 +404,6 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       return currentIndex < userHistory.length - 1;
     },
 
-    // ... keep existing code (getSerializableState, applyRemoteAction, getStateSnapshot, getActionsSince, clearActionHistory methods)
-
     getSerializableState: () => {
       const state = get();
       return {
@@ -392,13 +415,46 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     },
 
     applyRemoteAction: (action) => {
-      console.log('🌐 Applying remote action:', { type: action.type, id: action.id });
-      // Apply remote action without adding to local history
-      set((state) => ({
-        ...applyAction(state, action),
-        stateVersion: state.stateVersion + 1,
-        lastStateUpdate: Date.now()
-      }));
+      console.log('🌐 Applying remote action:', { type: action.type, id: action.id, userId: action.userId });
+      
+      set((state) => {
+        // Apply the remote action to the state
+        const newState = applyAction(state, action);
+        
+        // Add to user-specific history for the remote user
+        const userHistories = new Map(state.userActionHistories);
+        const userIndices = new Map(state.userHistoryIndices);
+        
+        const userHistory = userHistories.get(action.userId) || [];
+        
+        // Check if this action is already in the user's history (deduplication)
+        const actionExists = userHistory.some(existingAction => existingAction.id === action.id);
+        if (actionExists) {
+          console.log('🔄 Action already exists in history, skipping:', action.id);
+          return state;
+        }
+        
+        // Add to user's history in chronological order
+        const newUserHistory = [...userHistory, action].sort((a, b) => a.timestamp - b.timestamp);
+        userHistories.set(action.userId, newUserHistory);
+        
+        // Update user's current index to the end of their history
+        userIndices.set(action.userId, newUserHistory.length - 1);
+        
+        console.log('✅ Remote action applied and added to user history:', {
+          userId: action.userId,
+          actionId: action.id,
+          userHistoryLength: newUserHistory.length
+        });
+        
+        return {
+          ...newState,
+          userActionHistories: userHistories,
+          userHistoryIndices: userIndices,
+          stateVersion: state.stateVersion + 1,
+          lastStateUpdate: Date.now()
+        };
+      });
     },
 
     getStateSnapshot: () => {
@@ -516,35 +572,131 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
   }))
 );
 
-// Helper function to rebuild state from all user histories up to their current indices
-function rebuildStateFromUserHistories() {
-  const store = useWhiteboardStore.getState();
-  let newState = { ...initialState };
-  
-  // Collect all actions from all users up to their current indices
-  const allActiveActions: WhiteboardAction[] = [];
-  
-  store.userActionHistories.forEach((userHistory, userId) => {
-    const currentIndex = store.userHistoryIndices.get(userId) ?? -1;
-    const activeActions = userHistory.slice(0, currentIndex + 1);
-    allActiveActions.push(...activeActions);
-  });
-  
-  // Sort actions by timestamp to maintain chronological order
-  allActiveActions.sort((a, b) => a.timestamp - b.timestamp);
-  
-  // Apply all actions in order
-  for (const action of allActiveActions) {
-    newState = { ...newState, ...applyAction(newState as WhiteboardStore, action) };
+// Helper function to create inverse actions for undo operations
+function createInverseAction(action: WhiteboardAction, state: WhiteboardStore): WhiteboardAction | null {
+  switch (action.type) {
+    case 'ADD_OBJECT': {
+      const { object } = (action as AddObjectAction).payload;
+      return {
+        type: 'DELETE_OBJECT',
+        payload: { id: object.id },
+        timestamp: Date.now(),
+        id: nanoid(),
+        userId: action.userId
+      };
+    }
+    
+    case 'DELETE_OBJECT': {
+      const { id } = (action as DeleteObjectAction).payload;
+      const deletedObject = state.objects[id];
+      if (!deletedObject) return null;
+      
+      return {
+        type: 'ADD_OBJECT',
+        payload: { object: deletedObject },
+        timestamp: Date.now(),
+        id: nanoid(),
+        userId: action.userId
+      };
+    }
+    
+    case 'UPDATE_OBJECT': {
+      const { id, updates } = (action as UpdateObjectAction).payload;
+      const currentObject = state.objects[id];
+      if (!currentObject) return null;
+      
+      // Create reverse updates by taking the previous values
+      const reverseUpdates: Partial<WhiteboardObject> = {};
+      Object.keys(updates).forEach(key => {
+        if (key in currentObject) {
+          reverseUpdates[key as keyof WhiteboardObject] = (currentObject as any)[key];
+        }
+      });
+      
+      return {
+        type: 'UPDATE_OBJECT',
+        payload: { id, updates: reverseUpdates },
+        timestamp: Date.now(),
+        id: nanoid(),
+        userId: action.userId
+      };
+    }
+    
+    case 'SELECT_OBJECTS': {
+      return {
+        type: 'SELECT_OBJECTS',
+        payload: { objectIds: state.selectedObjectIds },
+        timestamp: Date.now(),
+        id: nanoid(),
+        userId: action.userId
+      };
+    }
+    
+    case 'UPDATE_VIEWPORT': {
+      return {
+        type: 'UPDATE_VIEWPORT',
+        payload: state.viewport,
+        timestamp: Date.now(),
+        id: nanoid(),
+        userId: action.userId
+      };
+    }
+    
+    case 'UPDATE_SETTINGS': {
+      return {
+        type: 'UPDATE_SETTINGS',
+        payload: state.settings,
+        timestamp: Date.now(),
+        id: nanoid(),
+        userId: action.userId
+      };
+    }
+    
+    case 'CLEAR_CANVAS': {
+      // Cannot reliably reverse clear canvas, would need to restore all objects
+      console.warn('Cannot create inverse for CLEAR_CANVAS action');
+      return null;
+    }
+    
+    case 'ERASE_PATH': {
+      // Cannot reliably reverse path erasing
+      console.warn('Cannot create inverse for ERASE_PATH action');
+      return null;
+    }
+    
+    default:
+      console.warn('Unknown action type for inverse creation:', (action as any).type);
+      return null;
   }
-  
-  // Update the store with the rebuilt state
-  useWhiteboardStore.setState((prevState) => ({
-    ...prevState,
-    ...newState,
-    stateVersion: prevState.stateVersion + 1,
-    lastStateUpdate: Date.now()
-  }));
+}
+
+// Helper function to detect conflicts before redoing actions
+function hasConflict(action: WhiteboardAction, state: WhiteboardStore): boolean {
+  switch (action.type) {
+    case 'UPDATE_OBJECT':
+    case 'DELETE_OBJECT': {
+      const objectId = action.type === 'UPDATE_OBJECT' 
+        ? (action as UpdateObjectAction).payload.id
+        : (action as DeleteObjectAction).payload.id;
+      
+      const currentObject = state.objects[objectId];
+      if (!currentObject) {
+        console.log('🔍 Conflict: Object no longer exists:', objectId);
+        return true;
+      }
+      
+      // Check if object was modified by another user after this action
+      if (currentObject.updatedAt > action.timestamp) {
+        console.log('🔍 Conflict: Object was modified after this action:', objectId);
+        return true;
+      }
+      
+      return false;
+    }
+    
+    default:
+      return false;
+  }
 }
 
 // Helper function to apply an action to the state
@@ -784,14 +936,4 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
       console.warn('Unknown action type:', (action as any).type);
       return {};
   }
-}
-
-function rebuildStateFromHistory(history: WhiteboardAction[]): Partial<WhiteboardStore> {
-  let state = { ...initialState };
-  
-  for (const action of history) {
-    state = { ...state, ...applyAction(state as WhiteboardStore, action) };
-  }
-  
-  return state;
 }
