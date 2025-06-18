@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { WhiteboardObject } from '../../types/whiteboard';
@@ -10,45 +9,91 @@ export const useObjectDetection = () => {
   const whiteboardStore = useWhiteboardStore();
 
   /**
+   * Checks if a path uses absolute coordinates by analyzing the path string
+   * Complex shapes (generated SVG paths) use absolute coordinates starting from origin
+   * Hand-drawn paths use relative coordinates from the object's position
+   */
+  const isAbsolutePath = useCallback((pathString: string): boolean => {
+    // Check if path starts with absolute commands like 'M x y' where x,y are not near 0
+    const absolutePattern = /^M\s*([+-]?\d*\.?\d+)\s*([+-]?\d*\.?\d+)/;
+    const match = pathString.match(absolutePattern);
+    
+    if (match) {
+      const x = parseFloat(match[1]);
+      const y = parseFloat(match[2]);
+      
+      // If the path starts far from origin (>10px), it's likely absolute coordinates
+      // Hand-drawn paths typically start near (0,0) relative to object position
+      return Math.abs(x) > 10 || Math.abs(y) > 10;
+    }
+    
+    return false;
+  }, []);
+
+  /**
    * Checks if a point is inside a path using multiple detection methods
    */
-  const isPointInPath = useCallback((pathString: string, x: number, y: number, strokeWidth: number = 2): boolean => {
+  const isPointInPath = useCallback((pathString: string, x: number, y: number, strokeWidth: number = 2, objX: number = 0, objY: number = 0): boolean => {
     try {
       const path = new Path2D(pathString);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) return false;
 
-      // Primary method: stroke hit detection with generous hit area
+      // Set up stroke properties for hit detection
       ctx.lineWidth = Math.max(strokeWidth * 2, 12); // At least 12px hit area
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       
-      const strokeHit = ctx.isPointInStroke(path, x, y);
+      // Determine if this path uses absolute or relative coordinates
+      const isAbsolute = isAbsolutePath(pathString);
       
-      // Fallback method: check multiple points around the target for better coverage
-      if (!strokeHit) {
-        const radius = Math.max(strokeWidth, 6);
-        const testPoints = [
-          { x: x - radius, y },
-          { x: x + radius, y },
-          { x, y: y - radius },
-          { x, y: y + radius },
-          { x: x - radius/2, y: y - radius/2 },
-          { x: x + radius/2, y: y - radius/2 },
-          { x: x - radius/2, y: y + radius/2 },
-          { x: x + radius/2, y: y + radius/2 }
-        ];
-        
-        return testPoints.some(point => ctx.isPointInStroke(path, point.x, point.y));
+      let testX: number, testY: number;
+      
+      if (isAbsolute) {
+        // For absolute paths (complex shapes), use screen coordinates directly
+        testX = x;
+        testY = y;
+        console.log('🎯 Testing absolute path:', { screenX: x, screenY: y, testX, testY });
+      } else {
+        // For relative paths (hand-drawn), convert screen to object-relative coordinates
+        testX = x - objX;
+        testY = y - objY;
+        console.log('🎯 Testing relative path:', { screenX: x, screenY: y, objX, objY, testX, testY });
       }
       
-      return strokeHit;
+      // Primary method: stroke hit detection
+      const strokeHit = ctx.isPointInStroke(path, testX, testY);
+      
+      // Also check fill for better detection of complex shapes
+      const fillHit = ctx.isPointInPath(path, testX, testY);
+      
+      // Fallback method: check multiple points around the target for better coverage
+      if (!strokeHit && !fillHit) {
+        const radius = Math.max(strokeWidth, 6);
+        const testPoints = [
+          { x: testX - radius, y: testY },
+          { x: testX + radius, y: testY },
+          { x: testX, y: testY - radius },
+          { x: testX, y: testY + radius },
+          { x: testX - radius/2, y: testY - radius/2 },
+          { x: testX + radius/2, y: testY - radius/2 },
+          { x: testX - radius/2, y: testY + radius/2 },
+          { x: testX + radius/2, y: testY + radius/2 }
+        ];
+        
+        return testPoints.some(point => 
+          ctx.isPointInStroke(path, point.x, point.y) || 
+          ctx.isPointInPath(path, point.x, point.y)
+        );
+      }
+      
+      return strokeHit || fillHit;
     } catch (error) {
       console.warn('Error checking path intersection:', error);
       return false;
     }
-  }, []);
+  }, [isAbsolutePath]);
 
   /**
    * Checks if a point is inside a rectangle with padding
@@ -115,16 +160,13 @@ export const useObjectDetection = () => {
       switch (obj.type) {
         case 'path': {
           if (obj.data?.path) {
-            // Convert screen coordinates to path-relative coordinates
-            const relativeX = x - obj.x;
-            const relativeY = y - obj.y;
-            isHit = isPointInPath(obj.data.path, relativeX, relativeY, obj.strokeWidth);
+            // Pass object position to isPointInPath for proper coordinate handling
+            isHit = isPointInPath(obj.data.path, x, y, obj.strokeWidth, obj.x, obj.y);
             
             console.log('🖊️ Path hit test:', {
               id: id.slice(0, 8),
               screenCoords: { x, y },
               objectCoords: { x: obj.x, y: obj.y },
-              relativeCoords: { x: relativeX, y: relativeY },
               strokeWidth: obj.strokeWidth,
               isHit
             });
