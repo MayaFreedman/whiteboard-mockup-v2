@@ -15,7 +15,7 @@ export const ConnectionStatus: React.FC = () => {
 
   if (isAutoConnecting) {
     return (
-      <Alert className="fixed top-4 right-4 w-80 z-50">
+      <Alert className="fixed top-20 right-4 w-80 z-50">
         <Loader2 className="h-4 w-4 animate-spin" />
         <AlertDescription>
           Connecting to room...
@@ -26,7 +26,7 @@ export const ConnectionStatus: React.FC = () => {
 
   if (connectionError) {
     return (
-      <Alert variant="destructive" className="fixed top-4 right-4 w-80 z-50">
+      <Alert variant="destructive" className="fixed top-20 right-4 w-80 z-50">
         <WifiOff className="h-4 w-4" />
         <AlertDescription>
           Connection failed: {connectionError}
@@ -37,7 +37,7 @@ export const ConnectionStatus: React.FC = () => {
 
   if (isConnected && roomId) {
     return (
-      <Alert className="fixed top-4 right-4 w-80 z-50 bg-green-50 border-green-200">
+      <Alert className="fixed top-20 right-4 w-80 z-50 bg-green-50 border-green-200">
         <Wifi className="h-4 w-4 text-green-600" />
         <AlertDescription className="text-green-800">
           Connected to room: <strong>{roomId}</strong>
@@ -52,7 +52,7 @@ export const ConnectionStatus: React.FC = () => {
   
   if (!hasRoomParam) {
     return (
-      <Alert className="fixed top-4 right-4 w-80 z-50 bg-yellow-50 border-yellow-200">
+      <Alert className="fixed top-20 right-4 w-80 z-50 bg-yellow-50 border-yellow-200">
         <WifiOff className="h-4 w-4 text-yellow-600" />
         <AlertDescription className="text-yellow-800">
           Room not connected. Add <code>?room=your-room-id</code> to URL to auto-connect.
