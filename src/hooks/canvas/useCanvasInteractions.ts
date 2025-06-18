@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { WhiteboardObject } from '../../types/whiteboard';
@@ -45,6 +45,85 @@ export const useCanvasInteractions = () => {
   const setRedrawCanvas = useCallback((redrawFn: () => void) => {
     redrawCanvasRef.current = redrawFn;
   }, []);
+
+  /**
+   * Ends current drawing session and saves the path if valid
+   */
+  const endCurrentDrawing = useCallback(() => {
+    const activeTool = toolStore.activeTool;
+    
+    if ((activeTool === 'pencil' || activeTool === 'brush') && 
+        isDrawingRef.current && 
+        pathBuilderRef.current && 
+        pathStartRef.current &&
+        pathBuilderRef.current.getPointCount() > 1) {
+      
+      // Get the final smooth path from the builder
+      const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
+      
+      // Create the drawing object with the smooth path
+      const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
+        type: 'path',
+        x: pathStartRef.current.x,
+        y: pathStartRef.current.y,
+        stroke: toolStore.toolSettings.strokeColor,
+        strokeWidth: toolStore.toolSettings.strokeWidth,
+        opacity: toolStore.toolSettings.opacity,
+        fill: 'none',
+        data: {
+          path: finalSmoothPath,
+          brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
+        }
+      };
+
+      const objectId = whiteboardStore.addObject(drawingObject);
+      console.log('✏️ Auto-saved drawing on mouse leave:', objectId.slice(0, 8));
+    }
+    
+    if (activeTool === 'eraser' && isDrawingRef.current) {
+      handleEraserEnd(redrawCanvasRef.current || undefined);
+      console.log('🧹 Auto-ended erasing on mouse leave');
+    }
+    
+    // Reset all drawing state
+    isDrawingRef.current = false;
+    isDraggingRef.current = false;
+    lastPointRef.current = null;
+    pathStartRef.current = null;
+    pathBuilderRef.current = null;
+    dragStartRef.current = null;
+    currentDrawingPreviewRef.current = null;
+    
+    // Trigger redraw to clear preview
+    if (redrawCanvasRef.current) {
+      redrawCanvasRef.current();
+    }
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd]);
+
+  // Add document-level mouseup listener to catch releases outside canvas
+  useEffect(() => {
+    const handleDocumentMouseUp = () => {
+      if (isDrawingRef.current || isDraggingRef.current) {
+        console.log('🖱️ Document mouse up - ending current interaction');
+        endCurrentDrawing();
+      }
+    };
+
+    document.addEventListener('mouseup', handleDocumentMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleDocumentMouseUp);
+    };
+  }, [endCurrentDrawing]);
+
+  /**
+   * Handles mouse leaving the canvas area
+   */
+  const handleMouseLeave = useCallback(() => {
+    if (isDrawingRef.current || isDraggingRef.current) {
+      console.log('🖱️ Mouse left canvas - ending current interaction');
+      endCurrentDrawing();
+    }
+  }, [endCurrentDrawing]);
 
   /**
    * Handles the start of a drawing/interaction session
@@ -271,6 +350,7 @@ export const useCanvasInteractions = () => {
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
+    handleMouseLeave,
     isDrawing: isDrawingRef.current,
     isDragging: isDraggingRef.current,
     getCurrentDrawingPreview,

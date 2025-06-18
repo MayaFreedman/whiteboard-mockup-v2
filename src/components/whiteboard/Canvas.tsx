@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -112,6 +111,14 @@ export const Canvas: React.FC = () => {
     }
   };
 
+  /**
+   * Handles mouse leaving the canvas area
+   * @param event - Mouse event
+   */
+  const onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    interactions.handleMouseLeave();
+  };
+
   return (
     <div className="w-full h-full relative bg-background overflow-hidden">
       <canvas
@@ -124,6 +131,7 @@ export const Canvas: React.FC = () => {
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
+        onMouseLeave={onMouseLeave}
       />
       
       {/* Custom Cursor */}
