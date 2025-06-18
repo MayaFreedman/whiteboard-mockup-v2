@@ -38,7 +38,8 @@ interface BaseAction {
   payload: any;
   timestamp: number;
   id: string;
-  userId: string; // Added userId to track which user performed the action
+  userId: string;
+  previousState?: any; // Store previous state for reliable undo operations
 }
 
 export interface AddObjectAction extends BaseAction {
@@ -54,12 +55,18 @@ export interface UpdateObjectAction extends BaseAction {
     id: string;
     updates: Partial<WhiteboardObject>;
   };
+  previousState?: {
+    object: WhiteboardObject;
+  };
 }
 
 export interface DeleteObjectAction extends BaseAction {
   type: 'DELETE_OBJECT';
   payload: {
     id: string;
+  };
+  previousState?: {
+    object: WhiteboardObject;
   };
 }
 
@@ -68,21 +75,34 @@ export interface SelectObjectsAction extends BaseAction {
   payload: {
     objectIds: string[];
   };
+  previousState?: {
+    selectedObjectIds: string[];
+  };
 }
 
 export interface UpdateViewportAction extends BaseAction {
   type: 'UPDATE_VIEWPORT';
   payload: Partial<WhiteboardState['viewport']>;
+  previousState?: {
+    viewport: WhiteboardState['viewport'];
+  };
 }
 
 export interface UpdateSettingsAction extends BaseAction {
   type: 'UPDATE_SETTINGS';
   payload: Partial<WhiteboardState['settings']>;
+  previousState?: {
+    settings: WhiteboardState['settings'];
+  };
 }
 
 export interface ClearCanvasAction extends BaseAction {
   type: 'CLEAR_CANVAS';
   payload: {};
+  previousState?: {
+    objects: { [id: string]: WhiteboardObject };
+    selectedObjectIds: string[];
+  };
 }
 
 export interface BatchUpdateAction extends BaseAction {
@@ -133,21 +153,8 @@ export interface ErasePathAction extends BaseAction {
       id: string;
     }>;
   };
-}
-
-export interface UndoAction extends BaseAction {
-  type: 'UNDO';
-  payload: {
-    targetUserId: string;
-    inverseAction: WhiteboardAction;
-  };
-}
-
-export interface RedoAction extends BaseAction {
-  type: 'REDO';
-  payload: {
-    targetUserId: string;
-    redoAction: WhiteboardAction;
+  previousState?: {
+    object: WhiteboardObject;
   };
 }
 
@@ -162,6 +169,4 @@ export type WhiteboardAction =
   | BatchUpdateAction
   | ErasePixelsAction
   | DeleteObjectsInAreaAction
-  | ErasePathAction
-  | UndoAction
-  | RedoAction;
+  | ErasePathAction;

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
-import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useUser } from '../../contexts/UserContext';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { 
@@ -143,22 +143,20 @@ const ColorButton: React.FC<{
 );
 
 /**
- * Renders action buttons (undo, redo, zoom)
+ * Renders action buttons (undo, redo, zoom) using the new undo/redo hook
  */
 const ActionButtons: React.FC = () => {
   const { userId } = useUser();
-  const { undo, redo, canUndo, canRedo } = useWhiteboardStore();
+  const { undo, redo, canUndo, canRedo } = useUndoRedo();
   
   const handleUndo = () => {
-    if (canUndo(userId)) {
-      undo(userId);
-    }
+    console.log('🎯 Toolbar undo clicked for user:', userId);
+    undo(userId);
   };
   
   const handleRedo = () => {
-    if (canRedo(userId)) {
-      redo(userId);
-    }
+    console.log('🎯 Toolbar redo clicked for user:', userId);
+    redo(userId);
   };
 
   // Add keyboard shortcuts
