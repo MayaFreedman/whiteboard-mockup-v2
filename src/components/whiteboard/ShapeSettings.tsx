@@ -7,13 +7,7 @@ import { Slider } from '../ui/slider';
  * Shape-specific settings component
  */
 export const ShapeSettings: React.FC = () => {
-  const { toolSettings, updateToolSettings, getActiveColors } = useToolStore();
-  
-  const allColors = getActiveColors();
-
-  const handleFillColorSelect = (color: string) => {
-    updateToolSettings({ fillColor: color });
-  };
+  const { toolSettings, updateToolSettings } = useToolStore();
 
   return (
     <div className="space-y-4">
@@ -44,26 +38,9 @@ export const ShapeSettings: React.FC = () => {
       </div>
 
       <div>
-        <label className="text-sm font-medium mb-2 block">
-          Fill Color for Fill Tool
-        </label>
-        <div className="flex gap-2 flex-wrap">
-          {allColors.map((color) => (
-            <button
-              key={color}
-              className={`w-8 h-8 rounded border-2 transition-all ${
-                (toolSettings.fillColor || toolSettings.strokeColor) === color
-                  ? 'border-primary scale-110' 
-                  : 'border-border hover:border-muted-foreground/50'
-              }`}
-              style={{ backgroundColor: color }}
-              onClick={() => handleFillColorSelect(color)}
-              title={`Set fill color: ${color}`}
-            />
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          Use the fill tool to apply this color to shapes
+        <p className="text-sm text-muted-foreground">
+          To fill shapes, select the Fill tool from the toolbar and click on any shape. 
+          The fill color will be the currently selected color from the main toolbar.
         </p>
       </div>
     </div>

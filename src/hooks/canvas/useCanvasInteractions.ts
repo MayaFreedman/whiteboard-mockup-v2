@@ -170,9 +170,11 @@ export const useCanvasInteractions = () => {
   }, [toolStore.toolSettings.shapeBorderWeight, generateShapePath]);
 
   /**
-   * Handles fill tool click - fills the clicked shape with the current fill color
+   * Handles fill tool click - fills the clicked shape with the current stroke color
    */
   const handleFillClick = useCallback((coords: { x: number; y: number }) => {
+    console.log('🎨 Fill tool clicked at:', coords);
+    
     const objectId = findObjectAt(coords.x, coords.y);
     if (!objectId) {
       console.log('🎨 No object found to fill at:', coords);
@@ -180,24 +182,37 @@ export const useCanvasInteractions = () => {
     }
     
     const obj = whiteboardStore.objects[objectId];
-    if (!obj || obj.type !== 'path' || !obj.data?.isShape) {
-      console.log('🎨 Object is not a fillable shape:', { type: obj?.type, isShape: obj?.data?.isShape });
+    if (!obj) {
+      console.log('🎨 Object not found in store:', objectId);
       return;
     }
     
-    const fillColor = toolStore.toolSettings.fillColor || toolStore.toolSettings.strokeColor;
+    console.log('🎨 Found object to fill:', { 
+      id: objectId.slice(0, 8), 
+      type: obj.type, 
+      isShape: obj.data?.isShape,
+      hasPathData: !!obj.data?.path 
+    });
     
+    // Use the current stroke color from toolbar as fill color
+    const fillColor = toolStore.toolSettings.strokeColor;
+    
+    // Update the object with the fill color
     whiteboardStore.updateObject(objectId, {
       fill: fillColor
     });
     
-    console.log('🎨 Filled shape:', { objectId: objectId.slice(0, 8), fillColor });
+    console.log('🎨 Filled object:', { 
+      objectId: objectId.slice(0, 8), 
+      fillColor,
+      previousFill: obj.fill 
+    });
     
     // Trigger redraw
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
     }
-  }, [findObjectAt, whiteboardStore, toolStore.toolSettings]);
+  }, [findObjectAt, whiteboardStore, toolStore.toolSettings.strokeColor]);
 
   /**
    * Ends current drawing session and saves the path if valid
@@ -321,7 +336,7 @@ export const useCanvasInteractions = () => {
     switch (activeTool) {
       case 'fill': {
         handleFillClick(coords);
-        break;
+        return; // Don't set any drawing state for fill tool
       }
 
       case 'select': {
