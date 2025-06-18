@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
@@ -16,7 +15,9 @@ import {
   BatchUpdateAction,
   ErasePixelsAction,
   DeleteObjectsInAreaAction,
-  ErasePathAction
+  ErasePathAction,
+  UndoAction,
+  RedoAction
 } from '../types/whiteboard';
 import { erasePointsFromPathBatch, doesPathIntersectEraserBatch } from '../utils/path/pathErasing';
 import { pointsToPath, pathToPoints } from '../utils/path/pathConversion';
@@ -129,19 +130,21 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         const newHistory = state.actionHistory.slice(0, state.currentHistoryIndex + 1);
         newHistory.push(action);
         
-        // Add to user-specific history
+        // Add to user-specific history - but only for non-undo/redo actions
         const userHistories = new Map(state.userActionHistories);
         const userIndices = new Map(state.userHistoryIndices);
         
-        const userHistory = userHistories.get(action.userId) || [];
-        const userIndex = userIndices.get(action.userId) ?? -1;
-        
-        // Trim user history at current index and add new action
-        const newUserHistory = userHistory.slice(0, userIndex + 1);
-        newUserHistory.push(action);
-        
-        userHistories.set(action.userId, newUserHistory);
-        userIndices.set(action.userId, newUserHistory.length - 1);
+        if (action.type !== 'UNDO' && action.type !== 'REDO') {
+          const userHistory = userHistories.get(action.userId) || [];
+          const userIndex = userIndices.get(action.userId) ?? -1;
+          
+          // Trim user history at current index and add new action
+          const newUserHistory = userHistory.slice(0, userIndex + 1);
+          newUserHistory.push(action);
+          
+          userHistories.set(action.userId, newUserHistory);
+          userIndices.set(action.userId, newUserHistory.length - 1);
+        }
         
         // Update state tracking
         const newVersion = state.stateVersion + 1;
@@ -152,7 +155,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
           objectCount: Object.keys(newState.objects || state.objects).length,
           selectedCount: (newState.selectedObjectIds || state.selectedObjectIds).length,
           historyLength: newHistory.length,
-          userHistoryLength: newUserHistory.length
+          actionType: action.type
         });
         
         return {
@@ -324,25 +327,24 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         const actionToUndo = userHistory[currentIndex];
         console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
         
-        // Create and apply the inverse action directly
+        // Create the inverse action
         const inverseAction = createInverseAction(actionToUndo, state);
         if (inverseAction) {
-          // Apply the inverse action directly to the state
-          set((prevState) => {
-            const newState = applyAction(prevState, inverseAction);
-            
-            // Update user's history index
-            const newIndices = new Map(prevState.userHistoryIndices);
-            newIndices.set(userId, currentIndex - 1);
-            
-            return {
-              ...newState,
-              userHistoryIndices: newIndices,
-              stateVersion: prevState.stateVersion + 1,
-              lastStateUpdate: Date.now()
-            };
-          });
-          console.log('✅ Undo completed for user:', userId);
+          // Create an UNDO action that will be synchronized across all users
+          const undoAction: UndoAction = {
+            type: 'UNDO',
+            payload: {
+              targetUserId: userId,
+              inverseAction: inverseAction
+            },
+            timestamp: Date.now(),
+            id: nanoid(),
+            userId: userId
+          };
+          
+          // Dispatch the UNDO action through the normal system
+          get().dispatch(undoAction);
+          console.log('✅ Undo action dispatched for user:', userId);
         } else {
           console.warn('⚠️ Could not create inverse action for:', actionToUndo.type);
         }
@@ -372,22 +374,21 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
           return;
         }
         
-        // Apply the original action directly to the state
-        set((prevState) => {
-          const newState = applyAction(prevState, actionToRedo);
-          
-          // Update user's history index
-          const newIndices = new Map(prevState.userHistoryIndices);
-          newIndices.set(userId, newIndex);
-          
-          return {
-            ...newState,
-            userHistoryIndices: newIndices,
-            stateVersion: prevState.stateVersion + 1,
-            lastStateUpdate: Date.now()
-          };
-        });
-        console.log('✅ Redo completed for user:', userId);
+        // Create a REDO action that will be synchronized across all users
+        const redoAction: RedoAction = {
+          type: 'REDO',
+          payload: {
+            targetUserId: userId,
+            redoAction: actionToRedo
+          },
+          timestamp: Date.now(),
+          id: nanoid(),
+          userId: userId
+        };
+        
+        // Dispatch the REDO action through the normal system
+        get().dispatch(redoAction);
+        console.log('✅ Redo action dispatched for user:', userId);
       }
     },
 
@@ -418,37 +419,48 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       console.log('🌐 Applying remote action:', { type: action.type, id: action.id, userId: action.userId });
       
       set((state) => {
-        // Apply the remote action to the state
-        const newState = applyAction(state, action);
-        
-        // Add to user-specific history for the remote user
-        const userHistories = new Map(state.userActionHistories);
-        const userIndices = new Map(state.userHistoryIndices);
-        
-        const userHistory = userHistories.get(action.userId) || [];
-        
-        // Check if this action is already in the user's history (deduplication)
-        const actionExists = userHistory.some(existingAction => existingAction.id === action.id);
+        // Check for action deduplication - don't apply if we've already seen this action
+        const actionExists = state.actionHistory.some(existingAction => existingAction.id === action.id);
         if (actionExists) {
           console.log('🔄 Action already exists in history, skipping:', action.id);
           return state;
         }
         
-        // Add to user's history in chronological order
-        const newUserHistory = [...userHistory, action].sort((a, b) => a.timestamp - b.timestamp);
-        userHistories.set(action.userId, newUserHistory);
+        // Apply the remote action to the state
+        const newState = applyAction(state, action);
         
-        // Update user's current index to the end of their history
-        userIndices.set(action.userId, newUserHistory.length - 1);
+        // Add to global history in chronological order
+        const newHistory = [...state.actionHistory, action].sort((a, b) => a.timestamp - b.timestamp);
+        
+        // Add to user-specific history for the remote user (only for non-undo/redo actions)
+        const userHistories = new Map(state.userActionHistories);
+        const userIndices = new Map(state.userHistoryIndices);
+        
+        if (action.type !== 'UNDO' && action.type !== 'REDO') {
+          const userHistory = userHistories.get(action.userId) || [];
+          
+          // Add to user's history in chronological order and remove duplicates
+          const newUserHistory = [...userHistory, action]
+            .filter((item, index, arr) => arr.findIndex(a => a.id === item.id) === index)
+            .sort((a, b) => a.timestamp - b.timestamp);
+          
+          userHistories.set(action.userId, newUserHistory);
+          
+          // Update user's current index to the end of their history
+          userIndices.set(action.userId, newUserHistory.length - 1);
+        }
         
         console.log('✅ Remote action applied and added to user history:', {
           userId: action.userId,
           actionId: action.id,
-          userHistoryLength: newUserHistory.length
+          actionType: action.type,
+          globalHistoryLength: newHistory.length
         });
         
         return {
           ...newState,
+          actionHistory: newHistory,
+          currentHistoryIndex: newHistory.length - 1,
           userActionHistories: userHistories,
           userHistoryIndices: userIndices,
           stateVersion: state.stateVersion + 1,
@@ -607,7 +619,7 @@ function createInverseAction(action: WhiteboardAction, state: WhiteboardStore): 
       
       // Create reverse updates by taking the previous values
       const reverseUpdates: Record<string, any> = {};
-      Object.keys(updates).forEach(key => {
+      Object.keys(updates).forEach(key => {	
         if (key in currentObject) {
           reverseUpdates[key] = (currentObject as any)[key];
         }
@@ -784,6 +796,47 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
       return newState;
     }
     
+    case 'UNDO': {
+      const { targetUserId, inverseAction } = (action as UndoAction).payload;
+      console.log('↶ Processing UNDO action for user:', targetUserId);
+      
+      // Apply the inverse action to undo the original action
+      const undoResult = applyAction(state, inverseAction);
+      
+      // Update the user's history index
+      const newIndices = new Map(state.userHistoryIndices);
+      const currentIndex = newIndices.get(targetUserId) ?? -1;
+      if (currentIndex >= 0) {
+        newIndices.set(targetUserId, currentIndex - 1);
+      }
+      
+      return {
+        ...undoResult,
+        userHistoryIndices: newIndices
+      };
+    }
+    
+    case 'REDO': {
+      const { targetUserId, redoAction } = (action as RedoAction).payload;
+      console.log('↷ Processing REDO action for user:', targetUserId);
+      
+      // Apply the original action to redo it
+      const redoResult = applyAction(state, redoAction);
+      
+      // Update the user's history index
+      const newIndices = new Map(state.userHistoryIndices);
+      const currentIndex = newIndices.get(targetUserId) ?? -1;
+      const userHistory = state.userActionHistories.get(targetUserId) || [];
+      if (currentIndex < userHistory.length - 1) {
+        newIndices.set(targetUserId, currentIndex + 1);
+      }
+      
+      return {
+        ...redoResult,
+        userHistoryIndices: newIndices
+      };
+    }
+    
     case 'ERASE_PATH': {
       const { originalObjectId, resultingSegments } = (action as ErasePathAction).payload;
       const newObjects = { ...state.objects };
@@ -831,7 +884,6 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
     }
     
     case 'ERASE_PIXELS': {
-      // Keep the old ERASE_PIXELS logic for backward compatibility or other eraser modes
       const { eraserPath } = (action as ErasePixelsAction).payload;
       const eraserRadius = eraserPath.size / 2;
       

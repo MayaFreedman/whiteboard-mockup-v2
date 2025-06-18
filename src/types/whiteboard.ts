@@ -1,3 +1,4 @@
+
 import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
@@ -134,6 +135,22 @@ export interface ErasePathAction extends BaseAction {
   };
 }
 
+export interface UndoAction extends BaseAction {
+  type: 'UNDO';
+  payload: {
+    targetUserId: string;
+    inverseAction: WhiteboardAction;
+  };
+}
+
+export interface RedoAction extends BaseAction {
+  type: 'REDO';
+  payload: {
+    targetUserId: string;
+    redoAction: WhiteboardAction;
+  };
+}
+
 export type WhiteboardAction = 
   | AddObjectAction
   | UpdateObjectAction
@@ -145,4 +162,6 @@ export type WhiteboardAction =
   | BatchUpdateAction
   | ErasePixelsAction
   | DeleteObjectsInAreaAction
-  | ErasePathAction;
+  | ErasePathAction
+  | UndoAction
+  | RedoAction;
