@@ -324,8 +324,9 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
         const pentagonPoints = [];
         for (let i = 0; i < 5; i++) {
           const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-          const px = centerX + (Math.min(width, height) / 2) * Math.cos(angle);
-          const py = centerY + (Math.min(width, height) / 2) * Math.sin(angle);
+          // Use separate width and height scaling instead of circular radius
+          const px = centerX + (width / 2) * Math.cos(angle);
+          const py = centerY + (height / 2) * Math.sin(angle);
           pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
         }
         return pentagonPoints.join(' ') + ' Z';
@@ -335,8 +336,9 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
         const hexagonPoints = [];
         for (let i = 0; i < 6; i++) {
           const angle = (i * 2 * Math.PI) / 6;
-          const px = centerX + (Math.min(width, height) / 2) * Math.cos(angle);
-          const py = centerY + (Math.min(width, height) / 2) * Math.sin(angle);
+          // Use separate width and height scaling instead of circular radius
+          const px = centerX + (width / 2) * Math.cos(angle);
+          const py = centerY + (height / 2) * Math.sin(angle);
           hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
         }
         return hexagonPoints.join(' ') + ' Z';
@@ -344,14 +346,18 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       
       case 'star': {
         const starPoints = [];
-        const outerRadius = Math.min(width, height) / 2;
-        const innerRadius = outerRadius * 0.4;
+        const outerRadiusX = width / 2;
+        const outerRadiusY = height / 2;
+        const innerRadiusX = outerRadiusX * 0.4;
+        const innerRadiusY = outerRadiusY * 0.4;
         
         for (let i = 0; i < 10; i++) {
           const angle = (i * Math.PI) / 5 - Math.PI / 2;
-          const radius = i % 2 === 0 ? outerRadius : innerRadius;
-          const px = centerX + radius * Math.cos(angle);
-          const py = centerY + radius * Math.sin(angle);
+          // Use separate X and Y scaling for non-circular stars
+          const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
+          const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
+          const px = centerX + radiusX * Math.cos(angle);
+          const py = centerY + radiusY * Math.sin(angle);
           starPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
         }
         return starPoints.join(' ') + ' Z';

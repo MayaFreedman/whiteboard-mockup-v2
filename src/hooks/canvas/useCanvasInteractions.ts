@@ -257,8 +257,9 @@ export const useCanvasInteractions = () => {
         const pentagonPoints = [];
         for (let i = 0; i < 5; i++) {
           const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-          const x = centerX + (Math.min(width, height) / 2) * Math.cos(angle);
-          const y = centerY + (Math.min(width, height) / 2) * Math.sin(angle);
+          // Use separate width and height scaling instead of circular radius
+          const x = centerX + (width / 2) * Math.cos(angle);
+          const y = centerY + (height / 2) * Math.sin(angle);
           pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return pentagonPoints.join(' ') + ' Z';
@@ -267,22 +268,27 @@ export const useCanvasInteractions = () => {
         const hexagonPoints = [];
         for (let i = 0; i < 6; i++) {
           const angle = (i * 2 * Math.PI) / 6;
-          const x = centerX + (Math.min(width, height) / 2) * Math.cos(angle);
-          const y = centerY + (Math.min(width, height) / 2) * Math.sin(angle);
+          // Use separate width and height scaling instead of circular radius
+          const x = centerX + (width / 2) * Math.cos(angle);
+          const y = centerY + (height / 2) * Math.sin(angle);
           hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return hexagonPoints.join(' ') + ' Z';
       
       case 'star':
         const starPoints = [];
-        const outerRadius = Math.min(width, height) / 2;
-        const innerRadius = outerRadius * 0.4;
+        const outerRadiusX = width / 2;
+        const outerRadiusY = height / 2;
+        const innerRadiusX = outerRadiusX * 0.4;
+        const innerRadiusY = outerRadiusY * 0.4;
         
         for (let i = 0; i < 10; i++) {
           const angle = (i * Math.PI) / 5 - Math.PI / 2;
-          const radius = i % 2 === 0 ? outerRadius : innerRadius;
-          const x = centerX + radius * Math.cos(angle);
-          const y = centerY + radius * Math.sin(angle);
+          // Use separate X and Y scaling for non-circular stars
+          const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
+          const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
+          const x = centerX + radiusX * Math.cos(angle);
+          const y = centerY + radiusY * Math.sin(angle);
           starPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return starPoints.join(' ') + ' Z';
