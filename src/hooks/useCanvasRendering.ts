@@ -8,7 +8,7 @@ import { renderPaintbrush, renderChalk, renderSpray, renderCrayon } from '../uti
  * Custom hook for handling canvas rendering operations
  * Manages drawing of objects, backgrounds, and selection indicators
  */
-export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentDrawingPreview?: () => any) => {
+export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentDrawingPreview?: () => any, getCurrentShapePreview?: () => any) => {
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
 
@@ -231,6 +231,138 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
   }, []);
 
   /**
+   * Renders the current shape preview (work-in-progress shape)
+   * @param ctx - Canvas rendering context
+   * @param preview - Shape preview data
+   */
+  const renderShapePreview = useCallback((ctx: CanvasRenderingContext2D, preview: any) => {
+    if (!preview) return;
+    
+    ctx.save();
+    ctx.globalAlpha = preview.opacity * 0.7; // Make preview slightly transparent
+    
+    const width = Math.abs(preview.endX - preview.startX);
+    const height = Math.abs(preview.endY - preview.startY);
+    const x = Math.min(preview.startX, preview.endX);
+    const y = Math.min(preview.startY, preview.endY);
+    
+    // Set stroke and fill styles
+    if (preview.strokeColor) {
+      ctx.strokeStyle = preview.strokeColor;
+      ctx.lineWidth = preview.strokeWidth;
+    }
+    if (preview.fillColor && preview.fillColor !== 'transparent') {
+      ctx.fillStyle = preview.fillColor;
+    }
+    
+    switch (preview.type) {
+      case 'rectangle': {
+        if (preview.fillColor && preview.fillColor !== 'transparent') {
+          ctx.fillRect(x, y, width, height);
+        }
+        if (preview.strokeColor) {
+          ctx.strokeRect(x, y, width, height);
+        }
+        break;
+      }
+      
+      case 'circle': {
+        const radius = Math.min(width, height) / 2;
+        const centerX = x + width / 2;
+        const centerY = y + height / 2;
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        
+        if (preview.fillColor && preview.fillColor !== 'transparent') {
+          ctx.fill();
+        }
+        if (preview.strokeColor) {
+          ctx.stroke();
+        }
+        break;
+      }
+      
+      case 'triangle':
+      case 'diamond':
+      case 'pentagon':
+      case 'hexagon':
+      case 'star': {
+        const shapePath = generateShapePathPreview(preview.type, x, y, width, height);
+        if (shapePath) {
+          const path = new Path2D(shapePath);
+          
+          if (preview.fillColor && preview.fillColor !== 'transparent') {
+            ctx.fill(path);
+          }
+          if (preview.strokeColor) {
+            ctx.stroke(path);
+          }
+        }
+        break;
+      }
+    }
+    
+    ctx.restore();
+  }, []);
+
+  /**
+   * Generates SVG path data for complex shape previews
+   */
+  const generateShapePathPreview = useCallback((shapeType: string, x: number, y: number, width: number, height: number): string => {
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+    
+    switch (shapeType) {
+      case 'triangle':
+        return `M ${centerX} ${y} L ${x + width} ${y + height} L ${x} ${y + height} Z`;
+      
+      case 'diamond':
+        return `M ${centerX} ${y} L ${x + width} ${centerY} L ${centerX} ${y + height} L ${x} ${centerY} Z`;
+      
+      case 'pentagon': {
+        const pentagonPoints = [];
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+          const px = centerX + (Math.min(width, height) / 2) * Math.cos(angle);
+          const py = centerY + (Math.min(width, height) / 2) * Math.sin(angle);
+          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+        }
+        return pentagonPoints.join(' ') + ' Z';
+      }
+      
+      case 'hexagon': {
+        const hexagonPoints = [];
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * 2 * Math.PI) / 6;
+          const px = centerX + (Math.min(width, height) / 2) * Math.cos(angle);
+          const py = centerY + (Math.min(width, height) / 2) * Math.sin(angle);
+          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+        }
+        return hexagonPoints.join(' ') + ' Z';
+      }
+      
+      case 'star': {
+        const starPoints = [];
+        const outerRadius = Math.min(width, height) / 2;
+        const innerRadius = outerRadius * 0.4;
+        
+        for (let i = 0; i < 10; i++) {
+          const angle = (i * Math.PI) / 5 - Math.PI / 2;
+          const radius = i % 2 === 0 ? outerRadius : innerRadius;
+          const px = centerX + radius * Math.cos(angle);
+          const py = centerY + radius * Math.sin(angle);
+          starPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+        }
+        return starPoints.join(' ') + ' Z';
+      }
+      
+      default:
+        return '';
+    }
+  }, []);
+
+  /**
    * Renders all whiteboard objects on the canvas
    * @param ctx - Canvas rendering context
    */
@@ -286,13 +418,22 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       }
     }
 
+    // Draw current shape preview if available
+    if (getCurrentShapePreview) {
+      const shapePreview = getCurrentShapePreview();
+      if (shapePreview) {
+        renderShapePreview(ctx, shapePreview);
+      }
+    }
+
     console.log('🎨 Canvas redrawn:', {
       objectCount: Object.keys(objects).length,
       selectedCount: selectedObjectIds.length,
       canvasSize: { width: canvas.width, height: canvas.height },
-      hasPreview: !!getCurrentDrawingPreview?.()
+      hasDrawingPreview: !!getCurrentDrawingPreview?.(),
+      hasShapePreview: !!getCurrentShapePreview?.()
     });
-  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, getCurrentDrawingPreview]);
+  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview]);
 
   // Auto-redraw when state changes
   useEffect(() => {

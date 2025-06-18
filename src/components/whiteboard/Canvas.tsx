@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -40,11 +41,15 @@ export const Canvas: React.FC = () => {
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
   
-  // Initialize interactions hook first to get the preview function
+  // Initialize interactions hook first to get the preview functions
   const interactions = useCanvasInteractions();
   
-  // Initialize rendering hook with the preview function
-  const { redrawCanvas } = useCanvasRendering(canvasRef.current, interactions.getCurrentDrawingPreview);
+  // Initialize rendering hook with both preview functions
+  const { redrawCanvas } = useCanvasRendering(
+    canvasRef.current, 
+    interactions.getCurrentDrawingPreview,
+    interactions.getCurrentShapePreview
+  );
   
   // Update interactions hook with redraw function
   interactions.setRedrawCanvas(redrawCanvas);
