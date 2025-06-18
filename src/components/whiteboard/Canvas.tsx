@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -60,17 +61,17 @@ export const Canvas: React.FC = () => {
 
     const handleTouchStart = (event: TouchEvent) => {
       event.preventDefault();
-      interactions.handlePointerDown(event, canvas);
+      interactions.handlePointerDown(event);
     };
 
     const handleTouchMove = (event: TouchEvent) => {
       event.preventDefault();
-      interactions.handlePointerMove(event, canvas);
+      interactions.handlePointerMove(event);
     };
 
     const handleTouchEnd = (event: TouchEvent) => {
       event.preventDefault();
-      interactions.handlePointerUp(event, canvas);
+      interactions.handlePointerUp();
     };
 
     // Add touch event listeners with { passive: false } to allow preventDefault

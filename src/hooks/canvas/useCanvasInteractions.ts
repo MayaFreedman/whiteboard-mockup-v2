@@ -30,7 +30,9 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
   // Store redraw function
   const redrawCanvasRef = useRef<(() => void) | null>(null);
 
-  const getCanvasCoordinates = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
+  const getCanvasCoordinates = useCallback((event: MouseEvent | TouchEvent) => {
+    if (!canvas) return { x: 0, y: 0 };
+    
     const rect = canvas.getBoundingClientRect();
     
     let clientX, clientY;
@@ -46,7 +48,7 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
       x: clientX - rect.left,
       y: clientY - rect.top
     };
-  }, []);
+  }, [canvas]);
 
   const generateShapePath = useCallback((shapeType: string, x: number, y: number, width: number, height: number): string => {
     const centerX = x + width / 2;
@@ -126,8 +128,9 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
     }
   }, []);
 
-  const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
-    const coords = getCanvasCoordinates(event, canvas);
+  const handlePointerDown = useCallback((event: MouseEvent | TouchEvent) => {
+    if (!canvas) return;
+    const coords = getCanvasCoordinates(event);
     
     if (activeTool === 'pencil' || activeTool === 'brush' || activeTool === 'eraser') {
       setIsDrawing(true);
@@ -163,10 +166,11 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
         opacity: toolSettings.opacity
       });
     }
-  }, [activeTool, toolSettings, getCanvasCoordinates]);
+  }, [canvas, activeTool, toolSettings, getCanvasCoordinates]);
 
-  const handlePointerMove = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
-    const coords = getCanvasCoordinates(event, canvas);
+  const handlePointerMove = useCallback((event: MouseEvent | TouchEvent) => {
+    if (!canvas) return;
+    const coords = getCanvasCoordinates(event);
     
     if (isDrawing && startPoint) {
       const newPath = currentPath + ` L ${coords.x} ${coords.y}`;
@@ -197,7 +201,7 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
         redrawCanvasRef.current();
       }
     }
-  }, [isDrawing, isDrawingShape, startPoint, shapeStart, currentPath, getCanvasCoordinates]);
+  }, [canvas, isDrawing, isDrawingShape, startPoint, shapeStart, currentPath, getCanvasCoordinates]);
 
   const handlePointerUp = useCallback(() => {
     if (isDrawing && startPoint && currentPath) {
@@ -298,13 +302,13 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
 
   const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvas) {
-      handlePointerDown(event.nativeEvent, canvas);
+      handlePointerDown(event.nativeEvent);
     }
   }, [canvas, handlePointerDown]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvas) {
-      handlePointerMove(event.nativeEvent, canvas);
+      handlePointerMove(event.nativeEvent);
     }
   }, [canvas, handlePointerMove]);
 

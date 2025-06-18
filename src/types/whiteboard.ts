@@ -1,3 +1,4 @@
+
 import { Point } from '../utils/path/pathConversion';
 
 export type Tool = 
@@ -28,6 +29,7 @@ export interface WhiteboardObject {
   fill?: string;
   opacity?: number;
   createdAt: number;
+  updatedAt: number;
   userId: string;
   data?: {
     path?: string;
