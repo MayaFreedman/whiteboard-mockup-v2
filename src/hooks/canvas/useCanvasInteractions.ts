@@ -159,13 +159,13 @@ export const useCanvasInteractions = () => {
           // Add current point to drawing points
           drawingPointsRef.current.push({ x: relativeX, y: relativeY });
           
-          // Apply interpolation between last point and current point for smoothness
+          // Apply simple interpolation between last point and current point for smoothness
           const lastDrawingPoint = drawingPointsRef.current[drawingPointsRef.current.length - 2];
           const currentDrawingPoint = { x: relativeX, y: relativeY };
           
           if (lastDrawingPoint) {
-            // Interpolate points for smooth lines during fast movement
-            const interpolatedPoints = interpolatePoints(lastDrawingPoint, currentDrawingPoint, 5);
+            // Interpolate points for smooth lines during fast movement - but keep it simple
+            const interpolatedPoints = interpolatePoints(lastDrawingPoint, currentDrawingPoint, 8);
             
             // Add interpolated points to the path (skip first as it's already in the path)
             interpolatedPoints.slice(1).forEach(point => {
@@ -178,17 +178,19 @@ export const useCanvasInteractions = () => {
           
           lastPointRef.current = coords;
           
-          // Apply light smoothing to the preview path for better visual feedback
-          const smoothedPath = smoothDrawingPath(currentPathRef.current);
-          
-          // Update drawing preview
+          // Update drawing preview WITHOUT triggering immediate redraw
           if (currentDrawingPreviewRef.current) {
-            currentDrawingPreviewRef.current.path = smoothedPath;
+            currentDrawingPreviewRef.current.path = currentPathRef.current;
           }
           
-          // Trigger canvas redraw to show smooth preview
+          // Only trigger redraw occasionally to avoid infinite loops
+          // Use requestAnimationFrame to throttle redraws
           if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
+            requestAnimationFrame(() => {
+              if (redrawCanvasRef.current && isDrawingRef.current) {
+                redrawCanvasRef.current();
+              }
+            });
           }
         }
         break;
@@ -225,10 +227,7 @@ export const useCanvasInteractions = () => {
       case 'pencil':
       case 'brush': {
         if (isDrawingRef.current && currentPathRef.current && pathStartRef.current) {
-          // Apply final smoothing to the completed path
-          const finalPath = smoothDrawingPath(currentPathRef.current);
-          
-          // Create the drawing object with the smoothed path
+          // Create the drawing object with the current path (no additional smoothing for now)
           const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
             type: 'path',
             x: pathStartRef.current.x,
@@ -238,13 +237,13 @@ export const useCanvasInteractions = () => {
             opacity: toolStore.toolSettings.opacity,
             fill: 'none',
             data: {
-              path: finalPath,
+              path: currentPathRef.current,
               brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
             }
           };
 
           const objectId = whiteboardStore.addObject(drawingObject);
-          console.log('✏️ Created smoothed drawing object:', objectId.slice(0, 8));
+          console.log('✏️ Created drawing object:', objectId.slice(0, 8));
           
           // Clear drawing preview and points
           currentDrawingPreviewRef.current = null;
