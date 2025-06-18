@@ -17,7 +17,8 @@ export type Tool =
   | 'hexagon'
   | 'star'
   | 'pentagon'
-  | 'diamond';
+  | 'diamond'
+  | 'heart';
 
 export type BrushType = 'paintbrush' | 'chalk' | 'spray' | 'crayon';
 
