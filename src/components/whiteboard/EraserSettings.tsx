@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
+import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
 import { Separator } from '../ui/separator';
+import { Trash2 } from 'lucide-react';
 
 /**
  * Eraser settings component for the sidebar
@@ -12,6 +14,7 @@ import { Separator } from '../ui/separator';
  */
 export const EraserSettings: React.FC = () => {
   const { toolSettings, updateToolSettings } = useToolStore();
+  const { clearCanvas } = useWhiteboardStore();
 
   const handleModeChange = (mode: 'pixel' | 'object') => {
     updateToolSettings({ eraserMode: mode });
@@ -19,6 +22,10 @@ export const EraserSettings: React.FC = () => {
 
   const handleSizeChange = (value: number[]) => {
     updateToolSettings({ eraserSize: value[0] });
+  };
+
+  const handleClearCanvas = () => {
+    clearCanvas();
   };
 
   return (
@@ -65,6 +72,25 @@ export const EraserSettings: React.FC = () => {
           step={5}
           className="mt-2"
         />
+      </div>
+
+      <Separator />
+
+      <div>
+        <Label className="text-sm font-medium">Clear Canvas</Label>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={handleClearCanvas}
+          className="w-full mt-2 flex items-center gap-2"
+          title="Clear entire canvas"
+        >
+          <Trash2 className="w-4 h-4" />
+          Clear Canvas
+        </Button>
+        <p className="text-xs text-muted-foreground mt-1">
+          Permanently removes all objects from the canvas
+        </p>
       </div>
     </div>
   );

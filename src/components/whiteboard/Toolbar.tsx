@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
@@ -29,8 +28,7 @@ import {
   Pentagon,
   Diamond,
   ChevronDown,
-  Stamp,
-  Trash2
+  Stamp
 } from 'lucide-react';
 
 interface ToolItem {
