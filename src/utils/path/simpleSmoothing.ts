@@ -1,4 +1,3 @@
-
 import { Point } from './pathConversion';
 
 /**
@@ -7,8 +6,8 @@ import { Point } from './pathConversion';
  */
 
 /**
- * Enhanced real-time path builder with improved smoothing
- * Uses multi-point averaging and adaptive filtering for ultra-smooth results
+ * Enhanced real-time path builder with velocity-aware smoothing
+ * Uses multi-point averaging and applies MORE smoothing for fast movements
  */
 export class SimplePathBuilder {
   private points: Point[] = [];
@@ -19,12 +18,12 @@ export class SimplePathBuilder {
   
   constructor(minDistance: number = 1.5, smoothingStrength: number = 0.4, velocitySmoothing: number = 0.3) {
     this.minDistance = minDistance;
-    this.smoothingStrength = smoothingStrength; // Increased for more smoothing
-    this.velocitySmoothing = velocitySmoothing; // Velocity-based smoothing
+    this.smoothingStrength = smoothingStrength;
+    this.velocitySmoothing = velocitySmoothing;
   }
   
   /**
-   * Adds a new point with enhanced distance filtering and multi-point smoothing
+   * Adds a new point with velocity-aware smoothing that applies MORE smoothing for fast movements
    * @param point - New point to add (relative coordinates)
    * @returns Updated SVG path string
    */
@@ -39,26 +38,26 @@ export class SimplePathBuilder {
     const lastPoint = this.points[this.points.length - 1];
     const distance = Math.sqrt((point.x - lastPoint.x) ** 2 + (point.y - lastPoint.y) ** 2);
     
-    // Adaptive distance filtering based on velocity
+    // Reduced aggressive point skipping - keep more points even at high velocity
     const velocity = distance;
-    const adaptiveMinDistance = this.minDistance * (1 + Math.min(velocity / 20, 1));
+    const adaptiveMinDistance = this.minDistance * (1 + Math.min(velocity / 40, 0.5));
     
     if (distance < adaptiveMinDistance) {
-      return this.getCurrentPath(); // Don't add point, return current path
+      return this.getCurrentPath();
     }
     
-    // Apply enhanced multi-point smoothing
+    // Apply velocity-aware smoothing - MORE smoothing for fast movements
     let smoothedPoint = point;
     if (this.points.length >= 3 && this.smoothingStrength > 0) {
-      // Use more points for better smoothing
       const prev3 = this.points[this.points.length - 3];
       const prev2 = this.points[this.points.length - 2];
       const prev1 = this.points[this.points.length - 1];
       
-      // Enhanced 4-point weighted average with velocity consideration
-      const velocityFactor = Math.min(this.lastVelocity / 10, 1);
-      const dynamicSmoothing = this.smoothingStrength * (1 - velocityFactor * 0.3);
+      // Inverted velocity logic: apply MORE smoothing when moving fast
+      const velocityFactor = Math.min(this.lastVelocity / 15, 1);
+      const dynamicSmoothing = this.smoothingStrength * (1 + velocityFactor * 0.5);
       
+      // Enhanced 4-point weighted average with velocity-boost for fast movements
       smoothedPoint = {
         x: point.x * (1 - dynamicSmoothing) + 
            (prev1.x * 0.4 + prev2.x * 0.3 + prev3.x * 0.1) * dynamicSmoothing,
@@ -66,20 +65,23 @@ export class SimplePathBuilder {
            (prev1.y * 0.4 + prev2.y * 0.3 + prev3.y * 0.1) * dynamicSmoothing
       };
     } else if (this.points.length >= 2 && this.smoothingStrength > 0) {
-      // Simple 3-point average for early points
+      // Simple 3-point average for early points with velocity awareness
       const prev2 = this.points[this.points.length - 2];
       const prev1 = this.points[this.points.length - 1];
       
+      const velocityFactor = Math.min(this.lastVelocity / 15, 1);
+      const dynamicSmoothing = this.smoothingStrength * (1 + velocityFactor * 0.3);
+      
       smoothedPoint = {
-        x: point.x * (1 - this.smoothingStrength) + 
-           (prev1.x * 0.6 + prev2.x * 0.2) * this.smoothingStrength,
-        y: point.y * (1 - this.smoothingStrength) + 
-           (prev1.y * 0.6 + prev2.y * 0.2) * this.smoothingStrength
+        x: point.x * (1 - dynamicSmoothing) + 
+           (prev1.x * 0.6 + prev2.x * 0.2) * dynamicSmoothing,
+        y: point.y * (1 - dynamicSmoothing) + 
+           (prev1.y * 0.6 + prev2.y * 0.2) * dynamicSmoothing
       };
     }
     
-    // Update velocity tracking
-    this.lastVelocity = this.lastVelocity * 0.8 + velocity * 0.2;
+    // Exponential smoothing for velocity tracking to avoid sudden changes
+    this.lastVelocity = this.lastVelocity * 0.7 + velocity * 0.3;
     
     this.points.push(smoothedPoint);
     return this.getCurrentPath();
@@ -118,19 +120,19 @@ export class SimplePathBuilder {
 }
 
 /**
- * Enhanced smoothing parameters based on tool type
+ * Enhanced smoothing parameters with velocity-aware configurations
  * @param toolType - The drawing tool being used
  * @returns Configuration for the path builder
  */
 export const getSmoothingConfig = (toolType: string) => {
   switch (toolType) {
     case 'brush':
-      return { minDistance: 2, smoothingStrength: 0.5 }; // Very smooth for brush
+      return { minDistance: 2, smoothingStrength: 0.6 }; // Increased for better fast movement handling
     case 'pencil':
-      return { minDistance: 1.5, smoothingStrength: 0.35 }; // Moderate smoothing for pencil
+      return { minDistance: 1.5, smoothingStrength: 0.45 }; // Slightly increased
     case 'eraser':
       return { minDistance: 1, smoothingStrength: 0 }; // No smoothing for eraser
     default:
-      return { minDistance: 1.5, smoothingStrength: 0.4 };
+      return { minDistance: 1.5, smoothingStrength: 0.45 };
   }
 };
