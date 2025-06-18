@@ -1,3 +1,4 @@
+
 import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -37,6 +38,19 @@ export const useCanvasInteractions = () => {
     strokeWidth: number;
     opacity: number;
     brushType?: string;
+  } | null>(null);
+
+  // Store shape preview for rendering
+  const currentShapePreviewRef = useRef<{
+    type: string;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    strokeColor: string;
+    fillColor: string;
+    strokeWidth: number;
+    opacity: number;
   } | null>(null);
 
   /**
@@ -84,6 +98,35 @@ export const useCanvasInteractions = () => {
       handleEraserEnd(redrawCanvasRef.current || undefined);
       console.log('🧹 Auto-ended erasing on mouse leave');
     }
+
+    // Handle shape completion
+    if (['rectangle', 'circle', 'triangle', 'hexagon', 'star', 'pentagon', 'diamond'].includes(activeTool) && 
+        isDrawingRef.current && 
+        currentShapePreviewRef.current) {
+      
+      const preview = currentShapePreviewRef.current;
+      const width = Math.abs(preview.endX - preview.startX);
+      const height = Math.abs(preview.endY - preview.startY);
+      
+      if (width > 5 && height > 5) { // Only create shape if it's big enough
+        const shapeObject = createShapeObject(
+          activeTool,
+          Math.min(preview.startX, preview.endX),
+          Math.min(preview.startY, preview.endY),
+          width,
+          height,
+          preview.strokeColor,
+          preview.fillColor,
+          preview.strokeWidth,
+          preview.opacity
+        );
+
+        if (shapeObject) {
+          const objectId = whiteboardStore.addObject(shapeObject);
+          console.log('🔷 Auto-saved shape on mouse leave:', objectId.slice(0, 8));
+        }
+      }
+    }
     
     // Reset all drawing state
     isDrawingRef.current = false;
@@ -93,6 +136,7 @@ export const useCanvasInteractions = () => {
     pathBuilderRef.current = null;
     dragStartRef.current = null;
     currentDrawingPreviewRef.current = null;
+    currentShapePreviewRef.current = null;
     
     // Trigger redraw to clear preview
     if (redrawCanvasRef.current) {
@@ -124,6 +168,129 @@ export const useCanvasInteractions = () => {
       endCurrentDrawing();
     }
   }, [endCurrentDrawing]);
+
+  /**
+   * Creates a shape object based on the tool type
+   */
+  const createShapeObject = useCallback((
+    shapeType: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    strokeColor: string,
+    fillColor: string,
+    strokeWidth: number,
+    opacity: number
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
+    switch (shapeType) {
+      case 'rectangle':
+        return {
+          type: 'rectangle',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: fillColor === 'transparent' ? 'none' : fillColor,
+          strokeWidth,
+          opacity
+        };
+      
+      case 'circle':
+        const radius = Math.min(width, height) / 2;
+        return {
+          type: 'circle',
+          x: x + width / 2 - radius,
+          y: y + height / 2 - radius,
+          width: radius * 2,
+          height: radius * 2,
+          stroke: strokeColor,
+          fill: fillColor === 'transparent' ? 'none' : fillColor,
+          strokeWidth,
+          opacity
+        };
+      
+      case 'triangle':
+      case 'hexagon':
+      case 'star':
+      case 'pentagon':
+      case 'diamond':
+        // Create these as path objects with custom shape data
+        const shapeData = generateShapePath(shapeType, width, height);
+        return {
+          type: 'path',
+          x,
+          y,
+          stroke: strokeColor,
+          fill: fillColor === 'transparent' ? 'none' : fillColor,
+          strokeWidth,
+          opacity,
+          data: {
+            path: shapeData,
+            shapeType,
+            isShape: true
+          }
+        };
+      
+      default:
+        console.warn('Unknown shape type:', shapeType);
+        return null;
+    }
+  }, []);
+
+  /**
+   * Generates SVG path data for complex shapes
+   */
+  const generateShapePath = useCallback((shapeType: string, width: number, height: number): string => {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    switch (shapeType) {
+      case 'triangle':
+        return `M ${centerX} 0 L ${width} ${height} L 0 ${height} Z`;
+      
+      case 'diamond':
+        return `M ${centerX} 0 L ${width} ${centerY} L ${centerX} ${height} L 0 ${centerY} Z`;
+      
+      case 'pentagon':
+        const pentagonPoints = [];
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+          const x = centerX + (Math.min(width, height) / 2) * Math.cos(angle);
+          const y = centerY + (Math.min(width, height) / 2) * Math.sin(angle);
+          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
+        }
+        return pentagonPoints.join(' ') + ' Z';
+      
+      case 'hexagon':
+        const hexagonPoints = [];
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * 2 * Math.PI) / 6;
+          const x = centerX + (Math.min(width, height) / 2) * Math.cos(angle);
+          const y = centerY + (Math.min(width, height) / 2) * Math.sin(angle);
+          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
+        }
+        return hexagonPoints.join(' ') + ' Z';
+      
+      case 'star':
+        const starPoints = [];
+        const outerRadius = Math.min(width, height) / 2;
+        const innerRadius = outerRadius * 0.4;
+        
+        for (let i = 0; i < 10; i++) {
+          const angle = (i * Math.PI) / 5 - Math.PI / 2;
+          const radius = i % 2 === 0 ? outerRadius : innerRadius;
+          const x = centerX + radius * Math.cos(angle);
+          const y = centerY + radius * Math.sin(angle);
+          starPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
+        }
+        return starPoints.join(' ') + ' Z';
+      
+      default:
+        return '';
+    }
+  }, []);
 
   /**
    * Handles the start of a drawing/interaction session
@@ -178,6 +345,34 @@ export const useCanvasInteractions = () => {
         break;
       }
 
+      case 'rectangle':
+      case 'circle':
+      case 'triangle':
+      case 'hexagon':
+      case 'star':
+      case 'pentagon':
+      case 'diamond': {
+        isDrawingRef.current = true;
+        lastPointRef.current = coords;
+        pathStartRef.current = coords;
+        
+        // Set up shape preview
+        currentShapePreviewRef.current = {
+          type: activeTool,
+          startX: coords.x,
+          startY: coords.y,
+          endX: coords.x,
+          endY: coords.y,
+          strokeColor: toolStore.toolSettings.strokeColor,
+          fillColor: toolStore.toolSettings.fillColor,
+          strokeWidth: toolStore.toolSettings.strokeWidth,
+          opacity: toolStore.toolSettings.opacity
+        };
+        
+        console.log('🔷 Started shape drawing:', activeTool, coords);
+        break;
+      }
+
       case 'eraser': {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
@@ -191,7 +386,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, createShapeObject]);
 
   /**
    * Handles pointer movement during interaction
@@ -243,6 +438,30 @@ export const useCanvasInteractions = () => {
           if (currentDrawingPreviewRef.current) {
             currentDrawingPreviewRef.current.path = smoothPath;
           }
+          
+          // Throttle redraws for performance
+          if (redrawCanvasRef.current) {
+            requestAnimationFrame(() => {
+              if (redrawCanvasRef.current && isDrawingRef.current) {
+                redrawCanvasRef.current();
+              }
+            });
+          }
+        }
+        break;
+      }
+
+      case 'rectangle':
+      case 'circle':
+      case 'triangle':
+      case 'hexagon':
+      case 'star':
+      case 'pentagon':
+      case 'diamond': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          // Update shape preview end coordinates
+          currentShapePreviewRef.current.endX = coords.x;
+          currentShapePreviewRef.current.endY = coords.y;
           
           // Throttle redraws for performance
           if (redrawCanvasRef.current) {
@@ -323,6 +542,49 @@ export const useCanvasInteractions = () => {
         break;
       }
 
+      case 'rectangle':
+      case 'circle':
+      case 'triangle':
+      case 'hexagon':
+      case 'star':
+      case 'pentagon':
+      case 'diamond': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          const preview = currentShapePreviewRef.current;
+          const width = Math.abs(preview.endX - preview.startX);
+          const height = Math.abs(preview.endY - preview.startY);
+          
+          // Only create shape if it's big enough
+          if (width > 5 && height > 5) {
+            const shapeObject = createShapeObject(
+              activeTool,
+              Math.min(preview.startX, preview.endX),
+              Math.min(preview.startY, preview.endY),
+              width,
+              height,
+              preview.strokeColor,
+              preview.fillColor,
+              preview.strokeWidth,
+              preview.opacity
+            );
+
+            if (shapeObject) {
+              const objectId = whiteboardStore.addObject(shapeObject);
+              console.log('🔷 Created shape object:', activeTool, objectId.slice(0, 8), { width, height });
+            }
+          }
+          
+          // Clear shape preview
+          currentShapePreviewRef.current = null;
+          
+          // Trigger redraw to show the final object
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
+        }
+        break;
+      }
+
       case 'eraser': {
         if (isDrawingRef.current) {
           handleEraserEnd(redrawCanvasRef.current || undefined);
@@ -337,13 +599,20 @@ export const useCanvasInteractions = () => {
     lastPointRef.current = null;
     pathStartRef.current = null;
     pathBuilderRef.current = null;
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject]);
 
   /**
    * Gets the current drawing preview for rendering
    */
   const getCurrentDrawingPreview = useCallback(() => {
     return currentDrawingPreviewRef.current;
+  }, []);
+
+  /**
+   * Gets the current shape preview for rendering
+   */
+  const getCurrentShapePreview = useCallback(() => {
+    return currentShapePreviewRef.current;
   }, []);
 
   return {
@@ -354,6 +623,7 @@ export const useCanvasInteractions = () => {
     isDrawing: isDrawingRef.current,
     isDragging: isDraggingRef.current,
     getCurrentDrawingPreview,
+    getCurrentShapePreview,
     setRedrawCanvas
   };
 };
