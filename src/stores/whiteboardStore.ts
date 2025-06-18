@@ -35,10 +35,13 @@ interface WhiteboardStore extends WhiteboardState {
   pendingActions: WhiteboardAction[];
   
   // Actions that will be easily serializable for multiplayer
-  dispatch: (action: WhiteboardAction) => void;
+  dispatch: (action: WhiteboardAction, isRemote?: boolean) => void;
   
   // Direct state manipulation methods (for undo/redo)
   applyStateChange: (stateChange: Partial<WhiteboardState>) => void;
+  
+  // Safe user history index updates (only for local user)
+  updateLocalUserHistoryIndex: (userId: string, newIndex: number) => void;
   
   // Convenience methods for common operations
   addObject: (object: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'>, userId?: string) => string;
@@ -117,6 +120,19 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     getState: () => get(),
     setState: (updater) => set(updater),
 
+    // Safe user history index updates (only for local user)
+    updateLocalUserHistoryIndex: (userId: string, newIndex: number) => {
+      console.log('🔒 Updating LOCAL user history index:', { userId, newIndex });
+      set((state) => {
+        const newIndices = new Map(state.userHistoryIndices);
+        newIndices.set(userId, newIndex);
+        return {
+          ...state,
+          userHistoryIndices: newIndices
+        };
+      });
+    },
+
     // Direct state manipulation for undo/redo (bypasses action history)
     applyStateChange: (stateChange: Partial<WhiteboardState>) => {
       console.log('🔄 Applying direct state change:', Object.keys(stateChange));
@@ -128,36 +144,41 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       }));
     },
 
-    dispatch: (action: WhiteboardAction) => {
+    dispatch: (action: WhiteboardAction, isRemote: boolean = false) => {
       console.log('🔄 Dispatching action:', {
         type: action.type,
         id: action.id,
         userId: action.userId,
+        isRemote,
         timestamp: action.timestamp
       });
       
-      // Filter out undo/redo sync actions from being added to history
-      const isUndoRedoSync = action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO';
+      // Check if this is a sync action
+      const isSyncAction = action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO';
       
       set((state) => {
         const newState = applyAction(state, action);
         
-        // Only add user actions to history, not undo/redo sync actions
+        // Initialize history tracking variables
         let newHistory = state.actionHistory;
         let newHistoryIndex = state.currentHistoryIndex;
         let userHistories = new Map(state.userActionHistories);
         let userIndices = new Map(state.userHistoryIndices);
         
-        if (!isUndoRedoSync) {
-          // Add to global history (for debugging and state tracking)
+        // Only add non-sync actions to global history
+        if (!isSyncAction) {
           newHistory = [...state.actionHistory, action];
           newHistoryIndex = newHistory.length - 1;
+        }
+        
+        // Handle user-specific history ONLY for local actions, not remote or sync actions
+        if (!isRemote && !isSyncAction) {
+          console.log('📊 Adding LOCAL action to user history:', { type: action.type, userId: action.userId });
           
-          // Add to user-specific history for the action creator (local tracking only)
           const userHistory = userHistories.get(action.userId) || [];
           const userIndex = userIndices.get(action.userId) ?? -1;
           
-          // Only add non-duplicate actions to user history
+          // Check for duplicates
           const isDuplicate = userHistory.some(existingAction => existingAction.id === action.id);
           if (!isDuplicate) {
             // Trim user history at current index and add new action
@@ -167,8 +188,32 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
             userHistories.set(action.userId, newUserHistory);
             userIndices.set(action.userId, newUserHistory.length - 1);
             
-            console.log('📊 Updated user history for:', action.userId, 'length:', newUserHistory.length, 'index:', newUserHistory.length - 1);
+            console.log('📊 Updated LOCAL user history:', {
+              userId: action.userId,
+              length: newUserHistory.length,
+              index: newUserHistory.length - 1
+            });
           }
+        } else if (isRemote && !isSyncAction) {
+          console.log('🌐 Adding REMOTE action to user history:', { type: action.type, userId: action.userId });
+          
+          const userHistory = userHistories.get(action.userId) || [];
+          
+          // Check for duplicates
+          const isDuplicate = userHistory.some(existingAction => existingAction.id === action.id);
+          if (!isDuplicate) {
+            const newUserHistory = [...userHistory, action].sort((a, b) => a.timestamp - b.timestamp);
+            userHistories.set(action.userId, newUserHistory);
+            // DO NOT update the remote user's history index - that's managed locally by each client
+            
+            console.log('📊 Added REMOTE action to user history (no index update):', {
+              userId: action.userId,
+              actionId: action.id,
+              historyLength: newUserHistory.length
+            });
+          }
+        } else if (isSyncAction) {
+          console.log('🔄 SYNC action - skipping ALL history updates:', action.type);
         }
         
         // Update state tracking
@@ -181,7 +226,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
           currentHistoryIndex: newHistoryIndex,
           userActionHistories: userHistories,
           userHistoryIndices: userIndices,
-          lastAction: action,
+          lastAction: isSyncAction ? state.lastAction : action, // Don't overwrite lastAction with sync actions
           stateVersion: newVersion,
           lastStateUpdate: timestamp
         };
@@ -305,11 +350,11 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       
       const action: ClearCanvasAction = {
         type: 'CLEAR_CANVAS',
-        payload: {},
+        payload: {}, // Store previous state for undo
         previousState: { 
           objects: state.objects, 
           selectedObjectIds: state.selectedObjectIds 
-        }, // Store previous state for undo
+        },
         timestamp: Date.now(),
         id: nanoid(),
         userId
@@ -342,7 +387,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       const action: ErasePathAction = {
         type: 'ERASE_PATH',
         payload: eraserAction,
-        previousState: { object: originalObject }, // Store previous state for undo
+        previousState: { object: originalObject }, // Store original object for undo
         timestamp: Date.now(),
         id: nanoid(),
         userId
@@ -364,50 +409,8 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     applyRemoteAction: (action) => {
       console.log('🌐 Applying remote action:', { type: action.type, id: action.id, userId: action.userId });
       
-      set((state) => {
-        // Check for action deduplication
-        const actionExists = state.actionHistory.some(existingAction => existingAction.id === action.id);
-        if (actionExists) {
-          console.log('🔄 Action already exists in history, skipping:', action.id);
-          return state;
-        }
-        
-        // Apply the remote action to the state
-        const newState = applyAction(state, action);
-        
-        // Add to global history in chronological order
-        const newHistory = [...state.actionHistory, action].sort((a, b) => a.timestamp - b.timestamp);
-        
-        // Add to user-specific history for the remote user (local tracking only)
-        const userHistories = new Map(state.userActionHistories);
-        const userIndices = new Map(state.userHistoryIndices);
-        
-        const userHistory = userHistories.get(action.userId) || [];
-        
-        // Check if this action is already in the user's history
-        const isDuplicate = userHistory.some(existingAction => existingAction.id === action.id);
-        if (!isDuplicate) {
-          const newUserHistory = [...userHistory, action].sort((a, b) => a.timestamp - b.timestamp);
-          userHistories.set(action.userId, newUserHistory);
-          userIndices.set(action.userId, newUserHistory.length - 1);
-          
-          console.log('📊 Added remote action to user history:', {
-            userId: action.userId,
-            actionId: action.id,
-            historyLength: newUserHistory.length
-          });
-        }
-        
-        return {
-          ...newState,
-          actionHistory: newHistory,
-          currentHistoryIndex: newHistory.length - 1,
-          userActionHistories: userHistories,
-          userHistoryIndices: userIndices,
-          stateVersion: state.stateVersion + 1,
-          lastStateUpdate: Date.now()
-        };
-      });
+      // Use the dispatch method with isRemote flag
+      get().dispatch(action, true);
     },
 
     getStateSnapshot: () => {
@@ -661,6 +664,7 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
     // Handle undo/redo sync actions (apply state directly without adding to history)
     case 'SYNC_UNDO':
     case 'SYNC_REDO': {
+      console.log('🔄 Applying SYNC action state change:', action.type);
       const { stateChange } = action.payload;
       return stateChange;
     }

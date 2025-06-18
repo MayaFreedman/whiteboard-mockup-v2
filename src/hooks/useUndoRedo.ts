@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { WhiteboardAction, WhiteboardObject, WhiteboardState } from '../types/whiteboard';
@@ -25,6 +24,12 @@ export const useUndoRedo = (): UndoRedoManager => {
    */
   const createUndoStateChange = useCallback((action: WhiteboardAction, currentState: any): Partial<WhiteboardState> | null => {
     console.log('🔄 Creating undo state change for:', action.type, action.id);
+
+    // Validate that we're not trying to undo a sync action
+    if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
+      console.error('❌ CRITICAL: Attempting to undo a SYNC action! This should never happen:', action.type);
+      return null;
+    }
 
     switch (action.type) {
       case 'ADD_OBJECT': {
@@ -158,6 +163,12 @@ export const useUndoRedo = (): UndoRedoManager => {
   const createRedoStateChange = useCallback((action: WhiteboardAction, currentState: any): Partial<WhiteboardState> | null => {
     console.log('🔄 Creating redo state change for:', action.type, action.id);
 
+    // Validate that we're not trying to redo a sync action
+    if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
+      console.error('❌ CRITICAL: Attempting to redo a SYNC action! This should never happen:', action.type);
+      return null;
+    }
+
     // For redo, we essentially re-apply the original action's effect
     switch (action.type) {
       case 'ADD_OBJECT': {
@@ -269,7 +280,11 @@ export const useUndoRedo = (): UndoRedoManager => {
     const userHistory = state.userActionHistories.get(userId) || [];
     const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
     
-    console.log('↶ Undo requested for user:', userId, 'currentIndex:', currentIndex, 'historyLength:', userHistory.length);
+    console.log('↶ Undo requested for user:', userId, {
+      currentIndex,
+      historyLength: userHistory.length,
+      canUndo: currentIndex >= 0
+    });
     
     if (currentIndex < 0 || currentIndex >= userHistory.length) {
       console.log('↶ Cannot undo: invalid index');
@@ -277,6 +292,18 @@ export const useUndoRedo = (): UndoRedoManager => {
     }
 
     const actionToUndo = userHistory[currentIndex];
+    
+    // Critical validation: ensure we're not undoing a sync action
+    if (actionToUndo.type === 'SYNC_UNDO' || actionToUndo.type === 'SYNC_REDO') {
+      console.error('❌ CRITICAL: Found SYNC action in user history! This is a bug:', {
+        actionType: actionToUndo.type,
+        actionId: actionToUndo.id,
+        userId,
+        currentIndex
+      });
+      return;
+    }
+    
     console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
     
     // Create the undo state change
@@ -286,18 +313,11 @@ export const useUndoRedo = (): UndoRedoManager => {
       return;
     }
     
-    // Update the user's history index locally
-    const newIndices = new Map(state.userHistoryIndices);
-    newIndices.set(userId, currentIndex - 1);
+    // Update the user's history index ONLY for the local user
+    store.updateLocalUserHistoryIndex(userId, currentIndex - 1);
     
     // Apply the state change directly (local only)
-    store.setState((prevState) => ({
-      ...prevState,
-      ...undoStateChange,
-      userHistoryIndices: newIndices,
-      stateVersion: prevState.stateVersion + 1,
-      lastStateUpdate: Date.now()
-    }));
+    store.applyStateChange(undoStateChange);
     
     // Send sync action to other clients if multiplayer is connected
     if (multiplayer?.isConnected) {
@@ -325,7 +345,12 @@ export const useUndoRedo = (): UndoRedoManager => {
     const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
     const nextIndex = currentIndex + 1;
     
-    console.log('↷ Redo requested for user:', userId, 'currentIndex:', currentIndex, 'nextIndex:', nextIndex, 'historyLength:', userHistory.length);
+    console.log('↷ Redo requested for user:', userId, {
+      currentIndex,
+      nextIndex,
+      historyLength: userHistory.length,
+      canRedo: nextIndex < userHistory.length
+    });
     
     if (nextIndex >= userHistory.length) {
       console.log('↷ Cannot redo: no more actions');
@@ -333,6 +358,18 @@ export const useUndoRedo = (): UndoRedoManager => {
     }
 
     const actionToRedo = userHistory[nextIndex];
+    
+    // Critical validation: ensure we're not redoing a sync action
+    if (actionToRedo.type === 'SYNC_UNDO' || actionToRedo.type === 'SYNC_REDO') {
+      console.error('❌ CRITICAL: Found SYNC action in user history! This is a bug:', {
+        actionType: actionToRedo.type,
+        actionId: actionToRedo.id,
+        userId,
+        nextIndex
+      });
+      return;
+    }
+    
     console.log('↷ Redoing action:', actionToRedo.type, actionToRedo.id);
     
     // Create the redo state change
@@ -342,18 +379,11 @@ export const useUndoRedo = (): UndoRedoManager => {
       return;
     }
     
-    // Update the user's history index locally
-    const newIndices = new Map(state.userHistoryIndices);
-    newIndices.set(userId, nextIndex);
+    // Update the user's history index ONLY for the local user
+    store.updateLocalUserHistoryIndex(userId, nextIndex);
     
     // Apply the state change directly (local only)
-    store.setState((prevState) => ({
-      ...prevState,
-      ...redoStateChange,
-      userHistoryIndices: newIndices,
-      stateVersion: prevState.stateVersion + 1,
-      lastStateUpdate: Date.now()
-    }));
+    store.applyStateChange(redoStateChange);
     
     // Send sync action to other clients if multiplayer is connected
     if (multiplayer?.isConnected) {
@@ -377,7 +407,22 @@ export const useUndoRedo = (): UndoRedoManager => {
 
   const canUndo = useCallback((userId: string) => {
     const state = store.getState();
+    const userHistory = state.userActionHistories.get(userId) || [];
     const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
+    
+    // Additional validation: ensure the action at current index is not a sync action
+    if (currentIndex >= 0 && currentIndex < userHistory.length) {
+      const actionAtIndex = userHistory[currentIndex];
+      if (actionAtIndex.type === 'SYNC_UNDO' || actionAtIndex.type === 'SYNC_REDO') {
+        console.error('❌ CRITICAL: SYNC action found in user history at current index:', {
+          actionType: actionAtIndex.type,
+          userId,
+          currentIndex
+        });
+        return false;
+      }
+    }
+    
     return currentIndex >= 0;
   }, [store]);
 
@@ -385,7 +430,22 @@ export const useUndoRedo = (): UndoRedoManager => {
     const state = store.getState();
     const userHistory = state.userActionHistories.get(userId) || [];
     const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
-    return currentIndex < userHistory.length - 1;
+    const nextIndex = currentIndex + 1;
+    
+    // Additional validation: ensure the action at next index is not a sync action
+    if (nextIndex >= 0 && nextIndex < userHistory.length) {
+      const actionAtNextIndex = userHistory[nextIndex];
+      if (actionAtNextIndex.type === 'SYNC_UNDO' || actionAtNextIndex.type === 'SYNC_REDO') {
+        console.error('❌ CRITICAL: SYNC action found in user history at next index:', {
+          actionType: actionAtNextIndex.type,
+          userId,
+          nextIndex
+        });
+        return false;
+      }
+    }
+    
+    return nextIndex < userHistory.length;
   }, [store]);
 
   return {
