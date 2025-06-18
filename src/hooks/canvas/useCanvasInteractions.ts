@@ -60,7 +60,7 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Creates shape objects - simple shapes as their native types, complex shapes as paths
+   * Creates shape objects - all shapes as their native types for consistent fill behavior
    */
   const createShapeObject = useCallback((
     shapeType: string,
@@ -102,15 +102,8 @@ export const useCanvasInteractions = () => {
         };
       
       case 'triangle':
-      case 'diamond':
-      case 'pentagon':
-      case 'hexagon':
-      case 'star':
-      case 'heart': {
-        // Create complex shapes as path objects
-        const pathData = generateShapePath(shapeType, 0, 0, width, height);
         return {
-          type: 'path',
+          type: 'triangle',
           x,
           y,
           width,
@@ -118,13 +111,73 @@ export const useCanvasInteractions = () => {
           stroke: strokeColor,
           fill: 'none',
           strokeWidth: shapeBorderWeight,
-          opacity,
-          data: {
-            path: pathData,
-            shapeType: shapeType
-          }
+          opacity
         };
-      }
+      
+      case 'diamond':
+        return {
+          type: 'diamond',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none',
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      case 'pentagon':
+        return {
+          type: 'pentagon',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none',
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      case 'hexagon':
+        return {
+          type: 'hexagon',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none',
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      case 'star':
+        return {
+          type: 'star',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none',
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      case 'heart':
+        return {
+          type: 'heart',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none',
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
       
       default:
         return null;
