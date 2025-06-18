@@ -16,7 +16,6 @@ import {
   useSidebar,
 } from '../ui/sidebar';
 import { EraserSettings } from './EraserSettings';
-import { ShapeSettings } from './ShapeSettings';
 
 // Context-sensitive tool settings component
 const ToolSettings: React.FC = () => {
@@ -255,9 +254,29 @@ const ToolSettings: React.FC = () => {
     );
   }
 
-  // Shape tools - now use the dedicated ShapeSettings component
-  if (['rectangle', 'circle', 'triangle', 'hexagon', 'star', 'pentagon', 'diamond', 'heart'].includes(activeTool)) {
-    return <ShapeSettings />;
+  // Shape tools - simplified without stroke width
+  if (['rectangle', 'circle', 'triangle', 'hexagon', 'star', 'pentagon', 'diamond'].includes(activeTool)) {
+    return (
+      <Card>
+        <CardHeader className="bg-muted/80 py-3">
+          <CardTitle className="text-lg capitalize">{activeTool} Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-6">
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Opacity: {Math.round(toolSettings.opacity * 100)}%
+            </label>
+            <Slider
+              value={[toolSettings.opacity]}
+              onValueChange={(value) => updateToolSettings({ opacity: value[0] })}
+              min={0.1}
+              max={1}
+              step={0.1}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   // Default for select, hand, fill tools

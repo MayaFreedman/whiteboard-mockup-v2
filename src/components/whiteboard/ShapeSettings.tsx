@@ -3,7 +3,6 @@ import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 /**
  * Shape-specific settings component
@@ -29,26 +28,21 @@ export const ShapeSettings: React.FC = () => {
   };
 
   return (
-    <Card>
-      <CardHeader className="bg-muted/80 py-3">
-        <CardTitle className="text-lg capitalize">{activeTool} Settings</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 pt-6">
-        <div className="space-y-2">
-          <Label htmlFor="border-weight" className="text-sm font-medium">
-            Border Weight: {borderWeight}px
-          </Label>
-          <Slider
-            id="border-weight"
-            min={1}
-            max={20}
-            step={1}
-            value={[borderWeight]}
-            onValueChange={handleBorderWeightChange}
-            className="w-full"
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="border-weight" className="text-sm font-medium">
+          Border Weight: {borderWeight}px
+        </Label>
+        <Slider
+          id="border-weight"
+          min={1}
+          max={20}
+          step={1}
+          value={[borderWeight]}
+          onValueChange={handleBorderWeightChange}
+          className="w-full"
+        />
+      </div>
+    </div>
   );
 };

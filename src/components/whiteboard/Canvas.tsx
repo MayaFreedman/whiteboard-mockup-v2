@@ -41,8 +41,8 @@ export const Canvas: React.FC = () => {
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
   
-  // Initialize interactions hook with canvas
-  const interactions = useCanvasInteractions(canvasRef.current);
+  // Initialize interactions hook first to get the preview functions
+  const interactions = useCanvasInteractions();
   
   // Initialize rendering hook with both preview functions
   const { redrawCanvas } = useCanvasRendering(
@@ -61,17 +61,17 @@ export const Canvas: React.FC = () => {
 
     const handleTouchStart = (event: TouchEvent) => {
       event.preventDefault();
-      interactions.handlePointerDown(event);
+      interactions.handlePointerDown(event, canvas);
     };
 
     const handleTouchMove = (event: TouchEvent) => {
       event.preventDefault();
-      interactions.handlePointerMove(event);
+      interactions.handlePointerMove(event, canvas);
     };
 
     const handleTouchEnd = (event: TouchEvent) => {
       event.preventDefault();
-      interactions.handlePointerUp();
+      interactions.handlePointerUp(event, canvas);
     };
 
     // Add touch event listeners with { passive: false } to allow preventDefault
@@ -91,7 +91,9 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    interactions.handleMouseDown(event);
+    if (canvasRef.current) {
+      interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
+    }
   };
 
   /**
@@ -99,7 +101,9 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    interactions.handleMouseMove(event);
+    if (canvasRef.current) {
+      interactions.handlePointerMove(event.nativeEvent, canvasRef.current);
+    }
   };
 
   /**
@@ -107,7 +111,9 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    interactions.handleMouseUp();
+    if (canvasRef.current) {
+      interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
+    }
   };
 
   /**

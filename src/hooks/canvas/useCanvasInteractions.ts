@@ -1,90 +1,284 @@
-
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
-import { useUser } from '../../contexts/UserContext';
 import { WhiteboardObject } from '../../types/whiteboard';
-import { nanoid } from 'nanoid';
+import { useCanvasCoordinates } from './useCanvasCoordinates';
+import { useObjectDetection } from './useObjectDetection';
+import { useEraserLogic } from './useEraserLogic';
+import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 
-export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
-  const { addObject, selectObjects, clearSelection } = useWhiteboardStore();
-  const { activeTool, toolSettings } = useToolStore();
-  const { userId } = useUser();
-
-  // Drawing state
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [currentPath, setCurrentPath] = useState<string>('');
-  const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
+/**
+ * Custom hook for handling canvas mouse and touch interactions
+ * Manages drawing state and coordinates tool-specific behaviors
+ */
+export const useCanvasInteractions = () => {
+  const whiteboardStore = useWhiteboardStore();
+  const toolStore = useToolStore();
+  const { getCanvasCoordinates } = useCanvasCoordinates();
+  const { findObjectAt } = useObjectDetection();
+  const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraserLogic();
   
-  // Shape drawing state
-  const [isDrawingShape, setIsDrawingShape] = useState(false);
-  const [shapeStart, setShapeStart] = useState<{ x: number; y: number } | null>(null);
-  const [shapeEnd, setShapeEnd] = useState<{ x: number; y: number } | null>(null);
-
-  // Preview states for real-time rendering
-  const [drawingPreview, setDrawingPreview] = useState<any>(null);
-  const [shapePreview, setShapePreview] = useState<any>(null);
-
-  // Dragging state
-  const [isDragging, setIsDragging] = useState(false);
-
-  // Store redraw function
+  const isDrawingRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const pathStartRef = useRef<{ x: number; y: number } | null>(null);
   const redrawCanvasRef = useRef<(() => void) | null>(null);
+  
+  // Simple path builder for smooth drawing
+  const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
+  
+  // Store the current drawing preview for rendering
+  const currentDrawingPreviewRef = useRef<{
+    path: string;
+    startX: number;
+    startY: number;
+    strokeColor: string;
+    strokeWidth: number;
+    opacity: number;
+    brushType?: string;
+  } | null>(null);
 
-  const getCanvasCoordinates = useCallback((event: MouseEvent | TouchEvent) => {
-    if (!canvas) return { x: 0, y: 0 };
+  // Store shape preview for rendering
+  const currentShapePreviewRef = useRef<{
+    type: string;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    strokeColor: string;
+    fillColor: string;
+    strokeWidth: number;
+    opacity: number;
+  } | null>(null);
+
+  /**
+   * Sets the redraw canvas function (called by Canvas component)
+   */
+  const setRedrawCanvas = useCallback((redrawFn: () => void) => {
+    redrawCanvasRef.current = redrawFn;
+  }, []);
+
+  /**
+   * Ends current drawing session and saves the path if valid
+   */
+  const endCurrentDrawing = useCallback(() => {
+    const activeTool = toolStore.activeTool;
     
-    const rect = canvas.getBoundingClientRect();
-    
-    let clientX, clientY;
-    if ('touches' in event) {
-      clientX = event.touches[0]?.clientX || 0;
-      clientY = event.touches[0]?.clientY || 0;
-    } else {
-      clientX = event.clientX;
-      clientY = event.clientY;
+    if ((activeTool === 'pencil' || activeTool === 'brush') && 
+        isDrawingRef.current && 
+        pathBuilderRef.current && 
+        pathStartRef.current &&
+        pathBuilderRef.current.getPointCount() > 1) {
+      
+      // Get the final smooth path from the builder
+      const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
+      
+      // Create the drawing object with the smooth path
+      const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
+        type: 'path',
+        x: pathStartRef.current.x,
+        y: pathStartRef.current.y,
+        stroke: toolStore.toolSettings.strokeColor,
+        strokeWidth: toolStore.toolSettings.strokeWidth,
+        opacity: toolStore.toolSettings.opacity,
+        fill: 'none',
+        data: {
+          path: finalSmoothPath,
+          brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
+        }
+      };
+
+      const objectId = whiteboardStore.addObject(drawingObject);
+      console.log('✏️ Auto-saved drawing on mouse leave:', objectId.slice(0, 8));
     }
     
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
-  }, [canvas]);
+    if (activeTool === 'eraser' && isDrawingRef.current) {
+      handleEraserEnd(redrawCanvasRef.current || undefined);
+      console.log('🧹 Auto-ended erasing on mouse leave');
+    }
 
-  const generateShapePath = useCallback((shapeType: string, x: number, y: number, width: number, height: number): string => {
-    const centerX = x + width / 2;
-    const centerY = y + height / 2;
+    // Handle shape completion
+    if (['rectangle', 'circle', 'triangle', 'hexagon', 'star', 'pentagon', 'diamond'].includes(activeTool) && 
+        isDrawingRef.current && 
+        currentShapePreviewRef.current) {
+      
+      const preview = currentShapePreviewRef.current;
+      const width = Math.abs(preview.endX - preview.startX);
+      const height = Math.abs(preview.endY - preview.startY);
+      
+      if (width > 5 && height > 5) { // Only create shape if it's big enough
+        const shapeObject = createShapeObject(
+          activeTool,
+          Math.min(preview.startX, preview.endX),
+          Math.min(preview.startY, preview.endY),
+          width,
+          height,
+          preview.strokeColor,
+          preview.fillColor,
+          preview.strokeWidth,
+          preview.opacity
+        );
+
+        if (shapeObject) {
+          const objectId = whiteboardStore.addObject(shapeObject);
+          console.log('🔷 Auto-saved shape on mouse leave:', objectId.slice(0, 8));
+        }
+      }
+    }
+    
+    // Reset all drawing state
+    isDrawingRef.current = false;
+    isDraggingRef.current = false;
+    lastPointRef.current = null;
+    pathStartRef.current = null;
+    pathBuilderRef.current = null;
+    dragStartRef.current = null;
+    currentDrawingPreviewRef.current = null;
+    currentShapePreviewRef.current = null;
+    
+    // Trigger redraw to clear preview
+    if (redrawCanvasRef.current) {
+      redrawCanvasRef.current();
+    }
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd]);
+
+  // Add document-level mouseup listener to catch releases outside canvas
+  useEffect(() => {
+    const handleDocumentMouseUp = () => {
+      if (isDrawingRef.current || isDraggingRef.current) {
+        console.log('🖱️ Document mouse up - ending current interaction');
+        endCurrentDrawing();
+      }
+    };
+
+    document.addEventListener('mouseup', handleDocumentMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleDocumentMouseUp);
+    };
+  }, [endCurrentDrawing]);
+
+  /**
+   * Handles mouse leaving the canvas area
+   */
+  const handleMouseLeave = useCallback(() => {
+    if (isDrawingRef.current || isDraggingRef.current) {
+      console.log('🖱️ Mouse left canvas - ending current interaction');
+      endCurrentDrawing();
+    }
+  }, [endCurrentDrawing]);
+
+  /**
+   * Creates a shape object based on the tool type
+   */
+  const createShapeObject = useCallback((
+    shapeType: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    strokeColor: string,
+    fillColor: string,
+    strokeWidth: number,
+    opacity: number
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
+    // Use shape-specific border weight instead of brush stroke width
+    const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
+    
+    switch (shapeType) {
+      case 'rectangle':
+        return {
+          type: 'rectangle',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none', // Always empty fill
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      case 'circle':
+        const radius = Math.min(width, height) / 2;
+        return {
+          type: 'circle',
+          x: x + width / 2 - radius,
+          y: y + height / 2 - radius,
+          width: radius * 2,
+          height: radius * 2,
+          stroke: strokeColor,
+          fill: 'none', // Always empty fill
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      case 'triangle':
+      case 'hexagon':
+      case 'star':
+      case 'pentagon':
+      case 'diamond':
+      case 'heart':
+        // Create these as path objects with custom shape data
+        const shapeData = generateShapePath(shapeType, width, height);
+        return {
+          type: 'path',
+          x,
+          y,
+          stroke: strokeColor,
+          fill: 'none', // Always empty fill
+          strokeWidth: shapeBorderWeight,
+          opacity,
+          data: {
+            path: shapeData,
+            shapeType,
+            isShape: true
+          }
+        };
+      
+      default:
+        console.warn('Unknown shape type:', shapeType);
+        return null;
+    }
+  }, [toolStore.toolSettings.shapeBorderWeight]);
+
+  /**
+   * Generates SVG path data for complex shapes
+   */
+  const generateShapePath = useCallback((shapeType: string, width: number, height: number): string => {
+    const centerX = width / 2;
+    const centerY = height / 2;
     
     switch (shapeType) {
       case 'triangle':
-        return `M ${centerX} ${y} L ${x + width} ${y + height} L ${x} ${y + height} Z`;
+        return `M ${centerX} 0 L ${width} ${height} L 0 ${height} Z`;
       
       case 'diamond':
-        return `M ${centerX} ${y} L ${x + width} ${centerY} L ${centerX} ${y + height} L ${x} ${centerY} Z`;
+        return `M ${centerX} 0 L ${width} ${centerY} L ${centerX} ${height} L 0 ${centerY} Z`;
       
-      case 'pentagon': {
+      case 'pentagon':
         const pentagonPoints = [];
         for (let i = 0; i < 5; i++) {
           const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-          const px = centerX + (width / 2) * Math.cos(angle);
-          const py = centerY + (height / 2) * Math.sin(angle);
-          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+          // Use separate width and height scaling instead of circular radius
+          const x = centerX + (width / 2) * Math.cos(angle);
+          const y = centerY + (height / 2) * Math.sin(angle);
+          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return pentagonPoints.join(' ') + ' Z';
-      }
       
-      case 'hexagon': {
+      case 'hexagon':
         const hexagonPoints = [];
         for (let i = 0; i < 6; i++) {
           const angle = (i * 2 * Math.PI) / 6;
-          const px = centerX + (width / 2) * Math.cos(angle);
-          const py = centerY + (height / 2) * Math.sin(angle);
-          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+          // Use separate width and height scaling instead of circular radius
+          const x = centerX + (width / 2) * Math.cos(angle);
+          const y = centerY + (height / 2) * Math.sin(angle);
+          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return hexagonPoints.join(' ') + ' Z';
-      }
       
-      case 'star': {
+      case 'star':
         const starPoints = [];
         const outerRadiusX = width / 2;
         const outerRadiusY = height / 2;
@@ -93,275 +287,370 @@ export const useCanvasInteractions = (canvas: HTMLCanvasElement | null) => {
         
         for (let i = 0; i < 10; i++) {
           const angle = (i * Math.PI) / 5 - Math.PI / 2;
+          // Use separate X and Y scaling for non-circular stars
           const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
           const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
-          const px = centerX + radiusX * Math.cos(angle);
-          const py = centerY + radiusY * Math.sin(angle);
-          starPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+          const x = centerX + radiusX * Math.cos(angle);
+          const y = centerY + radiusY * Math.sin(angle);
+          starPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return starPoints.join(' ') + ' Z';
-      }
       
-      case 'heart': {
-        // Classic heart shape - two rounded lobes at top, pointed bottom
-        const bottomPointX = centerX;
-        const bottomPointY = y + height * 0.9;
+      case 'heart':
+        // Heart shape using cubic bezier curves
+        const heartWidth = width;
+        const heartHeight = height;
+        const topCurveHeight = heartHeight * 0.3;
         
-        // Left and right lobe centers (positioned to create the classic heart shape)
-        const leftLobeX = x + width * 0.25;
-        const rightLobeX = x + width * 0.75;
-        const lobeY = y + height * 0.3;
-        
-        // Control points for the curves that create the heart shape
-        const leftTopControlX = leftLobeX;
-        const leftTopControlY = y + height * 0.1;
-        const rightTopControlX = rightLobeX;
-        const rightTopControlY = y + height * 0.1;
-        
-        // Side control points for the curves going down to the bottom point
-        const leftSideControlX = x + width * 0.1;
-        const leftSideControlY = y + height * 0.6;
-        const rightSideControlX = x + width * 0.9;
-        const rightSideControlY = y + height * 0.6;
-        
-        return `M ${bottomPointX} ${bottomPointY}
-                C ${leftSideControlX} ${leftSideControlY}, ${leftTopControlX} ${leftTopControlY}, ${leftLobeX} ${lobeY}
-                C ${leftLobeX - width * 0.1} ${y + height * 0.15}, ${leftLobeX + width * 0.1} ${y + height * 0.15}, ${centerX} ${y + height * 0.4}
-                C ${rightLobeX - width * 0.1} ${y + height * 0.15}, ${rightLobeX + width * 0.1} ${y + height * 0.15}, ${rightLobeX} ${lobeY}
-                C ${rightTopControlX} ${leftTopControlY}, ${rightSideControlX} ${rightSideControlY}, ${bottomPointX} ${bottomPointY} Z`;
-      }
+        return `M ${centerX} ${heartHeight * 0.3}
+                C ${centerX} ${topCurveHeight * 0.5}, ${centerX - heartWidth * 0.2} 0, ${centerX - heartWidth * 0.4} 0
+                C ${centerX - heartWidth * 0.6} 0, ${centerX - heartWidth * 0.8} ${topCurveHeight * 0.5}, ${centerX - heartWidth * 0.5} ${topCurveHeight}
+                C ${centerX - heartWidth * 0.5} ${topCurveHeight}, ${centerX} ${heartHeight * 0.6}, ${centerX} ${heartHeight}
+                C ${centerX} ${heartHeight * 0.6}, ${centerX + heartWidth * 0.5} ${topCurveHeight}, ${centerX + heartWidth * 0.5} ${topCurveHeight}
+                C ${centerX + heartWidth * 0.8} ${topCurveHeight * 0.5}, ${centerX + heartWidth * 0.6} 0, ${centerX + heartWidth * 0.4} 0
+                C ${centerX + heartWidth * 0.2} 0, ${centerX} ${topCurveHeight * 0.5}, ${centerX} ${heartHeight * 0.3} Z`;
       
       default:
         return '';
     }
   }, []);
 
-  const handlePointerDown = useCallback((event: MouseEvent | TouchEvent) => {
-    if (!canvas) return;
-    const coords = getCanvasCoordinates(event);
-    
-    if (activeTool === 'pencil' || activeTool === 'brush' || activeTool === 'eraser') {
-      setIsDrawing(true);
-      setStartPoint(coords);
-      setCurrentPath(`M ${coords.x} ${coords.y}`);
-      
-      // Set up drawing preview
-      setDrawingPreview({
-        path: `M ${coords.x} ${coords.y}`,
-        startX: coords.x,
-        startY: coords.y,
-        strokeColor: toolSettings.strokeColor,
-        strokeWidth: activeTool === 'eraser' ? toolSettings.eraserSize : toolSettings.strokeWidth,
-        opacity: activeTool === 'eraser' ? toolSettings.eraserOpacity : toolSettings.opacity,
-        brushType: activeTool === 'brush' ? toolSettings.brushType : 'paintbrush',
-        isEraser: activeTool === 'eraser'
-      });
-    } else if (['rectangle', 'circle', 'triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart'].includes(activeTool)) {
-      setIsDrawingShape(true);
-      setShapeStart(coords);
-      setShapeEnd(coords);
-      
-      // Set up shape preview
-      setShapePreview({
-        type: activeTool,
-        startX: coords.x,
-        startY: coords.y,
-        endX: coords.x,
-        endY: coords.y,
-        strokeColor: toolSettings.strokeColor,
-        strokeWidth: toolSettings.shapeBorderWeight || 2,
-        fillColor: 'transparent',
-        opacity: toolSettings.opacity
-      });
-    }
-  }, [canvas, activeTool, toolSettings, getCanvasCoordinates]);
+  /**
+   * Handles the start of a drawing/interaction session
+   */
+  const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
+    event.preventDefault();
+    const coords = getCanvasCoordinates(event, canvas);
+    const activeTool = toolStore.activeTool;
 
-  const handlePointerMove = useCallback((event: MouseEvent | TouchEvent) => {
-    if (!canvas) return;
-    const coords = getCanvasCoordinates(event);
-    
-    if (isDrawing && startPoint) {
-      const newPath = currentPath + ` L ${coords.x} ${coords.y}`;
-      setCurrentPath(newPath);
-      
-      // Update drawing preview
-      setDrawingPreview(prev => prev ? {
-        ...prev,
-        path: newPath
-      } : null);
-      
-      // Trigger redraw
-      if (redrawCanvasRef.current) {
-        redrawCanvasRef.current();
-      }
-    } else if (isDrawingShape && shapeStart) {
-      setShapeEnd(coords);
-      
-      // Update shape preview
-      setShapePreview(prev => prev ? {
-        ...prev,
-        endX: coords.x,
-        endY: coords.y
-      } : null);
-      
-      // Trigger redraw
-      if (redrawCanvasRef.current) {
-        redrawCanvasRef.current();
-      }
-    }
-  }, [canvas, isDrawing, isDrawingShape, startPoint, shapeStart, currentPath, getCanvasCoordinates]);
+    console.log('🖱️ Pointer down:', { tool: activeTool, coords });
 
-  const handlePointerUp = useCallback(() => {
-    if (isDrawing && startPoint && currentPath) {
-      const timestamp = Date.now();
-      const newObject: WhiteboardObject = {
-        id: nanoid(),
-        type: 'path',
-        x: startPoint.x,
-        y: startPoint.y,
-        stroke: toolSettings.strokeColor,
-        strokeWidth: activeTool === 'eraser' ? toolSettings.eraserSize : toolSettings.strokeWidth,
-        opacity: activeTool === 'eraser' ? toolSettings.eraserOpacity : toolSettings.opacity,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        userId,
-        data: {
-          path: currentPath.replace(`M ${startPoint.x} ${startPoint.y}`, 'M 0 0'),
-          brushType: activeTool === 'brush' ? toolSettings.brushType : 'paintbrush',
-          isEraser: activeTool === 'eraser'
+    switch (activeTool) {
+      case 'select': {
+        const objectId = findObjectAt(coords.x, coords.y);
+        if (objectId) {
+          whiteboardStore.selectObjects([objectId]);
+          isDraggingRef.current = true;
+          dragStartRef.current = coords;
+          console.log('🎯 Selected object for dragging:', objectId.slice(0, 8));
+        } else {
+          whiteboardStore.clearSelection();
+          console.log('🎯 Cleared selection');
         }
-      };
-      
-      addObject(newObject);
-      console.log(`🎨 Added ${activeTool} path:`, newObject);
-    } else if (isDrawingShape && shapeStart && shapeEnd) {
-      const width = Math.abs(shapeEnd.x - shapeStart.x);
-      const height = Math.abs(shapeEnd.y - shapeStart.y);
-      const x = Math.min(shapeStart.x, shapeEnd.x);
-      const y = Math.min(shapeStart.y, shapeEnd.y);
-      
-      if (width > 5 && height > 5) { // Minimum size threshold
-        const timestamp = Date.now();
+        break;
+      }
+
+      case 'pencil':
+      case 'brush': {
+        isDrawingRef.current = true;
+        lastPointRef.current = coords;
+        pathStartRef.current = coords;
         
-        if (activeTool === 'rectangle') {
-          const newObject: WhiteboardObject = {
-            id: nanoid(),
-            type: 'rectangle',
-            x,
-            y,
-            width,
-            height,
-            stroke: toolSettings.strokeColor,
-            strokeWidth: toolSettings.shapeBorderWeight || 2,
-            fill: 'transparent',
-            opacity: toolSettings.opacity,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-            userId
-          };
-          addObject(newObject);
-          console.log('🔲 Added rectangle:', newObject);
-        } else if (activeTool === 'circle') {
-          const newObject: WhiteboardObject = {
-            id: nanoid(),
-            type: 'circle',
-            x,
-            y,
-            width: Math.min(width, height),
-            stroke: toolSettings.strokeColor,
-            strokeWidth: toolSettings.shapeBorderWeight || 2,
-            fill: 'transparent',
-            opacity: toolSettings.opacity,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-            userId
-          };
-          addObject(newObject);
-          console.log('🔴 Added circle:', newObject);
-        } else if (['triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart'].includes(activeTool)) {
-          const shapePath = generateShapePath(activeTool, 0, 0, width, height);
+        // Initialize simple path builder with tool-specific settings
+        const config = getSmoothingConfig(activeTool);
+        pathBuilderRef.current = new SimplePathBuilder(config.minDistance, config.smoothingStrength);
+        
+        // Add the first point (relative to origin)
+        const initialPath = pathBuilderRef.current.addPoint({ x: 0, y: 0 });
+        
+        // Set up drawing preview
+        currentDrawingPreviewRef.current = {
+          path: initialPath,
+          startX: coords.x,
+          startY: coords.y,
+          strokeColor: toolStore.toolSettings.strokeColor,
+          strokeWidth: toolStore.toolSettings.strokeWidth,
+          opacity: toolStore.toolSettings.opacity,
+          brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
+        };
+        
+        console.log('✏️ Started simple smooth drawing at:', coords);
+        break;
+      }
+
+      case 'rectangle':
+      case 'circle':
+      case 'triangle':
+      case 'hexagon':
+      case 'star':
+      case 'pentagon':
+      case 'diamond':
+      case 'heart': {
+        isDrawingRef.current = true;
+        lastPointRef.current = coords;
+        pathStartRef.current = coords;
+        
+        // Set up shape preview with shape-specific border weight
+        const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
+        currentShapePreviewRef.current = {
+          type: activeTool,
+          startX: coords.x,
+          startY: coords.y,
+          endX: coords.x,
+          endY: coords.y,
+          strokeColor: toolStore.toolSettings.strokeColor,
+          fillColor: 'transparent', // Always transparent fill
+          strokeWidth: shapeBorderWeight,
+          opacity: toolStore.toolSettings.opacity
+        };
+        
+        console.log('🔷 Started shape drawing:', activeTool, coords);
+        break;
+      }
+
+      case 'eraser': {
+        isDrawingRef.current = true;
+        lastPointRef.current = coords;
+        
+        handleEraserStart(coords, findObjectAt, redrawCanvasRef.current || undefined);
+        
+        console.log('🧹 Started erasing:', { mode: toolStore.toolSettings.eraserMode, coords });
+        break;
+      }
+
+      default:
+        console.log('🔧 Tool not implemented yet:', activeTool);
+    }
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, createShapeObject]);
+
+  /**
+   * Handles pointer movement during interaction
+   */
+  const handlePointerMove = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
+    const coords = getCanvasCoordinates(event, canvas);
+    const activeTool = toolStore.activeTool;
+
+    switch (activeTool) {
+      case 'select': {
+        if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+          const deltaX = coords.x - dragStartRef.current.x;
+          const deltaY = coords.y - dragStartRef.current.y;
           
-          const newObject: WhiteboardObject = {
-            id: nanoid(),
+          // Update selected objects position
+          whiteboardStore.selectedObjectIds.forEach(objectId => {
+            const obj = whiteboardStore.objects[objectId];
+            if (obj) {
+              whiteboardStore.updateObject(objectId, {
+                x: obj.x + deltaX,
+                y: obj.y + deltaY
+              });
+            }
+          });
+          
+          dragStartRef.current = coords;
+          
+          // Trigger canvas redraw for smooth dragging
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
+        }
+        break;
+      }
+
+      case 'pencil':
+      case 'brush': {
+        if (isDrawingRef.current && lastPointRef.current && pathStartRef.current && pathBuilderRef.current) {
+          // Calculate relative coordinates from the path start
+          const relativeX = coords.x - pathStartRef.current.x;
+          const relativeY = coords.y - pathStartRef.current.y;
+          
+          // Add point to path builder and get smooth path
+          const smoothPath = pathBuilderRef.current.addPoint({ x: relativeX, y: relativeY });
+          
+          lastPointRef.current = coords;
+          
+          // Update drawing preview with smooth path
+          if (currentDrawingPreviewRef.current) {
+            currentDrawingPreviewRef.current.path = smoothPath;
+          }
+          
+          // Throttle redraws for performance
+          if (redrawCanvasRef.current) {
+            requestAnimationFrame(() => {
+              if (redrawCanvasRef.current && isDrawingRef.current) {
+                redrawCanvasRef.current();
+              }
+            });
+          }
+        }
+        break;
+      }
+
+      case 'rectangle':
+      case 'circle':
+      case 'triangle':
+      case 'hexagon':
+      case 'star':
+      case 'pentagon':
+      case 'diamond':
+      case 'heart': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          // Update shape preview end coordinates
+          currentShapePreviewRef.current.endX = coords.x;
+          currentShapePreviewRef.current.endY = coords.y;
+          
+          // Throttle redraws for performance
+          if (redrawCanvasRef.current) {
+            requestAnimationFrame(() => {
+              if (redrawCanvasRef.current && isDrawingRef.current) {
+                redrawCanvasRef.current();
+              }
+            });
+          }
+        }
+        break;
+      }
+
+      case 'eraser': {
+        if (isDrawingRef.current && lastPointRef.current) {
+          handleEraserMove(coords, lastPointRef.current, findObjectAt, redrawCanvasRef.current || undefined);
+          lastPointRef.current = coords;
+        }
+        break;
+      }
+    }
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt]);
+
+  /**
+   * Handles the end of a drawing/interaction session
+   */
+  const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
+    const activeTool = toolStore.activeTool;
+
+    console.log('🖱️ Pointer up:', { tool: activeTool, wasDrawing: isDrawingRef.current, wasDragging: isDraggingRef.current });
+
+    switch (activeTool) {
+      case 'select': {
+        if (isDraggingRef.current) {
+          console.log('🔄 Finished dragging objects');
+        }
+        isDraggingRef.current = false;
+        dragStartRef.current = null;
+        break;
+      }
+
+      case 'pencil':
+      case 'brush': {
+        if (isDrawingRef.current && pathBuilderRef.current && pathStartRef.current) {
+          // Get the final smooth path from the builder
+          const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
+          
+          // Create the drawing object with the smooth path
+          const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
             type: 'path',
-            x,
-            y,
-            stroke: toolSettings.strokeColor,
-            strokeWidth: toolSettings.shapeBorderWeight || 2,
-            fill: 'transparent',
-            opacity: toolSettings.opacity,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-            userId,
+            x: pathStartRef.current.x,
+            y: pathStartRef.current.y,
+            stroke: toolStore.toolSettings.strokeColor,
+            strokeWidth: toolStore.toolSettings.strokeWidth,
+            opacity: toolStore.toolSettings.opacity,
+            fill: 'none',
             data: {
-              path: shapePath,
-              shapeType: activeTool
+              path: finalSmoothPath,
+              brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
             }
           };
-          addObject(newObject);
-          console.log(`✨ Added ${activeTool}:`, newObject);
+
+          const objectId = whiteboardStore.addObject(drawingObject);
+          console.log('✏️ Created smooth drawing object:', objectId.slice(0, 8), {
+            pointCount: pathBuilderRef.current.getPointCount(),
+            pathLength: finalSmoothPath.length
+          });
+          
+          // Clear drawing preview and path builder
+          currentDrawingPreviewRef.current = null;
+          pathBuilderRef.current = null;
+          
+          // Trigger redraw to show the final object
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
         }
+        break;
+      }
+
+      case 'rectangle':
+      case 'circle':
+      case 'triangle':
+      case 'hexagon':
+      case 'star':
+      case 'pentagon':
+      case 'diamond':
+      case 'heart': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          const preview = currentShapePreviewRef.current;
+          const width = Math.abs(preview.endX - preview.startX);
+          const height = Math.abs(preview.endY - preview.startY);
+          
+          // Only create shape if it's big enough
+          if (width > 5 && height > 5) {
+            const shapeObject = createShapeObject(
+              activeTool,
+              Math.min(preview.startX, preview.endX),
+              Math.min(preview.startY, preview.endY),
+              width,
+              height,
+              preview.strokeColor,
+              preview.fillColor,
+              preview.strokeWidth,
+              preview.opacity
+            );
+
+            if (shapeObject) {
+              const objectId = whiteboardStore.addObject(shapeObject);
+              console.log('🔷 Created shape object:', activeTool, objectId.slice(0, 8), { width, height });
+            }
+          }
+          
+          // Clear shape preview
+          currentShapePreviewRef.current = null;
+          
+          // Trigger redraw to show the final object
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
+        }
+        break;
+      }
+
+      case 'eraser': {
+        if (isDrawingRef.current) {
+          handleEraserEnd(redrawCanvasRef.current || undefined);
+          console.log('🧹 Finished erasing:', { mode: toolStore.toolSettings.eraserMode });
+        }
+        break;
       }
     }
-    
-    // Reset states
-    setIsDrawing(false);
-    setIsDrawingShape(false);
-    setCurrentPath('');
-    setStartPoint(null);
-    setShapeStart(null);
-    setShapeEnd(null);
-    setDrawingPreview(null);
-    setShapePreview(null);
-  }, [isDrawing, isDrawingShape, startPoint, shapeStart, shapeEnd, currentPath, activeTool, toolSettings, userId, addObject, generateShapePath]);
 
-  const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvas) {
-      handlePointerDown(event.nativeEvent);
-    }
-  }, [canvas, handlePointerDown]);
+    // Reset drawing state
+    isDrawingRef.current = false;
+    lastPointRef.current = null;
+    pathStartRef.current = null;
+    pathBuilderRef.current = null;
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject]);
 
-  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvas) {
-      handlePointerMove(event.nativeEvent);
-    }
-  }, [canvas, handlePointerMove]);
-
-  const handleMouseUp = useCallback(() => {
-    handlePointerUp();
-  }, [handlePointerUp]);
-
-  const handleMouseLeave = useCallback(() => {
-    // Reset drawing states when mouse leaves canvas
-    setIsDrawing(false);
-    setIsDrawingShape(false);
-    setCurrentPath('');
-    setStartPoint(null);
-    setShapeStart(null);
-    setShapeEnd(null);
-    setDrawingPreview(null);
-    setShapePreview(null);
+  /**
+   * Gets the current drawing preview for rendering
+   */
+  const getCurrentDrawingPreview = useCallback(() => {
+    return currentDrawingPreviewRef.current;
   }, []);
 
-  const getCurrentDrawingPreview = useCallback(() => drawingPreview, [drawingPreview]);
-  const getCurrentShapePreview = useCallback(() => shapePreview, [shapePreview]);
-
-  const setRedrawCanvas = useCallback((redrawFn: () => void) => {
-    redrawCanvasRef.current = redrawFn;
+  /**
+   * Gets the current shape preview for rendering
+   */
+  const getCurrentShapePreview = useCallback(() => {
+    return currentShapePreviewRef.current;
   }, []);
 
   return {
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
     handleMouseLeave,
+    isDrawing: isDrawingRef.current,
+    isDragging: isDraggingRef.current,
     getCurrentDrawingPreview,
     getCurrentShapePreview,
-    setRedrawCanvas,
-    isDrawing: isDrawing || isDrawingShape,
-    isDragging
+    setRedrawCanvas
   };
 };

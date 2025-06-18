@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -365,32 +366,20 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       }
       
       case 'heart': {
-        // Classic heart shape - two rounded lobes at top, pointed bottom (same as interactions)
-        const bottomPointX = centerX;
-        const bottomPointY = y + height * 0.9;
+        // Heart shape using cubic bezier curves
+        const heartWidth = width;
+        const heartHeight = height;
+        const topCurveHeight = heartHeight * 0.3;
+        const centerXHeart = x + width / 2;
+        const centerYHeart = y + height / 2;
         
-        // Left and right lobe centers (positioned to create the classic heart shape)
-        const leftLobeX = x + width * 0.25;
-        const rightLobeX = x + width * 0.75;
-        const lobeY = y + height * 0.3;
-        
-        // Control points for the curves that create the heart shape
-        const leftTopControlX = leftLobeX;
-        const leftTopControlY = y + height * 0.1;
-        const rightTopControlX = rightLobeX;
-        const rightTopControlY = y + height * 0.1;
-        
-        // Side control points for the curves going down to the bottom point
-        const leftSideControlX = x + width * 0.1;
-        const leftSideControlY = y + height * 0.6;
-        const rightSideControlX = x + width * 0.9;
-        const rightSideControlY = y + height * 0.6;
-        
-        return `M ${bottomPointX} ${bottomPointY}
-                C ${leftSideControlX} ${leftSideControlY}, ${leftTopControlX} ${leftTopControlY}, ${leftLobeX} ${lobeY}
-                C ${leftLobeX - width * 0.1} ${y + height * 0.15}, ${leftLobeX + width * 0.1} ${y + height * 0.15}, ${centerX} ${y + height * 0.4}
-                C ${rightLobeX - width * 0.1} ${y + height * 0.15}, ${rightLobeX + width * 0.1} ${y + height * 0.15}, ${rightLobeX} ${lobeY}
-                C ${rightTopControlX} ${leftTopControlY}, ${rightSideControlX} ${rightSideControlY}, ${bottomPointX} ${bottomPointY} Z`;
+        return `M ${centerXHeart} ${y + heartHeight * 0.3}
+                C ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.2} ${y}, ${centerXHeart - heartWidth * 0.4} ${y}
+                C ${centerXHeart - heartWidth * 0.6} ${y}, ${centerXHeart - heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}
+                C ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart} ${y + heartHeight}
+                C ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}
+                C ${centerXHeart + heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart + heartWidth * 0.6} ${y}, ${centerXHeart + heartWidth * 0.4} ${y}
+                C ${centerXHeart + heartWidth * 0.2} ${y}, ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart} ${y + heartHeight * 0.3} Z`;
       }
       
       default:

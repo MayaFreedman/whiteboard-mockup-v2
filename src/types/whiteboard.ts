@@ -1,22 +1,6 @@
 
 import { Point } from '../utils/path/pathConversion';
 
-export type Tool = 
-  | 'select' 
-  | 'pencil' 
-  | 'brush' 
-  | 'eraser' 
-  | 'rectangle' 
-  | 'circle' 
-  | 'triangle'
-  | 'diamond'
-  | 'pentagon'
-  | 'hexagon'
-  | 'star'
-  | 'heart'
-  | 'text' 
-  | 'hand';
-
 export interface WhiteboardObject {
   id: string;
   type: 'path' | 'rectangle' | 'circle' | 'text';
@@ -24,22 +8,13 @@ export interface WhiteboardObject {
   y: number;
   width?: number;
   height?: number;
+  fill?: string;
   stroke?: string;
   strokeWidth?: number;
-  fill?: string;
   opacity?: number;
+  data?: any;
   createdAt: number;
   updatedAt: number;
-  userId: string;
-  data?: {
-    path?: string;
-    content?: string;
-    fontSize?: number;
-    fontFamily?: string;
-    brushType?: string;
-    shapeType?: string;
-    isEraser?: boolean;
-  };
 }
 
 export interface WhiteboardState {
