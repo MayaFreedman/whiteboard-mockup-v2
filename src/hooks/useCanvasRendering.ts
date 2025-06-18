@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -366,20 +365,26 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       }
       
       case 'heart': {
-        // Heart shape using cubic bezier curves
+        // Improved heart shape that looks more like the lucide heart icon
+        // The heart shape maintains its proportions when stretched
         const heartWidth = width;
         const heartHeight = height;
-        const topCurveHeight = heartHeight * 0.3;
-        const centerXHeart = x + width / 2;
-        const centerYHeart = y + height / 2;
         
-        return `M ${centerXHeart} ${y + heartHeight * 0.3}
-                C ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.2} ${y}, ${centerXHeart - heartWidth * 0.4} ${y}
-                C ${centerXHeart - heartWidth * 0.6} ${y}, ${centerXHeart - heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}
-                C ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart} ${y + heartHeight}
-                C ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}
-                C ${centerXHeart + heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart + heartWidth * 0.6} ${y}, ${centerXHeart + heartWidth * 0.4} ${y}
-                C ${centerXHeart + heartWidth * 0.2} ${y}, ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart} ${y + heartHeight * 0.3} Z`;
+        // Calculate control points based on the bounding box
+        const leftCurveX = x + heartWidth * 0.25;
+        const rightCurveX = x + heartWidth * 0.75;
+        const topY = y + heartHeight * 0.3;
+        const bottomPointX = x + heartWidth * 0.5;
+        const bottomPointY = y + heartHeight;
+        
+        // Create heart shape using cubic bezier curves
+        return `M ${bottomPointX} ${bottomPointY}
+                C ${bottomPointX - heartWidth * 0.25} ${y + heartHeight * 0.7}, ${leftCurveX - heartWidth * 0.15} ${topY + heartHeight * 0.1}, ${leftCurveX} ${topY}
+                C ${leftCurveX - heartWidth * 0.1} ${y + heartHeight * 0.15}, ${leftCurveX + heartWidth * 0.05} ${y + heartHeight * 0.05}, ${leftCurveX + heartWidth * 0.15} ${y + heartHeight * 0.1}
+                C ${bottomPointX - heartWidth * 0.1} ${y + heartHeight * 0.25}, ${bottomPointX} ${y + heartHeight * 0.4}, ${bottomPointX} ${y + heartHeight * 0.4}
+                C ${bottomPointX} ${y + heartHeight * 0.4}, ${bottomPointX + heartWidth * 0.1} ${y + heartHeight * 0.25}, ${rightCurveX - heartWidth * 0.15} ${y + heartHeight * 0.1}
+                C ${rightCurveX - heartWidth * 0.05} ${y + heartHeight * 0.05}, ${rightCurveX + heartWidth * 0.1} ${y + heartHeight * 0.15}, ${rightCurveX} ${topY}
+                C ${rightCurveX + heartWidth * 0.15} ${topY + heartHeight * 0.1}, ${bottomPointX + heartWidth * 0.25} ${y + heartHeight * 0.7}, ${bottomPointX} ${bottomPointY} Z`;
       }
       
       default:
