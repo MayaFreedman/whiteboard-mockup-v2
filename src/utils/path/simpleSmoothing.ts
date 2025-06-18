@@ -1,3 +1,4 @@
+
 import { Point } from './pathConversion';
 
 /**
@@ -41,14 +42,15 @@ export class SimplePathBuilder {
       return this.getCurrentPath();
     }
     
-    // Apply very subtle smoothing, slightly more for fast movements
+    // Apply smoothing with boost only for very fast movements
     let smoothedPoint = point;
     if (this.points.length >= 2 && this.smoothingStrength > 0) {
       const prev1 = this.points[this.points.length - 1];
       
-      // Light velocity boost - just a tiny bit more smoothing for fast movements
-      const velocityFactor = Math.min(velocity / 30, 1);
-      const dynamicSmoothing = this.smoothingStrength * (1 + velocityFactor * 0.2);
+      // Only apply extra smoothing when moving VERY fast (velocity > 50)
+      const isVeryFast = velocity > 50;
+      const velocityBoost = isVeryFast ? Math.min((velocity - 50) / 100, 0.4) : 0;
+      const dynamicSmoothing = this.smoothingStrength * (1 + velocityBoost);
       
       // Simple 2-point averaging
       smoothedPoint = {
