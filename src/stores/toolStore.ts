@@ -26,7 +26,7 @@ export type EraserMode = 'pixel' | 'object';
 export interface ToolSettings {
   // Drawing settings
   strokeColor: string;
-  fillColor: string;
+  fillColor?: string; // Add fill color setting
   strokeWidth: number;
   opacity: number;
   brushType: BrushType;

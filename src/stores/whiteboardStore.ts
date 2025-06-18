@@ -56,7 +56,7 @@ interface WhiteboardStore extends WhiteboardState {
   // Eraser methods
   erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }, userId?: string) => void;
   deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }, userId?: string) => void;
-  erasePath: (action: { originalObjectId: string; eraserPath: { x: number; y: number; size: number; path: string }; resultingSegments: Array<{ points: Array<{ x: number; y: number }>; id: string }> }, userId?: string) => void;
+  erasePath: (eraserAction: { originalObjectId: string; eraserPath: { x: number; y: number; size: number; path: string }; resultingSegments: Array<{ points: Array<{ x: number; y: number }>; id: string }> }, userId?: string) => void;
   
   // State serialization for multiplayer
   getSerializableState: () => Omit<WhiteboardState, 'lastAction'>;
@@ -617,6 +617,7 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
     case 'ERASE_PATH': {
       const { originalObjectId, resultingSegments } = action.payload;
       const newObjects = { ...state.objects };
+      const originalObject = state.objects[originalObjectId];
       
       // Remove the original object
       delete newObjects[originalObjectId];
@@ -624,7 +625,6 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
       // Add all resulting segments atomically
       resultingSegments.forEach((segment) => {
         if (segment.points.length >= 2) {
-          const originalObject = state.objects[originalObjectId];
           if (originalObject) {
             const newPath = pointsToPath(segment.points);
             const newObject: WhiteboardObject = {
@@ -632,7 +632,11 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
               id: segment.id,
               data: {
                 ...originalObject.data,
-                path: newPath
+                path: newPath,
+                // IMPORTANT: Set isShape to false for erased segments
+                isShape: false,
+                // Remove shapeType since it's no longer a complete shape
+                shapeType: undefined
               },
               updatedAt: Date.now()
             };

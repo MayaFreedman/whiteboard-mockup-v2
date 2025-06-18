@@ -1,4 +1,3 @@
-
 import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -38,6 +37,7 @@ export const useCanvasInteractions = () => {
     strokeWidth: number;
     opacity: number;
     brushType?: string;
+    isEraser?: boolean;
   } | null>(null);
 
   // Store shape preview for rendering
@@ -61,42 +61,53 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Generates SVG path data for complex shapes
+   * Generates SVG path data for all shapes (including rectangle and circle)
    */
   const generateShapePath = useCallback((shapeType: string, width: number, height: number): string => {
     const centerX = width / 2;
     const centerY = height / 2;
     
     switch (shapeType) {
+      case 'rectangle':
+        return `M 0 0 L ${width} 0 L ${width} ${height} L 0 ${height} Z`;
+      
+      case 'circle': {
+        const radius = Math.min(width, height) / 2;
+        const cx = width / 2;
+        const cy = height / 2;
+        // SVG circle using arc commands
+        return `M ${cx - radius} ${cy} A ${radius} ${radius} 0 1 0 ${cx + radius} ${cy} A ${radius} ${radius} 0 1 0 ${cx - radius} ${cy} Z`;
+      }
+      
       case 'triangle':
         return `M ${centerX} 0 L ${width} ${height} L 0 ${height} Z`;
       
       case 'diamond':
         return `M ${centerX} 0 L ${width} ${centerY} L ${centerX} ${height} L 0 ${centerY} Z`;
       
-      case 'pentagon':
+      case 'pentagon': {
         const pentagonPoints = [];
         for (let i = 0; i < 5; i++) {
           const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-          // Use separate width and height scaling instead of circular radius
           const x = centerX + (width / 2) * Math.cos(angle);
           const y = centerY + (height / 2) * Math.sin(angle);
           pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return pentagonPoints.join(' ') + ' Z';
+      }
       
-      case 'hexagon':
+      case 'hexagon': {
         const hexagonPoints = [];
         for (let i = 0; i < 6; i++) {
           const angle = (i * 2 * Math.PI) / 6;
-          // Use separate width and height scaling instead of circular radius
           const x = centerX + (width / 2) * Math.cos(angle);
           const y = centerY + (height / 2) * Math.sin(angle);
           hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return hexagonPoints.join(' ') + ' Z';
+      }
       
-      case 'star':
+      case 'star': {
         const starPoints = [];
         const outerRadiusX = width / 2;
         const outerRadiusY = height / 2;
@@ -105,7 +116,6 @@ export const useCanvasInteractions = () => {
         
         for (let i = 0; i < 10; i++) {
           const angle = (i * Math.PI) / 5 - Math.PI / 2;
-          // Use separate X and Y scaling for non-circular stars
           const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
           const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
           const x = centerX + radiusX * Math.cos(angle);
@@ -113,6 +123,7 @@ export const useCanvasInteractions = () => {
           starPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
         }
         return starPoints.join(' ') + ' Z';
+      }
       
       default:
         return '';
@@ -120,7 +131,7 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Creates a shape object based on the tool type
+   * Creates a unified path-based shape object for ALL shapes
    */
   const createShapeObject = useCallback((
     shapeType: string,
@@ -133,64 +144,60 @@ export const useCanvasInteractions = () => {
     strokeWidth: number,
     opacity: number
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
-    // Use shape-specific border weight instead of brush stroke width
     const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
+    const shapeData = generateShapePath(shapeType, width, height);
     
-    switch (shapeType) {
-      case 'rectangle':
-        return {
-          type: 'rectangle',
-          x,
-          y,
-          width,
-          height,
-          stroke: strokeColor,
-          fill: 'none', // Always empty fill
-          strokeWidth: shapeBorderWeight,
-          opacity
-        };
-      
-      case 'circle':
-        const radius = Math.min(width, height) / 2;
-        return {
-          type: 'circle',
-          x: x + width / 2 - radius,
-          y: y + height / 2 - radius,
-          width: radius * 2,
-          height: radius * 2,
-          stroke: strokeColor,
-          fill: 'none', // Always empty fill
-          strokeWidth: shapeBorderWeight,
-          opacity
-        };
-      
-      case 'triangle':
-      case 'hexagon':
-      case 'star':
-      case 'pentagon':
-      case 'diamond':
-        // Create these as path objects with custom shape data
-        const shapeData = generateShapePath(shapeType, width, height);
-        return {
-          type: 'path',
-          x,
-          y,
-          stroke: strokeColor,
-          fill: 'none', // Always empty fill
-          strokeWidth: shapeBorderWeight,
-          opacity,
-          data: {
-            path: shapeData,
-            shapeType,
-            isShape: true
-          }
-        };
-      
-      default:
-        console.warn('Unknown shape type:', shapeType);
-        return null;
+    if (!shapeData) {
+      console.warn('Unknown shape type:', shapeType);
+      return null;
     }
+    
+    // ALL shapes are now path objects with metadata
+    return {
+      type: 'path',
+      x,
+      y,
+      stroke: strokeColor,
+      fill: 'none', // Default to no fill, can be changed with fill tool
+      strokeWidth: shapeBorderWeight,
+      opacity,
+      data: {
+        path: shapeData,
+        shapeType,
+        isShape: true
+      }
+    };
   }, [toolStore.toolSettings.shapeBorderWeight, generateShapePath]);
+
+  /**
+   * Handles fill tool click - fills the clicked shape with the current fill color
+   */
+  const handleFillClick = useCallback((coords: { x: number; y: number }) => {
+    const objectId = findObjectAt(coords.x, coords.y);
+    if (!objectId) {
+      console.log('🎨 No object found to fill at:', coords);
+      return;
+    }
+    
+    const obj = whiteboardStore.objects[objectId];
+    if (!obj || obj.type !== 'path' || !obj.data?.isShape) {
+      console.log('🎨 Object is not a fillable shape:', { type: obj?.type, isShape: obj?.data?.isShape });
+      return;
+    }
+    
+    const fillColor = toolStore.toolSettings.fillColor || toolStore.toolSettings.strokeColor;
+    
+    whiteboardStore.updateObject(objectId, {
+      fill: fillColor
+    });
+    
+    console.log('🎨 Filled shape:', { objectId: objectId.slice(0, 8), fillColor });
+    
+    // Trigger redraw
+    if (redrawCanvasRef.current) {
+      redrawCanvasRef.current();
+    }
+  }, [findObjectAt, whiteboardStore, toolStore.toolSettings]);
 
   /**
    * Ends current drawing session and saves the path if valid
@@ -312,6 +319,11 @@ export const useCanvasInteractions = () => {
     console.log('🖱️ Pointer down:', { tool: activeTool, coords });
 
     switch (activeTool) {
+      case 'fill': {
+        handleFillClick(coords);
+        break;
+      }
+
       case 'select': {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
@@ -374,7 +386,7 @@ export const useCanvasInteractions = () => {
           endX: coords.x,
           endY: coords.y,
           strokeColor: toolStore.toolSettings.strokeColor,
-          fillColor: 'transparent', // Always transparent fill
+          fillColor: 'transparent', // Always transparent fill for preview
           strokeWidth: shapeBorderWeight,
           opacity: toolStore.toolSettings.opacity
         };
@@ -396,7 +408,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick]);
 
   /**
    * Handles pointer movement during interaction

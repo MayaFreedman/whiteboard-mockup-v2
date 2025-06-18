@@ -1,9 +1,11 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { interpolatePoints } from '../../utils/path/pathInterpolation';
 import { doesPathIntersectEraserBatch, erasePointsFromPathBatch } from '../../utils/path/pathErasing';
 import { pathToPoints } from '../../utils/path/pathConversion';
+import { nanoid } from 'nanoid';
 
 /**
  * Hook for handling eraser logic and batch processing with improved reliability
@@ -67,6 +69,12 @@ export const useEraserLogic = () => {
           // Get remaining segments after erasing with stroke-width-aware detection
           const segments = erasePointsFromPathBatch(points, relativeEraserPoints, strokeWidth);
           
+          // Generate unique IDs for each segment
+          const segmentsWithIds = segments.map(segment => ({
+            ...segment,
+            id: nanoid()
+          }));
+          
           // Create eraser path representation
           const eraserPath = eraserPointsRef.current.reduce((path, eraser, index) => {
             const command = index === 0 ? 'M' : 'L';
@@ -81,7 +89,7 @@ export const useEraserLogic = () => {
               size: eraserPointsRef.current[0]?.radius * 2 || 20,
               path: eraserPath
             },
-            resultingSegments: segments
+            resultingSegments: segmentsWithIds
           });
         }
       }
