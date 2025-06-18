@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { Badge } from '../ui/badge';
@@ -37,13 +38,6 @@ export const ToolStatePanel: React.FC = () => {
             <span className="inline-block w-4 h-4 border rounded" 
                   style={{ backgroundColor: toolSettings.strokeColor }}></span>
             <span>{toolSettings.strokeColor}</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            Fill: 
-            <span className="inline-block w-4 h-4 border rounded" 
-                  style={{ backgroundColor: toolSettings.fillColor }}></span>
-            <span>{toolSettings.fillColor}</span>
           </div>
           
           <div>Stroke Width: {toolSettings.strokeWidth}px</div>
@@ -197,3 +191,4 @@ export const ToolStatePanel: React.FC = () => {
     </div>
   );
 };
+
