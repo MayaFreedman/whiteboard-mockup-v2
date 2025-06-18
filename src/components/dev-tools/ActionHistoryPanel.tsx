@@ -2,16 +2,17 @@
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useUser } from '../../contexts/UserContext';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
 import { Badge } from '../ui/badge';
 
 export const ActionHistoryPanel: React.FC = () => {
   const { actionHistory, currentHistoryIndex } = useWhiteboardStore();
   const { userId } = useUser();
-  const whiteboardStore = useWhiteboardStore();
+  const { canUndo, canRedo } = useUndoRedo();
 
   const recentActions = actionHistory.slice(-10);
-  const canUndoValue = whiteboardStore.canUndo(userId);
-  const canRedoValue = whiteboardStore.canRedo(userId);
+  const canUndoValue = canUndo(userId);
+  const canRedoValue = canRedo(userId);
 
   return (
     <div className="space-y-4 text-xs">
