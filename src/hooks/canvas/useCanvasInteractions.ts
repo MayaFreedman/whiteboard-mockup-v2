@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -6,7 +5,7 @@ import { WhiteboardObject } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
-import { RealTimeCurveBuilder } from '../../utils/path/curveSmoothing';
+import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -26,8 +25,8 @@ export const useCanvasInteractions = () => {
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
   const redrawCanvasRef = useRef<(() => void) | null>(null);
   
-  // Real-time curve builder for smooth drawing
-  const curveBuilderRef = useRef<RealTimeCurveBuilder | null>(null);
+  // Simple path builder for smooth drawing
+  const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
   
   // Store the current drawing preview for rendering
   const currentDrawingPreviewRef = useRef<{
@@ -78,12 +77,12 @@ export const useCanvasInteractions = () => {
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
-        // Initialize real-time curve builder with appropriate smoothing
-        const smoothingFactor = activeTool === 'brush' ? 0.5 : 0.3; // More smoothing for brush
-        curveBuilderRef.current = new RealTimeCurveBuilder(smoothingFactor);
+        // Initialize simple path builder with tool-specific settings
+        const config = getSmoothingConfig(activeTool);
+        pathBuilderRef.current = new SimplePathBuilder(config.minDistance, config.smoothingStrength);
         
         // Add the first point (relative to origin)
-        const initialPath = curveBuilderRef.current.addPoint({ x: 0, y: 0 });
+        const initialPath = pathBuilderRef.current.addPoint({ x: 0, y: 0 });
         
         // Set up drawing preview
         currentDrawingPreviewRef.current = {
@@ -96,7 +95,7 @@ export const useCanvasInteractions = () => {
           brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
         
-        console.log('✏️ Started smooth drawing at:', coords);
+        console.log('✏️ Started simple smooth drawing at:', coords);
         break;
       }
 
@@ -151,13 +150,13 @@ export const useCanvasInteractions = () => {
 
       case 'pencil':
       case 'brush': {
-        if (isDrawingRef.current && lastPointRef.current && pathStartRef.current && curveBuilderRef.current) {
+        if (isDrawingRef.current && lastPointRef.current && pathStartRef.current && pathBuilderRef.current) {
           // Calculate relative coordinates from the path start
           const relativeX = coords.x - pathStartRef.current.x;
           const relativeY = coords.y - pathStartRef.current.y;
           
-          // Add point to curve builder and get smooth path
-          const smoothPath = curveBuilderRef.current.addPoint({ x: relativeX, y: relativeY });
+          // Add point to path builder and get smooth path
+          const smoothPath = pathBuilderRef.current.addPoint({ x: relativeX, y: relativeY });
           
           lastPointRef.current = coords;
           
@@ -208,9 +207,9 @@ export const useCanvasInteractions = () => {
 
       case 'pencil':
       case 'brush': {
-        if (isDrawingRef.current && curveBuilderRef.current && pathStartRef.current) {
-          // Get the final smooth path from the curve builder
-          const finalSmoothPath = curveBuilderRef.current.getCurrentPath();
+        if (isDrawingRef.current && pathBuilderRef.current && pathStartRef.current) {
+          // Get the final smooth path from the builder
+          const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
           
           // Create the drawing object with the smooth path
           const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -229,13 +228,13 @@ export const useCanvasInteractions = () => {
 
           const objectId = whiteboardStore.addObject(drawingObject);
           console.log('✏️ Created smooth drawing object:', objectId.slice(0, 8), {
-            pointCount: curveBuilderRef.current.getPointCount(),
+            pointCount: pathBuilderRef.current.getPointCount(),
             pathLength: finalSmoothPath.length
           });
           
-          // Clear drawing preview and curve builder
+          // Clear drawing preview and path builder
           currentDrawingPreviewRef.current = null;
-          curveBuilderRef.current = null;
+          pathBuilderRef.current = null;
           
           // Trigger redraw to show the final object
           if (redrawCanvasRef.current) {
@@ -258,7 +257,7 @@ export const useCanvasInteractions = () => {
     isDrawingRef.current = false;
     lastPointRef.current = null;
     pathStartRef.current = null;
-    curveBuilderRef.current = null;
+    pathBuilderRef.current = null;
   }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd]);
 
   /**
