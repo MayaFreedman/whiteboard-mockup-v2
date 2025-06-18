@@ -18,7 +18,8 @@ export type Tool =
   | 'hexagon'
   | 'star'
   | 'pentagon'
-  | 'diamond';
+  | 'diamond'
+  | 'heart';
 
 export type BrushType = 'paintbrush' | 'chalk' | 'spray' | 'crayon';
 
@@ -36,6 +37,9 @@ export interface ToolSettings {
   eraserMode: EraserMode;
   eraserSize: number;
   eraserOpacity: number;
+  
+  // Shape settings
+  shapeBorderWeight: number;
   
   // Text settings
   fontSize: number;
@@ -108,6 +112,7 @@ const defaultToolSettings: ToolSettings = {
   eraserMode: 'pixel',
   eraserSize: 20,
   eraserOpacity: 1,
+  shapeBorderWeight: 2,
   fontSize: 16,
   fontFamily: 'Arial',
   showGrid: false,
