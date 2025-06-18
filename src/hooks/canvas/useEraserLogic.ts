@@ -6,7 +6,7 @@ import { doesPathIntersectEraserBatch, erasePointsFromPathBatch } from '../../ut
 import { pathToPoints } from '../../utils/path/pathConversion';
 
 /**
- * Hook for handling eraser logic and batch processing
+ * Hook for handling eraser logic and batch processing with improved reliability
  */
 export const useEraserLogic = () => {
   const whiteboardStore = useWhiteboardStore();
@@ -99,22 +99,66 @@ export const useEraserLogic = () => {
   }, [whiteboardStore]);
 
   /**
-   * Handles eraser start logic
+   * Handles eraser start logic with improved object detection
    */
   const handleEraserStart = useCallback((coords: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
     if (eraserMode === 'object') {
-      // Object eraser - find and delete entire objects
-      const objectId = findObjectAt(coords.x, coords.y);
+      console.log('🎯 Object eraser starting at:', coords);
+      
+      // Try multiple detection attempts with slight position variations for better reliability
+      const searchRadius = 8;
+      const testPositions = [
+        coords, // Original position
+        { x: coords.x - searchRadius, y: coords.y },
+        { x: coords.x + searchRadius, y: coords.y },
+        { x: coords.x, y: coords.y - searchRadius },
+        { x: coords.x, y: coords.y + searchRadius },
+        { x: coords.x - searchRadius/2, y: coords.y - searchRadius/2 },
+        { x: coords.x + searchRadius/2, y: coords.y - searchRadius/2 },
+        { x: coords.x - searchRadius/2, y: coords.y + searchRadius/2 },
+        { x: coords.x + searchRadius/2, y: coords.y + searchRadius/2 }
+      ];
+      
+      let objectId: string | null = null;
+      
+      // Try each test position until we find an object
+      for (const testPos of testPositions) {
+        objectId = findObjectAt(testPos.x, testPos.y);
+        if (objectId) {
+          console.log('🎯 Found object at test position:', { 
+            testPos, 
+            originalPos: coords, 
+            objectId: objectId.slice(0, 8) 
+          });
+          break;
+        }
+      }
+      
       if (objectId) {
         whiteboardStore.deleteObject(objectId);
-        console.log('🗑️ Object eraser deleted:', objectId.slice(0, 8));
+        console.log('🗑️ Object eraser successfully deleted:', objectId.slice(0, 8));
         
         // Trigger canvas redraw
         if (redrawCanvas) {
           redrawCanvas();
         }
+      } else {
+        console.log('❌ Object eraser found no objects to delete at:', coords);
+        
+        // Log nearby objects for debugging
+        const nearbyObjects = Object.entries(whiteboardStore.objects)
+          .map(([id, obj]) => ({
+            id: id.slice(0, 8),
+            type: obj.type,
+            distance: Math.sqrt((coords.x - obj.x) ** 2 + (coords.y - obj.y) ** 2),
+            position: { x: obj.x, y: obj.y }
+          }))
+          .filter(obj => obj.distance < 50)
+          .sort((a, b) => a.distance - b.distance);
+        
+        console.log('🔍 Nearby objects within 50px:', nearbyObjects);
       }
     } else {
       // Pixel eraser - use the size as diameter, not radius
@@ -134,21 +178,33 @@ export const useEraserLogic = () => {
   }, [toolStore.toolSettings, whiteboardStore, processEraserBatch]);
 
   /**
-   * Handles eraser move logic
+   * Handles eraser move logic with improved object detection for object mode
    */
   const handleEraserMove = useCallback((coords: { x: number; y: number }, lastPoint: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
     if (eraserMode === 'object') {
-      // Object eraser - find and delete objects during drag
-      const objectId = findObjectAt(coords.x, coords.y);
-      if (objectId) {
-        whiteboardStore.deleteObject(objectId);
-        console.log('🗑️ Object eraser deleted during drag:', objectId.slice(0, 8));
-        
-        // Trigger canvas redraw
-        if (redrawCanvas) {
-          redrawCanvas();
+      // Object eraser - find and delete objects during drag with improved detection
+      const searchRadius = 6;
+      const testPositions = [
+        coords,
+        { x: coords.x - searchRadius, y: coords.y },
+        { x: coords.x + searchRadius, y: coords.y },
+        { x: coords.x, y: coords.y - searchRadius },
+        { x: coords.x, y: coords.y + searchRadius }
+      ];
+      
+      for (const testPos of testPositions) {
+        const objectId = findObjectAt(testPos.x, testPos.y);
+        if (objectId) {
+          whiteboardStore.deleteObject(objectId);
+          console.log('🗑️ Object eraser deleted during drag:', objectId.slice(0, 8));
+          
+          // Trigger canvas redraw
+          if (redrawCanvas) {
+            redrawCanvas();
+          }
+          break; // Only delete one object per move event
         }
       }
     } else {
