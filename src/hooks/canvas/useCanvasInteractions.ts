@@ -60,7 +60,7 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Creates shape objects - all shapes as their native types for consistent fill behavior
+   * Creates shape objects - simple shapes as their native types, complex shapes as paths
    */
   const createShapeObject = useCallback((
     shapeType: string,
@@ -102,60 +102,15 @@ export const useCanvasInteractions = () => {
         };
       
       case 'triangle':
-        return {
-          type: 'triangle',
-          x,
-          y,
-          width,
-          height,
-          stroke: strokeColor,
-          fill: 'none',
-          strokeWidth: shapeBorderWeight,
-          opacity
-        };
-      
       case 'diamond':
-        return {
-          type: 'diamond',
-          x,
-          y,
-          width,
-          height,
-          stroke: strokeColor,
-          fill: 'none',
-          strokeWidth: shapeBorderWeight,
-          opacity
-        };
-      
       case 'pentagon':
-        return {
-          type: 'pentagon',
-          x,
-          y,
-          width,
-          height,
-          stroke: strokeColor,
-          fill: 'none',
-          strokeWidth: shapeBorderWeight,
-          opacity
-        };
-      
       case 'hexagon':
-        return {
-          type: 'hexagon',
-          x,
-          y,
-          width,
-          height,
-          stroke: strokeColor,
-          fill: 'none',
-          strokeWidth: shapeBorderWeight,
-          opacity
-        };
-      
       case 'star':
+      case 'heart': {
+        // Create complex shapes as path objects
+        const pathData = generateShapePath(shapeType, 0, 0, width, height);
         return {
-          type: 'star',
+          type: 'path',
           x,
           y,
           width,
@@ -163,21 +118,13 @@ export const useCanvasInteractions = () => {
           stroke: strokeColor,
           fill: 'none',
           strokeWidth: shapeBorderWeight,
-          opacity
+          opacity,
+          data: {
+            path: pathData,
+            shapeType: shapeType
+          }
         };
-      
-      case 'heart':
-        return {
-          type: 'heart',
-          x,
-          y,
-          width,
-          height,
-          stroke: strokeColor,
-          fill: 'none',
-          strokeWidth: shapeBorderWeight,
-          opacity
-        };
+      }
       
       default:
         return null;

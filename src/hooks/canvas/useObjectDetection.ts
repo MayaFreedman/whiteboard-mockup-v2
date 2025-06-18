@@ -12,51 +12,38 @@ export const useObjectDetection = () => {
   /**
    * Checks if a point is inside a path using multiple detection methods
    */
-  const isPointInPath = useCallback((pathString: string, x: number, y: number, strokeWidth: number = 2, objX: number = 0, objY: number = 0): boolean => {
+  const isPointInPath = useCallback((pathString: string, x: number, y: number, strokeWidth: number = 2): boolean => {
     try {
       const path = new Path2D(pathString);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) return false;
 
-      // Set up stroke properties for hit detection
+      // Primary method: stroke hit detection with generous hit area
       ctx.lineWidth = Math.max(strokeWidth * 2, 12); // At least 12px hit area
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       
-      // Convert screen coordinates to object-relative coordinates
-      const testX = x - objX;
-      const testY = y - objY;
-      
-      console.log('🎯 Testing path:', { screenX: x, screenY: y, objX, objY, testX, testY });
-      
-      // Primary method: stroke hit detection
-      const strokeHit = ctx.isPointInStroke(path, testX, testY);
-      
-      // Also check fill for better detection of complex shapes
-      const fillHit = ctx.isPointInPath(path, testX, testY);
+      const strokeHit = ctx.isPointInStroke(path, x, y);
       
       // Fallback method: check multiple points around the target for better coverage
-      if (!strokeHit && !fillHit) {
+      if (!strokeHit) {
         const radius = Math.max(strokeWidth, 6);
         const testPoints = [
-          { x: testX - radius, y: testY },
-          { x: testX + radius, y: testY },
-          { x: testX, y: testY - radius },
-          { x: testX, y: testY + radius },
-          { x: testX - radius/2, y: testY - radius/2 },
-          { x: testX + radius/2, y: testY - radius/2 },
-          { x: testX - radius/2, y: testY + radius/2 },
-          { x: testX + radius/2, y: testY + radius/2 }
+          { x: x - radius, y },
+          { x: x + radius, y },
+          { x, y: y - radius },
+          { x, y: y + radius },
+          { x: x - radius/2, y: y - radius/2 },
+          { x: x + radius/2, y: y - radius/2 },
+          { x: x - radius/2, y: y + radius/2 },
+          { x: x + radius/2, y: y + radius/2 }
         ];
         
-        return testPoints.some(point => 
-          ctx.isPointInStroke(path, point.x, point.y) || 
-          ctx.isPointInPath(path, point.x, point.y)
-        );
+        return testPoints.some(point => ctx.isPointInStroke(path, point.x, point.y));
       }
       
-      return strokeHit || fillHit;
+      return strokeHit;
     } catch (error) {
       console.warn('Error checking path intersection:', error);
       return false;
@@ -88,44 +75,6 @@ export const useObjectDetection = () => {
     
     // Add 5px padding for easier selection
     return distance <= radius + 5;
-  }, []);
-
-  /**
-   * Checks if a point is inside a triangle
-   */
-  const isPointInTriangle = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
-    if (!obj.width || !obj.height) return false;
-    
-    // Triangle vertices
-    const x1 = obj.x + obj.width / 2; // Top center
-    const y1 = obj.y;
-    const x2 = obj.x + obj.width; // Bottom right
-    const y2 = obj.y + obj.height;
-    const x3 = obj.x; // Bottom left
-    const y3 = obj.y + obj.height;
-    
-    // Use barycentric coordinates to check if point is inside triangle
-    const denom = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
-    const a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / denom;
-    const b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denom;
-    const c = 1 - a - b;
-    
-    return a >= 0 && b >= 0 && c >= 0;
-  }, []);
-
-  /**
-   * Checks if a point is inside a diamond
-   */
-  const isPointInDiamond = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
-    if (!obj.width || !obj.height) return false;
-    
-    const centerX = obj.x + obj.width / 2;
-    const centerY = obj.y + obj.height / 2;
-    const halfWidth = obj.width / 2;
-    const halfHeight = obj.height / 2;
-    
-    // Check if point is inside diamond using Manhattan distance
-    return Math.abs(x - centerX) / halfWidth + Math.abs(y - centerY) / halfHeight <= 1;
   }, []);
 
   /**
@@ -166,12 +115,16 @@ export const useObjectDetection = () => {
       switch (obj.type) {
         case 'path': {
           if (obj.data?.path) {
-            isHit = isPointInPath(obj.data.path, x, y, obj.strokeWidth, obj.x, obj.y);
+            // Convert screen coordinates to path-relative coordinates
+            const relativeX = x - obj.x;
+            const relativeY = y - obj.y;
+            isHit = isPointInPath(obj.data.path, relativeX, relativeY, obj.strokeWidth);
             
             console.log('🖊️ Path hit test:', {
               id: id.slice(0, 8),
               screenCoords: { x, y },
               objectCoords: { x: obj.x, y: obj.y },
+              relativeCoords: { x: relativeX, y: relativeY },
               strokeWidth: obj.strokeWidth,
               isHit
             });
@@ -195,26 +148,6 @@ export const useObjectDetection = () => {
             id: id.slice(0, 8),
             center: { x: obj.x + (obj.width || 0) / 2, y: obj.y + (obj.width || 0) / 2 },
             radius: (obj.width || 0) / 2,
-            isHit
-          });
-          break;
-        }
-        
-        case 'triangle': {
-          isHit = isPointInTriangle(obj, x, y);
-          console.log('🔺 Triangle hit test:', {
-            id: id.slice(0, 8),
-            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
-            isHit
-          });
-          break;
-        }
-        
-        case 'diamond': {
-          isHit = isPointInDiamond(obj, x, y);
-          console.log('💎 Diamond hit test:', {
-            id: id.slice(0, 8),
-            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
             isHit
           });
           break;
@@ -257,15 +190,13 @@ export const useObjectDetection = () => {
     
     console.log('❌ No object found at coordinates');
     return null;
-  }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInTriangle, isPointInDiamond, isPointInText]);
+  }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInText]);
 
   return {
     findObjectAt,
     isPointInPath,
     isPointInRectangle,
     isPointInCircle,
-    isPointInTriangle,
-    isPointInDiamond,
     isPointInText
   };
 };
