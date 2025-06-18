@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
@@ -411,7 +412,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
             payload: action,
             timestamp: Date.now(),
             id: nanoid(),
-            userId: get().getCurrentUserId(),
+            userId: getDefaultUserId(), // Fix: use getDefaultUserId() instead of get().getCurrentUserId()
             previousState: {
               object: originalObject
             }
