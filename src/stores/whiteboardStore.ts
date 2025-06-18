@@ -37,6 +37,9 @@ interface WhiteboardStore extends WhiteboardState {
   // Actions that will be easily serializable for multiplayer
   dispatch: (action: WhiteboardAction) => void;
   
+  // Direct state manipulation methods (for undo/redo)
+  applyStateChange: (stateChange: Partial<WhiteboardState>) => void;
+  
   // Convenience methods for common operations
   addObject: (object: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'>, userId?: string) => string;
   updateObject: (id: string, updates: Partial<WhiteboardObject>, userId?: string) => void;
@@ -114,6 +117,17 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
     getState: () => get(),
     setState: (updater) => set(updater),
 
+    // Direct state manipulation for undo/redo (bypasses action history)
+    applyStateChange: (stateChange: Partial<WhiteboardState>) => {
+      console.log('🔄 Applying direct state change:', Object.keys(stateChange));
+      set((state) => ({
+        ...state,
+        ...stateChange,
+        stateVersion: state.stateVersion + 1,
+        lastStateUpdate: Date.now()
+      }));
+    },
+
     dispatch: (action: WhiteboardAction) => {
       console.log('🔄 Dispatching action:', {
         type: action.type,
@@ -122,30 +136,39 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         timestamp: action.timestamp
       });
       
+      // Filter out undo/redo sync actions from being added to history
+      const isUndoRedoSync = action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO';
+      
       set((state) => {
         const newState = applyAction(state, action);
         
-        // Add to global history (for debugging and state tracking)
-        const newHistory = [...state.actionHistory, action];
+        // Only add user actions to history, not undo/redo sync actions
+        let newHistory = state.actionHistory;
+        let newHistoryIndex = state.currentHistoryIndex;
+        let userHistories = new Map(state.userActionHistories);
+        let userIndices = new Map(state.userHistoryIndices);
         
-        // Add to user-specific history for the action creator (local tracking only)
-        const userHistories = new Map(state.userActionHistories);
-        const userIndices = new Map(state.userHistoryIndices);
-        
-        const userHistory = userHistories.get(action.userId) || [];
-        const userIndex = userIndices.get(action.userId) ?? -1;
-        
-        // Only add non-duplicate actions to user history
-        const isDuplicate = userHistory.some(existingAction => existingAction.id === action.id);
-        if (!isDuplicate) {
-          // Trim user history at current index and add new action
-          const newUserHistory = userHistory.slice(0, userIndex + 1);
-          newUserHistory.push(action);
+        if (!isUndoRedoSync) {
+          // Add to global history (for debugging and state tracking)
+          newHistory = [...state.actionHistory, action];
+          newHistoryIndex = newHistory.length - 1;
           
-          userHistories.set(action.userId, newUserHistory);
-          userIndices.set(action.userId, newUserHistory.length - 1);
+          // Add to user-specific history for the action creator (local tracking only)
+          const userHistory = userHistories.get(action.userId) || [];
+          const userIndex = userIndices.get(action.userId) ?? -1;
           
-          console.log('📊 Updated user history for:', action.userId, 'length:', newUserHistory.length, 'index:', newUserHistory.length - 1);
+          // Only add non-duplicate actions to user history
+          const isDuplicate = userHistory.some(existingAction => existingAction.id === action.id);
+          if (!isDuplicate) {
+            // Trim user history at current index and add new action
+            const newUserHistory = userHistory.slice(0, userIndex + 1);
+            newUserHistory.push(action);
+            
+            userHistories.set(action.userId, newUserHistory);
+            userIndices.set(action.userId, newUserHistory.length - 1);
+            
+            console.log('📊 Updated user history for:', action.userId, 'length:', newUserHistory.length, 'index:', newUserHistory.length - 1);
+          }
         }
         
         // Update state tracking
@@ -155,7 +178,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         return {
           ...newState,
           actionHistory: newHistory,
-          currentHistoryIndex: newHistory.length - 1,
+          currentHistoryIndex: newHistoryIndex,
           userActionHistories: userHistories,
           userHistoryIndices: userIndices,
           lastAction: action,
@@ -633,6 +656,13 @@ function applyAction(state: WhiteboardStore, action: WhiteboardAction): Partial<
         objects: newObjects,
         selectedObjectIds: state.selectedObjectIds.filter(objId => !objectIds.includes(objId))
       };
+    }
+    
+    // Handle undo/redo sync actions (apply state directly without adding to history)
+    case 'SYNC_UNDO':
+    case 'SYNC_REDO': {
+      const { stateChange } = action.payload;
+      return stateChange;
     }
     
     default:

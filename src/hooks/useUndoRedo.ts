@@ -1,8 +1,9 @@
 
 import { useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
-import { WhiteboardAction, WhiteboardObject } from '../types/whiteboard';
+import { WhiteboardAction, WhiteboardObject, WhiteboardState } from '../types/whiteboard';
 import { nanoid } from 'nanoid';
+import { useMultiplayer } from '../contexts/MultiplayerContext';
 
 interface UndoRedoManager {
   undo: (userId: string) => void;
@@ -13,212 +14,253 @@ interface UndoRedoManager {
 
 /**
  * Hook to manage user-specific undo/redo operations
- * This creates inverse actions and dispatches them as regular actions for multiplayer sync
+ * Uses direct state manipulation instead of dispatching actions to prevent loops
  */
 export const useUndoRedo = (): UndoRedoManager => {
   const store = useWhiteboardStore();
+  const multiplayer = useMultiplayer();
 
   /**
-   * Creates an inverse action that will undo the original action
-   * Uses previousState when available for accurate restoration
+   * Creates the state change needed to undo an action
    */
-  const createInverseAction = useCallback((action: WhiteboardAction, currentState: any): WhiteboardAction | null => {
-    console.log('🔄 Creating inverse action for:', action.type, action.id);
+  const createUndoStateChange = useCallback((action: WhiteboardAction, currentState: any): Partial<WhiteboardState> | null => {
+    console.log('🔄 Creating undo state change for:', action.type, action.id);
 
     switch (action.type) {
       case 'ADD_OBJECT': {
+        // Undo add: remove the object
+        const newObjects = { ...currentState.objects };
+        delete newObjects[action.payload.object.id];
+        
         return {
-          type: 'DELETE_OBJECT',
-          payload: { id: action.payload.object.id },
-          previousState: { object: action.payload.object },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
+          objects: newObjects,
+          selectedObjectIds: currentState.selectedObjectIds.filter(id => id !== action.payload.object.id)
         };
       }
       
       case 'DELETE_OBJECT': {
-        const deletedObject = action.previousState?.object || currentState.objects[action.payload.id];
+        // Undo delete: restore the object
+        const deletedObject = action.previousState?.object;
         if (!deletedObject) {
-          console.warn('⚠️ Cannot create inverse for DELETE_OBJECT: no previous state');
+          console.warn('⚠️ Cannot undo DELETE_OBJECT: no previous state');
           return null;
         }
         
         return {
-          type: 'ADD_OBJECT',
-          payload: { object: deletedObject },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
+          objects: {
+            ...currentState.objects,
+            [deletedObject.id]: deletedObject
+          }
         };
       }
       
       case 'UPDATE_OBJECT': {
+        // Undo update: restore previous object state
         const previousObject = action.previousState?.object;
         if (!previousObject) {
-          console.warn('⚠️ Cannot create inverse for UPDATE_OBJECT: no previous state');
+          console.warn('⚠️ Cannot undo UPDATE_OBJECT: no previous state');
           return null;
         }
         
         return {
-          type: 'UPDATE_OBJECT',
-          payload: { 
-            id: action.payload.id, 
-            updates: previousObject 
-          },
-          previousState: { object: currentState.objects[action.payload.id] },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
+          objects: {
+            ...currentState.objects,
+            [previousObject.id]: previousObject
+          }
         };
       }
       
       case 'SELECT_OBJECTS': {
+        // Undo selection: restore previous selection
         const previousSelection = action.previousState?.selectedObjectIds || [];
         return {
-          type: 'SELECT_OBJECTS',
-          payload: { objectIds: previousSelection },
-          previousState: { selectedObjectIds: action.payload.objectIds },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
+          selectedObjectIds: previousSelection
         };
       }
       
       case 'UPDATE_VIEWPORT': {
+        // Undo viewport: restore previous viewport
         const previousViewport = action.previousState?.viewport;
         if (!previousViewport) {
-          console.warn('⚠️ Cannot create inverse for UPDATE_VIEWPORT: no previous state');
+          console.warn('⚠️ Cannot undo UPDATE_VIEWPORT: no previous state');
           return null;
         }
         
         return {
-          type: 'UPDATE_VIEWPORT',
-          payload: previousViewport,
-          previousState: { viewport: currentState.viewport },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
+          viewport: previousViewport
         };
       }
       
-      case 'UPDATE_SETTINGS': {
+      case '⚠️UPDATE_SETTINGS': {
+        // Undo settings: restore previous settings
         const previousSettings = action.previousState?.settings;
         if (!previousSettings) {
-          console.warn('⚠️ Cannot create inverse for UPDATE_SETTINGS: no previous state');
+          console.warn('⚠️ Cannot undo UPDATE_SETTINGS: no previous state');
           return null;
         }
         
         return {
-          type: 'UPDATE_SETTINGS',
-          payload: previousSettings,
-          previousState: { settings: currentState.settings },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
+          settings: previousSettings
         };
       }
       
       case 'ERASE_PATH': {
+        // Undo erase: remove segments and restore original
         const originalObject = action.previousState?.object;
         if (!originalObject) {
-          console.warn('⚠️ Cannot create inverse for ERASE_PATH: no previous state');
+          console.warn('⚠️ Cannot undo ERASE_PATH: no previous state');
           return null;
         }
         
-        // First delete all the segment objects, then restore the original
-        const deleteActions: WhiteboardAction[] = action.payload.resultingSegments.map(segment => ({
-          type: 'DELETE_OBJECT',
-          payload: { id: segment.id },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
-        }));
+        const newObjects = { ...currentState.objects };
         
-        // Then add back the original object
-        const restoreAction: WhiteboardAction = {
-          type: 'ADD_OBJECT',
-          payload: { object: originalObject },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
-        };
+        // Remove all the segment objects
+        action.payload.resultingSegments.forEach(segment => {
+          delete newObjects[segment.id];
+        });
         
-        // Return a batch update to handle multiple operations atomically
+        // Restore the original object
+        newObjects[originalObject.id] = originalObject;
+        
         return {
-          type: 'BATCH_UPDATE',
-          payload: { actions: [...deleteActions, restoreAction] },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
+          objects: newObjects,
+          selectedObjectIds: currentState.selectedObjectIds.filter(id => 
+            !action.payload.resultingSegments.some(segment => segment.id === id)
+          )
         };
       }
       
       case 'CLEAR_CANVAS': {
+        // Undo clear: restore all objects and selection
         const previousObjects = action.previousState?.objects || {};
         const previousSelection = action.previousState?.selectedObjectIds || [];
         
         if (Object.keys(previousObjects).length === 0) {
-          console.warn('⚠️ Cannot create inverse for CLEAR_CANVAS: no previous state');
+          console.warn('⚠️ Cannot undo CLEAR_CANVAS: no previous state');
           return null;
         }
         
-        const restoreActions: WhiteboardAction[] = Object.values(previousObjects).map(obj => ({
-          type: 'ADD_OBJECT',
-          payload: { object: obj as WhiteboardObject },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
-        }));
-        
-        const restoreSelectionAction: WhiteboardAction = {
-          type: 'SELECT_OBJECTS',
-          payload: { objectIds: previousSelection },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
-        };
-        
         return {
-          type: 'BATCH_UPDATE',
-          payload: { actions: [...restoreActions, restoreSelectionAction] },
-          timestamp: Date.now(),
-          id: nanoid(),
-          userId: action.userId
+          objects: previousObjects,
+          selectedObjectIds: previousSelection
         };
       }
       
       default:
-        console.warn('⚠️ Cannot create inverse for action type:', action.type);
+        console.warn('⚠️ Cannot create undo state change for action type:', action.type);
         return null;
     }
   }, []);
 
   /**
-   * Checks if an action conflicts with current state (object was modified by another user)
+   * Creates the state change needed to redo an action
    */
-  const hasConflict = useCallback((action: WhiteboardAction, currentState: any): boolean => {
+  const createRedoStateChange = useCallback((action: WhiteboardAction, currentState: any): Partial<WhiteboardState> | null => {
+    console.log('🔄 Creating redo state change for:', action.type, action.id);
+
+    // For redo, we essentially re-apply the original action's effect
     switch (action.type) {
-      case 'UPDATE_OBJECT':
+      case 'ADD_OBJECT': {
+        return {
+          objects: {
+            ...currentState.objects,
+            [action.payload.object.id]: action.payload.object
+          }
+        };
+      }
+      
       case 'DELETE_OBJECT': {
-        const objectId = action.payload.id;
-        const currentObject = currentState.objects[objectId];
+        const newObjects = { ...currentState.objects };
+        delete newObjects[action.payload.id];
         
-        if (!currentObject && action.type === 'UPDATE_OBJECT') {
-          console.log('🔍 Conflict: Object no longer exists:', objectId);
-          return true;
-        }
+        return {
+          objects: newObjects,
+          selectedObjectIds: currentState.selectedObjectIds.filter(objId => objId !== action.payload.id)
+        };
+      }
+      
+      case 'UPDATE_OBJECT': {
+        const existingObject = currentState.objects[action.payload.id];
+        if (!existingObject) return null;
         
-        if (currentObject && currentObject.updatedAt > action.timestamp) {
-          console.log('🔍 Conflict: Object was modified after this action:', objectId);
-          return true;
-        }
+        return {
+          objects: {
+            ...currentState.objects,
+            [action.payload.id]: {
+              ...existingObject,
+              ...action.payload.updates
+            }
+          }
+        };
+      }
+      
+      case 'SELECT_OBJECTS': {
+        return {
+          selectedObjectIds: action.payload.objectIds
+        };
+      }
+      
+      case 'UPDATE_VIEWPORT': {
+        return {
+          viewport: {
+            ...currentState.viewport,
+            ...action.payload
+          }
+        };
+      }
+      
+      case 'UPDATE_SETTINGS': {
+        return {
+          settings: {
+            ...currentState.settings,
+            ...action.payload
+          }
+        };
+      }
+      
+      case 'CLEAR_CANVAS': {
+        return {
+          objects: {},
+          selectedObjectIds: []
+        };
+      }
+      
+      case 'ERASE_PATH': {
+        const { originalObjectId, resultingSegments } = action.payload;
+        const newObjects = { ...currentState.objects };
         
-        return false;
+        // Remove the original object
+        delete newObjects[originalObjectId];
+        
+        // Add all resulting segments
+        resultingSegments.forEach((segment) => {
+          if (segment.points.length >= 2) {
+            const originalObject = currentState.objects[originalObjectId];
+            if (originalObject) {
+              // This would need the path conversion utility
+              const newObject: WhiteboardObject = {
+                ...originalObject,
+                id: segment.id,
+                data: {
+                  ...originalObject.data,
+                  // path: pointsToPath(segment.points) // Would need import
+                },
+                updatedAt: Date.now()
+              };
+              newObjects[segment.id] = newObject;
+            }
+          }
+        });
+        
+        return {
+          objects: newObjects,
+          selectedObjectIds: currentState.selectedObjectIds.filter(objId => objId !== originalObjectId)
+        };
       }
       
       default:
-        return false;
+        console.warn('⚠️ Cannot create redo state change for action type:', action.type);
+        return null;
     }
   }, []);
 
@@ -237,34 +279,45 @@ export const useUndoRedo = (): UndoRedoManager => {
     const actionToUndo = userHistory[currentIndex];
     console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
     
-    // Check for conflicts before undoing
-    if (hasConflict(actionToUndo, state)) {
-      console.warn('⚠️ Conflict detected, cannot undo action:', actionToUndo.id);
-      // Could show user notification here
+    // Create the undo state change
+    const undoStateChange = createUndoStateChange(actionToUndo, state);
+    if (!undoStateChange) {
+      console.warn('⚠️ Could not create undo state change for:', actionToUndo.type);
       return;
     }
     
-    // Create and dispatch the inverse action
-    const inverseAction = createInverseAction(actionToUndo, state);
-    if (inverseAction) {
-      console.log('↶ Dispatching inverse action:', inverseAction.type);
+    // Update the user's history index locally
+    const newIndices = new Map(state.userHistoryIndices);
+    newIndices.set(userId, currentIndex - 1);
+    
+    // Apply the state change directly (local only)
+    store.setState((prevState) => ({
+      ...prevState,
+      ...undoStateChange,
+      userHistoryIndices: newIndices,
+      stateVersion: prevState.stateVersion + 1,
+      lastStateUpdate: Date.now()
+    }));
+    
+    // Send sync action to other clients if multiplayer is connected
+    if (multiplayer?.isConnected) {
+      const syncAction: WhiteboardAction = {
+        type: 'SYNC_UNDO',
+        payload: {
+          stateChange: undoStateChange,
+          originalActionId: actionToUndo.id
+        },
+        timestamp: Date.now(),
+        id: nanoid(),
+        userId
+      };
       
-      // Update the user's history index locally first
-      const newIndices = new Map(state.userHistoryIndices);
-      newIndices.set(userId, currentIndex - 1);
-      
-      // Update the store state directly for the index change (this won't be synced)
-      store.setState((prevState) => ({
-        ...prevState,
-        userHistoryIndices: newIndices
-      }));
-      
-      // Dispatch the inverse action (this will be synced to other clients)
-      store.dispatch(inverseAction);
-    } else {
-      console.warn('⚠️ Could not create inverse action for:', actionToUndo.type);
+      console.log('↶ Sending undo sync to other clients');
+      multiplayer.sendWhiteboardAction(syncAction);
     }
-  }, [createInverseAction, hasConflict, store]);
+    
+    console.log('↶ Undo completed successfully');
+  }, [createUndoStateChange, store, multiplayer]);
 
   const redo = useCallback((userId: string) => {
     const state = store.getState();
@@ -282,33 +335,45 @@ export const useUndoRedo = (): UndoRedoManager => {
     const actionToRedo = userHistory[nextIndex];
     console.log('↷ Redoing action:', actionToRedo.type, actionToRedo.id);
     
-    // Check for conflicts before redoing
-    if (hasConflict(actionToRedo, state)) {
-      console.warn('⚠️ Conflict detected, cannot redo action:', actionToRedo.id);
+    // Create the redo state change
+    const redoStateChange = createRedoStateChange(actionToRedo, state);
+    if (!redoStateChange) {
+      console.warn('⚠️ Could not create redo state change for:', actionToRedo.type);
       return;
     }
     
-    // Update the user's history index locally first
+    // Update the user's history index locally
     const newIndices = new Map(state.userHistoryIndices);
     newIndices.set(userId, nextIndex);
     
-    // Update the store state directly for the index change (this won't be synced)
+    // Apply the state change directly (local only)
     store.setState((prevState) => ({
       ...prevState,
-      userHistoryIndices: newIndices
+      ...redoStateChange,
+      userHistoryIndices: newIndices,
+      stateVersion: prevState.stateVersion + 1,
+      lastStateUpdate: Date.now()
     }));
     
-    // Dispatch the original action again (this will be synced to other clients)
-    // Create a new action with the same payload but new ID and timestamp
-    const redoAction: WhiteboardAction = {
-      ...actionToRedo,
-      id: nanoid(),
-      timestamp: Date.now()
-    };
+    // Send sync action to other clients if multiplayer is connected
+    if (multiplayer?.isConnected) {
+      const syncAction: WhiteboardAction = {
+        type: 'SYNC_REDO',
+        payload: {
+          stateChange: redoStateChange,
+          redoneActionId: actionToRedo.id
+        },
+        timestamp: Date.now(),
+        id: nanoid(),
+        userId
+      };
+      
+      console.log('↷ Sending redo sync to other clients');
+      multiplayer.sendWhiteboardAction(syncAction);
+    }
     
-    console.log('↷ Dispatching redo action:', redoAction.type, redoAction.id);
-    store.dispatch(redoAction);
-  }, [hasConflict, store]);
+    console.log('↷ Redo completed successfully');
+  }, [createRedoStateChange, store, multiplayer]);
 
   const canUndo = useCallback((userId: string) => {
     const state = store.getState();

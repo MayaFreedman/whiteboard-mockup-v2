@@ -158,6 +158,23 @@ export interface ErasePathAction extends BaseAction {
   };
 }
 
+// New sync actions for undo/redo synchronization
+export interface SyncUndoAction extends BaseAction {
+  type: 'SYNC_UNDO';
+  payload: {
+    stateChange: Partial<WhiteboardState>;
+    originalActionId: string;
+  };
+}
+
+export interface SyncRedoAction extends BaseAction {
+  type: 'SYNC_REDO';
+  payload: {
+    stateChange: Partial<WhiteboardState>;
+    redoneActionId: string;
+  };
+}
+
 export type WhiteboardAction = 
   | AddObjectAction
   | UpdateObjectAction
@@ -168,5 +185,7 @@ export type WhiteboardAction =
   | ClearCanvasAction
   | BatchUpdateAction
   | ErasePixelsAction
-  | DeleteObjectsInAreaAction
-  | ErasePathAction;
+  |DeleteObjectsInAreaAction
+  | ErasePathAction
+  | SyncUndoAction
+  | SyncRedoAction;
