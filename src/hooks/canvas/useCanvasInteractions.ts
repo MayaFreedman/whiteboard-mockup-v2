@@ -48,7 +48,6 @@ export const useCanvasInteractions = () => {
     endX: number;
     endY: number;
     strokeColor: string;
-    fillColor: string;
     strokeWidth: number;
     opacity: number;
   } | null>(null);
@@ -61,77 +60,8 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Generates SVG path data for all shapes (including rectangle and circle)
-   */
-  const generateShapePath = useCallback((shapeType: string, width: number, height: number): string => {
-    const centerX = width / 2;
-    const centerY = height / 2;
-    
-    switch (shapeType) {
-      case 'rectangle':
-        return `M 0 0 L ${width} 0 L ${width} ${height} L 0 ${height} Z`;
-      
-      case 'circle': {
-        const radius = Math.min(width, height) / 2;
-        const cx = width / 2;
-        const cy = height / 2;
-        // SVG circle using arc commands
-        return `M ${cx - radius} ${cy} A ${radius} ${radius} 0 1 0 ${cx + radius} ${cy} A ${radius} ${radius} 0 1 0 ${cx - radius} ${cy} Z`;
-      }
-      
-      case 'triangle':
-        return `M ${centerX} 0 L ${width} ${height} L 0 ${height} Z`;
-      
-      case 'diamond':
-        return `M ${centerX} 0 L ${width} ${centerY} L ${centerX} ${height} L 0 ${centerY} Z`;
-      
-      case 'pentagon': {
-        const pentagonPoints = [];
-        for (let i = 0; i < 5; i++) {
-          const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-          const x = centerX + (width / 2) * Math.cos(angle);
-          const y = centerY + (height / 2) * Math.sin(angle);
-          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
-        }
-        return pentagonPoints.join(' ') + ' Z';
-      }
-      
-      case 'hexagon': {
-        const hexagonPoints = [];
-        for (let i = 0; i < 6; i++) {
-          const angle = (i * 2 * Math.PI) / 6;
-          const x = centerX + (width / 2) * Math.cos(angle);
-          const y = centerY + (height / 2) * Math.sin(angle);
-          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
-        }
-        return hexagonPoints.join(' ') + ' Z';
-      }
-      
-      case 'star': {
-        const starPoints = [];
-        const outerRadiusX = width / 2;
-        const outerRadiusY = height / 2;
-        const innerRadiusX = outerRadiusX * 0.4;
-        const innerRadiusY = outerRadiusY * 0.4;
-        
-        for (let i = 0; i < 10; i++) {
-          const angle = (i * Math.PI) / 5 - Math.PI / 2;
-          const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
-          const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
-          const x = centerX + radiusX * Math.cos(angle);
-          const y = centerY + radiusY * Math.sin(angle);
-          starPoints.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
-        }
-        return starPoints.join(' ') + ' Z';
-      }
-      
-      default:
-        return '';
-    }
-  }, []);
-
-  /**
-   * Creates a unified path-based shape object for ALL shapes
+   * Creates shape objects as their native types (rectangle, circle, etc.)
+   * This is cleaner than converting everything to paths upfront
    */
   const createShapeObject = useCallback((
     shapeType: string,
@@ -140,34 +70,43 @@ export const useCanvasInteractions = () => {
     width: number,
     height: number,
     strokeColor: string,
-    fillColor: string,
     strokeWidth: number,
     opacity: number
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
     const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
-    const shapeData = generateShapePath(shapeType, width, height);
     
-    if (!shapeData) {
-      console.warn('Unknown shape type:', shapeType);
-      return null;
+    switch (shapeType) {
+      case 'rectangle':
+        return {
+          type: 'rectangle',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none',
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      case 'circle':
+        return {
+          type: 'circle',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none',
+          strokeWidth: shapeBorderWeight,
+          opacity
+        };
+      
+      default:
+        // For complex shapes, we'll use path-based approach
+        return null;
     }
-    
-    // ALL shapes are now path objects with metadata
-    return {
-      type: 'path',
-      x,
-      y,
-      stroke: strokeColor,
-      fill: 'none', // Default to no fill, can be changed with fill tool
-      strokeWidth: shapeBorderWeight,
-      opacity,
-      data: {
-        path: shapeData,
-        shapeType,
-        isShape: true
-      }
-    };
-  }, [toolStore.toolSettings.shapeBorderWeight, generateShapePath]);
+  }, [toolStore.toolSettings.shapeBorderWeight]);
 
   /**
    * Handles fill tool click - fills the clicked shape with the current stroke color
@@ -190,8 +129,7 @@ export const useCanvasInteractions = () => {
     console.log('🎨 Found object to fill:', { 
       id: objectId.slice(0, 8), 
       type: obj.type, 
-      isShape: obj.data?.isShape,
-      hasPathData: !!obj.data?.path 
+      currentFill: obj.fill 
     });
     
     // Use the current stroke color from toolbar as fill color
@@ -226,10 +164,8 @@ export const useCanvasInteractions = () => {
         pathStartRef.current &&
         pathBuilderRef.current.getPointCount() > 1) {
       
-      // Get the final smooth path from the builder
       const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
       
-      // Create the drawing object with the smooth path
       const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
         type: 'path',
         x: pathStartRef.current.x,
@@ -254,7 +190,7 @@ export const useCanvasInteractions = () => {
     }
 
     // Handle shape completion
-    if (['rectangle', 'circle', 'triangle', 'hexagon', 'star', 'pentagon', 'diamond'].includes(activeTool) && 
+    if (['rectangle', 'circle'].includes(activeTool) && 
         isDrawingRef.current && 
         currentShapePreviewRef.current) {
       
@@ -262,7 +198,7 @@ export const useCanvasInteractions = () => {
       const width = Math.abs(preview.endX - preview.startX);
       const height = Math.abs(preview.endY - preview.startY);
       
-      if (width > 5 && height > 5) { // Only create shape if it's big enough
+      if (width > 5 && height > 5) {
         const shapeObject = createShapeObject(
           activeTool,
           Math.min(preview.startX, preview.endX),
@@ -270,7 +206,6 @@ export const useCanvasInteractions = () => {
           width,
           height,
           preview.strokeColor,
-          preview.fillColor,
           preview.strokeWidth,
           preview.opacity
         );
@@ -292,7 +227,6 @@ export const useCanvasInteractions = () => {
     currentDrawingPreviewRef.current = null;
     currentShapePreviewRef.current = null;
     
-    // Trigger redraw to clear preview
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
     }
@@ -336,7 +270,7 @@ export const useCanvasInteractions = () => {
     switch (activeTool) {
       case 'fill': {
         handleFillClick(coords);
-        return; // Don't set any drawing state for fill tool
+        return;
       }
 
       case 'select': {
@@ -359,14 +293,11 @@ export const useCanvasInteractions = () => {
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
-        // Initialize simple path builder with tool-specific settings
         const config = getSmoothingConfig(activeTool);
         pathBuilderRef.current = new SimplePathBuilder(config.minDistance, config.smoothingStrength);
         
-        // Add the first point (relative to origin)
         const initialPath = pathBuilderRef.current.addPoint({ x: 0, y: 0 });
         
-        // Set up drawing preview
         currentDrawingPreviewRef.current = {
           path: initialPath,
           startX: coords.x,
@@ -382,17 +313,11 @@ export const useCanvasInteractions = () => {
       }
 
       case 'rectangle':
-      case 'circle':
-      case 'triangle':
-      case 'hexagon':
-      case 'star':
-      case 'pentagon':
-      case 'diamond': {
+      case 'circle': {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
-        // Set up shape preview with shape-specific border weight
         const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
         currentShapePreviewRef.current = {
           type: activeTool,
@@ -401,7 +326,6 @@ export const useCanvasInteractions = () => {
           endX: coords.x,
           endY: coords.y,
           strokeColor: toolStore.toolSettings.strokeColor,
-          fillColor: 'transparent', // Always transparent fill for preview
           strokeWidth: shapeBorderWeight,
           opacity: toolStore.toolSettings.opacity
         };
@@ -438,7 +362,6 @@ export const useCanvasInteractions = () => {
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
           
-          // Update selected objects position
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const obj = whiteboardStore.objects[objectId];
             if (obj) {
@@ -451,7 +374,6 @@ export const useCanvasInteractions = () => {
           
           dragStartRef.current = coords;
           
-          // Trigger canvas redraw for smooth dragging
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
@@ -462,21 +384,17 @@ export const useCanvasInteractions = () => {
       case 'pencil':
       case 'brush': {
         if (isDrawingRef.current && lastPointRef.current && pathStartRef.current && pathBuilderRef.current) {
-          // Calculate relative coordinates from the path start
           const relativeX = coords.x - pathStartRef.current.x;
           const relativeY = coords.y - pathStartRef.current.y;
           
-          // Add point to path builder and get smooth path
           const smoothPath = pathBuilderRef.current.addPoint({ x: relativeX, y: relativeY });
           
           lastPointRef.current = coords;
           
-          // Update drawing preview with smooth path
           if (currentDrawingPreviewRef.current) {
             currentDrawingPreviewRef.current.path = smoothPath;
           }
           
-          // Throttle redraws for performance
           if (redrawCanvasRef.current) {
             requestAnimationFrame(() => {
               if (redrawCanvasRef.current && isDrawingRef.current) {
@@ -489,18 +407,11 @@ export const useCanvasInteractions = () => {
       }
 
       case 'rectangle':
-      case 'circle':
-      case 'triangle':
-      case 'hexagon':
-      case 'star':
-      case 'pentagon':
-      case 'diamond': {
+      case 'circle': {
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
-          // Update shape preview end coordinates
           currentShapePreviewRef.current.endX = coords.x;
           currentShapePreviewRef.current.endY = coords.y;
           
-          // Throttle redraws for performance
           if (redrawCanvasRef.current) {
             requestAnimationFrame(() => {
               if (redrawCanvasRef.current && isDrawingRef.current) {
@@ -543,10 +454,8 @@ export const useCanvasInteractions = () => {
       case 'pencil':
       case 'brush': {
         if (isDrawingRef.current && pathBuilderRef.current && pathStartRef.current) {
-          // Get the final smooth path from the builder
           const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
           
-          // Create the drawing object with the smooth path
           const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
             type: 'path',
             x: pathStartRef.current.x,
@@ -567,11 +476,9 @@ export const useCanvasInteractions = () => {
             pathLength: finalSmoothPath.length
           });
           
-          // Clear drawing preview and path builder
           currentDrawingPreviewRef.current = null;
           pathBuilderRef.current = null;
           
-          // Trigger redraw to show the final object
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
@@ -580,18 +487,12 @@ export const useCanvasInteractions = () => {
       }
 
       case 'rectangle':
-      case 'circle':
-      case 'triangle':
-      case 'hexagon':
-      case 'star':
-      case 'pentagon':
-      case 'diamond': {
+      case 'circle': {
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           const preview = currentShapePreviewRef.current;
           const width = Math.abs(preview.endX - preview.startX);
           const height = Math.abs(preview.endY - preview.startY);
           
-          // Only create shape if it's big enough
           if (width > 5 && height > 5) {
             const shapeObject = createShapeObject(
               activeTool,
@@ -600,7 +501,6 @@ export const useCanvasInteractions = () => {
               width,
               height,
               preview.strokeColor,
-              preview.fillColor,
               preview.strokeWidth,
               preview.opacity
             );
@@ -611,10 +511,8 @@ export const useCanvasInteractions = () => {
             }
           }
           
-          // Clear shape preview
           currentShapePreviewRef.current = null;
           
-          // Trigger redraw to show the final object
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
@@ -631,7 +529,6 @@ export const useCanvasInteractions = () => {
       }
     }
 
-    // Reset drawing state
     isDrawingRef.current = false;
     lastPointRef.current = null;
     pathStartRef.current = null;

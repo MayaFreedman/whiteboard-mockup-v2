@@ -56,7 +56,19 @@ interface WhiteboardStore extends WhiteboardState {
   // Eraser methods
   erasePixels: (eraserPath: { path: string; x: number; y: number; size: number; opacity: number }, userId?: string) => void;
   deleteObjectsInArea: (objectIds: string[], eraserArea: { x: number; y: number; width: number; height: number }, userId?: string) => void;
-  erasePath: (eraserAction: { originalObjectId: string; eraserPath: { x: number; y: number; size: number; path: string }; resultingSegments: Array<{ points: Array<{ x: number; y: number }>; id: string }> }, userId?: string) => void;
+  erasePath: (action: {
+    originalObjectId: string;
+    eraserPath: {
+      x: number;
+      y: number;
+      size: number;
+      path: string;
+    };
+    resultingSegments: Array<{
+      points: Array<{ x: number; y: number }>;
+      id: string;
+    }>;
+  }) => void;
   
   // State serialization for multiplayer
   getSerializableState: () => Omit<WhiteboardState, 'lastAction'>;
@@ -375,25 +387,87 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
       get().dispatch(action);
     },
 
-    erasePath: (eraserAction, userId = getDefaultUserId()) => {
-      const state = get();
-      const originalObject = state.objects[eraserAction.originalObjectId];
-      
-      if (!originalObject) {
-        console.warn('⚠️ Cannot erase non-existent path:', eraserAction.originalObjectId);
-        return;
-      }
-      
-      const action: ErasePathAction = {
-        type: 'ERASE_PATH',
-        payload: eraserAction,
-        previousState: { object: originalObject }, // Store original object for undo
-        timestamp: Date.now(),
-        id: nanoid(),
-        userId
+    erasePath: (action: {
+      originalObjectId: string;
+      eraserPath: {
+        x: number;
+        y: number;
+        size: number;
+        path: string;
       };
-      
-      get().dispatch(action);
+      resultingSegments: Array<{
+        points: Array<{ x: number; y: number }>;
+        id: string;
+      }>;
+    }) => {
+      set((state) => {
+        const newObjects = { ...state.objects };
+        const originalObject = newObjects[action.originalObjectId];
+        
+        if (originalObject) {
+          // Store the original object for undo
+          const eraseAction: ErasePathAction = {
+            type: 'ERASE_PATH',
+            payload: action,
+            timestamp: Date.now(),
+            id: nanoid(),
+            userId: get().getCurrentUserId(),
+            previousState: {
+              object: originalObject
+            }
+          };
+          
+          // Remove the original object
+          delete newObjects[action.originalObjectId];
+          
+          // Create new path objects from the resulting segments
+          action.resultingSegments.forEach((segment) => {
+            if (segment.points.length >= 2) {
+              // Convert points back to path string
+              const pathString = segment.points.reduce((path, point, index) => {
+                const command = index === 0 ? 'M' : 'L';
+                return `${path} ${command} ${point.x} ${point.y}`;
+              }, '');
+              
+              // Create new path object with original properties but new path data
+              const newPathObject: WhiteboardObject = {
+                id: nanoid(),
+                type: 'path',
+                x: originalObject.x,
+                y: originalObject.y,
+                stroke: originalObject.stroke || '#000000',
+                strokeWidth: originalObject.strokeWidth || 2,
+                fill: originalObject.fill || 'none',
+                opacity: originalObject.opacity || 1,
+                data: {
+                  path: pathString,
+                  isShape: false // Mark as non-shape since it's been erased
+                },
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+              };
+              
+              newObjects[newPathObject.id] = newPathObject;
+            }
+          });
+          
+          console.log('🧹 Erased path:', {
+            originalId: action.originalObjectId.slice(0, 8),
+            originalType: originalObject.type,
+            resultingSegments: action.resultingSegments.length,
+            newObjectCount: Object.keys(newObjects).length
+          });
+          
+          return {
+            objects: newObjects,
+            lastAction: eraseAction,
+            stateVersion: state.stateVersion + 1,
+            lastStateUpdate: Date.now()
+          };
+        }
+        
+        return state;
+      });
     },
 
     getSerializableState: () => {
