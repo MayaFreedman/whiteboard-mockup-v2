@@ -201,13 +201,6 @@ export const Toolbar: React.FC = () => {
     setActiveTool(toolId as any);
   };
 
-  /**
-   * Handles clearing the entire canvas
-   */
-  const handleClearCanvas = () => {
-    clearCanvas();
-  };
-
   // Find the currently selected shape for the dropdown button
   const selectedShape = SHAPE_TOOLS.find(shape => shape.id === activeTool);
   const isShapeSelected = !!selectedShape;
@@ -282,25 +275,6 @@ export const Toolbar: React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-
-          {/* Clear Canvas Button - Show only when eraser is active */}
-          {activeTool === 'eraser' && (
-            <>
-              <Separator orientation="vertical" className="h-8 flex-shrink-0" />
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleClearCanvas}
-                  className="flex items-center gap-2"
-                  title="Clear entire canvas"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span className={isMobile ? 'hidden' : ''}>Clear Canvas</span>
-                </Button>
-              </div>
-            </>
-          )}
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
