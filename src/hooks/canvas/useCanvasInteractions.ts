@@ -60,8 +60,7 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Creates shape objects as their native types (rectangle, circle, etc.)
-   * This is cleaner than converting everything to paths upfront
+   * Creates shape objects - simple shapes as their native types, complex shapes as paths
    */
   const createShapeObject = useCallback((
     shapeType: string,
@@ -102,11 +101,109 @@ export const useCanvasInteractions = () => {
           opacity
         };
       
+      case 'triangle':
+      case 'diamond':
+      case 'pentagon':
+      case 'hexagon':
+      case 'star':
+      case 'heart': {
+        // Create complex shapes as path objects
+        const pathData = generateShapePath(shapeType, 0, 0, width, height);
+        return {
+          type: 'path',
+          x,
+          y,
+          width,
+          height,
+          stroke: strokeColor,
+          fill: 'none',
+          strokeWidth: shapeBorderWeight,
+          opacity,
+          data: {
+            path: pathData,
+            shapeType: shapeType
+          }
+        };
+      }
+      
       default:
-        // For complex shapes, we'll use path-based approach
         return null;
     }
   }, [toolStore.toolSettings.shapeBorderWeight]);
+
+  /**
+   * Generates SVG path data for complex shapes
+   */
+  const generateShapePath = useCallback((shapeType: string, x: number, y: number, width: number, height: number): string => {
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+    
+    switch (shapeType) {
+      case 'triangle':
+        return `M ${centerX} ${y} L ${x + width} ${y + height} L ${x} ${y + height} Z`;
+      
+      case 'diamond':
+        return `M ${centerX} ${y} L ${x + width} ${centerY} L ${centerX} ${y + height} L ${x} ${centerY} Z`;
+      
+      case 'pentagon': {
+        const pentagonPoints = [];
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+          const px = centerX + (width / 2) * Math.cos(angle);
+          const py = centerY + (height / 2) * Math.sin(angle);
+          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+        }
+        return pentagonPoints.join(' ') + ' Z';
+      }
+      
+      case 'hexagon': {
+        const hexagonPoints = [];
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * 2 * Math.PI) / 6;
+          const px = centerX + (width / 2) * Math.cos(angle);
+          const py = centerY + (height / 2) * Math.sin(angle);
+          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+        }
+        return hexagonPoints.join(' ') + ' Z';
+      }
+      
+      case 'star': {
+        const starPoints = [];
+        const outerRadiusX = width / 2;
+        const outerRadiusY = height / 2;
+        const innerRadiusX = outerRadiusX * 0.4;
+        const innerRadiusY = outerRadiusY * 0.4;
+        
+        for (let i = 0; i < 10; i++) {
+          const angle = (i * Math.PI) / 5 - Math.PI / 2;
+          const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
+          const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
+          const px = centerX + radiusX * Math.cos(angle);
+          const py = centerY + radiusY * Math.sin(angle);
+          starPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+        }
+        return starPoints.join(' ') + ' Z';
+      }
+      
+      case 'heart': {
+        const heartWidth = width;
+        const heartHeight = height;
+        const topCurveHeight = heartHeight * 0.3;
+        const centerXHeart = x + width / 2;
+        
+        return `M ${centerXHeart} ${y + heartHeight * 0.3}
+                C ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.2} ${y}, ${centerXHeart - heartWidth * 0.4} ${y}
+                C ${centerXHeart - heartWidth * 0.6} ${y}, ${centerXHeart - heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}
+                C ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart} ${y + heartHeight}
+                C ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}
+                C ${centerXHeart + heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart + heartWidth * 0.6} ${y}, ${centerXHeart + heartWidth * 0.4} ${y}
+                C ${centerXHeart + heartWidth * 0.2} ${y}, ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart} ${y + heartHeight * 0.3} Z`;
+      }
+      
+      default:
+        return '';
+    }
+  }, []);
 
   /**
    * Handles fill tool click - fills the clicked shape with the current stroke color
