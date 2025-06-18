@@ -410,7 +410,13 @@ export const useCanvasInteractions = () => {
       }
 
       case 'rectangle':
-      case 'circle': {
+      case 'circle':
+      case 'triangle':
+      case 'diamond':
+      case 'pentagon':
+      case 'hexagon':
+      case 'star':
+      case 'heart': {
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
@@ -504,7 +510,13 @@ export const useCanvasInteractions = () => {
       }
 
       case 'rectangle':
-      case 'circle': {
+      case 'circle':
+      case 'triangle':
+      case 'diamond':
+      case 'pentagon':
+      case 'hexagon':
+      case 'star':
+      case 'heart': {
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           currentShapePreviewRef.current.endX = coords.x;
           currentShapePreviewRef.current.endY = coords.y;
@@ -584,7 +596,13 @@ export const useCanvasInteractions = () => {
       }
 
       case 'rectangle':
-      case 'circle': {
+      case 'circle':
+      case 'triangle':
+      case 'diamond':
+      case 'pentagon':
+      case 'hexagon':
+      case 'star':
+      case 'heart': {
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           const preview = currentShapePreviewRef.current;
           const width = Math.abs(preview.endX - preview.startX);
