@@ -324,7 +324,7 @@ export const useWhiteboardStore = create<WhiteboardStore>()(
         const actionToUndo = userHistory[currentIndex];
         console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
         
-        // Create and apply the inverse action
+        // Create and apply the inverse action directly
         const inverseAction = createInverseAction(actionToUndo, state);
         if (inverseAction) {
           // Apply the inverse action directly to the state
@@ -606,16 +606,16 @@ function createInverseAction(action: WhiteboardAction, state: WhiteboardStore): 
       if (!currentObject) return null;
       
       // Create reverse updates by taking the previous values
-      const reverseUpdates: Partial<WhiteboardObject> = {};
+      const reverseUpdates: Record<string, any> = {};
       Object.keys(updates).forEach(key => {
         if (key in currentObject) {
-          reverseUpdates[key as keyof WhiteboardObject] = (currentObject as any)[key];
+          reverseUpdates[key] = (currentObject as any)[key];
         }
       });
       
       return {
         type: 'UPDATE_OBJECT',
-        payload: { id, updates: reverseUpdates },
+        payload: { id, updates: reverseUpdates as Partial<WhiteboardObject> },
         timestamp: Date.now(),
         id: nanoid(),
         userId: action.userId
