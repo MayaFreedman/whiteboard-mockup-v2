@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useWhiteboardStore } from '../../../stores/whiteboardStore';
 import { useToolStore } from '../../../stores/toolStore';
+import { useUser } from '../../../contexts/UserContext';
 import { Badge } from '../../ui/badge';
 import { StateVersions } from './StateVersions';
 import { CurrentState } from './CurrentState';
@@ -11,6 +12,7 @@ import { StateActions } from './StateActions';
 export const MultiplayerStatePanel: React.FC = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
+  const { userId } = useUser();
   const [lastSync] = useState<number>(Date.now());
 
   // Get state snapshots
@@ -42,8 +44,8 @@ export const MultiplayerStatePanel: React.FC = () => {
           <div>Total Actions: {whiteboardSnapshot.actionCount}</div>
           <div>Tool Changes: {toolStore.toolChangeHistory.length}</div>
           <div>Recent Activity (30s): {recentActions.length + recentToolChanges.length}</div>
-          <div>Can Undo: <Badge variant={whiteboardStore.canUndo() ? "default" : "secondary"}>{whiteboardStore.canUndo() ? "YES" : "NO"}</Badge></div>
-          <div>Can Redo: <Badge variant={whiteboardStore.canRedo() ? "default" : "secondary"}>{whiteboardStore.canRedo() ? "YES" : "NO"}</Badge></div>
+          <div>Can Undo: <Badge variant={whiteboardStore.canUndo(userId) ? "default" : "secondary"}>{whiteboardStore.canUndo(userId) ? "YES" : "NO"}</Badge></div>
+          <div>Can Redo: <Badge variant={whiteboardStore.canRedo(userId) ? "default" : "secondary"}>{whiteboardStore.canRedo(userId) ? "YES" : "NO"}</Badge></div>
         </div>
       </div>
 

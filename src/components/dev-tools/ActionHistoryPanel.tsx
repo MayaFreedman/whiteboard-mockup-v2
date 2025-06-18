@@ -1,12 +1,17 @@
 
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
+import { useUser } from '../../contexts/UserContext';
 import { Badge } from '../ui/badge';
 
 export const ActionHistoryPanel: React.FC = () => {
-  const { actionHistory, currentHistoryIndex, canUndo, canRedo } = useWhiteboardStore();
+  const { actionHistory, currentHistoryIndex } = useWhiteboardStore();
+  const { userId } = useUser();
+  const whiteboardStore = useWhiteboardStore();
 
   const recentActions = actionHistory.slice(-10);
+  const canUndoValue = whiteboardStore.canUndo(userId);
+  const canRedoValue = whiteboardStore.canRedo(userId);
 
   return (
     <div className="space-y-4 text-xs">
@@ -14,14 +19,14 @@ export const ActionHistoryPanel: React.FC = () => {
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-muted/50 p-2 rounded">
           <div className="font-medium">Can Undo</div>
-          <Badge variant={canUndo() ? "default" : "secondary"}>
-            {canUndo() ? "YES" : "NO"}
+          <Badge variant={canUndoValue ? "default" : "secondary"}>
+            {canUndoValue ? "YES" : "NO"}
           </Badge>
         </div>
         <div className="bg-muted/50 p-2 rounded">
           <div className="font-medium">Can Redo</div>
-          <Badge variant={canRedo() ? "default" : "secondary"}>
-            {canRedo() ? "YES" : "NO"}
+          <Badge variant={canRedoValue ? "default" : "secondary"}>
+            {canRedoValue ? "YES" : "NO"}
           </Badge>
         </div>
       </div>
