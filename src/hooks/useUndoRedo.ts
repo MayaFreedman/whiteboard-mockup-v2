@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { WhiteboardAction, WhiteboardObject, WhiteboardState } from '../types/whiteboard';
 import { nanoid } from 'nanoid';
-import { useMultiplayer } from '../contexts/MultiplayerContext';
+import { useMultiplayer } from './useMultiplayer';
 
 interface UndoRedoManager {
   undo: (userId: string) => void;
@@ -91,7 +91,7 @@ export const useUndoRedo = (): UndoRedoManager => {
         };
       }
       
-      case '⚠️UPDATE_SETTINGS': {
+      case 'UPDATE_SETTINGS': {
         // Undo settings: restore previous settings
         const previousSettings = action.previousState?.settings;
         if (!previousSettings) {
