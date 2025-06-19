@@ -1,5 +1,4 @@
-
-import { useEffect, useContext, useRef } from 'react'
+import { useEffect, useContext, useRef, useCallback } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
 import { WhiteboardAction } from '../types/whiteboard'
@@ -23,8 +22,8 @@ export const useMultiplayerSync = () => {
 
   const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext
 
-  // Optimized readiness check with caching
-  const isReadyToSend = () => {
+  // Optimized readiness check with caching - use useCallback to maintain identity
+  const isReadyToSend = useCallback(() => {
     const hasServerInstance = !!serverInstance
     const hasRoom = !!(serverInstance?.server?.room)
     const ready = hasServerInstance && hasRoom && isConnected
@@ -42,10 +41,10 @@ export const useMultiplayerSync = () => {
     }
     
     return ready
-  }
+  }, [serverInstance, isConnected])
 
   // Process queued actions when connection becomes ready
-  const processActionQueue = () => {
+  const processActionQueue = useCallback(() => {
     if (actionQueueRef.current.length > 0 && isReadyToSend()) {
       console.log('📤 Processing queued actions:', actionQueueRef.current.length)
       const actionsToSend = [...actionQueueRef.current]
@@ -62,7 +61,7 @@ export const useMultiplayerSync = () => {
         }
       })
     }
-  }
+  }, [isReadyToSend, sendWhiteboardAction])
 
   // Set up message-based sync when connection is ready
   useEffect(() => {
@@ -106,7 +105,7 @@ export const useMultiplayerSync = () => {
       console.log('🧹 Cleaning up message-based sync for room:', room.id)
       room.removeAllListeners('broadcast')
     }
-  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId])
+  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId, isReadyToSend, processActionQueue])
 
   // Send local actions to other clients (optimized)
   useEffect(() => {
@@ -141,7 +140,7 @@ export const useMultiplayerSync = () => {
     )
 
     return unsubscribe
-  }, [sendWhiteboardAction])
+  }, [sendWhiteboardAction, isReadyToSend])
 
   // Process queue when connection state changes (debounced)
   useEffect(() => {
@@ -159,7 +158,7 @@ export const useMultiplayerSync = () => {
         clearTimeout(readinessCheckTimeoutRef.current)
       }
     }
-  }, [serverInstance, isConnected])
+  }, [serverInstance, isConnected, processActionQueue])
 
   return {
     isConnected,
