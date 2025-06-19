@@ -229,7 +229,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             return `${path} ${command} ${point.x} ${point.y}`;
           }, '');
           
-          // Create new object with preserved metadata - ensure brushType is preserved correctly
+          // Create new object with preserved metadata - fix the metadata override bug
           newObjects[segment.id] = {
             id: segment.id,
             type: 'path',
@@ -243,9 +243,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             updatedAt: Date.now(),
             data: {
               path: pathString,
-              // First preserve any original data, then override with preserved metadata
-              ...originalObject.data,
-              // Ensure brushType is preserved (place after spread to avoid override)
+              // Only preserve the essential brush metadata - no spreading of original data
               brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
               isEraser: false // Ensure segments are not marked as eraser
             }
