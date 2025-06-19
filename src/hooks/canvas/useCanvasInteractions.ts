@@ -1,3 +1,4 @@
+
 import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -6,6 +7,7 @@ import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
+import { createFrameThrottler, createDebouncer, createCleanupManager } from '../../utils/canvasDebouncing';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -51,6 +53,30 @@ export const useCanvasInteractions = () => {
     strokeWidth: number;
     opacity: number;
   } | null>(null);
+
+  // Create optimized redraw functions
+  const frameThrottledRedraw = useRef(createFrameThrottler());
+  const debouncedRedraw = useRef(createDebouncer(8)); // 8ms debounce for non-critical updates
+  const cleanupManager = useRef(createCleanupManager());
+
+  /**
+   * Optimized redraw function that chooses the right strategy based on context
+   */
+  const optimizedRedraw = useCallback((priority: 'immediate' | 'frame' | 'debounced' = 'frame') => {
+    if (!redrawCanvasRef.current) return;
+
+    switch (priority) {
+      case 'immediate':
+        redrawCanvasRef.current();
+        break;
+      case 'frame':
+        frameThrottledRedraw.current(redrawCanvasRef.current);
+        break;
+      case 'debounced':
+        debouncedRedraw.current(redrawCanvasRef.current);
+        break;
+    }
+  }, []);
 
   /**
    * Sets the redraw canvas function (called by Canvas component)
@@ -252,11 +278,9 @@ export const useCanvasInteractions = () => {
       previousFill: obj.fill 
     });
     
-    // Trigger redraw
-    if (redrawCanvasRef.current) {
-      redrawCanvasRef.current();
-    }
-  }, [findObjectAt, whiteboardStore, toolStore.toolSettings.strokeColor]);
+    // Use immediate redraw for fill operations (user expects instant feedback)
+    optimizedRedraw('immediate');
+  }, [findObjectAt, whiteboardStore, toolStore.toolSettings.strokeColor, optimizedRedraw]);
 
   /**
    * Ends current drawing session and saves the path if valid
@@ -333,10 +357,9 @@ export const useCanvasInteractions = () => {
     currentDrawingPreviewRef.current = null;
     currentShapePreviewRef.current = null;
     
-    if (redrawCanvasRef.current) {
-      redrawCanvasRef.current();
-    }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject]);
+    // Use debounced redraw for cleanup operations
+    optimizedRedraw('debounced');
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, optimizedRedraw]);
 
   // Add document-level mouseup listener to catch releases outside canvas
   useEffect(() => {
@@ -348,9 +371,11 @@ export const useCanvasInteractions = () => {
     };
 
     document.addEventListener('mouseup', handleDocumentMouseUp);
-    return () => {
+    cleanupManager.current.add(() => {
       document.removeEventListener('mouseup', handleDocumentMouseUp);
-    };
+    });
+
+    return () => cleanupManager.current.cleanup();
   }, [endCurrentDrawing]);
 
   /**
@@ -486,9 +511,8 @@ export const useCanvasInteractions = () => {
           
           dragStartRef.current = coords;
           
-          if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
-          }
+          // Use frame throttling for drag operations to maintain smooth movement
+          optimizedRedraw('frame');
         }
         break;
       }
@@ -507,13 +531,8 @@ export const useCanvasInteractions = () => {
             currentDrawingPreviewRef.current.path = smoothPath;
           }
           
-          if (redrawCanvasRef.current) {
-            requestAnimationFrame(() => {
-              if (redrawCanvasRef.current && isDrawingRef.current) {
-                redrawCanvasRef.current();
-              }
-            });
-          }
+          // Use frame throttling for drawing to maintain smoothness
+          optimizedRedraw('frame');
         }
         break;
       }
@@ -530,13 +549,8 @@ export const useCanvasInteractions = () => {
           currentShapePreviewRef.current.endX = coords.x;
           currentShapePreviewRef.current.endY = coords.y;
           
-          if (redrawCanvasRef.current) {
-            requestAnimationFrame(() => {
-              if (redrawCanvasRef.current && isDrawingRef.current) {
-                redrawCanvasRef.current();
-              }
-            });
-          }
+          // Use frame throttling for shape preview updates
+          optimizedRedraw('frame');
         }
         break;
       }
@@ -549,7 +563,7 @@ export const useCanvasInteractions = () => {
         break;
       }
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt, optimizedRedraw]);
 
   /**
    * Handles the end of a drawing/interaction session
@@ -563,6 +577,8 @@ export const useCanvasInteractions = () => {
       case 'select': {
         if (isDraggingRef.current) {
           console.log('🔄 Finished dragging objects');
+          // Use immediate redraw for final drag position
+          optimizedRedraw('immediate');
         }
         isDraggingRef.current = false;
         dragStartRef.current = null;
@@ -597,9 +613,8 @@ export const useCanvasInteractions = () => {
           currentDrawingPreviewRef.current = null;
           pathBuilderRef.current = null;
           
-          if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
-          }
+          // Use immediate redraw for final drawing save
+          optimizedRedraw('immediate');
         }
         break;
       }
@@ -637,9 +652,8 @@ export const useCanvasInteractions = () => {
           
           currentShapePreviewRef.current = null;
           
-          if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
-          }
+          // Use immediate redraw for final shape save
+          optimizedRedraw('immediate');
         }
         break;
       }
@@ -657,7 +671,7 @@ export const useCanvasInteractions = () => {
     lastPointRef.current = null;
     pathStartRef.current = null;
     pathBuilderRef.current = null;
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, optimizedRedraw]);
 
   /**
    * Gets the current drawing preview for rendering
@@ -671,6 +685,13 @@ export const useCanvasInteractions = () => {
    */
   const getCurrentShapePreview = useCallback(() => {
     return currentShapePreviewRef.current;
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupManager.current.cleanup();
+    };
   }, []);
 
   return {

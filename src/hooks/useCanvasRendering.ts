@@ -1,4 +1,5 @@
-import { useEffect, useCallback } from 'react';
+
+import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { WhiteboardObject } from '../types/whiteboard';
@@ -11,6 +12,7 @@ import {
   renderStar, 
   renderHeart 
 } from '../utils/shapeRendering';
+import { createFrameThrottler, createCleanupManager } from '../utils/canvasDebouncing';
 
 /**
  * Custom hook for handling canvas rendering operations
@@ -19,6 +21,23 @@ import {
 export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentDrawingPreview?: () => any, getCurrentShapePreview?: () => any) => {
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
+
+  // Create optimized rendering utilities
+  const frameThrottledRender = useRef(createFrameThrottler());
+  const cleanupManager = useRef(createCleanupManager());
+  const lastRenderHash = useRef<string>('');
+
+  /**
+   * Creates a hash of the current render state to avoid unnecessary redraws
+   */
+  const createRenderHash = useCallback(() => {
+    const objectsHash = Object.keys(objects).join(',') + Object.values(objects).map(obj => obj.updatedAt).join(',');
+    const selectionHash = selectedObjectIds.join(',');
+    const settingsHash = JSON.stringify(settings) + JSON.stringify(toolSettings);
+    const canvasHash = canvas ? `${canvas.width}x${canvas.height}` : '';
+    
+    return `${objectsHash}-${selectionHash}-${settingsHash}-${canvasHash}`;
+  }, [objects, selectedObjectIds, settings, toolSettings, canvas]);
 
   /**
    * Renders a single whiteboard object on the canvas
@@ -316,11 +335,6 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     ctx.restore();
   }, []);
 
-  /**
-   * Renders the current shape preview (work-in-progress shape)
-   * @param ctx - Canvas rendering context
-   * @param preview - Shape preview data
-   */
   const renderShapePreview = useCallback((ctx: CanvasRenderingContext2D, preview: any) => {
     if (!preview) return;
     
@@ -394,9 +408,6 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     ctx.restore();
   }, []);
 
-  /**
-   * Generates SVG path data for complex shape previews
-   */
   const generateShapePathPreview = useCallback((shapeType: string, x: number, y: number, width: number, height: number): string => {
     const centerX = x + width / 2;
     const centerY = y + height / 2;
@@ -489,8 +500,18 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     });
   }, [objects, selectedObjectIds, renderObject]);
 
+  /**
+   * Optimized redraw function with hash-based change detection
+   */
   const redrawCanvas = useCallback(() => {
     if (!canvas) return;
+
+    // Check if we need to redraw by comparing render hash
+    const currentHash = createRenderHash();
+    if (currentHash === lastRenderHash.current) {
+      return; // Skip redraw if nothing changed
+    }
+    lastRenderHash.current = currentHash;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -544,15 +565,30 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       hasDrawingPreview: !!getCurrentDrawingPreview?.(),
       hasShapePreview: !!getCurrentShapePreview?.()
     });
-  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview]);
+  }, [canvas, createRenderHash, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview]);
 
-  // Auto-redraw when state changes
-  useEffect(() => {
-    redrawCanvas();
+  /**
+   * Throttled redraw function for non-critical updates
+   */
+  const throttledRedraw = useCallback(() => {
+    frameThrottledRender.current(redrawCanvas);
   }, [redrawCanvas]);
+
+  // Auto-redraw when state changes, but use throttled version for frequent updates
+  useEffect(() => {
+    throttledRedraw();
+  }, [throttledRedraw]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupManager.current.cleanup();
+    };
+  }, []);
 
   return {
     redrawCanvas,
+    throttledRedraw,
     renderObject,
     renderAllObjects
   };
