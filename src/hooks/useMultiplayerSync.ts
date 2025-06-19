@@ -12,11 +12,14 @@ export const useMultiplayerSync = () => {
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const actionQueueRef = useRef<WhiteboardAction[]>([])
 
-  // Guard clause for context
+  // If no multiplayer context, return null values (graceful degradation)
   if (!multiplayerContext) {
-    throw new Error(
-      'useMultiplayerSync must be used within a MultiplayerProvider'
-    )
+    console.log('🔌 No multiplayer context available - running in offline mode')
+    return {
+      isConnected: false,
+      serverInstance: null,
+      sendWhiteboardAction: () => {},
+    }
   }
 
   const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext

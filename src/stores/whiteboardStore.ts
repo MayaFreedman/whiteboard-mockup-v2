@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { Viewport } from '../types/viewport';
@@ -418,8 +417,118 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     return get().actionHistory.filter(action => action.timestamp > timestamp);
   },
   applyRemoteAction: (action) => {
-    // Apply remote action without adding to local user's history
-    console.log('Applying remote action:', action.type, action.id);
+    console.log('🔄 Applying remote action:', action.type, action.id);
+    
+    // Execute the action logic based on action type
+    switch (action.type) {
+      case 'ADD_OBJECT':
+        if (action.payload.object) {
+          set((state) => ({
+            objects: {
+              ...state.objects,
+              [action.payload.object.id]: action.payload.object,
+            },
+          }));
+        }
+        break;
+        
+      case 'UPDATE_OBJECT':
+        if (action.payload.id && action.payload.updates) {
+          set((state) => {
+            const existingObject = state.objects[action.payload.id];
+            if (existingObject) {
+              return {
+                objects: {
+                  ...state.objects,
+                  [action.payload.id]: {
+                    ...existingObject,
+                    ...action.payload.updates,
+                    updatedAt: Date.now(),
+                  },
+                },
+              };
+            }
+            return state;
+          });
+        }
+        break;
+        
+      case 'DELETE_OBJECT':
+        if (action.payload.id) {
+          set((state) => {
+            const newObjects = { ...state.objects };
+            delete newObjects[action.payload.id];
+            return {
+              objects: newObjects,
+              selectedObjectIds: state.selectedObjectIds.filter((objId) => objId !== action.payload.id),
+            };
+          });
+        }
+        break;
+        
+      case 'SELECT_OBJECTS':
+        if (action.payload.objectIds) {
+          set({ selectedObjectIds: action.payload.objectIds });
+        }
+        break;
+        
+      case 'CLEAR_CANVAS':
+        set({ objects: {}, selectedObjectIds: [] });
+        break;
+        
+      case 'ERASE_PATH':
+        if (action.payload.originalObjectId && action.payload.resultingSegments) {
+          const { originalObjectId, resultingSegments } = action.payload;
+          const originalObject = get().objects[originalObjectId];
+          
+          if (originalObject) {
+            set((state) => {
+              const newObjects = { ...state.objects };
+              
+              // Remove the original object
+              delete newObjects[originalObjectId];
+              
+              // Add resulting segments as new objects
+              resultingSegments.forEach((segment) => {
+                if (segment.points.length >= 2) {
+                  const pathString = segment.points.reduce((path, point, index) => {
+                    const command = index === 0 ? 'M' : 'L';
+                    return `${path} ${command} ${point.x} ${point.y}`;
+                  }, '');
+                  
+                  newObjects[segment.id] = {
+                    id: segment.id,
+                    type: 'path',
+                    x: originalObject.x,
+                    y: originalObject.y,
+                    stroke: originalObject.stroke || '#000000',
+                    strokeWidth: originalObject.strokeWidth || 2,
+                    opacity: originalObject.opacity || 1,
+                    fill: originalObject.fill,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                    data: {
+                      path: pathString,
+                      brushType: originalObject.data?.brushType,
+                      isEraser: false
+                    }
+                  };
+                }
+              });
+              
+              return {
+                objects: newObjects,
+                selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
+              };
+            });
+          }
+        }
+        break;
+        
+      default:
+        console.log('🔄 Unknown action type for remote application:', action.type);
+        break;
+    }
     
     // Record the action for the remote user's history
     const state = get();
