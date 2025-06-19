@@ -124,22 +124,21 @@ export const useMultiplayerSync = () => {
     console.log('🔄 Setting up action subscription')
 
     const unsubscribe = useWhiteboardStore.subscribe(
-      (state) => state.lastAction,
-      (lastAction) => {
-        if (lastAction && !sentActionIdsRef.current.has(lastAction.id)) {
+      (state) => {
+        if (state.lastAction && !sentActionIdsRef.current.has(state.lastAction.id)) {
           console.log('📤 New local action detected:', {
-            type: lastAction.type,
-            id: lastAction.id,
-            userId: lastAction.userId,
+            type: state.lastAction.type,
+            id: state.lastAction.id,
+            userId: state.lastAction.userId,
             isReadyToSend: isReadyToSend()
           })
           
           if (isReadyToSend()) {
-            console.log('📤 Attempting to send action immediately:', lastAction.type, lastAction.id)
+            console.log('📤 Attempting to send action immediately:', state.lastAction.type, state.lastAction.id)
             try {
-              sendWhiteboardAction(lastAction)
-              sentActionIdsRef.current.add(lastAction.id)
-              console.log('✅ Successfully sent action:', lastAction.id)
+              sendWhiteboardAction(state.lastAction)
+              sentActionIdsRef.current.add(state.lastAction.id)
+              console.log('✅ Successfully sent action:', state.lastAction.id)
               
               // Clean up old IDs to prevent memory leak
               if (sentActionIdsRef.current.size > 1000) {
@@ -148,13 +147,13 @@ export const useMultiplayerSync = () => {
                 sentActionIdsRef.current = new Set(idsToKeep)
               }
             } catch (error) {
-              console.error('❌ Failed to send action:', lastAction.id, error)
+              console.error('❌ Failed to send action:', state.lastAction.id, error)
               console.log('⏳ Adding failed action to queue for retry')
-              actionQueueRef.current.push(lastAction)
+              actionQueueRef.current.push(state.lastAction)
             }
           } else {
-            console.log('⏳ Queueing action until connection ready:', lastAction.type, lastAction.id)
-            actionQueueRef.current.push(lastAction)
+            console.log('⏳ Queueing action until connection ready:', state.lastAction.type, state.lastAction.id)
+            actionQueueRef.current.push(state.lastAction)
           }
         }
       }
