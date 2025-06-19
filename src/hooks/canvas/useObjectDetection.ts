@@ -70,18 +70,22 @@ export const useObjectDetection = () => {
   }, []);
 
   /**
-   * Checks if a point is inside a circle with padding
+   * Checks if a point is inside an ellipse (circle) with padding
    */
   const isPointInCircle = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
-    if (!obj.width) return false;
+    if (!obj.width || !obj.height) return false;
     
-    const radius = obj.width / 2;
-    const centerX = obj.x + radius;
-    const centerY = obj.y + radius;
-    const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+    const radiusX = obj.width / 2;
+    const radiusY = obj.height / 2;
+    const centerX = obj.x + radiusX;
+    const centerY = obj.y + radiusY;
     
-    // Add 5px padding for easier selection
-    return distance <= radius + 5;
+    // Use ellipse equation: (x-h)²/a² + (y-k)²/b² <= 1
+    // where (h,k) is center, a is radiusX, b is radiusY
+    const normalizedX = (x - centerX) / (radiusX + 5); // Add 5px padding
+    const normalizedY = (y - centerY) / (radiusY + 5); // Add 5px padding
+    
+    return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
   }, []);
 
   /**
@@ -198,8 +202,9 @@ export const useObjectDetection = () => {
           isHit = isPointInCircle(obj, x, y);
           console.log('⭕ Circle hit test:', {
             id: id.slice(0, 8),
-            center: { x: obj.x + (obj.width || 0) / 2, y: obj.y + (obj.width || 0) / 2 },
-            radius: (obj.width || 0) / 2,
+            center: { x: obj.x + (obj.width || 0) / 2, y: obj.y + (obj.height || 0) / 2 },
+            radiusX: (obj.width || 0) / 2,
+            radiusY: (obj.height || 0) / 2,
             isHit
           });
           break;
