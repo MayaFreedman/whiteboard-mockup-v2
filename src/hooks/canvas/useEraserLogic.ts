@@ -15,11 +15,11 @@ export const useEraserLogic = () => {
   const toolStore = useToolStore();
   const { userId } = useUser();
   
-  // For real-time eraser: optimized batch processing
+  // For real-time eraser: restored proper batch processing
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
   const lastEraserProcessRef = useRef<number>(0);
-  const ERASER_BATCH_SIZE = 5; // Increased from 3 to reduce frequency
-  const ERASER_THROTTLE_MS = 32; // Increased from 16ms to reduce CPU load
+  const ERASER_BATCH_SIZE = 3; // Restored from the increased 5 to ensure frequent processing
+  const ERASER_THROTTLE_MS = 16; // Restored from the increased 32ms for better responsiveness
 
   // Stroke tracking for undo/redo
   const strokeInProgressRef = useRef<boolean>(false);
@@ -68,7 +68,7 @@ export const useEraserLogic = () => {
   }, []);
 
   /**
-   * Processes accumulated eraser points against all objects during a stroke (optimized)
+   * Processes accumulated eraser points against all objects during a stroke (restored responsiveness)
    */
   const processEraserBatch = useCallback(() => {
     if (eraserPointsRef.current.length === 0) return;
@@ -94,29 +94,7 @@ export const useEraserLogic = () => {
       if (shouldProcess && pathString) {
         const strokeWidth = obj.strokeWidth || 2;
         
-        // Quick bounds check before expensive intersection test
-        const objBounds = {
-          left: obj.x - strokeWidth,
-          right: obj.x + (obj.width || 0) + strokeWidth,
-          top: obj.y - strokeWidth,
-          bottom: obj.y + (obj.height || 0) + strokeWidth
-        };
-        
-        const eraserBounds = {
-          left: Math.min(...eraserPointsRef.current.map(p => p.x - p.radius)),
-          right: Math.max(...eraserPointsRef.current.map(p => p.x + p.radius)),
-          top: Math.min(...eraserPointsRef.current.map(p => p.y - p.radius)),
-          bottom: Math.max(...eraserPointsRef.current.map(p => p.y + p.radius))
-        };
-        
-        // Skip if bounds don't overlap
-        if (eraserBounds.right < objBounds.left || 
-            eraserBounds.left > objBounds.right ||
-            eraserBounds.bottom < objBounds.top || 
-            eraserBounds.top > objBounds.bottom) {
-          return;
-        }
-        
+        // Simplified bounds check - removed overly restrictive logic
         const intersects = doesPathIntersectEraserBatch(
           pathString,
           obj.x,
@@ -257,7 +235,7 @@ export const useEraserLogic = () => {
   }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
   /**
-   * Handles eraser move logic during stroke (optimized)
+   * Handles eraser move logic during stroke (restored responsiveness)
    */
   const handleEraserMove = useCallback((coords: { x: number; y: number }, lastPoint: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -287,7 +265,7 @@ export const useEraserLogic = () => {
     } else {
       const eraserRadius = toolStore.toolSettings.eraserSize / 2;
       
-      // Reduce interpolation density for better performance
+      // Restored proper interpolation density
       const interpolatedPoints = interpolatePoints(lastPoint, coords, eraserRadius);
       
       interpolatedPoints.slice(1).forEach(point => {
@@ -305,9 +283,9 @@ export const useEraserLogic = () => {
       
       if (shouldProcess) {
         processEraserBatch();
-        // Keep fewer points in memory
-        const lastFewPoints = eraserPointsRef.current.slice(-2);
-        eraserPointsRef.current = lastFewPoints;
+        // Keep only the last point to maintain continuity
+        const lastPoint = eraserPointsRef.current[eraserPointsRef.current.length - 1];
+        eraserPointsRef.current = lastPoint ? [lastPoint] : [];
         lastEraserProcessRef.current = now;
         
         if (redrawCanvas) {
