@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -6,9 +7,10 @@ import { interpolatePoints } from '../../utils/path/pathInterpolation';
 import { doesPathIntersectEraserBatch, erasePointsFromPathBatch } from '../../utils/path/pathErasing';
 import { pathToPoints } from '../../utils/path/pathConversion';
 import { nanoid } from 'nanoid';
+import { StrokeAccumulator } from '../../utils/strokeAccumulator';
 
 /**
- * Hook for handling eraser logic and batch processing with improved reliability
+ * Hook for handling eraser logic with stroke-based undo/redo
  */
 export const useEraserLogic = () => {
   const whiteboardStore = useWhiteboardStore();
@@ -20,6 +22,9 @@ export const useEraserLogic = () => {
   const lastEraserProcessRef = useRef<number>(0);
   const ERASER_BATCH_SIZE = 3;
   const ERASER_THROTTLE_MS = 16;
+
+  // Stroke accumulator for undo/redo
+  const strokeAccumulatorRef = useRef<StrokeAccumulator>(new StrokeAccumulator());
 
   /**
    * Converts shape objects to path format for erasing
@@ -42,28 +47,16 @@ export const useEraserLogic = () => {
   }, []);
 
   /**
-   * Processes accumulated eraser points against all objects
+   * Processes accumulated eraser points against all objects (immediate visual feedback)
    */
   const processEraserBatch = useCallback(() => {
     if (eraserPointsRef.current.length === 0) return;
     
     const objects = Object.entries(whiteboardStore.objects);
-    const eraserActions: Array<{
-      originalObjectId: string;
-      eraserPath: {
-        x: number;
-        y: number;
-        size: number;
-        path: string;
-      };
-      resultingSegments: Array<{
-        points: Array<{ x: number; y: number }>;
-        id: string;
-      }>;
-    }> = [];
+    const strokeAccumulator = strokeAccumulatorRef.current;
     
     objects.forEach(([id, obj]) => {
-      // Skip eraser objects (safety check - should not exist anymore)
+      // Skip eraser objects
       if (obj.data?.isEraser) return;
       
       let pathString = '';
@@ -104,59 +97,39 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
-          // Create eraser path reference (not for rendering, just for action tracking)
-          const eraserPath = eraserPointsRef.current.reduce((path, eraser, index) => {
-            const command = index === 0 ? 'M' : 'L';
-            return `${path} ${command} ${eraser.x} ${eraser.y}`;
-          }, '');
-          
-          eraserActions.push({
+          // Apply visual changes immediately (without recording undo action yet)
+          whiteboardStore.applyEraserOperationImmediately({
             originalObjectId: id,
-            eraserPath: {
-              x: eraserPointsRef.current[0]?.x || 0,
-              y: eraserPointsRef.current[0]?.y || 0,
-              size: eraserPointsRef.current[0]?.radius * 2 || 20,
-              path: eraserPath
-            },
+            originalObject: obj,
             resultingSegments: segmentsWithIds
           });
+          
+          // Add to stroke accumulator for later undo recording
+          if (strokeAccumulator.isStrokeActive()) {
+            strokeAccumulator.addOperation({
+              originalObjectId: id,
+              originalObject: obj,
+              resultingSegments: segmentsWithIds
+            });
+          }
         }
       }
     });
     
-    // Apply all eraser actions atomically with preserved brush metadata
-    eraserActions.forEach(action => {
-      const originalObject = whiteboardStore.objects[action.originalObjectId];
-      
-      // Create enhanced action that preserves brush metadata
-      const enhancedAction = {
-        ...action,
-        originalObjectMetadata: {
-          brushType: originalObject.data?.brushType,
-          stroke: originalObject.stroke,
-          strokeWidth: originalObject.strokeWidth,
-          opacity: originalObject.opacity,
-          fill: originalObject.fill
-        }
-      };
-      
-      whiteboardStore.erasePath(enhancedAction, userId);
-    });
-    
-    console.log('🧹 Processed eraser batch:', {
+    console.log('🧹 Processed eraser batch for immediate visual feedback:', {
       eraserPoints: eraserPointsRef.current.length,
-      eraserActions: eraserActions.length,
-      preservedBrushTypes: eraserActions.map(a => whiteboardStore.objects[a.originalObjectId]?.data?.brushType).filter(Boolean)
+      strokeActive: strokeAccumulator.isStrokeActive()
     });
-  }, [whiteboardStore, convertShapeToPath, userId]);
+  }, [whiteboardStore, convertShapeToPath]);
 
   /**
-   * Handles eraser start logic with improved object detection
+   * Handles eraser start logic
    */
   const handleEraserStart = useCallback((coords: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
     if (eraserMode === 'object') {
+      // Object eraser mode - same as before
       console.log('🎯 Object eraser starting at:', coords);
       
       const searchRadius = 8;
@@ -197,7 +170,15 @@ export const useEraserLogic = () => {
         console.log('❌ Object eraser found no objects to delete at:', coords);
       }
     } else {
+      // Pixel eraser mode - start stroke accumulation
       const eraserRadius = toolStore.toolSettings.eraserSize / 2;
+      
+      // Start stroke accumulation
+      strokeAccumulatorRef.current.startStroke({
+        x: coords.x,
+        y: coords.y,
+        radius: eraserRadius
+      });
       
       eraserPointsRef.current = [{
         x: coords.x,
@@ -211,12 +192,13 @@ export const useEraserLogic = () => {
   }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
   /**
-   * Handles eraser move logic with improved object detection for object mode
+   * Handles eraser move logic
    */
   const handleEraserMove = useCallback((coords: { x: number; y: number }, lastPoint: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
     if (eraserMode === 'object') {
+      // Object eraser mode - same as before
       const searchRadius = 6;
       const testPositions = [
         coords,
@@ -239,16 +221,27 @@ export const useEraserLogic = () => {
         }
       }
     } else {
+      // Pixel eraser mode - continue stroke
       const eraserRadius = toolStore.toolSettings.eraserSize / 2;
       
       const interpolatedPoints = interpolatePoints(lastPoint, coords, eraserRadius / 2);
       
+      // Add points to stroke accumulator
+      const strokeAccumulator = strokeAccumulatorRef.current;
       interpolatedPoints.slice(1).forEach(point => {
         eraserPointsRef.current.push({
           x: point.x,
           y: point.y,
           radius: eraserRadius
         });
+        
+        if (strokeAccumulator.isStrokeActive()) {
+          strokeAccumulator.addPoint({
+            x: point.x,
+            y: point.y,
+            radius: eraserRadius
+          });
+        }
       });
       
       const now = Date.now();
@@ -270,22 +263,45 @@ export const useEraserLogic = () => {
   }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
   /**
-   * Handles eraser end logic
+   * Handles eraser end logic - creates single undo action for entire stroke
    */
   const handleEraserEnd = useCallback((redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
     if (eraserMode === 'pixel') {
+      // Process any remaining points
       if (eraserPointsRef.current.length > 0) {
         processEraserBatch();
         eraserPointsRef.current = [];
+      }
+      
+      // Complete the stroke and create single undo action
+      const strokeAccumulator = strokeAccumulatorRef.current;
+      const completedStroke = strokeAccumulator.completeStroke();
+      
+      if (completedStroke && completedStroke.operations.length > 0) {
+        // Create single ERASE_STROKE action for the entire stroke
+        whiteboardStore.recordEraserStroke({
+          affectedObjects: completedStroke.operations,
+          eraserStroke: {
+            points: completedStroke.strokePoints,
+            startTime: Date.now() - completedStroke.duration,
+            endTime: Date.now()
+          }
+        }, userId);
         
-        if (redrawCanvas) {
-          redrawCanvas();
-        }
+        console.log('✅ Recorded eraser stroke action:', {
+          strokeId: completedStroke.strokeId,
+          affectedObjects: completedStroke.operations.length,
+          duration: completedStroke.duration
+        });
+      }
+      
+      if (redrawCanvas) {
+        redrawCanvas();
       }
     }
-  }, [toolStore.toolSettings, processEraserBatch]);
+  }, [toolStore.toolSettings, processEraserBatch, whiteboardStore, userId]);
 
   return {
     handleEraserStart,

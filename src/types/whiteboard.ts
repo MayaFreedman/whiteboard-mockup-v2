@@ -158,6 +158,29 @@ export interface ErasePathAction extends BaseAction {
   };
 }
 
+// New stroke-based eraser action
+export interface EraseStrokeAction extends BaseAction {
+  type: 'ERASE_STROKE';
+  payload: {
+    affectedObjects: Array<{
+      originalObjectId: string;
+      originalObject: WhiteboardObject;
+      resultingSegments: Array<{
+        points: Array<{ x: number; y: number }>;
+        id: string;
+      }>;
+    }>;
+    eraserStroke: {
+      points: Array<{ x: number; y: number; radius: number }>;
+      startTime: number;
+      endTime: number;
+    };
+  };
+  previousState?: {
+    objects: { [id: string]: WhiteboardObject };
+  };
+}
+
 // New sync actions for undo/redo synchronization
 export interface SyncUndoAction extends BaseAction {
   type: 'SYNC_UNDO';
@@ -187,5 +210,6 @@ export type WhiteboardAction =
   | ErasePixelsAction
   |DeleteObjectsInAreaAction
   | ErasePathAction
+  | EraseStrokeAction
   | SyncUndoAction
   | SyncRedoAction;
