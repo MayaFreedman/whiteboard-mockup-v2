@@ -1,3 +1,4 @@
+
 import { useEffect, useContext, useRef } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
@@ -23,7 +24,7 @@ export const useMultiplayerSync = () => {
   const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext
 
   // Optimized readiness check with caching
-  const isReadyToSend = useRef(() => {
+  const isReadyToSend = () => {
     const hasServerInstance = !!serverInstance
     const hasRoom = !!(serverInstance?.server?.room)
     const ready = hasServerInstance && hasRoom && isConnected
@@ -41,11 +42,11 @@ export const useMultiplayerSync = () => {
     }
     
     return ready
-  })
+  }
 
   // Process queued actions when connection becomes ready
   const processActionQueue = () => {
-    if (actionQueueRef.current.length > 0 && isReadyToSend.current()) {
+    if (actionQueueRef.current.length > 0 && isReadyToSend()) {
       console.log('📤 Processing queued actions:', actionQueueRef.current.length)
       const actionsToSend = [...actionQueueRef.current]
       actionQueueRef.current = []
@@ -65,7 +66,7 @@ export const useMultiplayerSync = () => {
 
   // Set up message-based sync when connection is ready
   useEffect(() => {
-    if (!isReadyToSend.current()) {
+    if (!isReadyToSend()) {
       console.log('🔄 Skipping message setup - not ready')
       return
     }
@@ -115,7 +116,7 @@ export const useMultiplayerSync = () => {
           // Reduced logging for performance
           console.log('📤 New local action:', state.lastAction.type, state.lastAction.id)
           
-          if (isReadyToSend.current()) {
+          if (isReadyToSend()) {
             try {
               sendWhiteboardAction(state.lastAction)
               sentActionIdsRef.current.add(state.lastAction.id)
