@@ -1,6 +1,8 @@
+
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { Viewport } from '../types/viewport';
+import { WhiteboardAction } from '../types/whiteboard';
 
 export type WhiteboardObject = {
   id: string;
@@ -24,14 +26,6 @@ export interface WhiteboardSettings {
   backgroundColor: string;
 }
 
-export interface WhiteboardAction {
-  id: string;
-  type: string;
-  payload: any;
-  timestamp: number;
-  userId: string;
-}
-
 export interface WhiteboardStore {
   objects: Record<string, WhiteboardObject>;
   selectedObjectIds: string[];
@@ -45,6 +39,9 @@ export interface WhiteboardStore {
   userActionHistories: Map<string, WhiteboardAction[]>;
   userHistoryIndices: Map<string, number>;
 
+  // Action recording
+  recordAction: (action: WhiteboardAction) => void;
+
   // Viewport Actions
   setViewport: (viewport: Viewport) => void;
   resetViewport: () => void;
@@ -54,12 +51,12 @@ export interface WhiteboardStore {
   updateSettings: (updates: Partial<WhiteboardSettings>) => void;
 
   // Actions
-  addObject: (object: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'>) => string;
-  updateObject: (id: string, updates: Partial<WhiteboardObject>) => void;
-  deleteObject: (id: string) => void;
+  addObject: (object: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'>, userId?: string) => string;
+  updateObject: (id: string, updates: Partial<WhiteboardObject>, userId?: string) => void;
+  deleteObject: (id: string, userId?: string) => void;
   clearObjects: () => void;
-  clearCanvas: () => void;
-  selectObjects: (ids: string[]) => void;
+  clearCanvas: (userId?: string) => void;
+  selectObjects: (ids: string[], userId?: string) => void;
   clearSelection: () => void;
   updateObjectPosition: (id: string, x: number, y: number) => void;
   updateObjectSize: (id: string, width: number, height: number) => void;
@@ -84,7 +81,7 @@ export interface WhiteboardStore {
       opacity?: number;
       fill?: string;
     };
-  }) => void;
+  }, userId?: string) => void;
   
   // Zoom & Pan
   zoomIn: () => void;
@@ -122,6 +119,31 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   userActionHistories: new Map(),
   userHistoryIndices: new Map(),
 
+  recordAction: (action) => {
+    set((state) => {
+      const newUserHistories = new Map(state.userActionHistories);
+      const newUserIndices = new Map(state.userHistoryIndices);
+      
+      // Get or create user history
+      const userHistory = newUserHistories.get(action.userId) || [];
+      const currentIndex = newUserIndices.get(action.userId) ?? -1;
+      
+      // Add action to user's history (truncate future actions if we're not at the end)
+      const newUserHistory = [...userHistory.slice(0, currentIndex + 1), action];
+      newUserHistories.set(action.userId, newUserHistory);
+      newUserIndices.set(action.userId, newUserHistory.length - 1);
+      
+      return {
+        ...state,
+        actionHistory: [...state.actionHistory, action],
+        currentHistoryIndex: state.actionHistory.length,
+        lastAction: action,
+        userActionHistories: newUserHistories,
+        userHistoryIndices: newUserIndices,
+      };
+    });
+  },
+
   setViewport: (viewport) => set({ viewport }),
   resetViewport: () => set({ viewport: { x: 0, y: 0, zoom: 1 } }),
 
@@ -130,23 +152,49 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     settings: { ...state.settings, ...updates } 
   })),
 
-  addObject: (object) => {
+  addObject: (object, userId = 'local') => {
     const id = nanoid();
     const now = Date.now();
+    const newObject = {
+      id,
+      ...object,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const action: WhiteboardAction = {
+      type: 'ADD_OBJECT',
+      payload: { object: newObject },
+      timestamp: now,
+      id: nanoid(),
+      userId,
+    };
+
     set((state) => ({
       objects: {
         ...state.objects,
-        [id]: {
-          id,
-          ...object,
-          createdAt: now,
-          updatedAt: now,
-        },
+        [id]: newObject,
       },
     }));
+
+    get().recordAction(action);
     return id;
   },
-  updateObject: (id, updates) => {
+
+  updateObject: (id, updates, userId = 'local') => {
+    const state = get();
+    const existingObject = state.objects[id];
+    if (!existingObject) return;
+
+    const action: WhiteboardAction = {
+      type: 'UPDATE_OBJECT',
+      payload: { id, updates },
+      timestamp: Date.now(),
+      id: nanoid(),
+      userId,
+      previousState: { object: existingObject },
+    };
+
     set((state) => ({
       objects: {
         ...state.objects,
@@ -157,8 +205,24 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         },
       },
     }));
+
+    get().recordAction(action);
   },
-  deleteObject: (id) => {
+
+  deleteObject: (id, userId = 'local') => {
+    const state = get();
+    const objectToDelete = state.objects[id];
+    if (!objectToDelete) return;
+
+    const action: WhiteboardAction = {
+      type: 'DELETE_OBJECT',
+      payload: { id },
+      timestamp: Date.now(),
+      id: nanoid(),
+      userId,
+      previousState: { object: objectToDelete },
+    };
+
     set((state) => {
       const newObjects = { ...state.objects };
       delete newObjects[id];
@@ -168,19 +232,53 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         selectedObjectIds: state.selectedObjectIds.filter((objId) => objId !== id),
       };
     });
+
+    get().recordAction(action);
   },
+
   clearObjects: () => {
     set({ objects: {}, selectedObjectIds: [] });
   },
-  clearCanvas: () => {
+
+  clearCanvas: (userId = 'local') => {
+    const state = get();
+    
+    const action: WhiteboardAction = {
+      type: 'CLEAR_CANVAS',
+      payload: {},
+      timestamp: Date.now(),
+      id: nanoid(),
+      userId,
+      previousState: {
+        objects: state.objects,
+        selectedObjectIds: state.selectedObjectIds,
+      },
+    };
+
     set({ objects: {}, selectedObjectIds: [] });
+    get().recordAction(action);
   },
-  selectObjects: (ids) => {
+
+  selectObjects: (ids, userId = 'local') => {
+    const state = get();
+    
+    const action: WhiteboardAction = {
+      type: 'SELECT_OBJECTS',
+      payload: { objectIds: ids },
+      timestamp: Date.now(),
+      id: nanoid(),
+      userId,
+      previousState: { selectedObjectIds: state.selectedObjectIds },
+    };
+
     set({ selectedObjectIds: ids });
+    get().recordAction(action);
   },
+
   clearSelection: () => {
     set({ selectedObjectIds: [] });
   },
+
   updateObjectPosition: (id, x, y) => {
     set((state) => ({
       objects: {
@@ -194,6 +292,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       },
     }));
   },
+
   updateObjectSize: (id, width, height) => {
     set((state) => ({
       objects: {
@@ -208,11 +307,24 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     }));
   },
   
-  erasePath: (action) => {
+  erasePath: (action, userId = 'local') => {
     const { originalObjectId, eraserPath, resultingSegments, originalObjectMetadata } = action;
     const originalObject = get().objects[originalObjectId];
     
     if (!originalObject) return;
+
+    const whiteboardAction: WhiteboardAction = {
+      type: 'ERASE_PATH',
+      payload: {
+        originalObjectId,
+        eraserPath,
+        resultingSegments,
+      },
+      timestamp: Date.now(),
+      id: nanoid(),
+      userId,
+      previousState: { object: originalObject },
+    };
     
     set((state) => {
       const newObjects = { ...state.objects };
@@ -257,6 +369,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
       };
     });
+
+    get().recordAction(whiteboardAction);
     
     console.log('✂️ Erased path with preserved brush metadata:', {
       originalId: originalObjectId.slice(0, 8),
@@ -304,12 +418,31 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     return get().actionHistory.filter(action => action.timestamp > timestamp);
   },
   applyRemoteAction: (action) => {
-    // Apply remote action without adding to history
-    console.log('Applying remote action:', action);
+    // Apply remote action without adding to local user's history
+    console.log('Applying remote action:', action.type, action.id);
+    
+    // Record the action for the remote user's history
+    const state = get();
+    const newUserHistories = new Map(state.userActionHistories);
+    const newUserIndices = new Map(state.userHistoryIndices);
+    
+    const userHistory = newUserHistories.get(action.userId) || [];
+    const newUserHistory = [...userHistory, action];
+    newUserHistories.set(action.userId, newUserHistory);
+    newUserIndices.set(action.userId, newUserHistory.length - 1);
+    
+    set({
+      actionHistory: [...state.actionHistory, action],
+      currentHistoryIndex: state.actionHistory.length,
+      lastAction: action,
+      userActionHistories: newUserHistories,
+      userHistoryIndices: newUserIndices,
+    });
   },
   batchUpdate: (actions) => {
     // Apply batch of actions
-    console.log('Applying batch update:', actions);
+    console.log('Applying batch update:', actions.length, 'actions');
+    actions.forEach(action => get().applyRemoteAction(action));
   },
   updateLocalUserHistoryIndex: (userId, index) => {
     set((state) => {

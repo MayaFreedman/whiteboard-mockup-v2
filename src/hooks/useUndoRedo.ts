@@ -1,6 +1,7 @@
+
 import { useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
-import { WhiteboardAction, WhiteboardObject, WhiteboardState } from '../types/whiteboard';
+import { WhiteboardAction, WhiteboardState } from '../types/whiteboard';
 import { nanoid } from 'nanoid';
 import { useMultiplayer } from './useMultiplayer';
 
@@ -248,13 +249,18 @@ export const useUndoRedo = (): UndoRedoManager => {
           if (segment.points.length >= 2) {
             const originalObject = currentState.objects[originalObjectId];
             if (originalObject) {
-              // This would need the path conversion utility
-              const newObject: WhiteboardObject = {
+              // Convert points to path string
+              const pathString = segment.points.reduce((path, point, index) => {
+                const command = index === 0 ? 'M' : 'L';
+                return `${path} ${command} ${point.x} ${point.y}`;
+              }, '');
+              
+              const newObject = {
                 ...originalObject,
                 id: segment.id,
                 data: {
                   ...originalObject.data,
-                  // path: pointsToPath(segment.points) // Would need import
+                  path: pathString
                 },
                 updatedAt: Date.now()
               };

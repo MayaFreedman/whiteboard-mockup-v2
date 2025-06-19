@@ -1,7 +1,7 @@
-
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
+import { useUser } from '../../contexts/UserContext';
 import { interpolatePoints } from '../../utils/path/pathInterpolation';
 import { doesPathIntersectEraserBatch, erasePointsFromPathBatch } from '../../utils/path/pathErasing';
 import { pathToPoints } from '../../utils/path/pathConversion';
@@ -13,6 +13,7 @@ import { nanoid } from 'nanoid';
 export const useEraserLogic = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
+  const { userId } = useUser();
   
   // For real-time eraser: batch processing with line segment intersection
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
@@ -139,7 +140,7 @@ export const useEraserLogic = () => {
         }
       };
       
-      whiteboardStore.erasePath(enhancedAction);
+      whiteboardStore.erasePath(enhancedAction, userId);
     });
     
     console.log('🧹 Processed eraser batch:', {
@@ -147,7 +148,7 @@ export const useEraserLogic = () => {
       eraserActions: eraserActions.length,
       preservedBrushTypes: eraserActions.map(a => whiteboardStore.objects[a.originalObjectId]?.data?.brushType).filter(Boolean)
     });
-  }, [whiteboardStore, convertShapeToPath]);
+  }, [whiteboardStore, convertShapeToPath, userId]);
 
   /**
    * Handles eraser start logic with improved object detection
@@ -186,7 +187,7 @@ export const useEraserLogic = () => {
       }
       
       if (objectId) {
-        whiteboardStore.deleteObject(objectId);
+        whiteboardStore.deleteObject(objectId, userId);
         console.log('🗑️ Object eraser successfully deleted:', objectId.slice(0, 8));
         
         if (redrawCanvas) {
@@ -207,7 +208,7 @@ export const useEraserLogic = () => {
       
       processEraserBatch();
     }
-  }, [toolStore.toolSettings, whiteboardStore, processEraserBatch]);
+  }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
   /**
    * Handles eraser move logic with improved object detection for object mode
@@ -228,7 +229,7 @@ export const useEraserLogic = () => {
       for (const testPos of testPositions) {
         const objectId = findObjectAt(testPos.x, testPos.y);
         if (objectId) {
-          whiteboardStore.deleteObject(objectId);
+          whiteboardStore.deleteObject(objectId, userId);
           console.log('🗑️ Object eraser deleted during drag:', objectId.slice(0, 8));
           
           if (redrawCanvas) {
@@ -266,7 +267,7 @@ export const useEraserLogic = () => {
         }
       }
     }
-  }, [toolStore.toolSettings, whiteboardStore, processEraserBatch]);
+  }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
   /**
    * Handles eraser end logic
