@@ -188,13 +188,14 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
 
       case 'circle': {
         if (obj.width) {
-          const radius = obj.width / 2;
-          const centerX = obj.x + radius;
-          const centerY = obj.y + radius;
+          const radiusX = obj.width / 2;
+          const radiusY = obj.height / 2;
+          const centerX = obj.x + radiusX;
+          const centerY = obj.y + radiusY;
           
-          // Draw the original object
+          // Draw the original object as an ellipse
           ctx.beginPath();
-          ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+          ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
           
           if (obj.fill && obj.fill !== 'none') {
             ctx.fillStyle = obj.fill;
@@ -351,12 +352,13 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       }
       
       case 'circle': {
-        const radius = Math.min(width, height) / 2;
-        const centerX = x + width / 2;
-        const centerY = y + height / 2;
+        const radiusX = width / 2;
+        const radiusY = height / 2;
+        const centerX = x + radiusX;
+        const centerY = y + radiusY;
         
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
         
         if (preview.fillColor && preview.fillColor !== 'transparent') {
           ctx.fill();
