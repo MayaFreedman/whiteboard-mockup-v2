@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { WhiteboardObject } from '../../types/whiteboard';
@@ -12,13 +11,13 @@ import {
 } from '../../utils/shapeRendering';
 
 /**
- * Hook for detecting objects at coordinates with improved accuracy and performance
+ * Hook for detecting objects at coordinates with improved accuracy
  */
 export const useObjectDetection = () => {
   const whiteboardStore = useWhiteboardStore();
 
   /**
-   * Checks if a point is inside a path using optimized detection methods
+   * Checks if a point is inside a path using multiple detection methods
    */
   const isPointInPath = useCallback((pathString: string, x: number, y: number, strokeWidth: number = 2): boolean => {
     try {
@@ -27,22 +26,26 @@ export const useObjectDetection = () => {
       const ctx = canvas.getContext('2d');
       if (!ctx) return false;
 
-      // Optimized: Use smaller hit area for better performance
-      ctx.lineWidth = Math.max(strokeWidth * 1.5, 8); // Reduced from strokeWidth * 2
+      // Primary method: stroke hit detection with generous hit area
+      ctx.lineWidth = Math.max(strokeWidth * 2, 12); // At least 12px hit area
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       
       const strokeHit = ctx.isPointInStroke(path, x, y);
       
-      // Reduced fallback testing for performance
+      // Fallback method: check multiple points around the target for better coverage
       if (!strokeHit) {
-        const radius = Math.max(strokeWidth, 4); // Reduced from 6
+        const radius = Math.max(strokeWidth, 6);
         const testPoints = [
           { x: x - radius, y },
           { x: x + radius, y },
           { x, y: y - radius },
-          { x, y: y + radius }
-        ]; // Reduced from 8 test points to 4
+          { x, y: y + radius },
+          { x: x - radius/2, y: y - radius/2 },
+          { x: x + radius/2, y: y - radius/2 },
+          { x: x - radius/2, y: y + radius/2 },
+          { x: x + radius/2, y: y + radius/2 }
+        ];
         
         return testPoints.some(point => ctx.isPointInStroke(path, point.x, point.y));
       }
@@ -60,8 +63,8 @@ export const useObjectDetection = () => {
   const isPointInRectangle = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
     if (!obj.width || !obj.height) return false;
     
-    // Reduced padding for performance
-    const padding = 3; // Reduced from 5
+    // Add 5px padding for easier selection
+    const padding = 5;
     return x >= obj.x - padding && x <= obj.x + obj.width + padding &&
            y >= obj.y - padding && y <= obj.y + obj.height + padding;
   }, []);
@@ -78,8 +81,9 @@ export const useObjectDetection = () => {
     const centerY = obj.y + radiusY;
     
     // Use ellipse equation: (x-h)²/a² + (y-k)²/b² <= 1
-    const normalizedX = (x - centerX) / (radiusX + 3); // Reduced padding from 5 to 3
-    const normalizedY = (y - centerY) / (radiusY + 3);
+    // where (h,k) is center, a is radiusX, b is radiusY
+    const normalizedX = (x - centerX) / (radiusX + 5); // Add 5px padding
+    const normalizedY = (y - centerY) / (radiusY + 5); // Add 5px padding
     
     return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
   }, []);
@@ -91,10 +95,10 @@ export const useObjectDetection = () => {
     const fontSize = obj.data?.fontSize || 16;
     const textContent = obj.data?.content || '';
     
-    // Optimized text width estimation
-    const textWidth = Math.max(textContent.length * fontSize * 0.6, 15); // Slightly more conservative
-    const textHeight = fontSize * 1.3; // Reduced multiplier
-    const padding = 5; // Reduced padding from 8 to 5
+    // Improved text width estimation and generous hit area
+    const textWidth = Math.max(textContent.length * fontSize * 0.7, 20); // More accurate estimation
+    const textHeight = fontSize * 1.5; // Account for line height
+    const padding = 8; // Generous padding for text selection
     
     return x >= obj.x - padding && x <= obj.x + textWidth + padding &&
            y >= obj.y - fontSize - padding && y <= obj.y + textHeight - fontSize + padding;
@@ -106,7 +110,7 @@ export const useObjectDetection = () => {
   const isPointInComplexShape = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
     if (!obj.width || !obj.height) return false;
     
-    const padding = 3; // Reduced padding from 5 to 3
+    const padding = 5; // Add padding for easier selection
     
     switch (obj.type) {
       case 'triangle':
@@ -131,7 +135,8 @@ export const useObjectDetection = () => {
       }
       
       case 'heart': {
-        // Simplified heart detection for performance
+        // For heart, use a bounding box approach with some tolerance
+        // This is a simplified approach - a more accurate method would trace the heart curve
         const centerX = obj.x + obj.width / 2;
         const centerY = obj.y + obj.height / 2;
         const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
@@ -145,12 +150,11 @@ export const useObjectDetection = () => {
   }, []);
 
   /**
-   * Finds the topmost object at the given coordinates with optimized detection
+   * Finds the topmost object at the given coordinates with improved detection
    */
   const findObjectAt = useCallback((x: number, y: number): string | null => {
     const objects = Object.entries(whiteboardStore.objects);
     
-    // Reduced logging for performance
     console.log('🎯 Finding object at:', { x, y, totalObjects: objects.length });
     
     // Check objects from top to bottom (reverse order for z-index)
@@ -171,22 +175,49 @@ export const useObjectDetection = () => {
             const relativeX = x - obj.x;
             const relativeY = y - obj.y;
             isHit = isPointInPath(obj.data.path, relativeX, relativeY, obj.strokeWidth);
+            
+            console.log('🖊️ Path hit test:', {
+              id: id.slice(0, 8),
+              screenCoords: { x, y },
+              objectCoords: { x: obj.x, y: obj.y },
+              relativeCoords: { x: relativeX, y: relativeY },
+              strokeWidth: obj.strokeWidth,
+              isHit
+            });
           }
           break;
         }
         
         case 'rectangle': {
           isHit = isPointInRectangle(obj, x, y);
+          console.log('▭ Rectangle hit test:', {
+            id: id.slice(0, 8),
+            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+            isHit
+          });
           break;
         }
         
         case 'circle': {
           isHit = isPointInCircle(obj, x, y);
+          console.log('⭕ Circle hit test:', {
+            id: id.slice(0, 8),
+            center: { x: obj.x + (obj.width || 0) / 2, y: obj.y + (obj.height || 0) / 2 },
+            radiusX: (obj.width || 0) / 2,
+            radiusY: (obj.height || 0) / 2,
+            isHit
+          });
           break;
         }
         
         case 'text': {
           isHit = isPointInText(obj, x, y);
+          console.log('📝 Text hit test:', {
+            id: id.slice(0, 8),
+            position: { x: obj.x, y: obj.y },
+            content: obj.data?.content,
+            isHit
+          });
           break;
         }
         
@@ -197,13 +228,26 @@ export const useObjectDetection = () => {
         case 'star':
         case 'heart': {
           isHit = isPointInComplexShape(obj, x, y);
+          console.log('🔷 Complex shape hit test:', {
+            id: id.slice(0, 8),
+            type: obj.type,
+            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+            isHit
+          });
           break;
         }
         
         default: {
-          // Fallback for other types - reduced hit radius
-          const hitRadius = 10; // Reduced from 15
+          // Fallback for other types - use a larger hit area around the point
+          const hitRadius = 15;
           isHit = Math.abs(x - obj.x) <= hitRadius && Math.abs(y - obj.y) <= hitRadius;
+          console.log('❓ Unknown type hit test:', {
+            id: id.slice(0, 8),
+            type: obj.type,
+            distance: Math.sqrt((x - obj.x) ** 2 + (y - obj.y) ** 2),
+            hitRadius,
+            isHit
+          });
         }
       }
       

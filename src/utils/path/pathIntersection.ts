@@ -1,7 +1,8 @@
+
 import { Point } from './pathConversion';
 
 /**
- * Checks if a point is within a circle (eraser area) with proper stroke width compensation
+ * Checks if a point is within a circle (eraser area) with toned-down stroke width compensation
  * @param point - Point to check
  * @param centerX - Circle center X
  * @param centerY - Circle center Y
@@ -12,8 +13,20 @@ import { Point } from './pathConversion';
 export const isPointInCircle = (point: Point, centerX: number, centerY: number, radius: number, strokeWidth: number = 0): boolean => {
   const distance = Math.sqrt((point.x - centerX) ** 2 + (point.y - centerY) ** 2);
   
-  // Restore effective stroke compensation - removed overly conservative size ratio logic
-  const strokeCompensation = strokeWidth * 0.5; // Restored from the toned-down 0.1-0.3 range
+  // Calculate size ratio for dynamic compensation
+  const eraserDiameter = radius * 2;
+  const sizeRatio = Math.min(strokeWidth, eraserDiameter) / Math.max(strokeWidth, eraserDiameter);
+  
+  // Toned down stroke compensation that reduces as sizes become similar
+  let strokeCompensation: number;
+  if (sizeRatio > 0.7) { // Very similar sizes (within 30%)
+    strokeCompensation = strokeWidth * 0.1; // Minimal compensation
+  } else if (sizeRatio > 0.4) { // Moderately different sizes
+    strokeCompensation = strokeWidth * 0.2; // Reduced compensation
+  } else { // Very different sizes
+    strokeCompensation = strokeWidth * 0.3; // Still toned down from original /2
+  }
+  
   const effectiveRadius = radius + strokeCompensation;
   
   return distance <= effectiveRadius;
@@ -61,7 +74,7 @@ export const distanceFromPointToLineSegment = (point: Point, lineStart: Point, l
 };
 
 /**
- * Checks if a line segment intersects with a circle (eraser area) with proper stroke width compensation
+ * Checks if a line segment intersects with a circle (eraser area) with toned-down stroke width compensation
  * @param lineStart - Start point of the line segment
  * @param lineEnd - End point of the line segment
  * @param centerX - Circle center X
@@ -81,8 +94,20 @@ export const lineSegmentIntersectsCircle = (
   const center = { x: centerX, y: centerY };
   const distance = distanceFromPointToLineSegment(center, lineStart, lineEnd);
   
-  // Restore effective stroke compensation
-  const strokeCompensation = strokeWidth * 0.5; // Restored from the toned-down 0.1-0.3 range
+  // Calculate size ratio for dynamic compensation
+  const eraserDiameter = radius * 2;
+  const sizeRatio = Math.min(strokeWidth, eraserDiameter) / Math.max(strokeWidth, eraserDiameter);
+  
+  // Toned down stroke compensation that reduces as sizes become similar
+  let strokeCompensation: number;
+  if (sizeRatio > 0.7) { // Very similar sizes (within 30%)
+    strokeCompensation = strokeWidth * 0.1; // Minimal compensation
+  } else if (sizeRatio > 0.4) { // Moderately different sizes
+    strokeCompensation = strokeWidth * 0.2; // Reduced compensation
+  } else { // Very different sizes
+    strokeCompensation = strokeWidth * 0.3; // Still toned down from original /2
+  }
+  
   const effectiveRadius = radius + strokeCompensation;
   
   return distance <= effectiveRadius;

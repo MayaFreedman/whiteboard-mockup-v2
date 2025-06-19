@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -15,11 +16,11 @@ export const useEraserLogic = () => {
   const toolStore = useToolStore();
   const { userId } = useUser();
   
-  // For real-time eraser: restored proper batch processing
+  // For real-time eraser: batch processing with line segment intersection
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
   const lastEraserProcessRef = useRef<number>(0);
-  const ERASER_BATCH_SIZE = 3; // Restored from the increased 5 to ensure frequent processing
-  const ERASER_THROTTLE_MS = 16; // Restored from the increased 32ms for better responsiveness
+  const ERASER_BATCH_SIZE = 3;
+  const ERASER_THROTTLE_MS = 16;
 
   // Stroke tracking for undo/redo
   const strokeInProgressRef = useRef<boolean>(false);
@@ -32,53 +33,37 @@ export const useEraserLogic = () => {
     }>;
   }>>([]);
 
-  // Cache for expensive operations
-  const shapePathCacheRef = useRef<Map<string, string>>(new Map());
-
   /**
-   * Converts shape objects to path format for erasing (with caching)
+   * Converts shape objects to path format for erasing
    */
   const convertShapeToPath = useCallback((obj: any): string => {
-    const cacheKey = `${obj.type}-${obj.width}-${obj.height}`;
-    
-    if (shapePathCacheRef.current.has(cacheKey)) {
-      return shapePathCacheRef.current.get(cacheKey)!;
-    }
-
-    let pathString = '';
     switch (obj.type) {
       case 'rectangle':
-        pathString = `M 0 0 L ${obj.width} 0 L ${obj.width} ${obj.height} L 0 ${obj.height} Z`;
-        break;
+        return `M 0 0 L ${obj.width} 0 L ${obj.width} ${obj.height} L 0 ${obj.height} Z`;
       
       case 'circle': {
         const radius = Math.min(obj.width, obj.height) / 2;
         const cx = obj.width / 2;
         const cy = obj.height / 2;
-        pathString = `M ${cx - radius} ${cy} A ${radius} ${radius} 0 1 0 ${cx + radius} ${cy} A ${radius} ${radius} 0 1 0 ${cx - radius} ${cy} Z`;
-        break;
+        return `M ${cx - radius} ${cy} A ${radius} ${radius} 0 1 0 ${cx + radius} ${cy} A ${radius} ${radius} 0 1 0 ${cx - radius} ${cy} Z`;
       }
       
       default:
-        pathString = obj.data?.path || '';
+        return obj.data?.path || '';
     }
-
-    shapePathCacheRef.current.set(cacheKey, pathString);
-    return pathString;
   }, []);
 
   /**
-   * Processes accumulated eraser points against all objects during a stroke (restored responsiveness)
+   * Processes accumulated eraser points against all objects during a stroke
    */
   const processEraserBatch = useCallback(() => {
     if (eraserPointsRef.current.length === 0) return;
     
     const objects = Object.entries(whiteboardStore.objects);
-    const processedObjects = new Set<string>(); // Prevent duplicate processing
     
     objects.forEach(([id, obj]) => {
-      // Skip if already processed in this batch or is eraser object
-      if (processedObjects.has(id) || obj.data?.isEraser) return;
+      // Skip eraser objects (safety check - should not exist anymore)
+      if (obj.data?.isEraser) return;
       
       let pathString = '';
       let shouldProcess = false;
@@ -94,7 +79,6 @@ export const useEraserLogic = () => {
       if (shouldProcess && pathString) {
         const strokeWidth = obj.strokeWidth || 2;
         
-        // Simplified bounds check - removed overly restrictive logic
         const intersects = doesPathIntersectEraserBatch(
           pathString,
           obj.x,
@@ -121,6 +105,7 @@ export const useEraserLogic = () => {
           
           // During stroke: apply immediately but track for undo
           if (strokeInProgressRef.current) {
+            // Store operation for stroke-level undo
             strokeOperationsRef.current.push({
               originalObjectId: id,
               originalObject: obj,
@@ -151,7 +136,6 @@ export const useEraserLogic = () => {
           };
           
           whiteboardStore.erasePath(enhancedAction, userId);
-          processedObjects.add(id);
         }
       }
     });
@@ -159,8 +143,7 @@ export const useEraserLogic = () => {
     console.log('🧹 Processed eraser batch:', {
       eraserPoints: eraserPointsRef.current.length,
       strokeInProgress: strokeInProgressRef.current,
-      strokeOperations: strokeOperationsRef.current.length,
-      processedObjects: processedObjects.size
+      strokeOperations: strokeOperationsRef.current.length
     });
   }, [whiteboardStore, convertShapeToPath, userId]);
 
@@ -176,8 +159,6 @@ export const useEraserLogic = () => {
     if (eraserMode === 'pixel') {
       strokeInProgressRef.current = true;
       strokeOperationsRef.current = [];
-      // Clear cache at start of new stroke
-      shapePathCacheRef.current.clear();
     }
     
     if (eraserMode === 'object') {
@@ -235,7 +216,7 @@ export const useEraserLogic = () => {
   }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
   /**
-   * Handles eraser move logic during stroke (restored responsiveness)
+   * Handles eraser move logic during stroke
    */
   const handleEraserMove = useCallback((coords: { x: number; y: number }, lastPoint: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -265,8 +246,7 @@ export const useEraserLogic = () => {
     } else {
       const eraserRadius = toolStore.toolSettings.eraserSize / 2;
       
-      // Restored proper interpolation density
-      const interpolatedPoints = interpolatePoints(lastPoint, coords, eraserRadius);
+      const interpolatedPoints = interpolatePoints(lastPoint, coords, eraserRadius / 2);
       
       interpolatedPoints.slice(1).forEach(point => {
         eraserPointsRef.current.push({
@@ -283,7 +263,6 @@ export const useEraserLogic = () => {
       
       if (shouldProcess) {
         processEraserBatch();
-        // Keep only the last point to maintain continuity
         const lastPoint = eraserPointsRef.current[eraserPointsRef.current.length - 1];
         eraserPointsRef.current = lastPoint ? [lastPoint] : [];
         lastEraserProcessRef.current = now;
