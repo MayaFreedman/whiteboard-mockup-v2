@@ -60,7 +60,7 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Creates shape objects - simple shapes as their native types, complex shapes as paths
+   * Creates shape objects - all shapes as their native types
    */
   const createShapeObject = useCallback((
     shapeType: string,
@@ -74,57 +74,66 @@ export const useCanvasInteractions = () => {
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
     const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
     
+    // All shapes are now created as native types
+    const baseShape = {
+      x,
+      y,
+      width,
+      height,
+      stroke: strokeColor,
+      fill: 'none',
+      strokeWidth: shapeBorderWeight,
+      opacity
+    };
+    
     switch (shapeType) {
       case 'rectangle':
         return {
           type: 'rectangle',
-          x,
-          y,
-          width,
-          height,
-          stroke: strokeColor,
-          fill: 'none',
-          strokeWidth: shapeBorderWeight,
-          opacity
+          ...baseShape
         };
       
       case 'circle':
         return {
           type: 'circle',
-          x,
-          y,
-          width,
-          height,
-          stroke: strokeColor,
-          fill: 'none',
-          strokeWidth: shapeBorderWeight,
-          opacity
+          ...baseShape
         };
       
       case 'triangle':
-      case 'diamond':
-      case 'pentagon':
-      case 'hexagon':
-      case 'star':
-      case 'heart': {
-        // Create complex shapes as path objects
-        const pathData = generateShapePath(shapeType, 0, 0, width, height);
         return {
-          type: 'path',
-          x,
-          y,
-          width,
-          height,
-          stroke: strokeColor,
-          fill: 'none',
-          strokeWidth: shapeBorderWeight,
-          opacity,
-          data: {
-            path: pathData,
-            shapeType: shapeType
-          }
+          type: 'triangle',
+          ...baseShape
         };
-      }
+      
+      case 'diamond':
+        return {
+          type: 'diamond',
+          ...baseShape
+        };
+      
+      case 'pentagon':
+        return {
+          type: 'pentagon',
+          ...baseShape
+        };
+      
+      case 'hexagon':
+        return {
+          type: 'hexagon',
+          ...baseShape
+        };
+      
+      case 'star':
+        return {
+          type: 'star',
+          ...baseShape
+        };
+      
+      case 'heart':
+        return {
+          type: 'heart',
+          ...baseShape
+        };
       
       default:
         return null;

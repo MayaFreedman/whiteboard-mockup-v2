@@ -3,7 +3,7 @@ import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
   id: string;
-  type: 'path' | 'rectangle' | 'circle' | 'text';
+  type: 'path' | 'rectangle' | 'circle' | 'text' | 'triangle' | 'diamond' | 'pentagon' | 'hexagon' | 'star' | 'heart';
   x: number;
   y: number;
   width?: number;

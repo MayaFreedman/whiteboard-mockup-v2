@@ -1,9 +1,16 @@
-
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { WhiteboardObject } from '../types/whiteboard';
 import { renderPaintbrush, renderChalk, renderSpray, renderCrayon } from '../utils/brushEffects';
+import { 
+  renderTriangle, 
+  renderDiamond, 
+  renderPentagon, 
+  renderHexagon, 
+  renderStar, 
+  renderHeart 
+} from '../utils/shapeRendering';
 
 /**
  * Custom hook for handling canvas rendering operations
@@ -69,6 +76,40 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
             ctx.lineWidth = (obj.strokeWidth || 2) + 6;
             ctx.stroke();
+          }
+          break;
+        }
+        case 'triangle':
+        case 'diamond':
+        case 'pentagon':
+        case 'hexagon':
+        case 'star':
+        case 'heart': {
+          if (obj.width && obj.height) {
+            // Draw selection outline for complex shapes
+            ctx.lineWidth = (obj.strokeWidth || 2) + 6;
+            
+            // Render the shape outline with thick blue stroke
+            switch (obj.type) {
+              case 'triangle':
+                renderTriangle(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+                break;
+              case 'diamond':
+                renderDiamond(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+                break;
+              case 'pentagon':
+                renderPentagon(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+                break;
+              case 'hexagon':
+                renderHexagon(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+                break;
+              case 'star':
+                renderStar(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+                break;
+              case 'heart':
+                renderHeart(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+                break;
+            }
           }
           break;
         }
@@ -164,6 +205,48 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
             ctx.lineWidth = obj.strokeWidth || 2;
             ctx.stroke();
           }
+        }
+        break;
+      }
+
+      case 'triangle': {
+        if (obj.width && obj.height) {
+          renderTriangle(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+        }
+        break;
+      }
+
+      case 'diamond': {
+        if (obj.width && obj.height) {
+          renderDiamond(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+        }
+        break;
+      }
+
+      case 'pentagon': {
+        if (obj.width && obj.height) {
+          renderPentagon(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+        }
+        break;
+      }
+
+      case 'hexagon': {
+        if (obj.width && obj.height) {
+          renderHexagon(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+        }
+        break;
+      }
+
+      case 'star': {
+        if (obj.width && obj.height) {
+          renderStar(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+        }
+        break;
+      }
+
+      case 'heart': {
+        if (obj.width && obj.height) {
+          renderHeart(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
         }
         break;
       }

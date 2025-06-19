@@ -1,7 +1,14 @@
-
 import { useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { WhiteboardObject } from '../../types/whiteboard';
+import { 
+  isPointInTriangle, 
+  isPointInDiamond, 
+  isPointInPolygon, 
+  getPentagonVertices, 
+  getHexagonVertices, 
+  getStarVertices 
+} from '../../utils/shapeRendering';
 
 /**
  * Hook for detecting objects at coordinates with improved accuracy
@@ -94,6 +101,51 @@ export const useObjectDetection = () => {
   }, []);
 
   /**
+   * Checks if a point is inside a complex shape
+   */
+  const isPointInComplexShape = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
+    if (!obj.width || !obj.height) return false;
+    
+    const padding = 5; // Add padding for easier selection
+    
+    switch (obj.type) {
+      case 'triangle':
+        return isPointInTriangle(x, y, obj.x - padding, obj.y - padding, obj.width + padding * 2, obj.height + padding * 2);
+      
+      case 'diamond':
+        return isPointInDiamond(x, y, obj.x - padding, obj.y - padding, obj.width + padding * 2, obj.height + padding * 2);
+      
+      case 'pentagon': {
+        const vertices = getPentagonVertices(obj.x - padding, obj.y - padding, obj.width + padding * 2, obj.height + padding * 2);
+        return isPointInPolygon(x, y, vertices);
+      }
+      
+      case 'hexagon': {
+        const vertices = getHexagonVertices(obj.x - padding, obj.y - padding, obj.width + padding * 2, obj.height + padding * 2);
+        return isPointInPolygon(x, y, vertices);
+      }
+      
+      case 'star': {
+        const vertices = getStarVertices(obj.x - padding, obj.y - padding, obj.width + padding * 2, obj.height + padding * 2);
+        return isPointInPolygon(x, y, vertices);
+      }
+      
+      case 'heart': {
+        // For heart, use a bounding box approach with some tolerance
+        // This is a simplified approach - a more accurate method would trace the heart curve
+        const centerX = obj.x + obj.width / 2;
+        const centerY = obj.y + obj.height / 2;
+        const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+        const maxDistance = Math.min(obj.width, obj.height) / 2 + padding;
+        return distance <= maxDistance;
+      }
+      
+      default:
+        return false;
+    }
+  }, []);
+
+  /**
    * Finds the topmost object at the given coordinates with improved detection
    */
   const findObjectAt = useCallback((x: number, y: number): string | null => {
@@ -164,9 +216,25 @@ export const useObjectDetection = () => {
           break;
         }
         
+        case 'triangle':
+        case 'diamond':
+        case 'pentagon':
+        case 'hexagon':
+        case 'star':
+        case 'heart': {
+          isHit = isPointInComplexShape(obj, x, y);
+          console.log('🔷 Complex shape hit test:', {
+            id: id.slice(0, 8),
+            type: obj.type,
+            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+            isHit
+          });
+          break;
+        }
+        
         default: {
           // Fallback for other types - use a larger hit area around the point
-          const hitRadius = 15; // Increased from 10px
+          const hitRadius = 15;
           isHit = Math.abs(x - obj.x) <= hitRadius && Math.abs(y - obj.y) <= hitRadius;
           console.log('❓ Unknown type hit test:', {
             id: id.slice(0, 8),
@@ -190,13 +258,14 @@ export const useObjectDetection = () => {
     
     console.log('❌ No object found at coordinates');
     return null;
-  }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInText]);
+  }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInText, isPointInComplexShape]);
 
   return {
     findObjectAt,
     isPointInPath,
     isPointInRectangle,
     isPointInCircle,
-    isPointInText
+    isPointInText,
+    isPointInComplexShape
   };
 };
