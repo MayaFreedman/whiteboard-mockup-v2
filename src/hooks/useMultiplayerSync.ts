@@ -5,12 +5,34 @@ import { useUser } from '../contexts/UserContext'
 import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
 
+// Logging throttling to reduce console spam
+const createThrottledLogger = (interval: number) => {
+  let lastLog = 0;
+  const logQueue = new Map<string, any>();
+  
+  return (key: string, data: any) => {
+    logQueue.set(key, data);
+    const now = Date.now();
+    
+    if (now - lastLog >= interval) {
+      logQueue.forEach((logData, logKey) => {
+        console.log(`🔄 [Throttled] ${logKey}:`, logData);
+      });
+      logQueue.clear();
+      lastLog = now;
+    }
+  };
+};
+
 export const useMultiplayerSync = () => {
   const multiplayerContext = useContext(MultiplayerContext)
   const whiteboardStore = useWhiteboardStore()
   const { userId } = useUser()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const actionQueueRef = useRef<WhiteboardAction[]>([])
+  
+  // Throttled logging for detailed checks (reduced from every call to every 100ms)
+  const throttledLog = useRef(createThrottledLogger(100));
 
   // Guard clause for context
   if (!multiplayerContext) {
@@ -21,19 +43,20 @@ export const useMultiplayerSync = () => {
 
   const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext
 
-  // Improved readiness check with detailed logging
+  // Improved readiness check with throttled logging
   const isReadyToSend = () => {
     const hasServerInstance = !!serverInstance
     const hasRoom = !!(serverInstance?.server?.room)
     const ready = hasServerInstance && hasRoom && isConnected
     
-    console.log('🔍 Detailed connection readiness check:', {
+    // Use throttled logging instead of spamming console
+    throttledLog.current('connection-check', {
       hasServerInstance,
       hasRoom,
       isConnected,
       roomId: serverInstance?.server?.room?.id || 'none',
       ready
-    })
+    });
     
     return ready
   }
@@ -140,10 +163,10 @@ export const useMultiplayerSync = () => {
               sentActionIdsRef.current.add(state.lastAction.id)
               console.log('✅ Successfully sent action:', state.lastAction.id)
               
-              // Clean up old IDs to prevent memory leak
-              if (sentActionIdsRef.current.size > 1000) {
+              // Reduced cleanup threshold from 1000 to 250 for better memory management
+              if (sentActionIdsRef.current.size > 250) {
                 const idsArray = Array.from(sentActionIdsRef.current)
-                const idsToKeep = idsArray.slice(-500)
+                const idsToKeep = idsArray.slice(-125) // Keep last 125 instead of 500
                 sentActionIdsRef.current = new Set(idsToKeep)
               }
             } catch (error) {
