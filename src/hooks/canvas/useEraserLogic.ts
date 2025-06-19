@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -61,7 +62,7 @@ export const useEraserLogic = () => {
     }> = [];
     
     objects.forEach(([id, obj]) => {
-      // Skip eraser objects
+      // Skip eraser objects (safety check - should not exist anymore)
       if (obj.data?.isEraser) return;
       
       let pathString = '';
@@ -102,6 +103,7 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
+          // Create eraser path reference (not for rendering, just for action tracking)
           const eraserPath = eraserPointsRef.current.reduce((path, eraser, index) => {
             const command = index === 0 ? 'M' : 'L';
             return `${path} ${command} ${eraser.x} ${eraser.y}`;
@@ -142,7 +144,8 @@ export const useEraserLogic = () => {
     
     console.log('🧹 Processed eraser batch:', {
       eraserPoints: eraserPointsRef.current.length,
-      eraserActions: eraserActions.length
+      eraserActions: eraserActions.length,
+      preservedBrushTypes: eraserActions.map(a => whiteboardStore.objects[a.originalObjectId]?.data?.brushType).filter(Boolean)
     });
   }, [whiteboardStore, convertShapeToPath]);
 

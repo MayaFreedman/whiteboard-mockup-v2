@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { Viewport } from '../types/viewport';
@@ -221,24 +220,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       // Remove the original object
       delete newObjects[originalObjectId];
       
-      // Add the eraser path as a new object
-      const eraserId = nanoid();
-      const now = Date.now();
-      newObjects[eraserId] = {
-        id: eraserId,
-        type: 'path',
-        x: eraserPath.x,
-        y: eraserPath.y,
-        stroke: '#000000',
-        strokeWidth: eraserPath.size,
-        createdAt: now,
-        updatedAt: now,
-        data: {
-          path: eraserPath.path,
-          isEraser: true
-        }
-      };
-      
       // Add resulting segments as new objects with preserved brush metadata
       resultingSegments.forEach((segment) => {
         if (segment.points.length >= 2) {
@@ -248,7 +229,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             return `${path} ${command} ${point.x} ${point.y}`;
           }, '');
           
-          // Create new object with preserved metadata
+          // Create new object with preserved metadata - ensure brushType is preserved correctly
           newObjects[segment.id] = {
             id: segment.id,
             type: 'path',
@@ -258,13 +239,14 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             strokeWidth: originalObjectMetadata?.strokeWidth || originalObject.strokeWidth || 2,
             opacity: originalObjectMetadata?.opacity || originalObject.opacity || 1,
             fill: originalObjectMetadata?.fill || originalObject.fill,
-            createdAt: now,
-            updatedAt: now,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
             data: {
               path: pathString,
-              brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType, // Preserve brush type!
-              // Preserve any other data from original object
+              // First preserve any original data, then override with preserved metadata
               ...originalObject.data,
+              // Ensure brushType is preserved (place after spread to avoid override)
+              brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
               isEraser: false // Ensure segments are not marked as eraser
             }
           };
