@@ -11,6 +11,7 @@ export const useMultiplayerSync = () => {
   const { userId } = useUser()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const actionQueueRef = useRef<WhiteboardAction[]>([])
+  const readinessCheckTimeoutRef = useRef<NodeJS.Timeout>()
 
   // Guard clause for context
   if (!multiplayerContext) {
@@ -21,26 +22,31 @@ export const useMultiplayerSync = () => {
 
   const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext
 
-  // Improved readiness check with detailed logging
-  const isReadyToSend = () => {
+  // Optimized readiness check with caching
+  const isReadyToSend = useRef(() => {
     const hasServerInstance = !!serverInstance
     const hasRoom = !!(serverInstance?.server?.room)
     const ready = hasServerInstance && hasRoom && isConnected
     
-    console.log('🔍 Detailed connection readiness check:', {
-      hasServerInstance,
-      hasRoom,
-      isConnected,
-      roomId: serverInstance?.server?.room?.id || 'none',
-      ready
-    })
+    // Only log when state changes
+    if (ready !== isReadyToSend.current.lastState) {
+      console.log('🔍 Connection readiness changed:', {
+        hasServerInstance,
+        hasRoom,
+        isConnected,
+        roomId: serverInstance?.server?.room?.id || 'none',
+        ready
+      })
+      isReadyToSend.current.lastState = ready
+    }
     
     return ready
-  }
+  })
+  isReadyToSend.current.lastState = false
 
   // Process queued actions when connection becomes ready
   const processActionQueue = () => {
-    if (actionQueueRef.current.length > 0 && isReadyToSend()) {
+    if (actionQueueRef.current.length > 0 && isReadyToSend.current()) {
       console.log('📤 Processing queued actions:', actionQueueRef.current.length)
       const actionsToSend = [...actionQueueRef.current]
       actionQueueRef.current = []
@@ -60,7 +66,7 @@ export const useMultiplayerSync = () => {
 
   // Set up message-based sync when connection is ready
   useEffect(() => {
-    if (!isReadyToSend()) {
+    if (!isReadyToSend.current()) {
       console.log('🔄 Skipping message setup - not ready')
       return
     }
@@ -69,31 +75,14 @@ export const useMultiplayerSync = () => {
     console.log('🔄 Setting up message-based sync for room:', room.id)
 
     const handleBroadcastMessage = (message: any) => {
-      console.log('📥 Received broadcast message:', {
-        type: message.type,
-        hasAction: !!message.action,
-        actionId: message.action?.id,
-        actionType: message.action?.type,
-        actionUserId: message.action?.userId
-      })
-      
-      // Handle whiteboard actions
+      // Reduced logging for performance
       if (message.type === 'whiteboard_action' && message.action) {
         const action: WhiteboardAction = message.action
-        console.log('📥 Processing remote whiteboard action:', {
-          type: action.type,
-          id: action.id,
-          userId: action.userId,
-          fromOwnAction: sentActionIdsRef.current.has(action.id),
-          isOwnUser: action.userId === userId
-        })
         
         // Prevent echoing our own actions back
         if (!sentActionIdsRef.current.has(action.id)) {
-          console.log('📥 Applying remote action to store:', action.type)
+          console.log('📥 Applying remote action:', action.type)
           whiteboardStore.applyRemoteAction(action)
-        } else {
-          console.log('🔄 Ignoring echo of our own action:', action.id)
         }
       }
       
@@ -119,40 +108,32 @@ export const useMultiplayerSync = () => {
     }
   }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId])
 
-  // Send local actions to other clients
+  // Send local actions to other clients (optimized)
   useEffect(() => {
-    console.log('🔄 Setting up action subscription')
-
     const unsubscribe = useWhiteboardStore.subscribe(
       (state) => {
         if (state.lastAction && !sentActionIdsRef.current.has(state.lastAction.id)) {
-          console.log('📤 New local action detected:', {
-            type: state.lastAction.type,
-            id: state.lastAction.id,
-            userId: state.lastAction.userId,
-            isReadyToSend: isReadyToSend()
-          })
+          // Reduced logging for performance
+          console.log('📤 New local action:', state.lastAction.type, state.lastAction.id)
           
-          if (isReadyToSend()) {
-            console.log('📤 Attempting to send action immediately:', state.lastAction.type, state.lastAction.id)
+          if (isReadyToSend.current()) {
             try {
               sendWhiteboardAction(state.lastAction)
               sentActionIdsRef.current.add(state.lastAction.id)
-              console.log('✅ Successfully sent action:', state.lastAction.id)
+              console.log('✅ Sent action:', state.lastAction.id)
               
-              // Clean up old IDs to prevent memory leak
-              if (sentActionIdsRef.current.size > 1000) {
+              // Clean up old IDs to prevent memory leak (optimized)
+              if (sentActionIdsRef.current.size > 500) { // Reduced from 1000
                 const idsArray = Array.from(sentActionIdsRef.current)
-                const idsToKeep = idsArray.slice(-500)
+                const idsToKeep = idsArray.slice(-250) // Reduced from 500
                 sentActionIdsRef.current = new Set(idsToKeep)
               }
             } catch (error) {
               console.error('❌ Failed to send action:', state.lastAction.id, error)
-              console.log('⏳ Adding failed action to queue for retry')
               actionQueueRef.current.push(state.lastAction)
             }
           } else {
-            console.log('⏳ Queueing action until connection ready:', state.lastAction.type, state.lastAction.id)
+            console.log('⏳ Queueing action:', state.lastAction.type, state.lastAction.id)
             actionQueueRef.current.push(state.lastAction)
           }
         }
@@ -162,10 +143,22 @@ export const useMultiplayerSync = () => {
     return unsubscribe
   }, [sendWhiteboardAction])
 
-  // Process queue when connection state changes
+  // Process queue when connection state changes (debounced)
   useEffect(() => {
-    console.log('🔄 Connection state changed, processing queue')
-    processActionQueue()
+    if (readinessCheckTimeoutRef.current) {
+      clearTimeout(readinessCheckTimeoutRef.current)
+    }
+    
+    readinessCheckTimeoutRef.current = setTimeout(() => {
+      console.log('🔄 Connection state changed, processing queue')
+      processActionQueue()
+    }, 100) // Debounce by 100ms
+
+    return () => {
+      if (readinessCheckTimeoutRef.current) {
+        clearTimeout(readinessCheckTimeoutRef.current)
+      }
+    }
   }, [serverInstance, isConnected])
 
   return {
