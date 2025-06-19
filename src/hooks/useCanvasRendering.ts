@@ -67,13 +67,14 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           break;
         }
         case 'circle': {
-          if (obj.width) {
-            // Draw the exact same circle but with thicker blue stroke
-            const radius = obj.width / 2;
-            const centerX = obj.x + radius;
-            const centerY = obj.y + radius;
+          if (obj.width && obj.height) {
+            // Draw the exact same ellipse but with thicker blue stroke
+            const radiusX = obj.width / 2;
+            const radiusY = obj.height / 2;
+            const centerX = obj.x + radiusX;
+            const centerY = obj.y + radiusY;
             ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
             ctx.lineWidth = (obj.strokeWidth || 2) + 6;
             ctx.stroke();
           }
