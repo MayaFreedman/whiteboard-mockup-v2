@@ -1,4 +1,3 @@
-
 import { useEffect, useContext, useRef } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
@@ -12,6 +11,7 @@ export const useMultiplayerSync = () => {
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const actionQueueRef = useRef<WhiteboardAction[]>([])
   const readinessCheckTimeoutRef = useRef<NodeJS.Timeout>()
+  const lastStateRef = useRef<boolean>(false)
 
   // Guard clause for context
   if (!multiplayerContext) {
@@ -29,7 +29,7 @@ export const useMultiplayerSync = () => {
     const ready = hasServerInstance && hasRoom && isConnected
     
     // Only log when state changes
-    if (ready !== isReadyToSend.current.lastState) {
+    if (ready !== lastStateRef.current) {
       console.log('🔍 Connection readiness changed:', {
         hasServerInstance,
         hasRoom,
@@ -37,12 +37,11 @@ export const useMultiplayerSync = () => {
         roomId: serverInstance?.server?.room?.id || 'none',
         ready
       })
-      isReadyToSend.current.lastState = ready
+      lastStateRef.current = ready
     }
     
     return ready
   })
-  isReadyToSend.current.lastState = false
 
   // Process queued actions when connection becomes ready
   const processActionQueue = () => {
