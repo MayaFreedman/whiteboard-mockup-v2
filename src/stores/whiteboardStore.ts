@@ -41,6 +41,10 @@ export interface WhiteboardStore {
   actionHistory: WhiteboardAction[];
   currentHistoryIndex: number;
   lastAction?: WhiteboardAction;
+  
+  // User-specific action histories for undo/redo
+  userActionHistories: Map<string, WhiteboardAction[]>;
+  userHistoryIndices: Map<string, number>;
 
   // Viewport Actions
   setViewport: (viewport: Viewport) => void;
@@ -94,7 +98,7 @@ export interface WhiteboardStore {
   getActionsSince: (timestamp: number) => WhiteboardAction[];
   applyRemoteAction: (action: WhiteboardAction) => void;
   batchUpdate: (actions: WhiteboardAction[]) => void;
-  updateLocalUserHistoryIndex: (index: number) => void;
+  updateLocalUserHistoryIndex: (userId: string, index: number) => void;
   applyStateChange: (stateChange: any) => void;
 }
 
@@ -114,6 +118,10 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   actionHistory: [],
   currentHistoryIndex: -1,
   lastAction: undefined,
+  
+  // Initialize user-specific histories
+  userActionHistories: new Map(),
+  userHistoryIndices: new Map(),
 
   setViewport: (viewport) => set({ viewport }),
   resetViewport: () => set({ viewport: { x: 0, y: 0, zoom: 1 } }),
@@ -323,8 +331,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     // Apply batch of actions
     console.log('Applying batch update:', actions);
   },
-  updateLocalUserHistoryIndex: (index) => {
-    set({ currentHistoryIndex: index });
+  updateLocalUserHistoryIndex: (userId, index) => {
+    set((state) => {
+      const newIndices = new Map(state.userHistoryIndices);
+      newIndices.set(userId, index);
+      return { userHistoryIndices: newIndices };
+    });
   },
   applyStateChange: (stateChange) => {
     set((state) => ({ ...state, ...stateChange }));
