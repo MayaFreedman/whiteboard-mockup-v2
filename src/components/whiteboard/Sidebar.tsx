@@ -17,10 +17,26 @@ import {
 } from '../ui/sidebar';
 import { EraserSettings } from './EraserSettings';
 import { ShapeSettings } from './ShapeSettings';
+import { ShapePropertiesPanel } from './ShapePropertiesPanel';
 
 // Context-sensitive tool settings component
 const ToolSettings: React.FC = () => {
   const { activeTool, toolSettings, updateToolSettings } = useToolStore();
+  const { selectedObjectIds, objects } = useWhiteboardStore();
+
+  // Show shape properties if objects are selected
+  if (selectedObjectIds.length > 0) {
+    return (
+      <Card>
+        <CardHeader className="bg-muted/80 py-3">
+          <CardTitle className="text-lg">Shape Properties</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <ShapePropertiesPanel />
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Eraser tool
   if (activeTool === 'eraser') {
