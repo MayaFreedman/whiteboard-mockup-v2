@@ -148,134 +148,6 @@ const ColorButton: React.FC<{
 );
 
 /**
- * Shape Properties Component - replaces Select tool when object is selected
- */
-const ShapePropertiesCard: React.FC<{ selectedObjectId: string }> = ({ selectedObjectId }) => {
-  const { objects, updateObject } = useWhiteboardStore();
-  const obj = objects[selectedObjectId];
-  
-  if (!obj) return null;
-
-  const handlePropertyChange = (property: string, value: any) => {
-    updateObject(selectedObjectId, { [property]: value });
-  };
-
-  const colors = [
-    '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00', 
-    '#ff00ff', '#00ffff', '#ffffff', '#808080', '#ffa500'
-  ];
-
-  return (
-    <div className="flex items-center gap-2 flex-shrink-0 bg-card border border-border rounded-lg p-2">
-      {/* Position Controls */}
-      <div className="flex items-center gap-1">
-        <Label className="text-xs text-muted-foreground">X:</Label>
-        <Input
-          type="number"
-          value={Math.round(obj.x)}
-          onChange={(e) => handlePropertyChange('x', parseFloat(e.target.value) || 0)}
-          className="h-6 w-12 text-xs p-1"
-        />
-        <Label className="text-xs text-muted-foreground">Y:</Label>
-        <Input
-          type="number"
-          value={Math.round(obj.y)}
-          onChange={(e) => handlePropertyChange('y', parseFloat(e.target.value) || 0)}
-          className="h-6 w-12 text-xs p-1"
-        />
-      </div>
-
-      <div className="w-px h-6 bg-border" />
-
-      {/* Size Controls */}
-      {obj.width && obj.height && (
-        <>
-          <div className="flex items-center gap-1">
-            <Label className="text-xs text-muted-foreground">W:</Label>
-            <Input
-              type="number"
-              value={Math.round(obj.width)}
-              onChange={(e) => handlePropertyChange('width', parseFloat(e.target.value) || 1)}
-              className="h-6 w-12 text-xs p-1"
-              min="1"
-            />
-            <Label className="text-xs text-muted-foreground">H:</Label>
-            <Input
-              type="number"
-              value={Math.round(obj.height)}
-              onChange={(e) => handlePropertyChange('height', parseFloat(e.target.value) || 1)}
-              className="h-6 w-12 text-xs p-1"
-              min="1"
-            />
-          </div>
-          <div className="w-px h-6 bg-border" />
-        </>
-      )}
-
-      {/* Fill Color */}
-      <div className="flex items-center gap-1">
-        <Label className="text-xs text-muted-foreground">Fill:</Label>
-        <Button
-          variant={obj.fill === 'none' ? 'secondary' : 'outline'}
-          size="sm"
-          onClick={() => handlePropertyChange('fill', 'none')}
-          className="h-6 px-2 text-xs"
-        >
-          None
-        </Button>
-        <div className="flex gap-1">
-          {colors.slice(0, 5).map(color => (
-            <button
-              key={color}
-              className={`w-4 h-4 rounded border ${obj.fill === color ? 'border-primary border-2' : 'border-border'}`}
-              style={{ backgroundColor: color }}
-              onClick={() => handlePropertyChange('fill', color)}
-              title={`Fill: ${color}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="w-px h-6 bg-border" />
-
-      {/* Stroke Color */}
-      <div className="flex items-center gap-1">
-        <Label className="text-xs text-muted-foreground">Stroke:</Label>
-        <div className="flex gap-1">
-          {colors.slice(0, 5).map(color => (
-            <button
-              key={color}
-              className={`w-4 h-4 rounded border ${obj.stroke === color ? 'border-primary border-2' : 'border-border'}`}
-              style={{ backgroundColor: color }}
-              onClick={() => handlePropertyChange('stroke', color)}
-              title={`Stroke: ${color}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="w-px h-6 bg-border" />
-
-      {/* Stroke Width */}
-      <div className="flex items-center gap-1">
-        <Label className="text-xs text-muted-foreground">Width:</Label>
-        <div className="w-16">
-          <Slider
-            value={[obj.strokeWidth || 2]}
-            onValueChange={([value]) => handlePropertyChange('strokeWidth', value)}
-            min={1}
-            max={10}
-            step={1}
-            className="w-full"
-          />
-        </div>
-        <span className="text-xs text-muted-foreground w-6">{obj.strokeWidth || 2}</span>
-      </div>
-    </div>
-  );
-};
-
-/**
  * Renders action buttons (undo, redo, zoom) using the new undo/redo hook
  */
 const ActionButtons: React.FC = () => {
@@ -352,8 +224,6 @@ export const Toolbar: React.FC = () => {
     activeColorPalette
   } = useToolStore();
   
-  const { selectedObjectIds } = useWhiteboardStore();
-  
   const toolbarRef = useRef<HTMLDivElement>(null);
   const isMobile = useResponsiveBreakpoint(activeColorPalette);
   
@@ -361,9 +231,6 @@ export const Toolbar: React.FC = () => {
   useToolbarHeight(toolbarRef, activeTool);
 
   const allColors = getActiveColors();
-
-  // Check if we should show shape properties instead of select tool
-  const shouldShowProperties = activeTool === 'select' && selectedObjectIds.length === 1;
 
   /**
    * Handles color selection and updates tool settings
@@ -409,20 +276,16 @@ export const Toolbar: React.FC = () => {
         
         {/* Main Toolbar Content */}
         <div className="min-h-16 flex items-center px-4 gap-4 w-max">
-          {/* Basic Tools Section - Show properties card instead of select tool when object is selected */}
+          {/* Basic Tools Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {shouldShowProperties ? (
-              <ShapePropertiesCard selectedObjectId={selectedObjectIds[0]} />
-            ) : (
-              BASIC_TOOLS.map((tool) => (
-                <ToolButton
-                  key={tool.id}
-                  tool={tool}
-                  isActive={activeTool === tool.id}
-                  onClick={() => handleToolSelect(tool.id)}
-                />
-              ))
-            )}
+            {BASIC_TOOLS.map((tool) => (
+              <ToolButton
+                key={tool.id}
+                tool={tool}
+                isActive={activeTool === tool.id}
+                onClick={() => handleToolSelect(tool.id)}
+              />
+            ))}
           </div>
 
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
