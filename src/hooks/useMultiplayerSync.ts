@@ -123,42 +123,40 @@ export const useMultiplayerSync = () => {
   useEffect(() => {
     console.log('🔄 Setting up action subscription')
 
-    const unsubscribe = useWhiteboardStore.subscribe(
-      (state) => state.lastAction,
-      (lastAction) => {
-        if (lastAction && !sentActionIdsRef.current.has(lastAction.id)) {
-          console.log('📤 New local action detected:', {
-            type: lastAction.type,
-            id: lastAction.id,
-            userId: lastAction.userId,
-            isReadyToSend: isReadyToSend()
-          })
-          
-          if (isReadyToSend()) {
-            console.log('📤 Attempting to send action immediately:', lastAction.type, lastAction.id)
-            try {
-              sendWhiteboardAction(lastAction)
-              sentActionIdsRef.current.add(lastAction.id)
-              console.log('✅ Successfully sent action:', lastAction.id)
-              
-              // Clean up old IDs to prevent memory leak
-              if (sentActionIdsRef.current.size > 1000) {
-                const idsArray = Array.from(sentActionIdsRef.current)
-                const idsToKeep = idsArray.slice(-500)
-                sentActionIdsRef.current = new Set(idsToKeep)
-              }
-            } catch (error) {
-              console.error('❌ Failed to send action:', lastAction.id, error)
-              console.log('⏳ Adding failed action to queue for retry')
-              actionQueueRef.current.push(lastAction)
+    const unsubscribe = useWhiteboardStore.subscribe((state) => {
+      const lastAction = state.lastAction
+      if (lastAction && !sentActionIdsRef.current.has(lastAction.id)) {
+        console.log('📤 New local action detected:', {
+          type: lastAction.type,
+          id: lastAction.id,
+          userId: lastAction.userId,
+          isReadyToSend: isReadyToSend()
+        })
+        
+        if (isReadyToSend()) {
+          console.log('📤 Attempting to send action immediately:', lastAction.type, lastAction.id)
+          try {
+            sendWhiteboardAction(lastAction)
+            sentActionIdsRef.current.add(lastAction.id)
+            console.log('✅ Successfully sent action:', lastAction.id)
+            
+            // Clean up old IDs to prevent memory leak
+            if (sentActionIdsRef.current.size > 1000) {
+              const idsArray = Array.from(sentActionIdsRef.current)
+              const idsToKeep = idsArray.slice(-500)
+              sentActionIdsRef.current = new Set(idsToKeep)
             }
-          } else {
-            console.log('⏳ Queueing action until connection ready:', lastAction.type, lastAction.id)
+          } catch (error) {
+            console.error('❌ Failed to send action:', lastAction.id, error)
+            console.log('⏳ Adding failed action to queue for retry')
             actionQueueRef.current.push(lastAction)
           }
+        } else {
+          console.log('⏳ Queueing action until connection ready:', lastAction.type, lastAction.id)
+          actionQueueRef.current.push(lastAction)
         }
       }
-    )
+    })
 
     return unsubscribe
   }, [sendWhiteboardAction])
