@@ -61,7 +61,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
           setIsAutoConnecting(false)
         })
     }
-  }, [isConnected, serverInstance]) // Fixed: Added proper dependencies
+  }, [isConnected, serverInstance])
 
   const connect = useCallback(async (targetRoomId: string, isModerator: boolean = false) => {
     try {
@@ -124,9 +124,30 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     if (serverInstance && isConnected) {
       console.log('📤 Sending whiteboard action via ServerClass:', action.type, action.id)
       try {
+        // Ensure shape updates are properly serialized for multiplayer
+        const serializedAction = {
+          ...action,
+          payload: {
+            ...action.payload,
+            // Make sure all shape properties are included
+            ...(action.type === 'UPDATE_OBJECT' && action.payload.updates && {
+              updates: {
+                ...action.payload.updates,
+                // Ensure numeric values are properly serialized
+                ...(typeof action.payload.updates.x === 'number' && { x: action.payload.updates.x }),
+                ...(typeof action.payload.updates.y === 'number' && { y: action.payload.updates.y }),
+                ...(typeof action.payload.updates.width === 'number' && { width: action.payload.updates.width }),
+                ...(typeof action.payload.updates.height === 'number' && { height: action.payload.updates.height }),
+                ...(typeof action.payload.updates.strokeWidth === 'number' && { strokeWidth: action.payload.updates.strokeWidth }),
+                ...(typeof action.payload.updates.opacity === 'number' && { opacity: action.payload.updates.opacity }),
+              }
+            })
+          }
+        };
+        
         serverInstance.sendEvent({
           type: 'whiteboard_action',
-          action: action
+          action: serializedAction
         })
       } catch (error) {
         console.error('❌ Failed to send action:', error)

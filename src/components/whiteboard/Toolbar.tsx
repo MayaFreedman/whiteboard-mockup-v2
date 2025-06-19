@@ -1,9 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
+import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useUser } from '../../contexts/UserContext';
 import { useUndoRedo } from '../../hooks/useUndoRedo';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
+import { ShapePropertiesPanel } from './ShapePropertiesPanel';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -219,6 +221,8 @@ export const Toolbar: React.FC = () => {
     activeColorPalette
   } = useToolStore();
   
+  const { selectedObjectIds } = useWhiteboardStore();
+  
   const toolbarRef = useRef<HTMLDivElement>(null);
   const isMobile = useResponsiveBreakpoint(activeColorPalette);
   
@@ -226,6 +230,9 @@ export const Toolbar: React.FC = () => {
   useToolbarHeight(toolbarRef, activeTool);
 
   const allColors = getActiveColors();
+
+  // Check if we should show shape properties
+  const shouldShowProperties = activeTool === 'select' && selectedObjectIds.length === 1;
 
   /**
    * Handles color selection and updates tool settings
@@ -253,6 +260,13 @@ export const Toolbar: React.FC = () => {
       <div className={`absolute right-4 top-0 h-full items-center gap-2 z-10 ${isMobile ? 'hidden' : 'flex'}`}>
         <ActionButtons />
       </div>
+
+      {/* Shape Properties Panel - Show when object is selected */}
+      {shouldShowProperties && (
+        <div className="absolute left-4 top-full mt-2 z-20">
+          <ShapePropertiesPanel selectedObjectId={selectedObjectIds[0]} />
+        </div>
+      )}
 
       {/* Scrollable Content Container */}
       <div 

@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -6,6 +5,7 @@ import { useCanvasInteractions } from '../../hooks/canvas/useCanvasInteractions'
 import { useCanvasRendering } from '../../hooks/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
 import { CustomCursor } from './CustomCursor';
+import { ResizeHandles } from './ResizeHandles';
 
 /**
  * Gets the appropriate cursor style based on the active tool
@@ -37,7 +37,7 @@ const getCursorStyle = (activeTool: string): string => {
  */
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { viewport } = useWhiteboardStore();
+  const { viewport, selectedObjectIds, updateObject } = useWhiteboardStore();
   const { activeTool } = useToolStore();
   
   // Handle tool selection logic (clearing selection when switching tools)
@@ -55,6 +55,12 @@ export const Canvas: React.FC = () => {
   
   // Update interactions hook with redraw function
   interactions.setRedrawCanvas(redrawCanvas);
+
+  // Handle resize for selected objects
+  const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
+    updateObject(objectId, newBounds);
+    redrawCanvas();
+  };
 
   // Set up non-passive touch event listeners
   useEffect(() => {
@@ -143,6 +149,15 @@ export const Canvas: React.FC = () => {
       
       {/* Custom Cursor */}
       <CustomCursor canvas={canvasRef.current} />
+      
+      {/* Resize Handles for Selected Objects */}
+      {activeTool === 'select' && selectedObjectIds.map(objectId => (
+        <ResizeHandles
+          key={objectId}
+          objectId={objectId}
+          onResize={handleResize}
+        />
+      ))}
       
       {/* Canvas Info Overlay */}
       <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
