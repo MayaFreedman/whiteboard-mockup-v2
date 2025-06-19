@@ -121,9 +121,23 @@ export const useEraserLogic = () => {
       }
     });
     
-    // Apply all eraser actions atomically
+    // Apply all eraser actions atomically with preserved brush metadata
     eraserActions.forEach(action => {
-      whiteboardStore.erasePath(action);
+      const originalObject = whiteboardStore.objects[action.originalObjectId];
+      
+      // Create enhanced action that preserves brush metadata
+      const enhancedAction = {
+        ...action,
+        originalObjectMetadata: {
+          brushType: originalObject.data?.brushType,
+          stroke: originalObject.stroke,
+          strokeWidth: originalObject.strokeWidth,
+          opacity: originalObject.opacity,
+          fill: originalObject.fill
+        }
+      };
+      
+      whiteboardStore.erasePath(enhancedAction);
     });
     
     console.log('🧹 Processed eraser batch:', {
