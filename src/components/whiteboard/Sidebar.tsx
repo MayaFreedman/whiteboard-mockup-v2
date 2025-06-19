@@ -32,7 +32,7 @@ const ToolSettings: React.FC = () => {
           <CardTitle className="text-lg">Shape Properties</CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
-          <ShapePropertiesPanel />
+          <ShapePropertiesPanel selectedObjectId={selectedObjectIds[0]} />
         </CardContent>
       </Card>
     );
