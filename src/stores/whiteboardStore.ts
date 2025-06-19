@@ -82,32 +82,6 @@ export interface WhiteboardStore {
       fill?: string;
     };
   }, userId?: string) => void;
-
-  // New stroke-based eraser methods
-  applyEraserOperationImmediately: (operation: {
-    originalObjectId: string;
-    originalObject: WhiteboardObject;
-    resultingSegments: Array<{
-      points: Array<{ x: number; y: number }>;
-      id: string;
-    }>;
-  }) => void;
-
-  recordEraserStroke: (strokeData: {
-    affectedObjects: Array<{
-      originalObjectId: string;
-      originalObject: WhiteboardObject;
-      resultingSegments: Array<{
-        points: Array<{ x: number; y: number }>;
-        id: string;
-      }>;
-    }>;
-    eraserStroke: {
-      points: Array<{ x: number; y: number; radius: number }>;
-      startTime: number;
-      endTime: number;
-    };
-  }, userId?: string) => void;
   
   // Zoom & Pan
   zoomIn: () => void;
@@ -403,84 +377,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       segments: resultingSegments.length,
       brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
       preservedMetadata: originalObjectMetadata
-    });
-  },
-
-  // New method for immediate eraser operations (visual only, no undo recording)
-  applyEraserOperationImmediately: (operation) => {
-    const { originalObjectId, originalObject, resultingSegments } = operation;
-    
-    set((state) => {
-      const newObjects = { ...state.objects };
-      
-      // Remove the original object
-      delete newObjects[originalObjectId];
-      
-      // Add resulting segments as new objects with preserved metadata
-      resultingSegments.forEach((segment) => {
-        if (segment.points.length >= 2) {
-          const pathString = segment.points.reduce((path, point, index) => {
-            const command = index === 0 ? 'M' : 'L';
-            return `${path} ${command} ${point.x} ${point.y}`;
-          }, '');
-          
-          newObjects[segment.id] = {
-            id: segment.id,
-            type: 'path',
-            x: originalObject.x,
-            y: originalObject.y,
-            stroke: originalObject.stroke || '#000000',
-            strokeWidth: originalObject.strokeWidth || 2,
-            opacity: originalObject.opacity || 1,
-            fill: originalObject.fill,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            data: {
-              path: pathString,
-              brushType: originalObject.data?.brushType,
-              isEraser: false
-            }
-          };
-        }
-      });
-      
-      return {
-        ...state,
-        objects: newObjects,
-        selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
-      };
-    });
-  },
-
-  // New method to record a complete eraser stroke as a single undo action
-  recordEraserStroke: (strokeData, userId = 'local') => {
-    const { affectedObjects, eraserStroke } = strokeData;
-    
-    if (affectedObjects.length === 0) return;
-
-    const action: WhiteboardAction = {
-      type: 'ERASE_STROKE',
-      payload: {
-        affectedObjects,
-        eraserStroke
-      },
-      timestamp: Date.now(),
-      id: nanoid(),
-      userId,
-      previousState: {
-        objects: affectedObjects.reduce((acc, obj) => {
-          acc[obj.originalObjectId] = obj.originalObject;
-          return acc;
-        }, {} as { [id: string]: WhiteboardObject })
-      }
-    };
-
-    get().recordAction(action);
-    
-    console.log('📝 Recorded eraser stroke action:', {
-      actionId: action.id,
-      affectedObjects: affectedObjects.length,
-      strokePoints: eraserStroke.points.length
     });
   },
   
