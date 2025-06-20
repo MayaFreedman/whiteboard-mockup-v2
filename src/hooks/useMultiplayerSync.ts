@@ -5,6 +5,15 @@ import { useUser } from '../contexts/UserContext'
 import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
 
+/**
+ * Determines if an action should be synchronized across multiplayer clients
+ * Selection-related actions are kept local to each user
+ */
+const shouldSyncAction = (action: WhiteboardAction): boolean => {
+  const localOnlyActions = ['SELECT_OBJECTS', 'CLEAR_SELECTION']
+  return !localOnlyActions.includes(action.type)
+}
+
 export const useMultiplayerSync = () => {
   const multiplayerContext = useContext(MultiplayerContext)
   const whiteboardStore = useWhiteboardStore()
@@ -45,7 +54,7 @@ export const useMultiplayerSync = () => {
   const processActionQueue = () => {
     if (actionQueueRef.current.length > 0 && isReadyToSend()) {
       console.log('📤 Processing queued actions:', actionQueueRef.current.length)
-      const actionsToSend = [...actionQueueRef.current]
+      const actionsToSend = [...actionQueueRef.current.filter(shouldSyncAction)]
       actionQueueRef.current = []
       
       actionsToSend.forEach(action => {
@@ -122,7 +131,7 @@ export const useMultiplayerSync = () => {
     }
   }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId])
 
-  // Send local actions to other clients
+  // Send local actions to other clients (with filtering)
   useEffect(() => {
     console.log('🔄 Setting up action subscription')
 
@@ -133,8 +142,15 @@ export const useMultiplayerSync = () => {
             type: state.lastAction.type,
             id: state.lastAction.id,
             userId: state.lastAction.userId,
+            shouldSync: shouldSyncAction(state.lastAction),
             isReadyToSend: isReadyToSend()
           })
+          
+          // Check if this action should be synchronized
+          if (!shouldSyncAction(state.lastAction)) {
+            console.log('🔒 Action filtered - keeping local:', state.lastAction.type)
+            return
+          }
           
           if (isReadyToSend()) {
             console.log('📤 Attempting to send action immediately:', state.lastAction.type, state.lastAction.id)

@@ -59,7 +59,7 @@ export interface WhiteboardStore {
   clearObjects: () => void;
   clearCanvas: (userId?: string) => void;
   selectObjects: (ids: string[], userId?: string) => void;
-  clearSelection: () => void;
+  clearSelection: (userId?: string) => void;
   updateObjectPosition: (id: string, x: number, y: number) => void;
   updateObjectSize: (id: string, width: number, height: number) => void;
   
@@ -282,8 +282,20 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     get().recordAction(action);
   },
 
-  clearSelection: () => {
+  clearSelection: (userId = 'local') => {
+    const state = get();
+    
+    const action: WhiteboardAction = {
+      type: 'CLEAR_SELECTION',
+      payload: {},
+      timestamp: Date.now(),
+      id: nanoid(),
+      userId,
+      previousState: { selectedObjectIds: state.selectedObjectIds },
+    };
+
     set({ selectedObjectIds: [] });
+    get().recordAction(action);
   },
 
   updateObjectPosition: (id, x, y) => {
@@ -511,10 +523,14 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         break;
         
       case 'SELECT_OBJECTS':
-        if (action.payload.objectIds) {
-          set({ selectedObjectIds: action.payload.objectIds });
-        }
-        break;
+        // Skip applying remote selection actions - selections should remain local
+        console.log('🔄 Skipping remote SELECT_OBJECTS action - selections are local');
+        return;
+        
+      case 'CLEAR_SELECTION':
+        // Skip applying remote clear selection actions - selections should remain local
+        console.log('🔄 Skipping remote CLEAR_SELECTION action - selections are local');
+        return;
         
       case 'CLEAR_CANVAS':
         set({ objects: {}, selectedObjectIds: [] });

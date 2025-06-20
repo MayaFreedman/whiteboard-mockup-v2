@@ -1,3 +1,4 @@
+
 import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
@@ -74,6 +75,14 @@ export interface SelectObjectsAction extends BaseAction {
   payload: {
     objectIds: string[];
   };
+  previousState?: {
+    selectedObjectIds: string[];
+  };
+}
+
+export interface ClearSelectionAction extends BaseAction {
+  type: 'CLEAR_SELECTION';
+  payload: {};
   previousState?: {
     selectedObjectIds: string[];
   };
@@ -181,6 +190,7 @@ export type WhiteboardAction =
   | UpdateObjectAction
   | DeleteObjectAction
   | SelectObjectsAction
+  | ClearSelectionAction
   | UpdateViewportAction
   | UpdateSettingsAction
   | ClearCanvasAction
