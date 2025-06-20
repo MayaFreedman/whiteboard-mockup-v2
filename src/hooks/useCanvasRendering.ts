@@ -373,11 +373,11 @@ export const useCanvasRendering = (
             ctx.restore();
           }
           
-          // Draw text box border - use blue when selected OR being edited, gray for placeholder
-          if (isSelected || isBeingEdited || contentToRender === 'Double-click to edit') {
+          // Draw text box border - only show dashed border when selected (not being edited) or for placeholder
+          if ((isSelected && !isBeingEdited) || contentToRender === 'Double-click to edit') {
             ctx.save();
-            // Use blue color if selected or being edited, otherwise use gray for placeholder
-            ctx.strokeStyle = (isSelected || isBeingEdited) ? '#007AFF' : '#cccccc';
+            // Use blue color if selected, otherwise use gray for placeholder
+            ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc';
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
             ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
