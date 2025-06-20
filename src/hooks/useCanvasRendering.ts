@@ -373,12 +373,11 @@ export const useCanvasRendering = (
             ctx.restore();
           }
           
-          // Draw text box border - ONLY when being edited OR showing placeholder text
-          // Remove the blue rectangle that appears when text is just selected
-          if (isBeingEdited || contentToRender === 'Double-click to edit') {
+          // Draw text box border - use blue when selected OR being edited, gray for placeholder
+          if (isSelected || isBeingEdited || contentToRender === 'Double-click to edit') {
             ctx.save();
-            // Use blue color if being edited, gray for placeholder
-            ctx.strokeStyle = isBeingEdited ? '#007AFF' : '#cccccc';
+            // Use blue color if selected or being edited, otherwise use gray for placeholder
+            ctx.strokeStyle = (isSelected || isBeingEdited) ? '#007AFF' : '#cccccc';
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
             ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
@@ -469,6 +468,13 @@ export const useCanvasRendering = (
     
     switch (preview.type) {
       case 'text': {
+        // Draw text box preview with dashed border only - no placeholder text
+        ctx.save();
+        ctx.strokeStyle = preview.strokeColor || '#000000';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(x, y, width, height);
+        ctx.restore();
         break;
       }
       
