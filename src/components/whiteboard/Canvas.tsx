@@ -88,12 +88,12 @@ export const Canvas: React.FC = () => {
     if (textObject) {
       const [objectId, obj] = textObject;
       setEditingTextId(objectId);
-      // Fix textarea positioning to match canvas text positioning (add 4px padding)
+      // Position textarea to match canvas text positioning exactly with 4px padding
       setTextEditorPosition({
-        x: obj.x,
-        y: obj.y + 4, // Match the canvas text padding
-        width: obj.width!,
-        height: obj.height! - 4 // Adjust height to account for padding
+        x: obj.x + 4, // Match the 4px left padding
+        y: obj.y + 4, // Match the 4px top padding
+        width: obj.width! - 8, // Account for left and right padding
+        height: obj.height! - 8 // Account for top and bottom padding
       });
       setEditingText(''); // Clear the text when entering edit mode
     }
@@ -215,10 +215,10 @@ export const Canvas: React.FC = () => {
         onDoubleClick={handleDoubleClick}
       />
       
-      {/* Text Editor Overlay - Positioned to match canvas text exactly */}
+      {/* Text Editor Overlay - Positioned to match canvas text exactly with padding */}
       {editingTextId && textEditorPosition && (
         <textarea
-          className="absolute bg-transparent border-2 border-blue-500 resize-none outline-none p-0"
+          className="absolute bg-transparent border-2 border-blue-500 resize-none outline-none"
           style={{
             left: textEditorPosition.x,
             top: textEditorPosition.y,
@@ -233,7 +233,9 @@ export const Canvas: React.FC = () => {
             color: 'transparent', // Make the text invisible
             caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
             zIndex: 1000,
-            lineHeight: (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px' // Match canvas line height
+            lineHeight: (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px', // Match canvas line height
+            padding: '0', // Remove default textarea padding since we handle it with positioning
+            border: '2px solid #007AFF' // Keep the blue border
           }}
           value={editingText}
           onChange={(e) => setEditingText(e.target.value)}

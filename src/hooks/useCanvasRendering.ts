@@ -157,9 +157,9 @@ export const useCanvasRendering = (
         }
         case 'text': {
           if (obj.data?.content && obj.width && obj.height) {
-            // For text, draw a bounding box with blue outline - align with textarea overlay
+            // For text, draw a bounding box with blue outline - position it 4px higher to align with text content
             ctx.lineWidth = 3;
-            ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+            ctx.strokeRect(obj.x, obj.y - 4, obj.width, obj.height);
           }
           break;
         }
@@ -328,15 +328,15 @@ export const useCanvasRendering = (
               ctx.textAlign = 'left';
           }
           
-          // Calculate pixel-aligned text positions
-          const textXBase = Math.round(obj.x);
-          const textYBase = Math.round(obj.y + 4); // Small padding from top
+          // Calculate pixel-aligned text positions - use consistent 4px top padding
+          const textXBase = Math.round(obj.x + 4); // Add 4px left padding to match textarea
+          const textYBase = Math.round(obj.y + 4); // 4px padding from top
           
           let textX = textXBase;
           if (textData.textAlign === 'center') {
             textX = Math.round(obj.x + obj.width / 2);
           } else if (textData.textAlign === 'right') {
-            textX = Math.round(obj.x + obj.width);
+            textX = Math.round(obj.x + obj.width - 4); // Subtract right padding
           }
           
           // Render text naturally without forced word wrapping
