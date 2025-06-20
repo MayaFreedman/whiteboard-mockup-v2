@@ -93,9 +93,7 @@ export const Canvas: React.FC = () => {
         width: obj.width!,
         height: obj.height!
       });
-      const currentContent = obj.data?.content || '';
-      // Don't show placeholder text in the editor
-      setEditingText(currentContent === 'Double-click to edit' ? '' : currentContent);
+      setEditingText(obj.data?.content || '');
     }
   };
 
@@ -105,7 +103,7 @@ export const Canvas: React.FC = () => {
       updateObject(editingTextId, {
         data: {
           ...objects[editingTextId]?.data,
-          content: editingText.trim() || 'Double-click to edit'
+          content: editingText || 'Double-click to edit'
         }
       });
       redrawCanvas();
