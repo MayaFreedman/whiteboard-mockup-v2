@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -88,11 +89,12 @@ export const Canvas: React.FC = () => {
     if (textObject) {
       const [objectId, obj] = textObject;
       setEditingTextId(objectId);
+      // Fix textarea positioning to match canvas text positioning (add 4px padding)
       setTextEditorPosition({
         x: obj.x,
-        y: obj.y,
+        y: obj.y + 4, // Match the canvas text padding
         width: obj.width!,
-        height: obj.height!
+        height: obj.height! - 4 // Adjust height to account for padding
       });
       setEditingText(''); // Clear the text when entering edit mode
     }
@@ -213,10 +215,10 @@ export const Canvas: React.FC = () => {
         onDoubleClick={handleDoubleClick}
       />
       
-      {/* Text Editor Overlay - Now invisible so we only see canvas text */}
+      {/* Text Editor Overlay - Positioned to match canvas text exactly */}
       {editingTextId && textEditorPosition && (
         <textarea
-          className="absolute bg-transparent border-2 border-blue-500 resize-none outline-none p-1 text-base"
+          className="absolute bg-transparent border-2 border-blue-500 resize-none outline-none p-0"
           style={{
             left: textEditorPosition.x,
             top: textEditorPosition.y,
@@ -230,7 +232,8 @@ export const Canvas: React.FC = () => {
             textAlign: objects[editingTextId]?.data?.textAlign || 'left',
             color: 'transparent', // Make the text invisible
             caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
-            zIndex: 1000
+            zIndex: 1000,
+            lineHeight: (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px' // Match canvas line height
           }}
           value={editingText}
           onChange={(e) => setEditingText(e.target.value)}

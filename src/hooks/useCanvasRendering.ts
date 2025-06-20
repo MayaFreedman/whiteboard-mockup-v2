@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -344,21 +345,37 @@ export const useCanvasRendering = (
             ctx.fillText(lines[i], textX, lineY);
           }
           
-          // Draw underline if enabled
+          // Draw underline if enabled - using accurate text measurements
           if (textData.underline) {
             ctx.save();
             ctx.strokeStyle = obj.stroke || '#000000';
             ctx.lineWidth = 1;
             
-            // Position underline at pixel-aligned coordinates
-            const underlineY = Math.round(textYBase + (lines.length * lineHeight) - 4);
-            const underlineStartX = Math.round(textXBase + 4);
-            const underlineEndX = Math.round(textXBase + obj.width - 4);
-            
-            ctx.beginPath();
-            ctx.moveTo(underlineStartX, underlineY);
-            ctx.lineTo(underlineEndX, underlineY);
-            ctx.stroke();
+            // Draw underline for each line individually
+            for (let i = 0; i < lines.length; i++) {
+              const lineText = lines[i];
+              if (lineText.length === 0) continue; // Skip empty lines
+              
+              // Measure the actual text width
+              const textMetrics = ctx.measureText(lineText);
+              const textWidth = textMetrics.width;
+              
+              // Calculate underline position based on text alignment
+              let underlineStartX = textXBase;
+              if (textData.textAlign === 'center') {
+                underlineStartX = Math.round(textX - textWidth / 2);
+              } else if (textData.textAlign === 'right') {
+                underlineStartX = Math.round(textX - textWidth);
+              }
+              
+              const underlineEndX = Math.round(underlineStartX + textWidth);
+              const underlineY = Math.round(textYBase + (i * lineHeight) + textData.fontSize + 2);
+              
+              ctx.beginPath();
+              ctx.moveTo(underlineStartX, underlineY);
+              ctx.lineTo(underlineEndX, underlineY);
+              ctx.stroke();
+            }
             ctx.restore();
           }
           
