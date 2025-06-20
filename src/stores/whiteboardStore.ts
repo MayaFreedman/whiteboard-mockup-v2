@@ -102,6 +102,21 @@ export interface WhiteboardStore {
   // Conflict detection utilities
   checkObjectExists: (objectId: string) => boolean;
   getObjectRelationship: (objectId: string) => { originalId?: string; segmentIds?: string[] } | undefined;
+  
+  // Action batching for undo/redo grouping
+  currentBatch: {
+    id: string | null;
+    userId: string | null;
+    actionType: string | null;
+    objectId: string | null;
+    startTime: number | null;
+    actions: WhiteboardAction[];
+  };
+  
+  // Batch management
+  startActionBatch: (actionType: string, objectId: string, userId?: string) => string;
+  endActionBatch: () => void;
+  addToBatch: (action: WhiteboardAction) => void;
 }
 
 export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
@@ -127,6 +142,26 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   objectRelationships: new Map(),
 
   recordAction: (action) => {
+    const state = get();
+    
+    // Check if this action should be added to current batch
+    const canAddToBatch = state.currentBatch.id && 
+                         state.currentBatch.actionType === action.type &&
+                         state.currentBatch.objectId === getActionObjectId(action) &&
+                         state.currentBatch.userId === action.userId &&
+                         (Date.now() - (state.currentBatch.startTime || 0)) < 5000; // 5 second timeout
+    
+    if (canAddToBatch) {
+      get().addToBatch(action);
+      return;
+    }
+    
+    // End current batch if exists and record it
+    if (state.currentBatch.id && state.currentBatch.actions.length > 0) {
+      get().endActionBatch();
+    }
+    
+    // Record individual action normally
     set((state) => {
       const newUserHistories = new Map(state.userActionHistories);
       const newUserIndices = new Map(state.userHistoryIndices);
@@ -148,6 +183,105 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         userActionHistories: newUserHistories,
         userHistoryIndices: newUserIndices,
       };
+    });
+  },
+
+  startActionBatch: (actionType, objectId, userId = 'local') => {
+    const batchId = nanoid();
+    console.log('🎯 Starting action batch:', { batchId, actionType, objectId, userId });
+    
+    set((state) => ({
+      currentBatch: {
+        id: batchId,
+        userId,
+        actionType,
+        objectId,
+        startTime: Date.now(),
+        actions: [],
+      }
+    }));
+    
+    return batchId;
+  },
+
+  endActionBatch: () => {
+    const state = get();
+    const batch = state.currentBatch;
+    
+    if (!batch.id || batch.actions.length === 0) {
+      // Clear empty batch
+      set((state) => ({
+        currentBatch: {
+          id: null,
+          userId: null,
+          actionType: null,
+          objectId: null,
+          startTime: null,
+          actions: [],
+        }
+      }));
+      return;
+    }
+    
+    console.log('🎯 Ending action batch:', { 
+      batchId: batch.id, 
+      actionCount: batch.actions.length,
+      actionType: batch.actionType,
+      objectId: batch.objectId
+    });
+    
+    // Create a batch action that contains all the individual actions
+    const batchAction: WhiteboardAction = {
+      type: 'BATCH_UPDATE',
+      payload: { actions: batch.actions },
+      timestamp: batch.startTime || Date.now(),
+      id: batch.id,
+      userId: batch.userId || 'local',
+      previousState: batch.actions[0]?.previousState, // Use first action's previous state
+    };
+    
+    // Record the batch as a single action in history
+    set((state) => {
+      const newUserHistories = new Map(state.userActionHistories);
+      const newUserIndices = new Map(state.userHistoryIndices);
+      
+      const userHistory = newUserHistories.get(batchAction.userId) || [];
+      const currentIndex = newUserIndices.get(batchAction.userId) ?? -1;
+      
+      const newUserHistory = [...userHistory.slice(0, currentIndex + 1), batchAction];
+      newUserHistories.set(batchAction.userId, newUserHistory);
+      newUserIndices.set(batchAction.userId, newUserHistory.length - 1);
+      
+      return {
+        ...state,
+        actionHistory: [...state.actionHistory, batchAction],
+        currentHistoryIndex: state.actionHistory.length,
+        lastAction: batchAction,
+        userActionHistories: newUserHistories,
+        userHistoryIndices: newUserIndices,
+        currentBatch: {
+          id: null,
+          userId: null,
+          actionType: null,
+          objectId: null,
+          startTime: null,
+          actions: [],
+        }
+      };
+    });
+  },
+
+  addToBatch: (action) => {
+    set((state) => ({
+      currentBatch: {
+        ...state.currentBatch,
+        actions: [...state.currentBatch.actions, action]
+      }
+    }));
+    
+    console.log('🎯 Added action to batch:', { 
+      actionType: action.type, 
+      batchSize: get().currentBatch.actions.length 
     });
   },
 
@@ -641,3 +775,18 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     return get().objectRelationships.get(objectId);
   },
 }));
+
+// Helper function to extract object ID from various action types
+function getActionObjectId(action: WhiteboardAction): string | null {
+  switch (action.type) {
+    case 'UPDATE_OBJECT':
+    case 'DELETE_OBJECT':
+      return action.payload.id;
+    case 'ADD_OBJECT':
+      return action.payload.object.id;
+    case 'ERASE_PATH':
+      return action.payload.originalObjectId;
+    default:
+      return null;
+  }
+}

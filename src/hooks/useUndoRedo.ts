@@ -78,11 +78,42 @@ export const useUndoRedo = (): UndoRedoManager => {
       return { stateChange: null };
     }
 
-    // Check for conflicts before proceeding
-    const validation = validateActionForUndo(action);
-    if (!validation.canUndo) {
-      console.warn('⚠️ Cannot undo action due to conflict:', validation.reason);
-      return { stateChange: null, conflict: validation.reason };
+    // Handle BATCH_UPDATE actions by undoing all actions in reverse order
+    if (action.type === 'BATCH_UPDATE') {
+      console.log('🎯 Undoing batch action with', action.payload.actions.length, 'actions');
+      
+      let finalStateChange = { ...currentState };
+      
+      // Apply undo for each action in reverse order
+      for (let i = action.payload.actions.length - 1; i >= 0; i--) {
+        const batchedAction = action.payload.actions[i];
+        const result = createUndoStateChange(batchedAction, finalStateChange);
+        
+        if (!result.stateChange) {
+          console.warn('⚠️ Failed to undo batched action:', batchedAction.type);
+          continue;
+        }
+        
+        // Merge the state changes
+        finalStateChange = { ...finalStateChange, ...result.stateChange };
+      }
+      
+      // Return the difference from current state
+      const stateChange: Partial<WhiteboardState> = {};
+      if (finalStateChange.objects !== currentState.objects) {
+        stateChange.objects = finalStateChange.objects;
+      }
+      if (finalStateChange.selectedObjectIds !== currentState.selectedObjectIds) {
+        stateChange.selectedObjectIds = finalStateChange.selectedObjectIds;
+      }
+      if (finalStateChange.viewport !== currentState.viewport) {
+        stateChange.viewport = finalStateChange.viewport;
+      }
+      if (finalStateChange.settings !== currentState.settings) {
+        stateChange.settings = finalStateChange.settings;
+      }
+      
+      return { stateChange: Object.keys(stateChange).length > 0 ? stateChange : null };
     }
 
     switch (action.type) {
@@ -237,6 +268,43 @@ export const useUndoRedo = (): UndoRedoManager => {
     if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
       console.error('❌ CRITICAL: Attempting to redo a SYNC action! This should never happen:', action.type);
       return { stateChange: null };
+    }
+
+    // Handle BATCH_UPDATE actions by redoing all actions in order
+    if (action.type === 'BATCH_UPDATE') {
+      console.log('🎯 Redoing batch action with', action.payload.actions.length, 'actions');
+      
+      let finalStateChange = { ...currentState };
+      
+      // Apply redo for each action in order
+      for (const batchedAction of action.payload.actions) {
+        const result = createRedoStateChange(batchedAction, finalStateChange);
+        
+        if (!result.stateChange) {
+          console.warn('⚠️ Failed to redo batched action:', batchedAction.type);
+          continue;
+        }
+        
+        // Merge the state changes
+        finalStateChange = { ...finalStateChange, ...result.stateChange };
+      }
+      
+      // Return the difference from current state
+      const stateChange: Partial<WhiteboardState> = {};
+      if (finalStateChange.objects !== currentState.objects) {
+        stateChange.objects = finalStateChange.objects;
+      }
+      if (finalStateChange.selectedObjectIds !== currentState.selectedObjectIds) {
+        stateChange.selectedObjectIds = finalStateChange.selectedObjectIds;
+      }
+      if (finalStateChange.viewport !== currentState.viewport) {
+        stateChange.viewport = finalStateChange.viewport;
+      }
+      if (finalStateChange.settings !== currentState.settings) {
+        stateChange.settings = finalStateChange.settings;
+      }
+      
+      return { stateChange: Object.keys(stateChange).length > 0 ? stateChange : null };
     }
 
     // For redo, we essentially re-apply the original action's effect

@@ -152,6 +152,28 @@ export const useMultiplayerSync = () => {
             return
           }
           
+          // For BATCH_UPDATE actions, expand them for multiplayer sync
+          if (state.lastAction.type === 'BATCH_UPDATE') {
+            console.log('🎯 Expanding batch action for multiplayer sync:', state.lastAction.payload.actions.length, 'actions')
+            
+            // Send each action in the batch individually to other clients
+            state.lastAction.payload.actions.forEach((batchedAction) => {
+              if (shouldSyncAction(batchedAction) && isReadyToSend()) {
+                try {
+                  sendWhiteboardAction(batchedAction)
+                  sentActionIdsRef.current.add(batchedAction.id)
+                  console.log('✅ Successfully sent batched action:', batchedAction.id)
+                } catch (error) {
+                  console.error('❌ Failed to send batched action:', batchedAction.id, error)
+                }
+              }
+            })
+            
+            // Mark the batch action as sent to prevent re-sending
+            sentActionIdsRef.current.add(state.lastAction.id)
+            return
+          }
+          
           if (isReadyToSend()) {
             console.log('📤 Attempting to send action immediately:', state.lastAction.type, state.lastAction.id)
             try {
