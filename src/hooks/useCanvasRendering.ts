@@ -81,6 +81,7 @@ export const useCanvasRendering = (
     }
     
     // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text
+    // Text objects are excluded because they have their own dashed border highlighting
     if (isSelected && !isEraser && obj.type !== 'text') {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
