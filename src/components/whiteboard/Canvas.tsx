@@ -1,170 +1,175 @@
-import React, { useRef, useEffect } from 'react';
-import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { useToolStore } from '../../stores/toolStore';
+
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useCanvasInteractions } from '../../hooks/canvas/useCanvasInteractions';
 import { useCanvasRendering } from '../../hooks/useCanvasRendering';
-import { useToolSelection } from '../../hooks/useToolSelection';
+import { useCanvasCoordinates } from '../../hooks/canvas/useCanvasCoordinates';
+import { useWhiteboardStore } from '../../stores/whiteboardStore';
+import { useUser } from '../../contexts/UserContext';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
 
-/**
- * Gets the appropriate cursor style based on the active tool
- * @param activeTool - The currently active tool
- * @returns CSS cursor value
- */
-const getCursorStyle = (activeTool: string): string => {
-  switch (activeTool) {
-    case 'select':
-      return 'default';
-    case 'text':
-      return 'text';
-    case 'hand':
-      return 'grab';
-    case 'fill':
-      return 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m9 7 5 5v7a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1-2-2V9Z\'/%3E%3Cpath d=\'m8 11 2-2a2 2 0 0 1 2-2 2 2 0 0 1 2 2l6 6\'/%3E%3Cpath d=\'m9 7-6-6\'/%3E%3C/svg%3E") 12 12, auto';
-    case 'pencil':
-    case 'brush':
-    case 'eraser':
-      return 'none'; // Hide default cursor for tools with custom cursor
-    default:
-      return 'crosshair';
-  }
-};
-
-/**
- * Main canvas component for the whiteboard
- * Handles rendering of background patterns, objects, and user interactions
- */
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { viewport, selectedObjectIds, updateObject } = useWhiteboardStore();
-  const { activeTool } = useToolStore();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const whiteboardStore = useWhiteboardStore();
+  const { userId } = useUser();
   
-  // Handle tool selection logic (clearing selection when switching tools)
-  useToolSelection();
+  const {
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handleMouseLeave,
+    setRedrawCanvas
+  } = useCanvasInteractions();
   
-  // Initialize interactions hook first to get the preview functions
-  const interactions = useCanvasInteractions();
-  
-  // Initialize rendering hook with both preview functions
-  const { redrawCanvas } = useCanvasRendering(
-    canvasRef.current, 
-    interactions.getCurrentDrawingPreview,
-    interactions.getCurrentShapePreview
-  );
-  
-  // Update interactions hook with redraw function
-  interactions.setRedrawCanvas(redrawCanvas);
+  const { redrawCanvas } = useCanvasRendering(canvasRef);
 
-  // Handle resize for selected objects
-  const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
-    updateObject(objectId, newBounds);
-    redrawCanvas();
-  };
-
-  // Set up non-passive touch event listeners
+  // Set up the redraw function
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    setRedrawCanvas(redrawCanvas);
+  }, [redrawCanvas, setRedrawCanvas]);
 
-    const handleTouchStart = (event: TouchEvent) => {
+  // Handle keyboard events for text editing
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle typing if we have a single text object selected
+      if (whiteboardStore.selectedObjectIds.length !== 1) return;
+      
+      const selectedId = whiteboardStore.selectedObjectIds[0];
+      const selectedObject = whiteboardStore.objects[selectedId];
+      
+      if (!selectedObject || selectedObject.type !== 'text') return;
+
+      // Ignore modifier keys, function keys, etc.
+      if (event.ctrlKey || event.metaKey || event.altKey || 
+          event.key.length > 1 && !['Backspace', 'Delete', 'Enter', 'Space'].includes(event.key)) {
+        return;
+      }
+
       event.preventDefault();
-      interactions.handlePointerDown(event, canvas);
+      
+      const currentContent = selectedObject.data?.content || '';
+      let newContent = currentContent;
+
+      if (event.key === 'Backspace') {
+        newContent = currentContent.slice(0, -1);
+      } else if (event.key === 'Delete') {
+        newContent = '';
+      } else if (event.key === 'Enter') {
+        newContent = currentContent + '\n';
+      } else if (event.key === ' ') {
+        newContent = currentContent + ' ';
+      } else if (event.key.length === 1) {
+        // If we're starting to type and the content is still the placeholder, replace it
+        if (currentContent === 'Double-click to edit' || !isTyping) {
+          newContent = event.key;
+          setIsTyping(true);
+        } else {
+          newContent = currentContent + event.key;
+        }
+      }
+
+      // Update the text object
+      whiteboardStore.updateObject(selectedId, {
+        data: {
+          ...selectedObject.data,
+          content: newContent
+        }
+      }, userId);
     };
 
-    const handleTouchMove = (event: TouchEvent) => {
-      event.preventDefault();
-      interactions.handlePointerMove(event, canvas);
-    };
-
-    const handleTouchEnd = (event: TouchEvent) => {
-      event.preventDefault();
-      interactions.handlePointerUp(event, canvas);
-    };
-
-    // Add touch event listeners with { passive: false } to allow preventDefault
-    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
-
+    // Add event listener to document for global key handling
+    document.addEventListener('keydown', handleKeyDown);
+    
     return () => {
-      canvas.removeEventListener('touchstart', handleTouchStart);
-      canvas.removeEventListener('touchmove', handleTouchMove);
-      canvas.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [interactions]);
+  }, [whiteboardStore.selectedObjectIds, whiteboardStore.objects, whiteboardStore, userId, isTyping]);
 
-  /**
-   * Handles mouse down events on the canvas
-   * @param event - Mouse event
-   */
-  const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvasRef.current) {
-      interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
+  // Reset typing state when selection changes
+  useEffect(() => {
+    if (whiteboardStore.selectedObjectIds.length !== 1) {
+      setIsTyping(false);
     }
-  };
+  }, [whiteboardStore.selectedObjectIds]);
 
-  /**
-   * Handles mouse move events on the canvas
-   * @param event - Mouse event
-   */
-  const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvasRef.current) {
-      interactions.handlePointerMove(event.nativeEvent, canvasRef.current);
-    }
-  };
+  // Mouse event handlers
+  const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    handlePointerDown(event.nativeEvent, canvasRef.current);
+  }, [handlePointerDown]);
 
-  /**
-   * Handles mouse up events on the canvas
-   * @param event - Mouse event
-   */
-  const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvasRef.current) {
-      interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
-    }
-  };
+  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    handlePointerMove(event.nativeEvent, canvasRef.current);
+  }, [handlePointerMove]);
 
-  /**
-   * Handles mouse leaving the canvas area
-   * @param event - Mouse event
-   */
-  const onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    interactions.handleMouseLeave();
-  };
+  const handleMouseUp = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    handlePointerUp(event.nativeEvent, canvasRef.current);
+  }, [handlePointerUp]);
+
+  // Touch event handlers
+  const handleTouchStart = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    event.preventDefault();
+    handlePointerDown(event.nativeEvent, canvasRef.current);
+  }, [handlePointerDown]);
+
+  const handleTouchMove = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    event.preventDefault();
+    handlePointerMove(event.nativeEvent, canvasRef.current);
+  }, [handlePointerMove]);
+
+  const handleTouchEnd = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    event.preventDefault();
+    handlePointerUp(event.nativeEvent, canvasRef.current);
+  }, [handlePointerUp]);
+
+  // Focus management for keyboard events
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Make container focusable and focus it
+    container.setAttribute('tabindex', '0');
+    container.focus();
+
+    const handleFocus = () => {
+      container.focus();
+    };
+
+    container.addEventListener('click', handleFocus);
+    
+    return () => {
+      container.removeEventListener('click', handleFocus);
+    };
+  }, []);
 
   return (
-    <div className="w-full h-full relative bg-background overflow-hidden">
+    <div 
+      ref={containerRef}
+      className="relative w-full h-full overflow-hidden bg-white focus:outline-none"
+      style={{ cursor: 'none' }}
+      tabIndex={0}
+    >
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
-        style={{
-          cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
-          touchAction: 'none' // Prevent default touch behaviors
-        }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseLeave}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       />
       
-      {/* Custom Cursor */}
-      <CustomCursor canvas={canvasRef.current} />
-      
-      {/* Resize Handles for Selected Objects */}
-      {activeTool === 'select' && selectedObjectIds.map(objectId => (
-        <ResizeHandles
-          key={objectId}
-          objectId={objectId}
-          onResize={handleResize}
-        />
-      ))}
-      
-      {/* Canvas Info Overlay */}
-      <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
-        Zoom: {Math.round(viewport.zoom * 100)}% | 
-        Tool: {activeTool} |
-        {interactions.isDragging && ' Dragging'}
-      </div>
+      <CustomCursor />
+      <ResizeHandles />
     </div>
   );
 };
