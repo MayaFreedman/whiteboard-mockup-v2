@@ -426,19 +426,12 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     
     switch (preview.type) {
       case 'text': {
-        // Draw text box preview with dashed border
+        // Draw text box preview with dashed border only - no placeholder text
         ctx.save();
         ctx.strokeStyle = preview.strokeColor || '#000000';
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
         ctx.strokeRect(x, y, width, height);
-        
-        // Draw placeholder text
-        ctx.fillStyle = preview.strokeColor || '#000000';
-        ctx.font = '16px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('Text Box', x + width/2, y + height/2);
         ctx.restore();
         break;
       }
