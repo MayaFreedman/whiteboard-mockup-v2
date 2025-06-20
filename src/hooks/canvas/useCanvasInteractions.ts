@@ -27,6 +27,7 @@ export const useCanvasInteractions = () => {
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
   const redrawCanvasRef = useRef<(() => void) | null>(null);
   const doubleClickProtectionRef = useRef(false);
+  const isEditingTextRef = useRef(false);
   
   // Simple path builder for smooth drawing
   const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
@@ -68,6 +69,14 @@ export const useCanvasInteractions = () => {
   const setDoubleClickProtection = useCallback((isProtected: boolean) => {
     doubleClickProtectionRef.current = isProtected;
     console.log('🛡️ Double-click protection set to:', isProtected);
+  }, []);
+
+  /**
+   * Sets the text editing state (called by Canvas component)
+   */
+  const setEditingState = useCallback((isEditing: boolean) => {
+    isEditingTextRef.current = isEditing;
+    console.log('✏️ Text editing state set to:', isEditing);
   }, []);
 
   /**
@@ -440,16 +449,22 @@ export const useCanvasInteractions = () => {
   const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     event.preventDefault();
     
-    // Check double-click protection
-    if (doubleClickProtectionRef.current) {
-      console.log('🛡️ Pointer down blocked due to double-click protection');
+    // Check double-click protection OR text editing state
+    if (doubleClickProtectionRef.current || isEditingTextRef.current) {
+      console.log('🛡️ Pointer down blocked - protection:', doubleClickProtectionRef.current, 'editing:', isEditingTextRef.current);
       return;
     }
     
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
 
-    console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8), protection: doubleClickProtectionRef.current });
+    console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8), protection: doubleClickProtectionRef.current, editing: isEditingTextRef.current });
+
+    // BLOCK TEXT TOOL if currently editing any text
+    if (activeTool === 'text' && isEditingTextRef.current) {
+      console.log('📝 Text tool blocked - already editing text');
+      return;
+    }
 
     switch (activeTool) {
       case 'fill': {
@@ -472,6 +487,12 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
+        // Additional check to prevent text creation while editing
+        if (isEditingTextRef.current) {
+          console.log('📝 Text creation blocked - currently editing text');
+          return;
+        }
+
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
@@ -670,6 +691,14 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
+        // Additional check to prevent text creation while editing
+        if (isEditingTextRef.current) {
+          console.log('📝 Text creation blocked in pointer up - currently editing text');
+          isDrawingRef.current = false;
+          currentShapePreviewRef.current = null;
+          return;
+        }
+
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           const preview = currentShapePreviewRef.current;
           const width = Math.abs(preview.endX - preview.startX);
@@ -814,6 +843,7 @@ export const useCanvasInteractions = () => {
     getCurrentDrawingPreview,
     getCurrentShapePreview,
     setRedrawCanvas,
-    setDoubleClickProtection
+    setDoubleClickProtection,
+    setEditingState
   };
 };

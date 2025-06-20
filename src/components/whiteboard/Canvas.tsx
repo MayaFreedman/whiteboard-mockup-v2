@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -46,7 +47,7 @@ export const Canvas: React.FC = () => {
   const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
   const [editingText, setEditingText] = useState('');
   
-  // Double-click protection flag
+  // Double-click protection flag - increased timeout
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -65,9 +66,10 @@ export const Canvas: React.FC = () => {
     editingText
   );
   
-  // Update interactions hook with redraw function and double-click protection
+  // Update interactions hook with redraw function and double-click protection AND editing state
   interactions.setRedrawCanvas(redrawCanvas);
   interactions.setDoubleClickProtection(isHandlingDoubleClick);
+  interactions.setEditingState(editingTextId !== null);
 
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
@@ -93,17 +95,19 @@ export const Canvas: React.FC = () => {
     
     console.log('🖱️ Double-click coordinates:', { x, y });
     
-    // Find text object at click position - use same coordinate system as interactions
+    // Find text object at click position with small tolerance for better detection
+    const tolerance = 2;
     const textObject = Object.entries(objects).find(([id, obj]) => {
       if (obj.type !== 'text' || !obj.width || !obj.height) return false;
       
-      const isInBounds = x >= obj.x && x <= obj.x + obj.width &&
-                        y >= obj.y && y <= obj.y + obj.height;
+      const isInBounds = x >= (obj.x - tolerance) && x <= (obj.x + obj.width + tolerance) &&
+                        y >= (obj.y - tolerance) && y <= (obj.y + obj.height + tolerance);
       
       console.log('🖱️ Checking text object:', {
         id: id.slice(0, 8),
         objBounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
         clickPos: { x, y },
+        tolerance,
         isInBounds
       });
       
@@ -142,11 +146,11 @@ export const Canvas: React.FC = () => {
       console.log('🖱️ No text object found at double-click position');
     }
     
-    // Reset protection flag after a short delay
+    // Reset protection flag after a longer delay - increased from 300ms to 500ms
     doubleClickTimeoutRef.current = setTimeout(() => {
       console.log('🖱️ Clearing double-click protection flag');
       setIsHandlingDoubleClick(false);
-    }, 300); // 300ms should be enough to prevent interference
+    }, 500);
   };
 
   // Handle text editing completion
@@ -225,11 +229,15 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvasRef.current && !isHandlingDoubleClick) {
-      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick);
+    // Block ALL interactions if we're editing text or handling double-click
+    if (editingTextId || isHandlingDoubleClick) {
+      console.log('🖱️ Mouse down blocked - editing text or double-click protection active');
+      return;
+    }
+
+    if (canvasRef.current) {
+      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick, 'editing:', !!editingTextId);
       interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
-    } else if (isHandlingDoubleClick) {
-      console.log('🖱️ Mouse down blocked due to double-click protection');
     }
   };
 
@@ -328,6 +336,7 @@ export const Canvas: React.FC = () => {
         Tool: {activeTool} |
         {interactions.isDragging && ' Dragging'}
         {isHandlingDoubleClick && ' | Double-click Protection Active'}
+        {editingTextId && ' | Editing Text'}
       </div>
     </div>
   );
