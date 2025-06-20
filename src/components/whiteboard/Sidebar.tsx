@@ -5,13 +5,12 @@ import {
   SidebarContent,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from '../ui/sidebar';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { ShapePropertiesPanel } from './ShapePropertiesPanel';
 import { TextPropertiesPanel } from './TextPropertiesPanel';
-import { Palette, Square, Type } from 'lucide-react';
+import { Palette } from 'lucide-react';
 
 export function WhiteboardSidebar() {
   const { selectedObjectIds, objects } = useWhiteboardStore();
@@ -40,24 +39,12 @@ export function WhiteboardSidebar() {
         <SidebarMenu>
           {hasTextSelected && (
             <SidebarMenuItem>
-              <SidebarMenuButton className="w-full justify-start p-0 mb-4">
-                <div className="flex items-center gap-2 px-4 py-2">
-                  <Type className="h-4 w-4" />
-                  <span>Text Properties</span>
-                </div>
-              </SidebarMenuButton>
               <TextPropertiesPanel selectedObjectId={firstSelectedId} />
             </SidebarMenuItem>
           )}
           
           {hasShapeSelected && (
             <SidebarMenuItem>
-              <SidebarMenuButton className="w-full justify-start p-0 mb-4">
-                <div className="flex items-center gap-2 px-4 py-2">
-                  <Square className="h-4 w-4" />
-                  <span>Shape Properties</span>
-                </div>
-              </SidebarMenuButton>
               <ShapePropertiesPanel selectedObjectId={firstSelectedId} />
             </SidebarMenuItem>
           )}
