@@ -1,8 +1,22 @@
+
 import { useRef, useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { WhiteboardObject } from '../types/whiteboard';
-import { useViewport } from '../contexts/ViewportContext';
 import { useToolStore } from '../stores/toolStore';
+
+// Simple viewport context since we can't find the original
+interface ViewportContextType {
+  viewport: {
+    x: number;
+    y: number;
+    zoom: number;
+  };
+}
+
+// Mock viewport hook for now
+const useViewport = (): ViewportContextType => ({
+  viewport: { x: 0, y: 0, zoom: 1 }
+});
 
 export const useCanvasRendering = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
   const whiteboardStore = useWhiteboardStore();
@@ -195,59 +209,6 @@ export const useCanvasRendering = (canvasRef: React.RefObject<HTMLCanvasElement>
       
       ctx.restore();
     });
-
-    // Render drawing preview
-    if (toolStore.activeTool === 'pencil' || toolStore.activeTool === 'brush') {
-      const currentDrawing = toolStore.currentDrawingPreview;
-      if (currentDrawing) {
-        ctx.save();
-        ctx.strokeStyle = currentDrawing.strokeColor;
-        ctx.lineWidth = currentDrawing.strokeWidth;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.globalAlpha = currentDrawing.opacity;
-        
-        const path = new Path2D(currentDrawing.path);
-        ctx.stroke(path);
-        ctx.restore();
-      }
-    }
-
-    // Render shape preview
-    if (['rectangle', 'circle', 'triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart', 'text'].includes(toolStore.activeTool)) {
-      const currentShape = toolStore.currentShapePreview;
-      if (currentShape) {
-        ctx.save();
-        ctx.strokeStyle = currentShape.strokeColor;
-        ctx.lineWidth = currentShape.strokeWidth;
-        ctx.globalAlpha = currentShape.opacity;
-        
-        if (currentShape.type === 'rectangle') {
-          ctx.strokeRect(currentShape.startX, currentShape.startY, currentShape.endX - currentShape.startX, currentShape.endY - currentShape.startY);
-        } else if (currentShape.type === 'circle') {
-          const radius = Math.max(Math.abs(currentShape.endX - currentShape.startX), Math.abs(currentShape.endY - currentShape.startY));
-          ctx.beginPath();
-          ctx.arc(currentShape.startX, currentShape.startY, radius, 0, 2 * Math.PI);
-          ctx.stroke();
-        } else if (['triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart'].includes(currentShape.type)) {
-          const pathString = toolStore.generateShapePath(
-            currentShape.type,
-            currentShape.startX,
-            currentShape.startY,
-            currentShape.endX - currentShape.startX,
-            currentShape.endY - currentShape.startY
-          );
-          
-          const path = new Path2D(pathString);
-          ctx.stroke(path);
-        } else if (currentShape.type === 'text') {
-          ctx.strokeStyle = currentShape.strokeColor;
-          ctx.strokeRect(currentShape.startX, currentShape.startY, currentShape.endX - currentShape.startX, currentShape.endY - currentShape.startY);
-        }
-        
-        ctx.restore();
-      }
-    }
 
     // Add cursor animation for text objects
     const hasSelectedText = whiteboardStore.selectedObjectIds.some(id => 

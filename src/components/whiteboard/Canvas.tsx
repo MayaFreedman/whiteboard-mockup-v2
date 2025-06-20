@@ -149,6 +149,11 @@ export const Canvas: React.FC = () => {
     };
   }, []);
 
+  // Handle resize for selected objects
+  const handleResize = useCallback((objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
+    whiteboardStore.updateObject(objectId, newBounds, userId);
+  }, [whiteboardStore, userId]);
+
   return (
     <div 
       ref={containerRef}
@@ -168,8 +173,14 @@ export const Canvas: React.FC = () => {
         onTouchEnd={handleTouchEnd}
       />
       
-      <CustomCursor />
-      <ResizeHandles />
+      <CustomCursor canvas={canvasRef.current} />
+      {whiteboardStore.selectedObjectIds.map(objectId => (
+        <ResizeHandles 
+          key={objectId}
+          objectId={objectId} 
+          onResize={handleResize}
+        />
+      ))}
     </div>
   );
 };
