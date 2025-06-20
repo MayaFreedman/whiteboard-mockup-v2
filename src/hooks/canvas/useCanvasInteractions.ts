@@ -6,6 +6,7 @@ import { WhiteboardObject, TextData } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
+import { useActionBatching } from '../useActionBatching';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 
 /**
@@ -20,6 +21,12 @@ export const useCanvasInteractions = () => {
   const { findObjectAt } = useObjectDetection();
   const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraserLogic();
   
+  // Initialize action batching with optimized settings
+  const { startBatch, endBatch, checkBatchSize } = useActionBatching({
+    batchTimeout: 1000, // 1 second timeout for batch completion
+    maxBatchSize: 50 // Max 50 actions per batch
+  });
+  
   const isDrawingRef = useRef(false);
   const isDraggingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
@@ -28,6 +35,11 @@ export const useCanvasInteractions = () => {
   const redrawCanvasRef = useRef<(() => void) | null>(null);
   const doubleClickProtectionRef = useRef(false);
   const isEditingTextRef = useRef(false);
+  
+  // Batching state refs
+  const currentBatchIdRef = useRef<string | null>(null);
+  const draggedObjectIdRef = useRef<string | null>(null);
+  const drawingObjectIdRef = useRef<string | null>(null);
   
   // Simple path builder for smooth drawing
   const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
@@ -55,6 +67,19 @@ export const useCanvasInteractions = () => {
     strokeWidth: number;
     opacity: number;
   } | null>(null);
+
+  /**
+   * Ends any active batch and cleans up batching state
+   */
+  const cleanupBatching = useCallback(() => {
+    if (currentBatchIdRef.current) {
+      console.log('🎯 Cleaning up batch:', currentBatchIdRef.current.slice(0, 8));
+      endBatch();
+      currentBatchIdRef.current = null;
+    }
+    draggedObjectIdRef.current = null;
+    drawingObjectIdRef.current = null;
+  }, [endBatch]);
 
   /**
    * Sets the redraw canvas function (called by Canvas component)
@@ -142,53 +167,21 @@ export const useCanvasInteractions = () => {
     
     switch (shapeType) {
       case 'rectangle':
-        return {
-          type: 'rectangle',
-          ...baseShape
-        };
-      
+        return { type: 'rectangle', ...baseShape };
       case 'circle':
-        return {
-          type: 'circle',
-          ...baseShape
-        };
-      
+        return { type: 'circle', ...baseShape };
       case 'triangle':
-        return {
-          type: 'triangle',
-          ...baseShape
-        };
-      
+        return { type: 'triangle', ...baseShape };
       case 'diamond':
-        return {
-          type: 'diamond',
-          ...baseShape
-        };
-      
+        return { type: 'diamond', ...baseShape };
       case 'pentagon':
-        return {
-          type: 'pentagon',
-          ...baseShape
-        };
-      
+        return { type: 'pentagon', ...baseShape };
       case 'hexagon':
-        return {
-          type: 'hexagon',
-          ...baseShape
-        };
-      
+        return { type: 'hexagon', ...baseShape };
       case 'star':
-        return {
-          type: 'star',
-          ...baseShape
-        };
-      
+        return { type: 'star', ...baseShape };
       case 'heart':
-        return {
-          type: 'heart',
-          ...baseShape
-        };
-      
+        return { type: 'heart', ...baseShape };
       default:
         return null;
     }
@@ -403,7 +396,8 @@ export const useCanvasInteractions = () => {
       }
     }
     
-    // Reset all drawing state
+    // Clean up batching and reset all drawing state
+    cleanupBatching();
     isDrawingRef.current = false;
     isDraggingRef.current = false;
     lastPointRef.current = null;
@@ -416,7 +410,7 @@ export const useCanvasInteractions = () => {
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId, cleanupBatching]);
 
   // Add document-level mouseup listener to catch releases outside canvas
   useEffect(() => {
@@ -475,10 +469,14 @@ export const useCanvasInteractions = () => {
       case 'select': {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
+          // START BATCH for object dragging
+          currentBatchIdRef.current = startBatch('UPDATE_OBJECT', objectId, userId);
+          draggedObjectIdRef.current = objectId;
+          
           whiteboardStore.selectObjects([objectId], userId);
           isDraggingRef.current = true;
           dragStartRef.current = coords;
-          console.log('🎯 Selected object for dragging:', objectId.slice(0, 8), 'by user:', userId.slice(0, 8));
+          console.log('🎯 Selected object for dragging:', objectId.slice(0, 8), 'batch:', currentBatchIdRef.current?.slice(0, 8), 'by user:', userId.slice(0, 8));
         } else {
           whiteboardStore.clearSelection();
           console.log('🎯 Cleared selection');
@@ -514,6 +512,9 @@ export const useCanvasInteractions = () => {
 
       case 'pencil':
       case 'brush': {
+        // START BATCH for drawing
+        currentBatchIdRef.current = startBatch('ADD_OBJECT', 'drawing', userId);
+        
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
@@ -533,7 +534,7 @@ export const useCanvasInteractions = () => {
           brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
         
-        console.log('✏️ Started simple smooth drawing at:', coords, 'for user:', userId.slice(0, 8));
+        console.log('✏️ Started drawing with batch:', currentBatchIdRef.current?.slice(0, 8), 'at:', coords, 'for user:', userId.slice(0, 8));
         break;
       }
 
@@ -566,19 +567,22 @@ export const useCanvasInteractions = () => {
       }
 
       case 'eraser': {
+        // START BATCH for erasing
+        currentBatchIdRef.current = startBatch('ERASE_PATH', 'erasing', userId);
+        
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         
         handleEraserStart(coords, findObjectAt, redrawCanvasRef.current || undefined);
         
-        console.log('🧹 Started erasing:', { mode: toolStore.toolSettings.eraserMode, coords, userId: userId.slice(0, 8) });
+        console.log('🧹 Started erasing with batch:', currentBatchIdRef.current?.slice(0, 8), ':', { mode: toolStore.toolSettings.eraserMode, coords, userId: userId.slice(0, 8) });
         break;
       }
 
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, userId, startBatch]);
 
   /**
    * Handles pointer movement during interaction
@@ -596,13 +600,18 @@ export const useCanvasInteractions = () => {
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const obj = whiteboardStore.objects[objectId];
             if (obj) {
-              // NOW WITH USER ID
+              // Update object position - this will be batched
               whiteboardStore.updateObject(objectId, {
                 x: obj.x + deltaX,
                 y: obj.y + deltaY
               }, userId);
             }
           });
+          
+          // Check if batch is getting too large
+          if (currentBatchIdRef.current) {
+            checkBatchSize();
+          }
           
           dragStartRef.current = coords;
           
@@ -651,6 +660,11 @@ export const useCanvasInteractions = () => {
             currentDrawingPreviewRef.current.path = smoothPath;
           }
           
+          // Check if batch is getting too large
+          if (currentBatchIdRef.current) {
+            checkBatchSize();
+          }
+          
           if (redrawCanvasRef.current) {
             requestAnimationFrame(() => {
               if (redrawCanvasRef.current && isDrawingRef.current) {
@@ -666,11 +680,16 @@ export const useCanvasInteractions = () => {
         if (isDrawingRef.current && lastPointRef.current) {
           handleEraserMove(coords, lastPointRef.current, findObjectAt, redrawCanvasRef.current || undefined);
           lastPointRef.current = coords;
+          
+          // Check if batch is getting too large
+          if (currentBatchIdRef.current) {
+            checkBatchSize();
+          }
         }
         break;
       }
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt, userId, checkBatchSize]);
 
   /**
    * Handles the end of a drawing/interaction session
@@ -678,12 +697,18 @@ export const useCanvasInteractions = () => {
   const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const activeTool = toolStore.activeTool;
 
-    console.log('🖱️ Pointer up:', { tool: activeTool, wasDrawing: isDrawingRef.current, wasDragging: isDraggingRef.current, userId: userId.slice(0, 8) });
+    console.log('🖱️ Pointer up:', { tool: activeTool, wasDrawing: isDrawingRef.current, wasDragging: isDraggingRef.current, batchActive: !!currentBatchIdRef.current, userId: userId.slice(0, 8) });
 
     switch (activeTool) {
       case 'select': {
         if (isDraggingRef.current) {
-          console.log('🔄 Finished dragging objects for user:', userId.slice(0, 8));
+          console.log('🔄 Finished dragging objects, ending batch:', currentBatchIdRef.current?.slice(0, 8), 'for user:', userId.slice(0, 8));
+          // END BATCH for object dragging
+          if (currentBatchIdRef.current) {
+            endBatch();
+            currentBatchIdRef.current = null;
+            draggedObjectIdRef.current = null;
+          }
         }
         isDraggingRef.current = false;
         dragStartRef.current = null;
@@ -745,13 +770,19 @@ export const useCanvasInteractions = () => {
             }
           };
 
-          // NOW WITH USER ID
           const objectId = whiteboardStore.addObject(drawingObject, userId);
-          console.log('✏️ Created smooth drawing object:', objectId.slice(0, 8), {
+          console.log('✏️ Created smooth drawing object, ending batch:', currentBatchIdRef.current?.slice(0, 8), objectId.slice(0, 8), {
             pointCount: pathBuilderRef.current.getPointCount(),
             pathLength: finalSmoothPath.length,
             userId: userId.slice(0, 8)
           });
+          
+          // END BATCH for drawing
+          if (currentBatchIdRef.current) {
+            endBatch();
+            currentBatchIdRef.current = null;
+            drawingObjectIdRef.current = null;
+          }
           
           currentDrawingPreviewRef.current = null;
           pathBuilderRef.current = null;
@@ -807,7 +838,13 @@ export const useCanvasInteractions = () => {
       case 'eraser': {
         if (isDrawingRef.current) {
           handleEraserEnd(redrawCanvasRef.current || undefined);
-          console.log('🧹 Finished erasing:', { mode: toolStore.toolSettings.eraserMode, userId: userId.slice(0, 8) });
+          console.log('🧹 Finished erasing, ending batch:', currentBatchIdRef.current?.slice(0, 8), ':', { mode: toolStore.toolSettings.eraserMode, userId: userId.slice(0, 8) });
+          
+          // END BATCH for erasing
+          if (currentBatchIdRef.current) {
+            endBatch();
+            currentBatchIdRef.current = null;
+          }
         }
         break;
       }
@@ -817,7 +854,7 @@ export const useCanvasInteractions = () => {
     lastPointRef.current = null;
     pathStartRef.current = null;
     pathBuilderRef.current = null;
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId, endBatch]);
 
   /**
    * Gets the current drawing preview for rendering
