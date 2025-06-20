@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from 'react';
+
+import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useCanvasInteractions } from '../../hooks/canvas/useCanvasInteractions';
@@ -37,8 +38,13 @@ const getCursorStyle = (activeTool: string): string => {
  */
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { viewport, selectedObjectIds, updateObject } = useWhiteboardStore();
+  const { viewport, selectedObjectIds, updateObject, objects } = useWhiteboardStore();
   const { activeTool } = useToolStore();
+  
+  // Text editing state
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
+  const [editingText, setEditingText] = useState('');
   
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
@@ -60,6 +66,64 @@ export const Canvas: React.FC = () => {
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
     updateObject(objectId, newBounds);
     redrawCanvas();
+  };
+
+  // Handle double-click on text objects
+  const handleDoubleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    // Find text object at click position
+    const textObject = Object.entries(objects).find(([id, obj]) => {
+      if (obj.type !== 'text' || !obj.width || !obj.height) return false;
+      
+      return x >= obj.x && x <= obj.x + obj.width &&
+             y >= obj.y && y <= obj.y + obj.height;
+    });
+    
+    if (textObject) {
+      const [objectId, obj] = textObject;
+      setEditingTextId(objectId);
+      setTextEditorPosition({
+        x: obj.x,
+        y: obj.y,
+        width: obj.width!,
+        height: obj.height!
+      });
+      setEditingText(obj.data?.content || '');
+    }
+  };
+
+  // Handle text editing completion
+  const handleTextEditComplete = () => {
+    if (editingTextId && editingText !== undefined) {
+      updateObject(editingTextId, {
+        data: {
+          ...objects[editingTextId]?.data,
+          content: editingText || 'Double-click to edit'
+        }
+      });
+      redrawCanvas();
+    }
+    
+    setEditingTextId(null);
+    setTextEditorPosition(null);
+    setEditingText('');
+  };
+
+  // Handle text input key events
+  const handleTextKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleTextEditComplete();
+    } else if (event.key === 'Escape') {
+      setEditingTextId(null);
+      setTextEditorPosition(null);
+      setEditingText('');
+    }
   };
 
   // Set up non-passive touch event listeners
@@ -145,7 +209,34 @@ export const Canvas: React.FC = () => {
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseLeave}
+        onDoubleClick={handleDoubleClick}
       />
+      
+      {/* Text Editor Overlay */}
+      {editingTextId && textEditorPosition && (
+        <textarea
+          className="absolute bg-transparent border-2 border-blue-500 resize-none outline-none p-1 text-base"
+          style={{
+            left: textEditorPosition.x,
+            top: textEditorPosition.y,
+            width: textEditorPosition.width,
+            height: textEditorPosition.height,
+            fontSize: objects[editingTextId]?.data?.fontSize || 16,
+            fontFamily: objects[editingTextId]?.data?.fontFamily || 'Arial',
+            fontWeight: objects[editingTextId]?.data?.bold ? 'bold' : 'normal',
+            fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
+            textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
+            textAlign: objects[editingTextId]?.data?.textAlign || 'left',
+            color: objects[editingTextId]?.stroke || '#000000',
+            zIndex: 1000
+          }}
+          value={editingText}
+          onChange={(e) => setEditingText(e.target.value)}
+          onBlur={handleTextEditComplete}
+          onKeyDown={handleTextKeyDown}
+          autoFocus
+        />
+      )}
       
       {/* Custom Cursor */}
       <CustomCursor canvas={canvasRef.current} />
