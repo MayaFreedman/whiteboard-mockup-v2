@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -158,9 +157,9 @@ export const useCanvasRendering = (
         }
         case 'text': {
           if (obj.data?.content && obj.width && obj.height) {
-            // For text, draw a bounding box with blue outline - align with textarea overlay (4px higher)
+            // For text, draw a bounding box with blue outline - align with textarea overlay
             ctx.lineWidth = 3;
-            ctx.strokeRect(obj.x, obj.y + 4, obj.width, obj.height - 4);
+            ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
           }
           break;
         }
