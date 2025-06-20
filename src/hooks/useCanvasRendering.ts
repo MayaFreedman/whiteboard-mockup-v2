@@ -149,10 +149,25 @@ export const useCanvasRendering = (canvasRef: React.RefObject<HTMLCanvasElement>
 
   const redrawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.log('🚫 Canvas not available for rendering');
+      return;
+    }
     
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.log('🚫 Canvas context not available');
+      return;
+    }
+
+    // Log rendering info
+    const objectCount = Object.keys(whiteboardStore.objects).length;
+    console.log('🎨 Rendering canvas:', {
+      dimensions: `${canvas.width}x${canvas.height}`,
+      objectCount,
+      activeTool: toolStore.activeTool,
+      selectedObjects: whiteboardStore.selectedObjectIds.length
+    });
 
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -167,12 +182,17 @@ export const useCanvasRendering = (canvasRef: React.RefObject<HTMLCanvasElement>
     ctx.scale(viewport.zoom, viewport.zoom);
     
     // Render all objects
-    Object.values(whiteboardStore.objects).forEach(obj => {
+    const objects = Object.values(whiteboardStore.objects);
+    console.log('🎨 Rendering objects:', objects.map(obj => ({ id: obj.id.slice(0, 8), type: obj.type })));
+    
+    objects.forEach(obj => {
       ctx.save();
       
       if (obj.type === 'text') {
+        console.log('📝 Rendering text object:', obj.id.slice(0, 8), obj.data?.content || 'empty');
         renderTextObject(ctx, obj);
       } else if (obj.type === 'path') {
+        console.log('✏️ Rendering path object:', obj.id.slice(0, 8));
         ctx.strokeStyle = obj.stroke || '#000000';
         ctx.lineWidth = obj.strokeWidth || 2;
         ctx.lineCap = 'round';
@@ -182,27 +202,40 @@ export const useCanvasRendering = (canvasRef: React.RefObject<HTMLCanvasElement>
         if (obj.data && obj.data.path) {
           const path = new Path2D(obj.data.path);
           ctx.stroke(path);
+        } else {
+          console.log('⚠️ Path object missing path data');
         }
       } else {
+        console.log('🔺 Rendering shape object:', obj.id.slice(0, 8), obj.type);
         ctx.fillStyle = obj.fill || 'transparent';
         ctx.strokeStyle = obj.stroke || '#000000';
         ctx.lineWidth = obj.strokeWidth || 2;
         ctx.globalAlpha = obj.opacity || 1;
         
         if (obj.type === 'rectangle') {
-          ctx.fillRect(obj.x, obj.y, obj.width || 50, obj.height || 50);
-          ctx.strokeRect(obj.x, obj.y, obj.width || 50, obj.height || 50);
+          const width = obj.width || 50;
+          const height = obj.height || 50;
+          if (obj.fill && obj.fill !== 'transparent') {
+            ctx.fillRect(obj.x, obj.y, width, height);
+          }
+          ctx.strokeRect(obj.x, obj.y, width, height);
         } else if (obj.type === 'circle') {
-          const radius = Math.max(obj.width || 25, obj.height || 25);
+          const radius = Math.max(obj.width || 25, obj.height || 25) / 2;
           ctx.beginPath();
-          ctx.arc(obj.x, obj.y, radius, 0, 2 * Math.PI);
-          ctx.fill();
+          ctx.arc(obj.x + radius, obj.y + radius, radius, 0, 2 * Math.PI);
+          if (obj.fill && obj.fill !== 'transparent') {
+            ctx.fill();
+          }
           ctx.stroke();
         } else if (obj.type === 'triangle' || obj.type === 'diamond' || obj.type === 'pentagon' || obj.type === 'hexagon' || obj.type === 'star' || obj.type === 'heart') {
           if (obj.data && obj.data.path) {
             const path = new Path2D(obj.data.path);
-            ctx.fill(path);
+            if (obj.fill && obj.fill !== 'transparent') {
+              ctx.fill(path);
+            }
             ctx.stroke(path);
+          } else {
+            console.log('⚠️ Shape object missing path data');
           }
         }
       }

@@ -30,6 +30,43 @@ export const Canvas: React.FC = () => {
     setRedrawCanvas(redrawCanvas);
   }, [redrawCanvas, setRedrawCanvas]);
 
+  // Initialize canvas dimensions
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    
+    if (!canvas || !container) return;
+
+    const resizeCanvas = () => {
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      
+      console.log('🎨 Canvas initialized:', {
+        width: canvas.width,
+        height: canvas.height,
+        objectCount: Object.keys(whiteboardStore.objects).length
+      });
+      
+      // Trigger redraw after resize
+      redrawCanvas();
+    };
+
+    // Initial resize
+    resizeCanvas();
+
+    // Handle window resize
+    const handleResize = () => {
+      resizeCanvas();
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [redrawCanvas, whiteboardStore.objects]);
+
   // Handle keyboard events for text editing
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
