@@ -445,6 +445,20 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           ...action.payload.stateChange
         }));
       }
+      
+      // IMPORTANT: Update the history index for the ORIGINAL user, not the action sender
+      const originalUserId = action.payload.originalUserId || action.userId;
+      const currentState = get();
+      const currentIndex = currentState.userHistoryIndices.get(originalUserId) ?? -1;
+      
+      if (action.type === 'SYNC_UNDO') {
+        console.log('🔄 Updating history index for SYNC_UNDO - user:', originalUserId, 'index:', currentIndex - 1);
+        get().updateLocalUserHistoryIndex(originalUserId, currentIndex - 1);
+      } else if (action.type === 'SYNC_REDO') {
+        console.log('🔄 Updating history index for SYNC_REDO - user:', originalUserId, 'index:', currentIndex + 1);
+        get().updateLocalUserHistoryIndex(originalUserId, currentIndex + 1);
+      }
+      
       // CRITICAL: Don't add SYNC actions to any user's history or global history
       return;
     }

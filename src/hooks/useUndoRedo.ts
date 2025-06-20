@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { WhiteboardAction, WhiteboardState } from '../types/whiteboard';
@@ -418,19 +417,21 @@ export const useUndoRedo = (): UndoRedoManager => {
     store.applyStateChange(result.stateChange);
     
     // Send sync action to other clients if multiplayer is connected
+    // IMPORTANT: Use the ORIGINAL user's ID in the SYNC action
     if (multiplayer?.isConnected) {
       const syncAction: WhiteboardAction = {
         type: 'SYNC_UNDO',
         payload: {
           stateChange: result.stateChange,
-          originalActionId: actionToUndo.id
+          originalActionId: actionToUndo.id,
+          originalUserId: userId // Pass the original user ID
         },
         timestamp: Date.now(),
         id: nanoid(),
-        userId
+        userId: userId // Keep the original userId in the sync action
       };
       
-      console.log('↶ Sending undo sync to other clients');
+      console.log('↶ Sending undo sync to other clients for user:', userId);
       multiplayer.sendWhiteboardAction(syncAction);
     }
     
@@ -485,19 +486,21 @@ export const useUndoRedo = (): UndoRedoManager => {
     store.applyStateChange(result.stateChange);
     
     // Send sync action to other clients if multiplayer is connected
+    // IMPORTANT: Use the ORIGINAL user's ID in the SYNC action
     if (multiplayer?.isConnected) {
       const syncAction: WhiteboardAction = {
         type: 'SYNC_REDO',
         payload: {
           stateChange: result.stateChange,
-          redoneActionId: actionToRedo.id
+          redoneActionId: actionToRedo.id,
+          originalUserId: userId // Pass the original user ID
         },
         timestamp: Date.now(),
         id: nanoid(),
-        userId
+        userId: userId // Keep the original userId in the sync action
       };
       
-      console.log('↷ Sending redo sync to other clients');
+      console.log('↷ Sending redo sync to other clients for user:', userId);
       multiplayer.sendWhiteboardAction(syncAction);
     }
     
