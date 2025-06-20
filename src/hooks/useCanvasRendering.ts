@@ -80,8 +80,8 @@ export const useCanvasRendering = (
       ctx.globalCompositeOperation = 'destination-out';
     }
     
-    // Draw selection highlight FIRST (behind the object) if selected and not an eraser
-    if (isSelected && !isEraser) {
+    // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text
+    if (isSelected && !isEraser && obj.type !== 'text') {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
       ctx.globalAlpha = 0.6;
