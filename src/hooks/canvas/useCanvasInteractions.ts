@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
+import { useUser } from '../../contexts/UserContext';
 import { WhiteboardObject } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
@@ -14,6 +15,7 @@ import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSm
 export const useCanvasInteractions = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
+  const { userId } = useUser();
   const { getCanvasCoordinates } = useCanvasCoordinates();
   const { findObjectAt } = useObjectDetection();
   const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraserLogic();
@@ -241,22 +243,23 @@ export const useCanvasInteractions = () => {
     // Use the current stroke color from toolbar as fill color
     const fillColor = toolStore.toolSettings.strokeColor;
     
-    // Update the object with the fill color
+    // Update the object with the fill color - NOW WITH USER ID
     whiteboardStore.updateObject(objectId, {
       fill: fillColor
-    });
+    }, userId);
     
     console.log('🎨 Filled object:', { 
       objectId: objectId.slice(0, 8), 
       fillColor,
-      previousFill: obj.fill 
+      previousFill: obj.fill,
+      userId: userId.slice(0, 8)
     });
     
     // Trigger redraw
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
     }
-  }, [findObjectAt, whiteboardStore, toolStore.toolSettings.strokeColor]);
+  }, [findObjectAt, whiteboardStore, toolStore.toolSettings.strokeColor, userId]);
 
   /**
    * Ends current drawing session and saves the path if valid
@@ -286,8 +289,9 @@ export const useCanvasInteractions = () => {
         }
       };
 
-      const objectId = whiteboardStore.addObject(drawingObject);
-      console.log('✏️ Auto-saved drawing on mouse leave:', objectId.slice(0, 8));
+      // NOW WITH USER ID
+      const objectId = whiteboardStore.addObject(drawingObject, userId);
+      console.log('✏️ Auto-saved drawing on mouse leave:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
     }
     
     if (activeTool === 'eraser' && isDrawingRef.current) {
@@ -317,8 +321,9 @@ export const useCanvasInteractions = () => {
         );
 
         if (shapeObject) {
-          const objectId = whiteboardStore.addObject(shapeObject);
-          console.log('🔷 Auto-saved shape on mouse leave:', objectId.slice(0, 8));
+          // NOW WITH USER ID
+          const objectId = whiteboardStore.addObject(shapeObject, userId);
+          console.log('🔷 Auto-saved shape on mouse leave:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
         }
       }
     }
@@ -336,7 +341,7 @@ export const useCanvasInteractions = () => {
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, userId]);
 
   // Add document-level mouseup listener to catch releases outside canvas
   useEffect(() => {
@@ -371,7 +376,7 @@ export const useCanvasInteractions = () => {
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
 
-    console.log('🖱️ Pointer down:', { tool: activeTool, coords });
+    console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8) });
 
     switch (activeTool) {
       case 'fill': {
@@ -382,10 +387,10 @@ export const useCanvasInteractions = () => {
       case 'select': {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
-          whiteboardStore.selectObjects([objectId]);
+          whiteboardStore.selectObjects([objectId], userId);
           isDraggingRef.current = true;
           dragStartRef.current = coords;
-          console.log('🎯 Selected object for dragging:', objectId.slice(0, 8));
+          console.log('🎯 Selected object for dragging:', objectId.slice(0, 8), 'by user:', userId.slice(0, 8));
         } else {
           whiteboardStore.clearSelection();
           console.log('🎯 Cleared selection');
@@ -414,7 +419,7 @@ export const useCanvasInteractions = () => {
           brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
         
-        console.log('✏️ Started simple smooth drawing at:', coords);
+        console.log('✏️ Started simple smooth drawing at:', coords, 'for user:', userId.slice(0, 8));
         break;
       }
 
@@ -442,7 +447,7 @@ export const useCanvasInteractions = () => {
           opacity: toolStore.toolSettings.opacity
         };
         
-        console.log('🔷 Started shape drawing:', activeTool, coords);
+        console.log('🔷 Started shape drawing:', activeTool, coords, 'for user:', userId.slice(0, 8));
         break;
       }
 
@@ -452,14 +457,14 @@ export const useCanvasInteractions = () => {
         
         handleEraserStart(coords, findObjectAt, redrawCanvasRef.current || undefined);
         
-        console.log('🧹 Started erasing:', { mode: toolStore.toolSettings.eraserMode, coords });
+        console.log('🧹 Started erasing:', { mode: toolStore.toolSettings.eraserMode, coords, userId: userId.slice(0, 8) });
         break;
       }
 
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, userId]);
 
   /**
    * Handles pointer movement during interaction
@@ -477,10 +482,11 @@ export const useCanvasInteractions = () => {
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const obj = whiteboardStore.objects[objectId];
             if (obj) {
+              // NOW WITH USER ID
               whiteboardStore.updateObject(objectId, {
                 x: obj.x + deltaX,
                 y: obj.y + deltaY
-              });
+              }, userId);
             }
           });
           
@@ -549,7 +555,7 @@ export const useCanvasInteractions = () => {
         break;
       }
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt, userId]);
 
   /**
    * Handles the end of a drawing/interaction session
@@ -557,12 +563,12 @@ export const useCanvasInteractions = () => {
   const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const activeTool = toolStore.activeTool;
 
-    console.log('🖱️ Pointer up:', { tool: activeTool, wasDrawing: isDrawingRef.current, wasDragging: isDraggingRef.current });
+    console.log('🖱️ Pointer up:', { tool: activeTool, wasDrawing: isDrawingRef.current, wasDragging: isDraggingRef.current, userId: userId.slice(0, 8) });
 
     switch (activeTool) {
       case 'select': {
         if (isDraggingRef.current) {
-          console.log('🔄 Finished dragging objects');
+          console.log('🔄 Finished dragging objects for user:', userId.slice(0, 8));
         }
         isDraggingRef.current = false;
         dragStartRef.current = null;
@@ -588,10 +594,12 @@ export const useCanvasInteractions = () => {
             }
           };
 
-          const objectId = whiteboardStore.addObject(drawingObject);
+          // NOW WITH USER ID
+          const objectId = whiteboardStore.addObject(drawingObject, userId);
           console.log('✏️ Created smooth drawing object:', objectId.slice(0, 8), {
             pointCount: pathBuilderRef.current.getPointCount(),
-            pathLength: finalSmoothPath.length
+            pathLength: finalSmoothPath.length,
+            userId: userId.slice(0, 8)
           });
           
           currentDrawingPreviewRef.current = null;
@@ -630,8 +638,9 @@ export const useCanvasInteractions = () => {
             );
 
             if (shapeObject) {
-              const objectId = whiteboardStore.addObject(shapeObject);
-              console.log('🔷 Created shape object:', activeTool, objectId.slice(0, 8), { width, height });
+              // NOW WITH USER ID
+              const objectId = whiteboardStore.addObject(shapeObject, userId);
+              console.log('🔷 Created shape object:', activeTool, objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
             }
           }
           
@@ -647,7 +656,7 @@ export const useCanvasInteractions = () => {
       case 'eraser': {
         if (isDrawingRef.current) {
           handleEraserEnd(redrawCanvasRef.current || undefined);
-          console.log('🧹 Finished erasing:', { mode: toolStore.toolSettings.eraserMode });
+          console.log('🧹 Finished erasing:', { mode: toolStore.toolSettings.eraserMode, userId: userId.slice(0, 8) });
         }
         break;
       }
@@ -657,7 +666,7 @@ export const useCanvasInteractions = () => {
     lastPointRef.current = null;
     pathStartRef.current = null;
     pathBuilderRef.current = null;
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, userId]);
 
   /**
    * Gets the current drawing preview for rendering
