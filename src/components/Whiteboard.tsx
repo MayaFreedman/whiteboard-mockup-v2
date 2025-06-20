@@ -17,25 +17,23 @@ export const Whiteboard: React.FC = () => {
 
   return (
     <SidebarProvider>
-      <div className="h-screen flex flex-col bg-background w-full">
+      <div className="h-screen flex w-full bg-background">
         {/* Connection Status - Fixed overlay */}
         <ConnectionStatus />
         
-        {/* Top Toolbar - Fixed at the top */}
-        <Toolbar />
+        {/* Left Sidebar */}
+        <WhiteboardSidebar />
         
-        {/* Main Content Area - Flexible layout with sidebar and canvas */}
-        <div className="flex-1 flex overflow-hidden relative">
-          {/* Left Sidebar - Positioned absolute to overlay content */}
-          <div className="absolute top-0 left-0 z-10 h-full pt-0">
-            <WhiteboardSidebar />
-          </div>
+        {/* Main Content Area */}
+        <SidebarInset className="flex flex-col flex-1">
+          {/* Top Toolbar */}
+          <Toolbar />
           
-          {/* Canvas Area - Takes remaining space */}
-          <SidebarInset className="w-full">
+          {/* Canvas Area */}
+          <div className="flex-1 overflow-hidden">
             <Canvas />
-          </SidebarInset>
-        </div>
+          </div>
+        </SidebarInset>
       </div>
     </SidebarProvider>
   );

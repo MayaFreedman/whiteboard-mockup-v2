@@ -36,33 +36,29 @@ export function WhiteboardSidebar() {
       <SidebarHeader>
         <h2 className="px-4 py-2 text-lg font-semibold">Properties</h2>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="p-4">
         <SidebarMenu>
           {hasTextSelected && (
             <SidebarMenuItem>
-              <SidebarMenuButton className="w-full justify-start p-0">
+              <SidebarMenuButton className="w-full justify-start p-0 mb-4">
                 <div className="flex items-center gap-2 px-4 py-2">
                   <Type className="h-4 w-4" />
                   <span>Text Properties</span>
                 </div>
               </SidebarMenuButton>
-              <div className="px-2">
-                <TextPropertiesPanel selectedObjectId={firstSelectedId} />
-              </div>
+              <TextPropertiesPanel selectedObjectId={firstSelectedId} />
             </SidebarMenuItem>
           )}
           
           {hasShapeSelected && (
             <SidebarMenuItem>
-              <SidebarMenuButton className="w-full justify-start p-0">
+              <SidebarMenuButton className="w-full justify-start p-0 mb-4">
                 <div className="flex items-center gap-2 px-4 py-2">
                   <Square className="h-4 w-4" />
                   <span>Shape Properties</span>
                 </div>
               </SidebarMenuButton>
-              <div className="px-2">
-                <ShapePropertiesPanel selectedObjectId={firstSelectedId} />
-              </div>
+              <ShapePropertiesPanel selectedObjectId={firstSelectedId} />
             </SidebarMenuItem>
           )}
           
