@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
-import { WhiteboardObject } from '../types/whiteboard';
+import { WhiteboardObject, TextData } from '../types/whiteboard';
 import { renderPaintbrush, renderChalk, renderSpray, renderCrayon } from '../utils/brushEffects';
 import { 
   renderTriangle, 
@@ -115,13 +115,11 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           break;
         }
         case 'text': {
-          if (obj.data?.content) {
+          if (obj.data?.content && obj.width && obj.height) {
             // For text, draw a bounding box with blue outline
-            const fontSize = obj.data.fontSize || 16;
-            const textWidth = ctx.measureText(obj.data.content).width;
             ctx.lineWidth = 3;
-            const padding = 3;
-            ctx.strokeRect(obj.x - padding, obj.y - fontSize - padding, textWidth + (padding * 2), fontSize + (padding * 2));
+            const padding = 4;
+            ctx.strokeRect(obj.x - padding, obj.y - padding, obj.width + (padding * 2), obj.height + (padding * 2));
           }
           break;
         }
@@ -254,10 +252,95 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       }
 
       case 'text': {
-        if (obj.data?.content) {
-          ctx.fillStyle = obj.fill || '#000000';
-          ctx.font = `${obj.data.fontSize || 16}px ${obj.data.fontFamily || 'Arial'}`;
-          ctx.fillText(obj.data.content, obj.x, obj.y);
+        if (obj.data?.content && obj.width && obj.height) {
+          const textData = obj.data as TextData;
+          
+          // Set font properties
+          let fontStyle = '';
+          if (textData.italic) fontStyle += 'italic ';
+          if (textData.bold) fontStyle += 'bold ';
+          
+          ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
+          ctx.fillStyle = obj.stroke || '#000000';
+          ctx.textBaseline = 'top';
+          
+          // Handle text alignment
+          switch (textData.textAlign) {
+            case 'left':
+              ctx.textAlign = 'left';  
+              break;
+            case 'center':
+              ctx.textAlign = 'center';
+              break;
+            case 'right':
+              ctx.textAlign = 'right';
+              break;
+            default:
+              ctx.textAlign = 'left';
+          }
+          
+          // Calculate text position based on alignment
+          let textX = obj.x;
+          if (textData.textAlign === 'center') {
+            textX = obj.x + obj.width / 2;
+          } else if (textData.textAlign === 'right') {
+            textX = obj.x + obj.width;
+          }
+          
+          // Render text with word wrapping
+          const words = textData.content.split(' ');
+          const lineHeight = textData.fontSize * 1.2;
+          let line = '';
+          let y = obj.y + 4; // Small padding from top
+          
+          for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = ctx.measureText(testLine);
+            const testWidth = metrics.width;
+            
+            if (testWidth > obj.width - 8 && n > 0) { // 8px padding on sides
+              ctx.fillText(line, textX, y);
+              line = words[n] + ' ';
+              y += lineHeight;
+              
+              // Stop if we exceed the text box height
+              if (y > obj.y + obj.height - lineHeight) {
+                break;
+              }
+            } else {
+              line = testLine;
+            }
+          }
+          
+          // Render the last line
+          if (line && y <= obj.y + obj.height - lineHeight) {
+            ctx.fillText(line, textX, y);
+          }
+          
+          // Draw underline if enabled
+          if (textData.underline) {
+            ctx.save();
+            ctx.strokeStyle = obj.stroke || '#000000';
+            ctx.lineWidth = 1;
+            
+            // Simple underline at the bottom of the text area
+            const underlineY = obj.y + obj.height - 4;
+            ctx.beginPath();
+            ctx.moveTo(obj.x + 4, underlineY);
+            ctx.lineTo(obj.x + obj.width - 4, underlineY);
+            ctx.stroke();
+            ctx.restore();
+          }
+          
+          // Draw text box border for better visibility
+          if (isSelected || textData.content === 'Double-click to edit') {
+            ctx.save();
+            ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+            ctx.restore();
+          }
         }
         break;
       }
@@ -342,6 +425,24 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     }
     
     switch (preview.type) {
+      case 'text': {
+        // Draw text box preview with dashed border
+        ctx.save();
+        ctx.strokeStyle = preview.strokeColor || '#000000';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(x, y, width, height);
+        
+        // Draw placeholder text
+        ctx.fillStyle = preview.strokeColor || '#000000';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Text Box', x + width/2, y + height/2);
+        ctx.restore();
+        break;
+      }
+      
       case 'rectangle': {
         if (preview.fillColor && preview.fillColor !== 'transparent') {
           ctx.fillRect(x, y, width, height);
