@@ -373,17 +373,8 @@ export const useCanvasRendering = (
             ctx.restore();
           }
           
-          // Draw text box border - ONLY when being edited OR showing placeholder text
-          // Remove the blue rectangle that appears when text is just selected
-          if (isBeingEdited || contentToRender === 'Double-click to edit') {
-            ctx.save();
-            // Use blue color if being edited, gray for placeholder
-            ctx.strokeStyle = isBeingEdited ? '#007AFF' : '#cccccc';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([2, 2]);
-            ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
-            ctx.restore();
-          }
+          // No border rendering - removed completely
+          // The dashed border is handled by the Canvas component's textarea overlay
         }
         break;
       }
