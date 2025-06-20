@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -236,7 +235,7 @@ export const Canvas: React.FC = () => {
       {editingTextId && textEditorPosition && (
         <textarea
           ref={textareaRef}
-          className="absolute bg-transparent border-2 border-blue-500 resize-none outline-none"
+          className="absolute bg-transparent border-none resize-none outline-none"
           style={{
             left: textEditorPosition.x,
             top: textEditorPosition.y,
@@ -252,8 +251,7 @@ export const Canvas: React.FC = () => {
             caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
             zIndex: 1000,
             lineHeight: (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px', // Match canvas line height
-            padding: '0', // Remove default textarea padding since we handle it with positioning
-            border: '2px solid #007AFF' // Keep the blue border
+            padding: '0' // Remove default textarea padding since we handle it with positioning
           }}
           value={editingText}
           onChange={(e) => setEditingText(e.target.value)}
