@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -93,7 +92,7 @@ export const Canvas: React.FC = () => {
         width: obj.width!,
         height: obj.height!
       });
-      setEditingText(obj.data?.content || '');
+      setEditingText(''); // Clear the text when entering edit mode
     }
   };
 
