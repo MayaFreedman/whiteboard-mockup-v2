@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { getStroke } from 'perfect-freehand';
@@ -26,10 +26,10 @@ export const useCanvasInteractions = () => {
   const [currentDrawingPreview, setCurrentDrawingPreview] = useState<any>(null);
   const [currentShapePreview, setCurrentShapePreview] = useState<any>(null);
   
-  // Redraw function setter
-  const [redrawCanvas, setRedrawCanvas] = useState<() => void>(() => {});
+  // Use ref to store redraw function to avoid re-render issues
+  const redrawCanvasRef = useRef<() => void>(() => {});
 
-  const handlePointerDown = (event: PointerEvent, canvas: HTMLCanvasElement) => {
+  const handlePointerDown = useCallback((event: PointerEvent, canvas: HTMLCanvasElement) => {
     setIsDragging(true);
     
     const rect = canvas.getBoundingClientRect();
@@ -109,9 +109,9 @@ export const useCanvasInteractions = () => {
       default:
         break;
     }
-  };
+  }, [activeTool, toolSettings, addObject]);
 
-  const handlePointerMove = (event: PointerEvent, canvas: HTMLCanvasElement) => {
+  const handlePointerMove = useCallback((event: PointerEvent, canvas: HTMLCanvasElement) => {
     if (!isDragging) return;
     
     const rect = canvas.getBoundingClientRect();
@@ -211,10 +211,10 @@ export const useCanvasInteractions = () => {
         break;
     }
     
-    redrawCanvas();
-  };
+    redrawCanvasRef.current();
+  }, [isDragging, activeTool, currentObjectId, toolSettings, drawingPath, eraserPoints, updateObject]);
 
-  const handlePointerUp = (event: PointerEvent, canvas: HTMLCanvasElement) => {
+  const handlePointerUp = useCallback((event: PointerEvent, canvas: HTMLCanvasElement) => {
     setIsDragging(false);
     setCurrentObjectId(null);
     
@@ -329,10 +329,10 @@ export const useCanvasInteractions = () => {
     }
     
     setCurrentShapePreview(null);
-    redrawCanvas();
-  };
+    redrawCanvasRef.current();
+  }, [activeTool, currentX, currentY, startX, startY, toolSettings, addObject]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     if (activeTool === 'select' || activeTool === 'hand') {
       return;
     }
@@ -343,10 +343,10 @@ export const useCanvasInteractions = () => {
     setEraserPoints([]);
     setCurrentDrawingPreview(null);
     setCurrentShapePreview(null);
-    redrawCanvas();
-  };
+    redrawCanvasRef.current();
+  }, [activeTool]);
 
-  const getSvgPathFromStroke = (stroke: Point[]) => {
+  const getSvgPathFromStroke = useCallback((stroke: Point[]) => {
     if (!stroke.length) return '';
   
     const d = stroke.reduce(
@@ -370,7 +370,12 @@ export const useCanvasInteractions = () => {
     );
   
     return d;
-  };
+  }, [startX, startY]);
+
+  // Stable function to set redraw canvas
+  const setRedrawCanvas = useCallback((fn: () => void) => {
+    redrawCanvasRef.current = fn;
+  }, []);
 
   return {
     isDragging,
