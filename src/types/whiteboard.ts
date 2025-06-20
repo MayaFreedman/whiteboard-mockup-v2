@@ -1,4 +1,3 @@
-
 import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
@@ -31,6 +30,8 @@ export interface WhiteboardState {
     backgroundColor: string;
   };
   lastAction?: WhiteboardAction;
+  // Text editing state
+  editingTextId?: string;
 }
 
 interface BaseAction {
@@ -177,6 +178,32 @@ export interface SyncRedoAction extends BaseAction {
   };
 }
 
+export interface StartTextEditingAction extends BaseAction {
+  type: 'START_TEXT_EDITING';
+  payload: {
+    objectId: string;
+  };
+}
+
+export interface UpdateTextContentAction extends BaseAction {
+  type: 'UPDATE_TEXT_CONTENT';
+  payload: {
+    objectId: string;
+    content: string;
+  };
+  previousState?: {
+    content: string;
+  };
+}
+
+export interface EndTextEditingAction extends BaseAction {
+  type: 'END_TEXT_EDITING';
+  payload: {
+    objectId: string;
+    finalContent: string;
+  };
+}
+
 export type WhiteboardAction = 
   | AddObjectAction
   | UpdateObjectAction
@@ -190,4 +217,7 @@ export type WhiteboardAction =
   |DeleteObjectsInAreaAction
   | ErasePathAction
   | SyncUndoAction
-  | SyncRedoAction;
+  | SyncRedoAction
+  | StartTextEditingAction
+  | UpdateTextContentAction
+  | EndTextEditingAction;

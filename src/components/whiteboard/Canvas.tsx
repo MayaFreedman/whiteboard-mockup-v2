@@ -4,8 +4,10 @@ import { useToolStore } from '../../stores/toolStore';
 import { useCanvasInteractions } from '../../hooks/canvas/useCanvasInteractions';
 import { useCanvasRendering } from '../../hooks/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
+import { useTextTool } from '../../hooks/canvas/useTextTool';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
+import { TextEditor } from './TextEditor';
 
 /**
  * Gets the appropriate cursor style based on the active tool
@@ -43,8 +45,11 @@ export const Canvas: React.FC = () => {
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
   
+  // Initialize text tool functionality
+  const textTool = useTextTool();
+  
   // Initialize interactions hook first to get the preview functions
-  const interactions = useCanvasInteractions();
+  const interactions = useCanvasInteractions(textTool);
   
   // Initialize rendering hook with both preview functions
   const { redrawCanvas } = useCanvasRendering(
@@ -141,14 +146,24 @@ export const Canvas: React.FC = () => {
           cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
           touchAction: 'none' // Prevent default touch behaviors
         }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseLeave}
+        onMouseDown={interactions.onMouseDown}
+        onMouseMove={interactions.onMouseMove}
+        onMouseUp={interactions.onMouseUp}
+        onMouseLeave={interactions.onMouseLeave}
+        onDoubleClick={interactions.onDoubleClick}
       />
       
       {/* Custom Cursor */}
       <CustomCursor canvas={canvasRef.current} />
+      
+      {/* Text Editor */}
+      {textTool.editingTextId && (
+        <TextEditor
+          objectId={textTool.editingTextId}
+          onComplete={(content) => textTool.endTextEditing(textTool.editingTextId!, content)}
+          onCancel={textTool.cancelTextEditing}
+        />
+      )}
       
       {/* Resize Handles for Selected Objects */}
       {activeTool === 'select' && selectedObjectIds.map(objectId => (
@@ -164,6 +179,7 @@ export const Canvas: React.FC = () => {
         Zoom: {Math.round(viewport.zoom * 100)}% | 
         Tool: {activeTool} |
         {interactions.isDragging && ' Dragging'}
+        {textTool.editingTextId && ' Editing Text'}
       </div>
     </div>
   );

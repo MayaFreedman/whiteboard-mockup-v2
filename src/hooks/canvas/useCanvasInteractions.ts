@@ -12,7 +12,7 @@ import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSm
  * Custom hook for handling canvas mouse and touch interactions
  * Manages drawing state and coordinates tool-specific behaviors
  */
-export const useCanvasInteractions = () => {
+export const useCanvasInteractions = (textTool?: any) => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const { userId } = useUser();
@@ -369,6 +369,24 @@ export const useCanvasInteractions = () => {
   }, [endCurrentDrawing]);
 
   /**
+   * Handles double-click events for text editing
+   */
+  const handleDoubleClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    
+    const coords = getCanvasCoordinates(event.nativeEvent, canvasRef.current);
+    const objectId = findObjectAt(coords.x, coords.y);
+    
+    if (objectId) {
+      const obj = whiteboardStore.objects[objectId];
+      if (obj && obj.type === 'text' && textTool) {
+        textTool.handleTextDoubleClick(objectId);
+        console.log('📝 Double-clicked text object:', objectId.slice(0, 8));
+      }
+    }
+  }, [getCanvasCoordinates, findObjectAt, whiteboardStore.objects, textTool]);
+
+  /**
    * Handles the start of a drawing/interaction session
    */
   const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
@@ -379,6 +397,14 @@ export const useCanvasInteractions = () => {
     console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8) });
 
     switch (activeTool) {
+      case 'text': {
+        if (textTool) {
+          textTool.handleTextClick(coords);
+          console.log('📝 Text tool clicked at:', coords, 'for user:', userId.slice(0, 8));
+        }
+        return;
+      }
+
       case 'fill': {
         handleFillClick(coords);
         return;
@@ -464,7 +490,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, userId, textTool]);
 
   /**
    * Handles pointer movement during interaction
@@ -687,6 +713,22 @@ export const useCanvasInteractions = () => {
     handlePointerMove,
     handlePointerUp,
     handleMouseLeave,
+    onMouseDown: (event: React.MouseEvent<HTMLCanvasElement>) => {
+      if (canvasRef.current) {
+        handlePointerDown(event.nativeEvent, canvasRef.current);
+      }
+    },
+    onMouseMove: (event: React.MouseEvent<HTMLCanvasElement>) => {
+      if (canvasRef.current) {
+        handlePointerMove(event.nativeEvent, canvasRef.current);
+      }
+    },
+    onMouseUp: (event: React.MouseEvent<HTMLCanvasElement>) => {
+      if (canvasRef.current) {
+        handlePointerUp(event.nativeEvent, canvasRef.current);
+      }
+    },
+    onDoubleClick: handleDoubleClick,
     isDrawing: isDrawingRef.current,
     isDragging: isDraggingRef.current,
     getCurrentDrawingPreview,
