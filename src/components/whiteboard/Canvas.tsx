@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useCanvasInteractions } from '../../hooks/canvas/useCanvasInteractions';
 import { useCanvasRendering } from '../../hooks/useCanvasRendering';
@@ -30,7 +29,7 @@ export const Canvas: React.FC = () => {
     setRedrawCanvas(redrawCanvas);
   }, [redrawCanvas, setRedrawCanvas]);
 
-  // Initialize canvas dimensions
+  // Initialize canvas dimensions and force initial render
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -39,17 +38,31 @@ export const Canvas: React.FC = () => {
 
     const resizeCanvas = () => {
       const rect = container.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      const dpr = window.devicePixelRatio || 1;
       
-      console.log('🎨 Canvas initialized:', {
-        width: canvas.width,
-        height: canvas.height,
+      // Set actual size in memory (scaled to account for pixel ratio)
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      
+      // Scale the canvas back down using CSS
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      
+      // Scale the drawing context so everything draws at the correct size
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.scale(dpr, dpr);
+      }
+      
+      console.log('🎨 Canvas initialized with DPR scaling:', {
+        displaySize: `${rect.width}x${rect.height}`,
+        actualSize: `${canvas.width}x${canvas.height}`,
+        dpr,
         objectCount: Object.keys(whiteboardStore.objects).length
       });
       
-      // Trigger redraw after resize
-      redrawCanvas();
+      // Force immediate redraw
+      setTimeout(() => redrawCanvas(), 0);
     };
 
     // Initial resize
@@ -66,6 +79,16 @@ export const Canvas: React.FC = () => {
       window.removeEventListener('resize', handleResize);
     };
   }, [redrawCanvas, whiteboardStore.objects]);
+
+  // Add debugging for when objects change
+  useEffect(() => {
+    const objectIds = Object.keys(whiteboardStore.objects);
+    console.log('🔄 Objects changed, triggering redraw:', {
+      count: objectIds.length,
+      ids: objectIds.map(id => id.slice(0, 8))
+    });
+    redrawCanvas();
+  }, [whiteboardStore.objects, redrawCanvas]);
 
   // Handle keyboard events for text editing
   useEffect(() => {
@@ -131,9 +154,10 @@ export const Canvas: React.FC = () => {
     }
   }, [whiteboardStore.selectedObjectIds]);
 
-  // Mouse event handlers
+  // Mouse event handlers with debugging
   const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
+    console.log('🖱️ Mouse down on canvas');
     handlePointerDown(event.nativeEvent, canvasRef.current);
   }, [handlePointerDown]);
 
@@ -144,6 +168,7 @@ export const Canvas: React.FC = () => {
 
   const handleMouseUp = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
+    console.log('🖱️ Mouse up on canvas');
     handlePointerUp(event.nativeEvent, canvasRef.current);
   }, [handlePointerUp]);
 
@@ -151,6 +176,7 @@ export const Canvas: React.FC = () => {
   const handleTouchStart = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     event.preventDefault();
+    console.log('👆 Touch start on canvas');
     handlePointerDown(event.nativeEvent, canvasRef.current);
   }, [handlePointerDown]);
 
@@ -163,6 +189,7 @@ export const Canvas: React.FC = () => {
   const handleTouchEnd = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     event.preventDefault();
+    console.log('👆 Touch end on canvas');
     handlePointerUp(event.nativeEvent, canvasRef.current);
   }, [handlePointerUp]);
 
@@ -188,6 +215,7 @@ export const Canvas: React.FC = () => {
 
   // Handle resize for selected objects
   const handleResize = useCallback((objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
+    console.log('📏 Resizing object:', objectId.slice(0, 8), newBounds);
     whiteboardStore.updateObject(objectId, newBounds, userId);
   }, [whiteboardStore, userId]);
 
