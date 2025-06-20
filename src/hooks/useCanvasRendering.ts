@@ -1,8 +1,8 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { WhiteboardObject } from '../../types/whiteboard';
-import { useViewport } from '../../contexts/ViewportContext';
-import { useToolStore } from '../../stores/toolStore';
+import { useWhiteboardStore } from '../stores/whiteboardStore';
+import { WhiteboardObject } from '../types/whiteboard';
+import { useViewport } from '../contexts/ViewportContext';
+import { useToolStore } from '../stores/toolStore';
 
 export const useCanvasRendering = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
   const whiteboardStore = useWhiteboardStore();
