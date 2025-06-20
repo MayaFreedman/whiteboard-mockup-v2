@@ -1,4 +1,3 @@
-
 import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -27,6 +26,7 @@ export const useCanvasInteractions = () => {
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
   const redrawCanvasRef = useRef<(() => void) | null>(null);
+  const doubleClickProtectionRef = useRef(false);
   
   // Simple path builder for smooth drawing
   const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
@@ -60,6 +60,14 @@ export const useCanvasInteractions = () => {
    */
   const setRedrawCanvas = useCallback((redrawFn: () => void) => {
     redrawCanvasRef.current = redrawFn;
+  }, []);
+
+  /**
+   * Sets the double-click protection flag (called by Canvas component)
+   */
+  const setDoubleClickProtection = useCallback((isProtected: boolean) => {
+    doubleClickProtectionRef.current = isProtected;
+    console.log('🛡️ Double-click protection set to:', isProtected);
   }, []);
 
   /**
@@ -431,10 +439,17 @@ export const useCanvasInteractions = () => {
    */
   const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     event.preventDefault();
+    
+    // Check double-click protection
+    if (doubleClickProtectionRef.current) {
+      console.log('🛡️ Pointer down blocked due to double-click protection');
+      return;
+    }
+    
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
 
-    console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8) });
+    console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8), protection: doubleClickProtectionRef.current });
 
     switch (activeTool) {
       case 'fill': {
@@ -798,6 +813,7 @@ export const useCanvasInteractions = () => {
     isDragging: isDraggingRef.current,
     getCurrentDrawingPreview,
     getCurrentShapePreview,
-    setRedrawCanvas
+    setRedrawCanvas,
+    setDoubleClickProtection
   };
 };

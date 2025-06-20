@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -46,6 +47,10 @@ export const Canvas: React.FC = () => {
   const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
   const [editingText, setEditingText] = useState('');
   
+  // Double-click protection flag
+  const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
+  const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
   
@@ -61,8 +66,9 @@ export const Canvas: React.FC = () => {
     editingText
   );
   
-  // Update interactions hook with redraw function
+  // Update interactions hook with redraw function and double-click protection
   interactions.setRedrawCanvas(redrawCanvas);
+  interactions.setDoubleClickProtection(isHandlingDoubleClick);
 
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
@@ -74,20 +80,41 @@ export const Canvas: React.FC = () => {
   const handleDoubleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     
+    console.log('🖱️ Double-click detected - setting protection flag');
+    setIsHandlingDoubleClick(true);
+    
+    // Clear any existing timeout
+    if (doubleClickTimeoutRef.current) {
+      clearTimeout(doubleClickTimeoutRef.current);
+    }
+    
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     
-    // Find text object at click position
+    console.log('🖱️ Double-click coordinates:', { x, y });
+    
+    // Find text object at click position - use same coordinate system as interactions
     const textObject = Object.entries(objects).find(([id, obj]) => {
       if (obj.type !== 'text' || !obj.width || !obj.height) return false;
       
-      return x >= obj.x && x <= obj.x + obj.width &&
-             y >= obj.y && y <= obj.y + obj.height;
+      const isInBounds = x >= obj.x && x <= obj.x + obj.width &&
+                        y >= obj.y && y <= obj.y + obj.height;
+      
+      console.log('🖱️ Checking text object:', {
+        id: id.slice(0, 8),
+        objBounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+        clickPos: { x, y },
+        isInBounds
+      });
+      
+      return isInBounds;
     });
     
     if (textObject) {
       const [objectId, obj] = textObject;
+      console.log('🖱️ Found text object to edit:', objectId.slice(0, 8));
+      
       setEditingTextId(objectId);
       // Position textarea to match canvas text positioning exactly with 4px padding
       setTextEditorPosition({
@@ -112,7 +139,15 @@ export const Canvas: React.FC = () => {
           }
         }, 0);
       }
+    } else {
+      console.log('🖱️ No text object found at double-click position');
     }
+    
+    // Reset protection flag after a short delay
+    doubleClickTimeoutRef.current = setTimeout(() => {
+      console.log('🖱️ Clearing double-click protection flag');
+      setIsHandlingDoubleClick(false);
+    }, 300); // 300ms should be enough to prevent interference
   };
 
   // Handle text editing completion
@@ -177,13 +212,25 @@ export const Canvas: React.FC = () => {
     };
   }, [interactions]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (doubleClickTimeoutRef.current) {
+        clearTimeout(doubleClickTimeoutRef.current);
+      }
+    };
+  }, []);
+
   /**
    * Handles mouse down events on the canvas
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvasRef.current) {
+    if (canvasRef.current && !isHandlingDoubleClick) {
+      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick);
       interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
+    } else if (isHandlingDoubleClick) {
+      console.log('🖱️ Mouse down blocked due to double-click protection');
     }
   };
 
@@ -278,6 +325,7 @@ export const Canvas: React.FC = () => {
         Zoom: {Math.round(viewport.zoom * 100)}% | 
         Tool: {activeTool} |
         {interactions.isDragging && ' Dragging'}
+        {isHandlingDoubleClick && ' | Double-click Protection Active'}
       </div>
     </div>
   );
