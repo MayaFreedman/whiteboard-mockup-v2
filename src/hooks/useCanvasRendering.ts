@@ -468,13 +468,6 @@ export const useCanvasRendering = (
     
     switch (preview.type) {
       case 'text': {
-        // Draw text box preview with dashed border only - no placeholder text
-        ctx.save();
-        ctx.strokeStyle = preview.strokeColor || '#000000';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]);
-        ctx.strokeRect(x, y, width, height);
-        ctx.restore();
         break;
       }
       
