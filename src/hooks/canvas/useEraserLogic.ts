@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -19,19 +18,12 @@ export const useEraserLogic = () => {
   // For real-time eraser: batch processing with line segment intersection
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
   const lastEraserProcessRef = useRef<number>(0);
-  const ERASER_BATCH_SIZE = 3;
-  const ERASER_THROTTLE_MS = 16;
+  const ERASER_BATCH_SIZE = 5; // Increased from 3 to reduce frequency
+  const ERASER_THROTTLE_MS = 32; // Increased from 16ms to reduce frequency
 
-  // Stroke tracking for undo/redo
+  // Stroke tracking for undo/redo - removed since we're using action batching now
   const strokeInProgressRef = useRef<boolean>(false);
-  const strokeOperationsRef = useRef<Array<{
-    originalObjectId: string;
-    originalObject: any;
-    resultingSegments: Array<{
-      points: Array<{ x: number; y: number }>;
-      id: string;
-    }>;
-  }>>([]);
+  const processedObjectsRef = useRef<Set<string>>(new Set()); // Track objects processed in current stroke
 
   /**
    * Converts shape objects to path format for erasing
@@ -55,6 +47,7 @@ export const useEraserLogic = () => {
 
   /**
    * Processes accumulated eraser points against all objects during a stroke
+   * Now works with action batching system instead of applying immediately
    */
   const processEraserBatch = useCallback(() => {
     if (eraserPointsRef.current.length === 0) return;
@@ -62,8 +55,8 @@ export const useEraserLogic = () => {
     const objects = Object.entries(whiteboardStore.objects);
     
     objects.forEach(([id, obj]) => {
-      // Skip eraser objects (safety check - should not exist anymore)
-      if (obj.data?.isEraser) return;
+      // Skip eraser objects and already processed objects in this stroke
+      if (obj.data?.isEraser || processedObjectsRef.current.has(id)) return;
       
       let pathString = '';
       let shouldProcess = false;
@@ -103,17 +96,10 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
-          // During stroke: apply immediately but track for undo
-          if (strokeInProgressRef.current) {
-            // Store operation for stroke-level undo
-            strokeOperationsRef.current.push({
-              originalObjectId: id,
-              originalObject: obj,
-              resultingSegments: segmentsWithIds
-            });
-          }
+          // Mark object as processed in this stroke
+          processedObjectsRef.current.add(id);
           
-          // Apply the erasure immediately (visual update)
+          // Apply the erasure - this will be batched by the action batching system
           const enhancedAction = {
             originalObjectId: id,
             eraserPath: {
@@ -136,14 +122,14 @@ export const useEraserLogic = () => {
           };
           
           whiteboardStore.erasePath(enhancedAction, userId);
+          
+          console.log('🧹 Processed eraser action for object:', {
+            objectId: id.slice(0, 8),
+            segments: segmentsWithIds.length,
+            userId: userId.slice(0, 8)
+          });
         }
       }
-    });
-    
-    console.log('🧹 Processed eraser batch:', {
-      eraserPoints: eraserPointsRef.current.length,
-      strokeInProgress: strokeInProgressRef.current,
-      strokeOperations: strokeOperationsRef.current.length
     });
   }, [whiteboardStore, convertShapeToPath, userId]);
 
@@ -158,7 +144,7 @@ export const useEraserLogic = () => {
     // Initialize stroke tracking for pixel mode
     if (eraserMode === 'pixel') {
       strokeInProgressRef.current = true;
-      strokeOperationsRef.current = [];
+      processedObjectsRef.current.clear(); // Reset processed objects for new stroke
     }
     
     if (eraserMode === 'object') {
@@ -211,9 +197,9 @@ export const useEraserLogic = () => {
       }];
       lastEraserProcessRef.current = Date.now();
       
-      processEraserBatch();
+      // Don't process immediately - let it accumulate for batching
     }
-  }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
+  }, [toolStore.toolSettings, whiteboardStore, userId]);
 
   /**
    * Handles eraser move logic during stroke
@@ -263,8 +249,9 @@ export const useEraserLogic = () => {
       
       if (shouldProcess) {
         processEraserBatch();
-        const lastPoint = eraserPointsRef.current[eraserPointsRef.current.length - 1];
-        eraserPointsRef.current = lastPoint ? [lastPoint] : [];
+        // Keep some points for continuity but reduce the batch
+        const lastFewPoints = eraserPointsRef.current.slice(-2);
+        eraserPointsRef.current = lastFewPoints;
         lastEraserProcessRef.current = now;
         
         if (redrawCanvas) {
@@ -275,7 +262,7 @@ export const useEraserLogic = () => {
   }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
   /**
-   * Handles eraser end logic and records stroke-level action
+   * Handles eraser end logic and processes any remaining points
    */
   const handleEraserEnd = useCallback((redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -283,7 +270,7 @@ export const useEraserLogic = () => {
     console.log('🎨 Ending eraser stroke:', { 
       mode: eraserMode, 
       strokeInProgress: strokeInProgressRef.current,
-      operationsCount: strokeOperationsRef.current.length 
+      remainingPoints: eraserPointsRef.current.length 
     });
     
     if (eraserMode === 'pixel') {
@@ -296,12 +283,8 @@ export const useEraserLogic = () => {
       // End stroke tracking
       if (strokeInProgressRef.current) {
         strokeInProgressRef.current = false;
-        
-        // TODO: Phase 2 - Record composite stroke action here
-        console.log('🎨 Stroke completed with', strokeOperationsRef.current.length, 'operations');
-        
-        // Clear stroke operations for next stroke
-        strokeOperationsRef.current = [];
+        processedObjectsRef.current.clear();
+        console.log('🎨 Pixel eraser stroke completed');
       }
       
       if (redrawCanvas) {
