@@ -27,6 +27,41 @@ export const useCanvasRendering = (
   const { toolSettings } = useToolStore();
 
   /**
+   * Sets up canvas for crisp rendering with proper pixel alignment
+   * @param canvas - Canvas element
+   * @param ctx - Canvas rendering context
+   */
+  const setupCanvasForCrispRendering = useCallback((canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
+    // Get device pixel ratio for high-DPI displays
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    
+    // Get the display size (CSS pixels)
+    const displayWidth = Math.floor(canvas.offsetWidth);
+    const displayHeight = Math.floor(canvas.offsetHeight);
+    
+    // Set the actual size in memory (scaled up for high-DPI)
+    canvas.width = displayWidth * devicePixelRatio;
+    canvas.height = displayHeight * devicePixelRatio;
+    
+    // Scale the canvas back down using CSS
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
+    
+    // Scale the drawing context so everything draws at the correct size
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    
+    // Configure text rendering for crisp display
+    ctx.textBaseline = 'top';
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    // Enable font smoothing
+    if ('textRenderingOptimizeSpeed' in ctx) {
+      (ctx as any).textRenderingOptimizeSpeed = false;
+    }
+  }, []);
+
+  /**
    * Renders a single whiteboard object on the canvas
    * @param ctx - Canvas rendering context
    * @param obj - Whiteboard object to render
@@ -289,59 +324,36 @@ export const useCanvasRendering = (
               ctx.textAlign = 'left';
           }
           
-          // Calculate text position based on alignment
-          let textX = obj.x;
+          // Calculate pixel-aligned text positions
+          const textXBase = Math.round(obj.x);
+          const textYBase = Math.round(obj.y + 4); // Small padding from top
+          
+          let textX = textXBase;
           if (textData.textAlign === 'center') {
-            textX = obj.x + obj.width / 2;
+            textX = Math.round(obj.x + obj.width / 2);
           } else if (textData.textAlign === 'right') {
-            textX = obj.x + obj.width;
+            textX = Math.round(obj.x + obj.width);
           }
           
-          // Render text with word wrapping
-          const words = contentToRender.split(' ');
-          const lineHeight = textData.fontSize * 1.2;
-          let line = '';
-          let y = obj.y + 4; // Small padding from top
-          let lastLineY = y; // Track the Y position of the last rendered line
+          // Render text naturally without forced word wrapping
+          const lineHeight = Math.round(textData.fontSize * 1.2);
+          const lines = contentToRender.split('\n');
           
-          for (let n = 0; n < words.length; n++) {
-            const testLine = line + words[n] + ' ';
-            const metrics = ctx.measureText(testLine);
-            const testWidth = metrics.width;
-            
-            if (testWidth > obj.width - 8 && n > 0) { // 8px padding on sides
-              ctx.fillText(line, textX, y);
-              lastLineY = y; // Update last line position
-              line = words[n] + ' ';
-              y += lineHeight;
-              
-              // Stop if we exceed the text box height
-              if (y > obj.y + obj.height - lineHeight) {
-                break;
-              }
-            } else {
-              line = testLine;
-            }
+          for (let i = 0; i < lines.length; i++) {
+            const lineY = Math.round(textYBase + (i * lineHeight));
+            ctx.fillText(lines[i], textX, lineY);
           }
           
-          // Render the last line
-          if (line && y <= obj.y + obj.height - lineHeight) {
-            ctx.fillText(line, textX, y);
-            lastLineY = y; // Update last line position
-          }
-          
-          // Draw underline if enabled - position it directly under the last line of text
+          // Draw underline if enabled
           if (textData.underline) {
             ctx.save();
             ctx.strokeStyle = obj.stroke || '#000000';
             ctx.lineWidth = 1;
             
-            // Calculate underline position based on the last rendered line
-            const underlineY = lastLineY + textData.fontSize + 2; // Position underline just below the text
-            const underlineStartX = textData.textAlign === 'center' ? obj.x + 4 : 
-                                  textData.textAlign === 'right' ? obj.x + 4 : obj.x + 4;
-            const underlineEndX = textData.textAlign === 'center' ? obj.x + obj.width - 4 :
-                                textData.textAlign === 'right' ? obj.x + obj.width - 4 : obj.x + obj.width - 4;
+            // Position underline at pixel-aligned coordinates
+            const underlineY = Math.round(textYBase + (lines.length * lineHeight) - 4);
+            const underlineStartX = Math.round(textXBase + 4);
+            const underlineEndX = Math.round(textXBase + obj.width - 4);
             
             ctx.beginPath();
             ctx.moveTo(underlineStartX, underlineY);
@@ -356,7 +368,7 @@ export const useCanvasRendering = (
             ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc';
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
-            ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+            ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
             ctx.restore();
           }
         }
@@ -607,15 +619,11 @@ export const useCanvasRendering = (
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size to match container
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    // Set up canvas for crisp, pixel-aligned rendering
+    setupCanvasForCrispRendering(canvas, ctx);
 
     // Clear the entire canvas completely
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Reset any transformations
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     // Draw background patterns
     if (settings.gridVisible) {
@@ -649,15 +657,16 @@ export const useCanvasRendering = (
       }
     }
 
-    console.log('🎨 Canvas redrawn:', {
+    console.log('🎨 Canvas redrawn with crisp rendering:', {
       objectCount: Object.keys(objects).length,
       selectedCount: selectedObjectIds.length,
       canvasSize: { width: canvas.width, height: canvas.height },
+      devicePixelRatio: window.devicePixelRatio || 1,
       hasDrawingPreview: !!getCurrentDrawingPreview?.(),
       hasShapePreview: !!getCurrentShapePreview?.(),
       editingTextId: editingTextId || 'none'
     });
-  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText]);
+  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, setupCanvasForCrispRendering]);
 
   // Auto-redraw when state changes
   useEffect(() => {
