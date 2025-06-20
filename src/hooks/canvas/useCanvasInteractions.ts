@@ -73,7 +73,7 @@ export const useCanvasInteractions = () => {
     strokeColor: string
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
     const textData: TextData = {
-      content: '', // Start with empty content instead of placeholder text
+      content: 'Double-click to edit', // Keep the placeholder text for created objects
       fontSize: toolStore.toolSettings.fontSize,
       fontFamily: toolStore.toolSettings.fontFamily,
       bold: toolStore.toolSettings.textBold,
