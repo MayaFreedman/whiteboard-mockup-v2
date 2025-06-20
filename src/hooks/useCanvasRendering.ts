@@ -261,7 +261,12 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           if (textData.bold) fontStyle += 'bold ';
           
           ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
-          ctx.fillStyle = obj.stroke || '#000000';
+          
+          // Use lighter color for placeholder text
+          ctx.fillStyle = textData.isPlaceholder 
+            ? `${obj.stroke || '#000000'}50` // Add 50 for 30% opacity
+            : obj.stroke || '#000000';
+            
           ctx.textBaseline = 'top';
           
           // Handle text alignment
@@ -332,10 +337,10 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
             ctx.restore();
           }
           
-          // Draw text box border for better visibility
-          if (isSelected || textData.content === 'Double-click to edit') {
+          // Draw text box border for selected objects or placeholders
+          if (isSelected || textData.isPlaceholder) {
             ctx.save();
-            ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc';
+            ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc40'; // Much lighter for placeholder
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
             ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);

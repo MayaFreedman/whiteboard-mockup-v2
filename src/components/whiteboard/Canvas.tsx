@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -93,17 +92,24 @@ export const Canvas: React.FC = () => {
         width: obj.width!,
         height: obj.height!
       });
-      setEditingText(obj.data?.content || '');
+      
+      // If it's a placeholder, clear it; otherwise, use existing content
+      const isPlaceholder = obj.data?.isPlaceholder;
+      setEditingText(isPlaceholder ? '' : (obj.data?.content || ''));
     }
   };
 
   // Handle text editing completion
   const handleTextEditComplete = () => {
     if (editingTextId && editingText !== undefined) {
+      const finalText = editingText.trim() || 'Tap to edit';
+      const isPlaceholder = !editingText.trim();
+      
       updateObject(editingTextId, {
         data: {
           ...objects[editingTextId]?.data,
-          content: editingText || 'Double-click to edit'
+          content: finalText,
+          isPlaceholder
         }
       });
       redrawCanvas();
