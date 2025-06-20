@@ -13,6 +13,55 @@ import {
 } from '../utils/shapeRendering';
 
 /**
+ * Wraps text to fit within the specified width
+ * @param ctx - Canvas rendering context
+ * @param text - Text to wrap
+ * @param maxWidth - Maximum width for each line
+ * @returns Array of wrapped lines
+ */
+const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] => {
+  if (!text || maxWidth <= 0) return [''];
+  
+  // Handle manual line breaks first
+  const paragraphs = text.split('\n');
+  const wrappedLines: string[] = [];
+  
+  paragraphs.forEach((paragraph, paragraphIndex) => {
+    if (paragraph.trim() === '') {
+      // Preserve empty lines
+      wrappedLines.push('');
+      return;
+    }
+    
+    const words = paragraph.split(' ');
+    let currentLine = '';
+    
+    words.forEach((word, wordIndex) => {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const testWidth = ctx.measureText(testLine).width;
+      
+      if (testWidth <= maxWidth || currentLine === '') {
+        // Word fits on current line, or it's the first word (even if too long)
+        currentLine = testLine;
+      } else {
+        // Word doesn't fit, start new line
+        if (currentLine) {
+          wrappedLines.push(currentLine);
+        }
+        currentLine = word;
+      }
+    });
+    
+    // Add the last line of this paragraph
+    if (currentLine) {
+      wrappedLines.push(currentLine);
+    }
+  });
+  
+  return wrappedLines.length > 0 ? wrappedLines : [''];
+};
+
+/**
  * Custom hook for handling canvas rendering operations
  * Manages drawing of objects, backgrounds, and selection indicators
  */
@@ -323,31 +372,39 @@ export const useCanvasRendering = (
           const textXBase = Math.round(obj.x + 4); // Add 4px left padding to match textarea
           const textYBase = Math.round(obj.y + 4); // 4px padding from top
           
-          let textX = textXBase;
-          if (textData.textAlign === 'center') {
-            textX = Math.round(obj.x + obj.width / 2);
-          } else if (textData.textAlign === 'right') {
-            textX = Math.round(obj.x + obj.width - 4); // Subtract right padding
-          }
+          // Calculate available width for text wrapping (subtract padding)
+          const availableWidth = Math.max(obj.width - 8, 50); // Subtract left and right padding, minimum 50px
           
-          // Render text naturally without forced word wrapping
+          // Wrap text to fit within the text box
+          const wrappedLines = wrapText(ctx, contentToRender, availableWidth);
+          
+          // Calculate line positions
           const lineHeight = Math.round(textData.fontSize * 1.2);
-          const lines = contentToRender.split('\n');
           
-          for (let i = 0; i < lines.length; i++) {
+          // Render each line with proper alignment
+          for (let i = 0; i < wrappedLines.length; i++) {
+            const line = wrappedLines[i];
             const lineY = Math.round(textYBase + (i * lineHeight));
-            ctx.fillText(lines[i], textX, lineY);
+            
+            let textX = textXBase;
+            if (textData.textAlign === 'center') {
+              textX = Math.round(obj.x + obj.width / 2);
+            } else if (textData.textAlign === 'right') {
+              textX = Math.round(obj.x + obj.width - 4); // Subtract right padding
+            }
+            
+            ctx.fillText(line, textX, lineY);
           }
           
-          // Draw underline if enabled - using accurate text measurements
+          // Draw underline if enabled - using accurate text measurements and closer positioning
           if (textData.underline && contentToRender !== 'Double-click to edit') {
             ctx.save();
             ctx.strokeStyle = obj.stroke || '#000000';
             ctx.lineWidth = 1;
             
             // Draw underline for each line individually
-            for (let i = 0; i < lines.length; i++) {
-              const lineText = lines[i];
+            for (let i = 0; i < wrappedLines.length; i++) {
+              const lineText = wrappedLines[i];
               if (lineText.length === 0) continue; // Skip empty lines
               
               // Measure the actual text width
@@ -357,13 +414,14 @@ export const useCanvasRendering = (
               // Calculate underline position based on text alignment
               let underlineStartX = textXBase;
               if (textData.textAlign === 'center') {
-                underlineStartX = Math.round(textX - textWidth / 2);
+                underlineStartX = Math.round((obj.x + obj.width / 2) - textWidth / 2);
               } else if (textData.textAlign === 'right') {
-                underlineStartX = Math.round(textX - textWidth);
+                underlineStartX = Math.round((obj.x + obj.width - 4) - textWidth);
               }
               
               const underlineEndX = Math.round(underlineStartX + textWidth);
-              const underlineY = Math.round(textYBase + (i * lineHeight) + textData.fontSize + 2);
+              // Move underline much closer to text - only 2px below baseline instead of fontSize + 2
+              const underlineY = Math.round(textYBase + (i * lineHeight) + textData.fontSize - 2);
               
               ctx.beginPath();
               ctx.moveTo(underlineStartX, underlineY);

@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -278,7 +277,7 @@ export const Canvas: React.FC = () => {
         onDoubleClick={handleDoubleClick}
       />
       
-      {/* Text Editor Overlay - Positioned to match canvas text exactly with padding */}
+      {/* Text Editor Overlay - Positioned to match canvas text exactly with padding and wrapping */}
       {editingTextId && textEditorPosition && (
         <textarea
           ref={textareaRef}
@@ -298,7 +297,10 @@ export const Canvas: React.FC = () => {
             caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
             zIndex: 1000,
             lineHeight: (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px', // Match canvas line height
-            padding: '0' // Remove default textarea padding since we handle it with positioning
+            padding: '0', // Remove default textarea padding since we handle it with positioning
+            wordWrap: 'break-word', // Enable word wrapping
+            whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
+            overflowWrap: 'break-word' // Break long words if necessary
           }}
           value={editingText}
           onChange={(e) => setEditingText(e.target.value)}
