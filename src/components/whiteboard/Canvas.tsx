@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -37,6 +38,7 @@ const getCursorStyle = (activeTool: string): string => {
  */
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { viewport, selectedObjectIds, updateObject, objects } = useWhiteboardStore();
   const { activeTool } = useToolStore();
   
@@ -100,6 +102,17 @@ export const Canvas: React.FC = () => {
       const currentContent = obj.data?.content || '';
       const isPlaceholderText = currentContent === 'Double-click to edit' || currentContent.trim() === '';
       setEditingText(isPlaceholderText ? '' : currentContent);
+      
+      // Set cursor to end of text after a short delay to ensure textarea is rendered
+      if (!isPlaceholderText) {
+        setTimeout(() => {
+          if (textareaRef.current) {
+            const textLength = currentContent.length;
+            textareaRef.current.setSelectionRange(textLength, textLength);
+            textareaRef.current.focus();
+          }
+        }, 0);
+      }
     }
   };
 
@@ -222,6 +235,7 @@ export const Canvas: React.FC = () => {
       {/* Text Editor Overlay - Positioned to match canvas text exactly with padding */}
       {editingTextId && textEditorPosition && (
         <textarea
+          ref={textareaRef}
           className="absolute bg-transparent border-2 border-blue-500 resize-none outline-none"
           style={{
             left: textEditorPosition.x,
