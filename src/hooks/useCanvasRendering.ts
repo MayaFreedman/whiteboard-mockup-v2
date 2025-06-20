@@ -91,24 +91,24 @@ export const useCanvasRendering = (
       switch (obj.type) {
         case 'path': {
           // Draw the exact same path but with a thicker blue stroke
-          ctx.translate(obj.x, obj.y);
+          ctx.translate(Math.round(obj.x), Math.round(obj.y));
           const path = new Path2D(obj.data.path);
           ctx.lineWidth = (obj.strokeWidth || 2) + 6; // Add 6px to the original stroke width
           ctx.stroke(path);
           break;
         }
         case 'rectangle': {
-          // Draw the exact same rectangle but with thicker blue stroke
+          // Draw the exact same rectangle but with thicker blue stroke - use pixel-perfect positioning
           ctx.lineWidth = (obj.strokeWidth || 2) + 6;
-          ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+          ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
           break;
         }
         case 'circle': {
-          // Draw the exact same ellipse but with thicker blue stroke
-          const radiusX = obj.width / 2;
-          const radiusY = obj.height / 2;
-          const centerX = obj.x + radiusX;
-          const centerY = obj.y + radiusY;
+          // Draw the exact same ellipse but with thicker blue stroke - use pixel-perfect positioning
+          const radiusX = Math.round(obj.width / 2);
+          const radiusY = Math.round(obj.height / 2);
+          const centerX = Math.round(obj.x + radiusX);
+          const centerY = Math.round(obj.y + radiusY);
           ctx.beginPath();
           ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
           ctx.lineWidth = (obj.strokeWidth || 2) + 6;
@@ -121,28 +121,34 @@ export const useCanvasRendering = (
         case 'hexagon':
         case 'star':
         case 'heart': {
-          // Draw selection outline for complex shapes
+          // Draw selection outline for complex shapes - use pixel-perfect positioning
           ctx.lineWidth = (obj.strokeWidth || 2) + 6;
+          
+          // Use rounded coordinates for pixel-perfect rendering
+          const roundedX = Math.round(obj.x);
+          const roundedY = Math.round(obj.y);
+          const roundedWidth = Math.round(obj.width);
+          const roundedHeight = Math.round(obj.height);
           
           // Render the shape outline with thick blue stroke
           switch (obj.type) {
             case 'triangle':
-              renderTriangle(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              renderTriangle(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
               break;
             case 'diamond':
-              renderDiamond(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              renderDiamond(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
               break;
             case 'pentagon':
-              renderPentagon(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              renderPentagon(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
               break;
             case 'hexagon':
-              renderHexagon(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              renderHexagon(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
               break;
             case 'star':
-              renderStar(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              renderStar(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
               break;
             case 'heart':
-              renderHeart(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              renderHeart(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
               break;
           }
           break;
