@@ -1,25 +1,24 @@
 
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Slider } from '../ui/slider';
 import { Toggle } from '../ui/toggle';
+import { Label } from '../ui/label';
+import { Separator } from '../ui/separator';
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 
 interface TextPropertiesPanelProps {
-  selectedObjectIds: string[];
+  selectedObjectId: string;
 }
 
-export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ selectedObjectIds }) => {
+export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ selectedObjectId }) => {
   const { objects, updateObject } = useWhiteboardStore();
-  const { toolSettings, updateToolSettings } = useToolStore();
   const { userId } = useUser();
 
-  // Get the first selected text object
-  const selectedObject = selectedObjectIds.length > 0 ? objects[selectedObjectIds[0]] : null;
+  const selectedObject = objects[selectedObjectId];
   
   if (!selectedObject || selectedObject.type !== 'text') {
     return null;
@@ -34,17 +33,12 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
   const alignment = textData.alignment || 'left';
 
   const updateTextProperty = (property: string, value: any) => {
-    selectedObjectIds.forEach(id => {
-      const obj = objects[id];
-      if (obj && obj.type === 'text') {
-        updateObject(id, {
-          data: {
-            ...obj.data,
-            [property]: value
-          }
-        }, userId);
+    updateObject(selectedObjectId, {
+      data: {
+        ...textData,
+        [property]: value
       }
-    });
+    }, userId);
   };
 
   const fontFamilies = [
@@ -59,14 +53,14 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
   ];
 
   return (
-    <div className="space-y-4 p-4">
-      <h3 className="text-lg font-semibold">Text Properties</h3>
+    <div className="bg-card border border-border rounded-lg p-4 space-y-4 min-w-64">
+      <h3 className="font-semibold text-sm">Text Properties</h3>
       
       {/* Font Family */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Font Family</label>
+        <Label className="text-xs">Font Family</Label>
         <Select value={fontFamily} onValueChange={(value) => updateTextProperty('fontFamily', value)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -81,7 +75,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
 
       {/* Font Size */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Font Size: {fontSize}px</label>
+        <Label className="text-xs">Font Size: {fontSize}px</Label>
         <Slider
           value={[fontSize]}
           onValueChange={(value) => updateTextProperty('fontSize', value[0])}
@@ -92,74 +86,82 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
         />
       </div>
 
+      <Separator />
+
       {/* Text Style Toggles */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Text Style</label>
-        <div className="flex gap-2">
+        <Label className="text-xs">Text Style</Label>
+        <div className="flex gap-1">
           <Toggle
             pressed={bold}
             onPressedChange={(pressed) => updateTextProperty('bold', pressed)}
             aria-label="Bold"
+            size="sm"
           >
-            <Bold className="h-4 w-4" />
+            <Bold className="h-3 w-3" />
           </Toggle>
           <Toggle
             pressed={italic}
             onPressedChange={(pressed) => updateTextProperty('italic', pressed)}
             aria-label="Italic"
+            size="sm"
           >
-            <Italic className="h-4 w-4" />
+            <Italic className="h-3 w-3" />
           </Toggle>
           <Toggle
             pressed={underline}
             onPressedChange={(pressed) => updateTextProperty('underline', pressed)}
             aria-label="Underline"
+            size="sm"
           >
-            <Underline className="h-4 w-4" />
+            <Underline className="h-3 w-3" />
           </Toggle>
         </div>
       </div>
 
       {/* Text Alignment */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Alignment</label>
-        <div className="flex gap-2">
+        <Label className="text-xs">Alignment</Label>
+        <div className="flex gap-1">
           <Toggle
             pressed={alignment === 'left'}
             onPressedChange={() => updateTextProperty('alignment', 'left')}
             aria-label="Align Left"
+            size="sm"
           >
-            <AlignLeft className="h-4 w-4" />
+            <AlignLeft className="h-3 w-3" />
           </Toggle>
           <Toggle
             pressed={alignment === 'center'}
             onPressedChange={() => updateTextProperty('alignment', 'center')}
             aria-label="Align Center"
+            size="sm"
           >
-            <AlignCenter className="h-4 w-4" />
+            <AlignCenter className="h-3 w-3" />
           </Toggle>
           <Toggle
             pressed={alignment === 'right'}
             onPressedChange={() => updateTextProperty('alignment', 'right')}
             aria-label="Align Right"
+            size="sm"
           >
-            <AlignRight className="h-4 w-4" />
+            <AlignRight className="h-3 w-3" />
           </Toggle>
         </div>
       </div>
 
+      <Separator />
+
       {/* Text Color */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Text Color</label>
+        <Label className="text-xs">Text Color</Label>
         <input
           type="color"
           value={selectedObject.stroke || '#000000'}
           onChange={(e) => {
-            selectedObjectIds.forEach(id => {
-              updateObject(id, { stroke: e.target.value }, userId);
-            });
+            updateObject(selectedObjectId, { stroke: e.target.value }, userId);
           }}
-          className="w-full h-10 rounded border"
+          className="w-full h-8 rounded border cursor-pointer"
         />
       </div>
     </div>

@@ -47,7 +47,7 @@ export function WhiteboardSidebar() {
                 </div>
               </SidebarMenuButton>
               <div className="px-2">
-                <TextPropertiesPanel selectedObjectIds={selectedObjectIds} />
+                <TextPropertiesPanel selectedObjectId={firstSelectedId} />
               </div>
             </SidebarMenuItem>
           )}
