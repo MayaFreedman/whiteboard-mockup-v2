@@ -380,7 +380,7 @@ export const useCanvasRendering = (
             ctx.strokeStyle = (isSelected || isBeingEdited) ? '#007AFF' : '#cccccc';
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
-           // ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
+            ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
             ctx.restore();
           }
         }
