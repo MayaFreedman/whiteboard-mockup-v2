@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
+import { useUser } from '../../contexts/UserContext';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -13,12 +14,13 @@ interface ShapePropertiesPanelProps {
 
 export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ selectedObjectId }) => {
   const { objects, updateObject } = useWhiteboardStore();
+  const { userId } = useUser();
   const obj = objects[selectedObjectId];
   
   if (!obj) return null;
 
   const handlePropertyChange = (property: string, value: any) => {
-    updateObject(selectedObjectId, { [property]: value });
+    updateObject(selectedObjectId, { [property]: value }, userId);
   };
 
   const colors = [

@@ -103,7 +103,6 @@ export const useCanvasInteractions = (userId: string) => {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
           if (!whiteboardStore.selectedObjectIds.includes(objectId)) {
-            // FIXED: Pass userId when selecting objects
             whiteboardStore.selectObjects([objectId], userId);
           }
           
@@ -120,7 +119,6 @@ export const useCanvasInteractions = (userId: string) => {
           setIsDragging(true);
           setLastPanPoint(coords);
         } else {
-          // FIXED: Pass userId when clearing selection
           whiteboardStore.selectObjects([], userId);
         }
         break;
@@ -144,7 +142,7 @@ export const useCanvasInteractions = (userId: string) => {
       }
 
       case 'eraser':
-        eraserLogic.handleEraserStart(coords, findObjectAt, redrawCanvas, userId);
+        eraserLogic.handleEraserStart(coords, findObjectAt, redrawCanvas);
         setDrawingState({
           isDrawing: true,
           currentPath: '',
@@ -180,9 +178,8 @@ export const useCanvasInteractions = (userId: string) => {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
           console.log('🎨 Filling object with userId:', userId.slice(0, 8));
-          // FIXED: Pass userId when updating object
           whiteboardStore.updateObject(objectId, {
-            fill: toolSettings.fillColor,
+            fill: toolSettings.strokeColor, // Use strokeColor as fill since fillColor doesn't exist
           }, userId);
           redrawCanvas();
         }
@@ -241,7 +238,7 @@ export const useCanvasInteractions = (userId: string) => {
 
       case 'eraser':
         if (drawingState.isDrawing && drawingState.lastPoint) {
-          eraserLogic.handleEraserMove(coords, drawingState.lastPoint, findObjectAt, redrawCanvas, userId);
+          eraserLogic.handleEraserMove(coords, drawingState.lastPoint, findObjectAt, redrawCanvas);
           setDrawingState(prev => ({
             ...prev,
             lastPoint: coords,
@@ -293,7 +290,6 @@ export const useCanvasInteractions = (userId: string) => {
             const startPos = selectedObjectStartPositions.get(objectId);
             if (obj && startPos && (obj.x !== startPos.x || obj.y !== startPos.y)) {
               console.log('🎯 Recording object move with userId:', userId.slice(0, 8));
-              // FIXED: Pass userId when updating object position
               whiteboardStore.updateObject(objectId, { x: obj.x, y: obj.y }, userId);
             }
           });
@@ -312,7 +308,6 @@ export const useCanvasInteractions = (userId: string) => {
       case 'brush':
         if (drawingState.isDrawing && drawingState.currentPath && drawingState.startPoint) {
           console.log('🎨 Completing drawing stroke with userId:', userId.slice(0, 8));
-          // FIXED: Pass userId when adding object
           whiteboardStore.addObject({
             type: 'path',
             x: drawingState.startPoint.x,
@@ -337,7 +332,7 @@ export const useCanvasInteractions = (userId: string) => {
         break;
 
       case 'eraser':
-        eraserLogic.handleEraserEnd(redrawCanvas, userId);
+        eraserLogic.handleEraserEnd(redrawCanvas);
         setDrawingState({
           isDrawing: false,
           currentPath: '',
@@ -356,14 +351,13 @@ export const useCanvasInteractions = (userId: string) => {
       case 'heart':
         if (shapeState.isDrawingShape && shapeState.currentShape && shapeState.currentShape.width > 0 && shapeState.currentShape.height > 0) {
           console.log('🔷 Completing shape drawing with userId:', userId.slice(0, 8));
-          // FIXED: Pass userId when adding object
           whiteboardStore.addObject({
             type: shapeState.currentShape.type as any,
             x: shapeState.currentShape.x,
             y: shapeState.currentShape.y,
             width: shapeState.currentShape.width,
             height: shapeState.currentShape.height,
-            fill: toolSettings.fillColor,
+            fill: toolSettings.strokeColor, // Use strokeColor since fillColor doesn't exist
             stroke: toolSettings.strokeColor,
             strokeWidth: toolSettings.strokeWidth,
             opacity: toolSettings.opacity,

@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
+import { useUser } from '../../contexts/UserContext';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
@@ -15,6 +15,7 @@ import { Trash2 } from 'lucide-react';
 export const EraserSettings: React.FC = () => {
   const { toolSettings, updateToolSettings } = useToolStore();
   const { clearCanvas } = useWhiteboardStore();
+  const { userId } = useUser();
 
   const handleModeChange = (mode: 'pixel' | 'object') => {
     updateToolSettings({ eraserMode: mode });
@@ -25,7 +26,7 @@ export const EraserSettings: React.FC = () => {
   };
 
   const handleClearCanvas = () => {
-    clearCanvas();
+    clearCanvas(userId);
   };
 
   return (

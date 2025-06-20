@@ -193,7 +193,6 @@ export const useEraserLogic = () => {
       }
       
       if (objectId) {
-        // FIXED: Pass userId to deleteObject
         whiteboardStore.deleteObject(objectId, userId);
         console.log('🗑️ Object eraser successfully deleted:', objectId.slice(0, 8));
         
@@ -236,7 +235,6 @@ export const useEraserLogic = () => {
       for (const testPos of testPositions) {
         const objectId = findObjectAt(testPos.x, testPos.y);
         if (objectId) {
-          // FIXED: Pass userId to deleteObject
           whiteboardStore.deleteObject(objectId, userId);
           console.log('🗑️ Object eraser deleted during drag:', objectId.slice(0, 8));
           
