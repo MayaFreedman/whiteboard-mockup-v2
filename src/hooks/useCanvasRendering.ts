@@ -147,14 +147,6 @@ export const useCanvasRendering = (
           }
           break;
         }
-        case 'text': {
-          if (obj.data?.content && obj.width && obj.height) {
-            // For text, draw a bounding box with blue outline - align with dashed selection border
-            ctx.lineWidth = 3;
-            ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
-          }
-          break;
-        }
       }
       ctx.restore();
     }
