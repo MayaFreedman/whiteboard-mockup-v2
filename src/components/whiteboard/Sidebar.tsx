@@ -28,6 +28,9 @@ export function WhiteboardSidebar() {
     return obj && obj.type !== 'text' && obj.type !== 'path';
   });
 
+  // Get the first selected object ID for panels that need a single ID
+  const firstSelectedId = selectedObjectIds[0];
+
   return (
     <Sidebar side="left" className="w-80 border-r">
       <SidebarHeader>
@@ -58,7 +61,7 @@ export function WhiteboardSidebar() {
                 </div>
               </SidebarMenuButton>
               <div className="px-2">
-                <ShapePropertiesPanel selectedObjectIds={selectedObjectIds} />
+                <ShapePropertiesPanel selectedObjectId={firstSelectedId} />
               </div>
             </SidebarMenuItem>
           )}
