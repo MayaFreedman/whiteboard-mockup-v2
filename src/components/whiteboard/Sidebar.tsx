@@ -31,33 +31,27 @@ export function WhiteboardSidebar() {
   const firstSelectedId = selectedObjectIds[0];
 
   return (
-    <Sidebar side="left" className="w-80 border-r">
-      <SidebarHeader>
+    <Sidebar side="left" className="w-80">
+      <SidebarHeader className="border-b">
         <h2 className="px-4 py-2 text-lg font-semibold">Properties</h2>
       </SidebarHeader>
-      <SidebarContent className="p-4">
-        <SidebarMenu>
-          {hasTextSelected && (
-            <SidebarMenuItem>
-              <TextPropertiesPanel selectedObjectId={firstSelectedId} />
-            </SidebarMenuItem>
+      <SidebarContent className="overflow-auto">
+        <div className="p-4">
+          {hasTextSelected && firstSelectedId && (
+            <TextPropertiesPanel selectedObjectId={firstSelectedId} />
           )}
           
-          {hasShapeSelected && (
-            <SidebarMenuItem>
-              <ShapePropertiesPanel selectedObjectId={firstSelectedId} />
-            </SidebarMenuItem>
+          {hasShapeSelected && firstSelectedId && !hasTextSelected && (
+            <ShapePropertiesPanel selectedObjectId={firstSelectedId} />
           )}
           
           {selectedObjectIds.length === 0 && (
-            <SidebarMenuItem>
-              <div className="px-4 py-8 text-center text-muted-foreground">
-                <Palette className="mx-auto h-8 w-8 mb-2" />
-                <p>Select an object to view its properties</p>
-              </div>
-            </SidebarMenuItem>
+            <div className="py-8 text-center text-muted-foreground">
+              <Palette className="mx-auto h-8 w-8 mb-2 opacity-50" />
+              <p className="text-sm">Select an object to view its properties</p>
+            </div>
           )}
-        </SidebarMenu>
+        </div>
       </SidebarContent>
     </Sidebar>
   );
