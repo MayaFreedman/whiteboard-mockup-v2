@@ -2,7 +2,6 @@
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useUser } from '../../contexts/UserContext';
-import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Slider } from '../ui/slider';
 import { Toggle } from '../ui/toggle';
@@ -53,7 +52,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
   ];
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 space-y-4 min-w-64">
+    <div className="space-y-4 p-4">
       <h3 className="font-semibold text-sm">Text Properties</h3>
       
       {/* Font Family */}
