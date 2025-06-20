@@ -213,7 +213,7 @@ export const Canvas: React.FC = () => {
         onDoubleClick={handleDoubleClick}
       />
       
-      {/* Text Editor Overlay */}
+      {/* Text Editor Overlay - Now invisible so we only see canvas text */}
       {editingTextId && textEditorPosition && (
         <textarea
           className="absolute bg-transparent border-2 border-blue-500 resize-none outline-none p-1 text-base"
@@ -228,7 +228,8 @@ export const Canvas: React.FC = () => {
             fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
             textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
             textAlign: objects[editingTextId]?.data?.textAlign || 'left',
-            color: objects[editingTextId]?.stroke || '#000000',
+            color: 'transparent', // Make the text invisible
+            caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
             zIndex: 1000
           }}
           value={editingText}
