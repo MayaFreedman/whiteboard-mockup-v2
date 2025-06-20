@@ -13,7 +13,7 @@ interface UndoRedoManager {
 }
 
 /**
- * Hook to manage user-specific undo/redo operations
+ * Hook to manage user-specific undo/redo operations with conflict detection
  * Uses direct state manipulation instead of dispatching actions to prevent loops
  */
 export const useUndoRedo = (): UndoRedoManager => {
@@ -21,15 +21,69 @@ export const useUndoRedo = (): UndoRedoManager => {
   const multiplayer = useMultiplayer();
 
   /**
-   * Creates the state change needed to undo an action
+   * Validates if an action can be safely undone (checks for conflicts)
    */
-  const createUndoStateChange = useCallback((action: WhiteboardAction, currentState: any): Partial<WhiteboardState> | null => {
+  const validateActionForUndo = useCallback((action: WhiteboardAction): { canUndo: boolean; reason?: string } => {
+    switch (action.type) {
+      case 'ADD_OBJECT': {
+        // Check if the object still exists and hasn't been modified by others
+        const objectExists = store.checkObjectExists(action.payload.object.id);
+        if (!objectExists) {
+          return { canUndo: false, reason: 'Object was deleted by another user' };
+        }
+        return { canUndo: true };
+      }
+      
+      case 'DELETE_OBJECT': {
+        // Check if any segments were created from this object (via erasing)
+        const relationship = store.getObjectRelationship(action.payload.id);
+        if (relationship?.segmentIds) {
+          return { canUndo: false, reason: 'Object was erased and split into segments' };
+        }
+        return { canUndo: true };
+      }
+      
+      case 'UPDATE_OBJECT': {
+        const objectExists = store.checkObjectExists(action.payload.id);
+        if (!objectExists) {
+          return { canUndo: false, reason: 'Object was deleted by another user' };
+        }
+        return { canUndo: true };
+      }
+      
+      case 'ERASE_PATH': {
+        // Check if the resulting segments still exist
+        const allSegmentsExist = action.payload.resultingSegments.every(segment => 
+          store.checkObjectExists(segment.id)
+        );
+        if (!allSegmentsExist) {
+          return { canUndo: false, reason: 'Some erased segments were modified by another user' };
+        }
+        return { canUndo: true };
+      }
+      
+      default:
+        return { canUndo: true };
+    }
+  }, [store]);
+
+  /**
+   * Creates the state change needed to undo an action with conflict resolution
+   */
+  const createUndoStateChange = useCallback((action: WhiteboardAction, currentState: any): { stateChange: Partial<WhiteboardState> | null; conflict?: string } => {
     console.log('🔄 Creating undo state change for:', action.type, action.id);
 
     // Validate that we're not trying to undo a sync action
     if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
       console.error('❌ CRITICAL: Attempting to undo a SYNC action! This should never happen:', action.type);
-      return null;
+      return { stateChange: null };
+    }
+
+    // Check for conflicts before proceeding
+    const validation = validateActionForUndo(action);
+    if (!validation.canUndo) {
+      console.warn('⚠️ Cannot undo action due to conflict:', validation.reason);
+      return { stateChange: null, conflict: validation.reason };
     }
 
     switch (action.type) {
@@ -39,8 +93,10 @@ export const useUndoRedo = (): UndoRedoManager => {
         delete newObjects[action.payload.object.id];
         
         return {
-          objects: newObjects,
-          selectedObjectIds: currentState.selectedObjectIds.filter(id => id !== action.payload.object.id)
+          stateChange: {
+            objects: newObjects,
+            selectedObjectIds: currentState.selectedObjectIds.filter(id => id !== action.payload.object.id)
+          }
         };
       }
       
@@ -49,13 +105,15 @@ export const useUndoRedo = (): UndoRedoManager => {
         const deletedObject = action.previousState?.object;
         if (!deletedObject) {
           console.warn('⚠️ Cannot undo DELETE_OBJECT: no previous state');
-          return null;
+          return { stateChange: null };
         }
         
         return {
-          objects: {
-            ...currentState.objects,
-            [deletedObject.id]: deletedObject
+          stateChange: {
+            objects: {
+              ...currentState.objects,
+              [deletedObject.id]: deletedObject
+            }
           }
         };
       }
@@ -65,13 +123,15 @@ export const useUndoRedo = (): UndoRedoManager => {
         const previousObject = action.previousState?.object;
         if (!previousObject) {
           console.warn('⚠️ Cannot undo UPDATE_OBJECT: no previous state');
-          return null;
+          return { stateChange: null };
         }
         
         return {
-          objects: {
-            ...currentState.objects,
-            [previousObject.id]: previousObject
+          stateChange: {
+            objects: {
+              ...currentState.objects,
+              [previousObject.id]: previousObject
+            }
           }
         };
       }
@@ -80,7 +140,9 @@ export const useUndoRedo = (): UndoRedoManager => {
         // Undo selection: restore previous selection
         const previousSelection = action.previousState?.selectedObjectIds || [];
         return {
-          selectedObjectIds: previousSelection
+          stateChange: {
+            selectedObjectIds: previousSelection
+          }
         };
       }
       
@@ -89,11 +151,13 @@ export const useUndoRedo = (): UndoRedoManager => {
         const previousViewport = action.previousState?.viewport;
         if (!previousViewport) {
           console.warn('⚠️ Cannot undo UPDATE_VIEWPORT: no previous state');
-          return null;
+          return { stateChange: null };
         }
         
         return {
-          viewport: previousViewport
+          stateChange: {
+            viewport: previousViewport
+          }
         };
       }
       
@@ -102,11 +166,13 @@ export const useUndoRedo = (): UndoRedoManager => {
         const previousSettings = action.previousState?.settings;
         if (!previousSettings) {
           console.warn('⚠️ Cannot undo UPDATE_SETTINGS: no previous state');
-          return null;
+          return { stateChange: null };
         }
         
         return {
-          settings: previousSettings
+          stateChange: {
+            settings: previousSettings
+          }
         };
       }
       
@@ -115,7 +181,7 @@ export const useUndoRedo = (): UndoRedoManager => {
         const originalObject = action.previousState?.object;
         if (!originalObject) {
           console.warn('⚠️ Cannot undo ERASE_PATH: no previous state');
-          return null;
+          return { stateChange: null };
         }
         
         const newObjects = { ...currentState.objects };
@@ -129,10 +195,12 @@ export const useUndoRedo = (): UndoRedoManager => {
         newObjects[originalObject.id] = originalObject;
         
         return {
-          objects: newObjects,
-          selectedObjectIds: currentState.selectedObjectIds.filter(id => 
-            !action.payload.resultingSegments.some(segment => segment.id === id)
-          )
+          stateChange: {
+            objects: newObjects,
+            selectedObjectIds: currentState.selectedObjectIds.filter(id => 
+              !action.payload.resultingSegments.some(segment => segment.id === id)
+            )
+          }
         };
       }
       
@@ -143,40 +211,44 @@ export const useUndoRedo = (): UndoRedoManager => {
         
         if (Object.keys(previousObjects).length === 0) {
           console.warn('⚠️ Cannot undo CLEAR_CANVAS: no previous state');
-          return null;
+          return { stateChange: null };
         }
         
         return {
-          objects: previousObjects,
-          selectedObjectIds: previousSelection
+          stateChange: {
+            objects: previousObjects,
+            selectedObjectIds: previousSelection
+          }
         };
       }
       
       default:
         console.warn('⚠️ Cannot create undo state change for action type:', action.type);
-        return null;
+        return { stateChange: null };
     }
-  }, []);
+  }, [validateActionForUndo]);
 
   /**
-   * Creates the state change needed to redo an action
+   * Creates the state change needed to redo an action with conflict resolution
    */
-  const createRedoStateChange = useCallback((action: WhiteboardAction, currentState: any): Partial<WhiteboardState> | null => {
+  const createRedoStateChange = useCallback((action: WhiteboardAction, currentState: any): { stateChange: Partial<WhiteboardState> | null; conflict?: string } => {
     console.log('🔄 Creating redo state change for:', action.type, action.id);
 
     // Validate that we're not trying to redo a sync action
     if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
       console.error('❌ CRITICAL: Attempting to redo a SYNC action! This should never happen:', action.type);
-      return null;
+      return { stateChange: null };
     }
 
     // For redo, we essentially re-apply the original action's effect
     switch (action.type) {
       case 'ADD_OBJECT': {
         return {
-          objects: {
-            ...currentState.objects,
-            [action.payload.object.id]: action.payload.object
+          stateChange: {
+            objects: {
+              ...currentState.objects,
+              [action.payload.object.id]: action.payload.object
+            }
           }
         };
       }
@@ -186,21 +258,27 @@ export const useUndoRedo = (): UndoRedoManager => {
         delete newObjects[action.payload.id];
         
         return {
-          objects: newObjects,
-          selectedObjectIds: currentState.selectedObjectIds.filter(objId => objId !== action.payload.id)
+          stateChange: {
+            objects: newObjects,
+            selectedObjectIds: currentState.selectedObjectIds.filter(objId => objId !== action.payload.id)
+          }
         };
       }
       
       case 'UPDATE_OBJECT': {
         const existingObject = currentState.objects[action.payload.id];
-        if (!existingObject) return null;
+        if (!existingObject) {
+          return { stateChange: null, conflict: 'Object no longer exists' };
+        }
         
         return {
-          objects: {
-            ...currentState.objects,
-            [action.payload.id]: {
-              ...existingObject,
-              ...action.payload.updates
+          stateChange: {
+            objects: {
+              ...currentState.objects,
+              [action.payload.id]: {
+                ...existingObject,
+                ...action.payload.updates
+              }
             }
           }
         };
@@ -208,37 +286,51 @@ export const useUndoRedo = (): UndoRedoManager => {
       
       case 'SELECT_OBJECTS': {
         return {
-          selectedObjectIds: action.payload.objectIds
+          stateChange: {
+            selectedObjectIds: action.payload.objectIds
+          }
         };
       }
       
       case 'UPDATE_VIEWPORT': {
         return {
-          viewport: {
-            ...currentState.viewport,
-            ...action.payload
+          stateChange: {
+            viewport: {
+              ...currentState.viewport,
+              ...action.payload
+            }
           }
         };
       }
       
       case 'UPDATE_SETTINGS': {
         return {
-          settings: {
-            ...currentState.settings,
-            ...action.payload
+          stateChange: {
+            settings: {
+              ...currentState.settings,
+              ...action.payload
+            }
           }
         };
       }
       
       case 'CLEAR_CANVAS': {
         return {
-          objects: {},
-          selectedObjectIds: []
+          stateChange: {
+            objects: {},
+            selectedObjectIds: []
+          }
         };
       }
       
       case 'ERASE_PATH': {
         const { originalObjectId, resultingSegments } = action.payload;
+        const originalObject = currentState.objects[originalObjectId];
+        
+        if (!originalObject) {
+          return { stateChange: null, conflict: 'Original object no longer exists' };
+        }
+        
         const newObjects = { ...currentState.objects };
         
         // Remove the original object
@@ -247,37 +339,36 @@ export const useUndoRedo = (): UndoRedoManager => {
         // Add all resulting segments
         resultingSegments.forEach((segment) => {
           if (segment.points.length >= 2) {
-            const originalObject = currentState.objects[originalObjectId];
-            if (originalObject) {
-              // Convert points to path string
-              const pathString = segment.points.reduce((path, point, index) => {
-                const command = index === 0 ? 'M' : 'L';
-                return `${path} ${command} ${point.x} ${point.y}`;
-              }, '');
-              
-              const newObject = {
-                ...originalObject,
-                id: segment.id,
-                data: {
-                  ...originalObject.data,
-                  path: pathString
-                },
-                updatedAt: Date.now()
-              };
-              newObjects[segment.id] = newObject;
-            }
+            // Convert points to path string
+            const pathString = segment.points.reduce((path, point, index) => {
+              const command = index === 0 ? 'M' : 'L';
+              return `${path} ${command} ${point.x} ${point.y}`;
+            }, '');
+            
+            const newObject = {
+              ...originalObject,
+              id: segment.id,
+              data: {
+                ...originalObject.data,
+                path: pathString
+              },
+              updatedAt: Date.now()
+            };
+            newObjects[segment.id] = newObject;
           }
         });
         
         return {
-          objects: newObjects,
-          selectedObjectIds: currentState.selectedObjectIds.filter(objId => objId !== originalObjectId)
+          stateChange: {
+            objects: newObjects,
+            selectedObjectIds: currentState.selectedObjectIds.filter(objId => objId !== originalObjectId)
+          }
         };
       }
       
       default:
         console.warn('⚠️ Cannot create redo state change for action type:', action.type);
-        return null;
+        return { stateChange: null };
     }
   }, []);
 
@@ -312,10 +403,11 @@ export const useUndoRedo = (): UndoRedoManager => {
     
     console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
     
-    // Create the undo state change
-    const undoStateChange = createUndoStateChange(actionToUndo, state);
-    if (!undoStateChange) {
-      console.warn('⚠️ Could not create undo state change for:', actionToUndo.type);
+    // Create the undo state change with conflict detection
+    const result = createUndoStateChange(actionToUndo, state);
+    if (!result.stateChange) {
+      console.warn('⚠️ Could not undo action:', result.conflict || 'Unknown reason');
+      // TODO: Show user notification about conflict
       return;
     }
     
@@ -323,14 +415,14 @@ export const useUndoRedo = (): UndoRedoManager => {
     store.updateLocalUserHistoryIndex(userId, currentIndex - 1);
     
     // Apply the state change directly (local only)
-    store.applyStateChange(undoStateChange);
+    store.applyStateChange(result.stateChange);
     
     // Send sync action to other clients if multiplayer is connected
     if (multiplayer?.isConnected) {
       const syncAction: WhiteboardAction = {
         type: 'SYNC_UNDO',
         payload: {
-          stateChange: undoStateChange,
+          stateChange: result.stateChange,
           originalActionId: actionToUndo.id
         },
         timestamp: Date.now(),
@@ -378,10 +470,11 @@ export const useUndoRedo = (): UndoRedoManager => {
     
     console.log('↷ Redoing action:', actionToRedo.type, actionToRedo.id);
     
-    // Create the redo state change
-    const redoStateChange = createRedoStateChange(actionToRedo, state);
-    if (!redoStateChange) {
-      console.warn('⚠️ Could not create redo state change for:', actionToRedo.type);
+    // Create the redo state change with conflict detection
+    const result = createRedoStateChange(actionToRedo, state);
+    if (!result.stateChange) {
+      console.warn('⚠️ Could not redo action:', result.conflict || 'Unknown reason');
+      // TODO: Show user notification about conflict
       return;
     }
     
@@ -389,14 +482,14 @@ export const useUndoRedo = (): UndoRedoManager => {
     store.updateLocalUserHistoryIndex(userId, nextIndex);
     
     // Apply the state change directly (local only)
-    store.applyStateChange(redoStateChange);
+    store.applyStateChange(result.stateChange);
     
     // Send sync action to other clients if multiplayer is connected
     if (multiplayer?.isConnected) {
       const syncAction: WhiteboardAction = {
         type: 'SYNC_REDO',
         payload: {
-          stateChange: redoStateChange,
+          stateChange: result.stateChange,
           redoneActionId: actionToRedo.id
         },
         timestamp: Date.now(),

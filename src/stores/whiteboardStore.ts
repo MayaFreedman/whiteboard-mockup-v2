@@ -37,6 +37,9 @@ export interface WhiteboardStore {
   // User-specific action histories for undo/redo
   userActionHistories: Map<string, WhiteboardAction[]>;
   userHistoryIndices: Map<string, number>;
+  
+  // Track object relationships for conflict resolution
+  objectRelationships: Map<string, { originalId?: string; segmentIds?: string[] }>;
 
   // Action recording
   recordAction: (action: WhiteboardAction) => void;
@@ -95,6 +98,10 @@ export interface WhiteboardStore {
   batchUpdate: (actions: WhiteboardAction[]) => void;
   updateLocalUserHistoryIndex: (userId: string, index: number) => void;
   applyStateChange: (stateChange: any) => void;
+  
+  // Conflict detection utilities
+  checkObjectExists: (objectId: string) => boolean;
+  getObjectRelationship: (objectId: string) => { originalId?: string; segmentIds?: string[] } | undefined;
 }
 
 export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
@@ -117,6 +124,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   // Initialize user-specific histories
   userActionHistories: new Map(),
   userHistoryIndices: new Map(),
+  objectRelationships: new Map(),
 
   recordAction: (action) => {
     set((state) => {
@@ -327,9 +335,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     
     set((state) => {
       const newObjects = { ...state.objects };
+      const newRelationships = new Map(state.objectRelationships);
       
       // Remove the original object
       delete newObjects[originalObjectId];
+      
+      // Track relationships for conflict resolution
+      const segmentIds = resultingSegments.map(s => s.id);
+      segmentIds.forEach(segmentId => {
+        newRelationships.set(segmentId, { originalId: originalObjectId });
+      });
       
       // Add resulting segments as new objects with preserved brush metadata
       resultingSegments.forEach((segment) => {
@@ -365,6 +380,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       return {
         ...state,
         objects: newObjects,
+        objectRelationships: newRelationships,
         selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
       };
     });
@@ -416,10 +432,24 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   getActionsSince: (timestamp) => {
     return get().actionHistory.filter(action => action.timestamp > timestamp);
   },
+  
   applyRemoteAction: (action) => {
     console.log('🔄 Applying remote action:', action.type, action.id);
     
-    // Execute the action logic based on action type
+    // Handle SYNC actions specially - they only apply state changes, don't get recorded in history
+    if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
+      console.log('🔄 Applying SYNC action state change:', action.type);
+      if (action.payload.stateChange) {
+        set((state) => ({
+          ...state,
+          ...action.payload.stateChange
+        }));
+      }
+      // CRITICAL: Don't add SYNC actions to any user's history or global history
+      return;
+    }
+    
+    // Execute the action logic based on action type for non-SYNC actions
     switch (action.type) {
       case 'ADD_OBJECT':
         if (action.payload.object) {
@@ -484,9 +514,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           if (originalObject) {
             set((state) => {
               const newObjects = { ...state.objects };
+              const newRelationships = new Map(state.objectRelationships);
               
               // Remove the original object
               delete newObjects[originalObjectId];
+              
+              // Track relationships
+              const segmentIds = resultingSegments.map(s => s.id);
+              segmentIds.forEach(segmentId => {
+                newRelationships.set(segmentId, { originalId: originalObjectId });
+              });
               
               // Add resulting segments as new objects
               resultingSegments.forEach((segment) => {
@@ -518,6 +555,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
               
               return {
                 objects: newObjects,
+                objectRelationships: newRelationships,
                 selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
               };
             });
@@ -530,7 +568,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         break;
     }
     
-    // Record the action for the remote user's history
+    // Record the action for the remote user's history (but NOT for SYNC actions)
     const state = get();
     const newUserHistories = new Map(state.userActionHistories);
     const newUserIndices = new Map(state.userHistoryIndices);
@@ -548,6 +586,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       userHistoryIndices: newUserIndices,
     });
   },
+  
   batchUpdate: (actions) => {
     // Apply batch of actions
     console.log('Applying batch update:', actions.length, 'actions');
@@ -562,5 +601,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
   applyStateChange: (stateChange) => {
     set((state) => ({ ...state, ...stateChange }));
+  },
+  
+  // Conflict detection utilities
+  checkObjectExists: (objectId) => {
+    return !!get().objects[objectId];
+  },
+  getObjectRelationship: (objectId) => {
+    return get().objectRelationships.get(objectId);
   },
 }));
