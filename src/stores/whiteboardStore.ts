@@ -141,6 +141,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   userHistoryIndices: new Map(),
   objectRelationships: new Map(),
 
+  // Initialize currentBatch
+  currentBatch: {
+    id: null,
+    userId: null,
+    actionType: null,
+    objectId: null,
+    startTime: null,
+    actions: [],
+  },
+
   recordAction: (action) => {
     const state = get();
     
