@@ -1,4 +1,3 @@
-
 import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
@@ -191,3 +190,21 @@ export type WhiteboardAction =
   | ErasePathAction
   | SyncUndoAction
   | SyncRedoAction;
+
+// Text-specific interfaces for better type safety
+export interface TextData {
+  content: string;
+  fontSize: number;
+  fontFamily: string;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  textAlign: 'left' | 'center' | 'right';
+}
+
+export interface TextObject extends WhiteboardObject {
+  type: 'text';
+  width: number;
+  height: number;
+  data: TextData;
+}

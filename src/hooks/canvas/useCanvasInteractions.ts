@@ -2,7 +2,7 @@ import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
-import { WhiteboardObject } from '../../types/whiteboard';
+import { WhiteboardObject, TextData } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
@@ -60,6 +60,40 @@ export const useCanvasInteractions = () => {
   const setRedrawCanvas = useCallback((redrawFn: () => void) => {
     redrawCanvasRef.current = redrawFn;
   }, []);
+
+  /**
+   * Creates text objects with proper data structure
+   */
+  const createTextObject = useCallback((
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    strokeColor: string
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
+    const textData: TextData = {
+      content: 'Double-click to edit',
+      fontSize: toolStore.toolSettings.fontSize,
+      fontFamily: toolStore.toolSettings.fontFamily,
+      bold: toolStore.toolSettings.textBold,
+      italic: toolStore.toolSettings.textItalic,
+      underline: toolStore.toolSettings.textUnderline,
+      textAlign: toolStore.toolSettings.textAlign
+    };
+
+    return {
+      type: 'text',
+      x,
+      y,
+      width: Math.max(width, 100), // Minimum width for readability
+      height: Math.max(height, 30), // Minimum height for text
+      stroke: strokeColor,
+      fill: 'transparent',
+      strokeWidth: 1,
+      opacity: 1,
+      data: textData
+    };
+  }, [toolStore.toolSettings]);
 
   /**
    * Creates shape objects - all shapes as their native types
@@ -327,6 +361,29 @@ export const useCanvasInteractions = () => {
         }
       }
     }
+
+    // Handle text completion
+    if (activeTool === 'text' && 
+        isDrawingRef.current && 
+        currentShapePreviewRef.current) {
+      
+      const preview = currentShapePreviewRef.current;
+      const width = Math.abs(preview.endX - preview.startX);
+      const height = Math.abs(preview.endY - preview.startY);
+      
+      if (width > 10 && height > 10) {
+        const textObject = createTextObject(
+          Math.min(preview.startX, preview.endX),
+          Math.min(preview.startY, preview.endY),
+          width,
+          height,
+          preview.strokeColor
+        );
+
+        const objectId = whiteboardStore.addObject(textObject, userId);
+        console.log('📝 Auto-saved text on mouse leave:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
+      }
+    }
     
     // Reset all drawing state
     isDrawingRef.current = false;
@@ -341,7 +398,7 @@ export const useCanvasInteractions = () => {
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId]);
 
   // Add document-level mouseup listener to catch releases outside canvas
   useEffect(() => {
@@ -395,6 +452,26 @@ export const useCanvasInteractions = () => {
           whiteboardStore.clearSelection();
           console.log('🎯 Cleared selection');
         }
+        break;
+      }
+
+      case 'text': {
+        isDrawingRef.current = true;
+        lastPointRef.current = coords;
+        pathStartRef.current = coords;
+        
+        currentShapePreviewRef.current = {
+          type: 'text',
+          startX: coords.x,
+          startY: coords.y,
+          endX: coords.x,
+          endY: coords.y,
+          strokeColor: toolStore.toolSettings.strokeColor,
+          strokeWidth: 1,
+          opacity: 1
+        };
+        
+        console.log('📝 Started text box creation:', coords, 'for user:', userId.slice(0, 8));
         break;
       }
 
@@ -464,7 +541,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, userId]);
 
   /**
    * Handles pointer movement during interaction
@@ -499,6 +576,30 @@ export const useCanvasInteractions = () => {
         break;
       }
 
+      case 'text':
+      case 'rectangle':
+      case 'circle':
+      case 'triangle':
+      case 'diamond':
+      case 'pentagon':
+      case 'hexagon':
+      case 'star':
+      case 'heart': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          currentShapePreviewRef.current.endX = coords.x;
+          currentShapePreviewRef.current.endY = coords.y;
+          
+          if (redrawCanvasRef.current) {
+            requestAnimationFrame(() => {
+              if (redrawCanvasRef.current && isDrawingRef.current) {
+                redrawCanvasRef.current();
+              }
+            });
+          }
+        }
+        break;
+      }
+
       case 'pencil':
       case 'brush': {
         if (isDrawingRef.current && lastPointRef.current && pathStartRef.current && pathBuilderRef.current) {
@@ -512,29 +613,6 @@ export const useCanvasInteractions = () => {
           if (currentDrawingPreviewRef.current) {
             currentDrawingPreviewRef.current.path = smoothPath;
           }
-          
-          if (redrawCanvasRef.current) {
-            requestAnimationFrame(() => {
-              if (redrawCanvasRef.current && isDrawingRef.current) {
-                redrawCanvasRef.current();
-              }
-            });
-          }
-        }
-        break;
-      }
-
-      case 'rectangle':
-      case 'circle':
-      case 'triangle':
-      case 'diamond':
-      case 'pentagon':
-      case 'hexagon':
-      case 'star':
-      case 'heart': {
-        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
-          currentShapePreviewRef.current.endX = coords.x;
-          currentShapePreviewRef.current.endY = coords.y;
           
           if (redrawCanvasRef.current) {
             requestAnimationFrame(() => {
@@ -572,6 +650,34 @@ export const useCanvasInteractions = () => {
         }
         isDraggingRef.current = false;
         dragStartRef.current = null;
+        break;
+      }
+
+      case 'text': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          const preview = currentShapePreviewRef.current;
+          const width = Math.abs(preview.endX - preview.startX);
+          const height = Math.abs(preview.endY - preview.startY);
+          
+          if (width > 10 && height > 10) {
+            const textObject = createTextObject(
+              Math.min(preview.startX, preview.endX),
+              Math.min(preview.startY, preview.endY),
+              width,
+              height,
+              preview.strokeColor
+            );
+
+            const objectId = whiteboardStore.addObject(textObject, userId);
+            console.log('📝 Created text object:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
+          }
+          
+          currentShapePreviewRef.current = null;
+          
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
+        }
         break;
       }
 
@@ -666,7 +772,7 @@ export const useCanvasInteractions = () => {
     lastPointRef.current = null;
     pathStartRef.current = null;
     pathBuilderRef.current = null;
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId]);
 
   /**
    * Gets the current drawing preview for rendering

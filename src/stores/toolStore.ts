@@ -42,6 +42,10 @@ export interface ToolSettings {
   // Text settings
   fontSize: number;
   fontFamily: string;
+  textBold: boolean;
+  textItalic: boolean;
+  textUnderline: boolean;
+  textAlign: 'left' | 'center' | 'right';
   
   // UI settings
   showGrid: boolean;
@@ -112,6 +116,10 @@ const defaultToolSettings: ToolSettings = {
   shapeBorderWeight: 2,
   fontSize: 16,
   fontFamily: 'Arial',
+  textBold: false,
+  textItalic: false,
+  textUnderline: false,
+  textAlign: 'left',
   showGrid: false,
   showLinedPaper: false,
   showDots: false,

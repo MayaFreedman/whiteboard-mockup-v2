@@ -7,8 +7,9 @@ import { Slider } from '../ui/slider';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ScrollArea } from '../ui/scroll-area';
-import { Check, ChevronsLeft, ChevronsRight, Upload } from 'lucide-react';
+import { Check, ChevronsLeft, ChevronsRight, Upload, Bold, Italic, Underline } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import {
   Sidebar as UISidebar,
   SidebarContent,
@@ -18,24 +19,39 @@ import {
 import { EraserSettings } from './EraserSettings';
 import { ShapeSettings } from './ShapeSettings';
 import { ShapePropertiesPanel } from './ShapePropertiesPanel';
+import { TextPropertiesPanel } from './TextPropertiesPanel';
 
 // Context-sensitive tool settings component
 const ToolSettings: React.FC = () => {
   const { activeTool, toolSettings, updateToolSettings } = useToolStore();
   const { selectedObjectIds, objects } = useWhiteboardStore();
 
-  // Show shape properties if objects are selected
+  // Show properties panel for selected objects
   if (selectedObjectIds.length > 0) {
-    return (
-      <Card>
-        <CardHeader className="bg-muted/80 py-3">
-          <CardTitle className="text-lg">Shape Properties</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <ShapePropertiesPanel selectedObjectId={selectedObjectIds[0]} />
-        </CardContent>
-      </Card>
-    );
+    const obj = objects[selectedObjectIds[0]];
+    if (obj?.type === 'text') {
+      return (
+        <Card>
+          <CardHeader className="bg-muted/80 py-3">
+            <CardTitle className="text-lg">Text Properties</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <TextPropertiesPanel selectedObjectId={selectedObjectIds[0]} />
+          </CardContent>
+        </Card>
+      );
+    } else if (obj && ['rectangle', 'circle', 'triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart'].includes(obj.type)) {
+      return (
+        <Card>
+          <CardHeader className="bg-muted/80 py-3">
+            <CardTitle className="text-lg">Shape Properties</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <ShapePropertiesPanel selectedObjectId={selectedObjectIds[0]} />
+          </CardContent>
+        </Card>
+      );
+    }
   }
 
   // Eraser tool
@@ -131,17 +147,55 @@ const ToolSettings: React.FC = () => {
 
           <div>
             <label className="text-sm font-medium mb-2 block">Font Family</label>
-            <select
-              value={toolSettings.fontFamily}
-              onChange={(e) => updateToolSettings({ fontFamily: e.target.value })}
-              className="w-full p-2 rounded border bg-background"
+            <Select 
+              value={toolSettings.fontFamily} 
+              onValueChange={(value) => updateToolSettings({ fontFamily: value })}
             >
-              <option value="Arial">Arial</option>
-              <option value="Helvetica">Helvetica</option>
-              <option value="Times New Roman">Times New Roman</option>
-              <option value="Courier New">Courier New</option>
-              <option value="Georgia">Georgia</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Arial">Arial</SelectItem>
+                <SelectItem value="Helvetica">Helvetica</SelectItem>
+                <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                <SelectItem value="Courier New">Courier New</SelectItem>
+                <SelectItem value="Georgia">Georgia</SelectItem>
+                <SelectItem value="Verdana">Verdana</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Text Formatting</label>
+            <div className="flex gap-1">
+              <Button
+                variant={toolSettings.textBold ? "default" : "outline"}
+                size="sm"
+                onClick={() => updateToolSettings({ textBold: !toolSettings.textBold })}
+                className="p-2"
+                title="Bold"
+              >
+                <Bold className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={toolSettings.textItalic ? "default" : "outline"}
+                size="sm"
+                onClick={() => updateToolSettings({ textItalic: !toolSettings.textItalic })}
+                className="p-2"
+                title="Italic"
+              >
+                <Italic className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={toolSettings.textUnderline ? "default" : "outline"}
+                size="sm"
+                onClick={() => updateToolSettings({ textUnderline: !toolSettings.textUnderline })}
+                className="p-2"
+                title="Underline"
+              >
+                <Underline className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
