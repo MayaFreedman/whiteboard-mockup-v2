@@ -90,35 +90,29 @@ export const useCanvasRendering = (
       
       switch (obj.type) {
         case 'path': {
-          if (obj.data?.path) {
-            // Draw the exact same path but with a thicker blue stroke
-            ctx.translate(obj.x, obj.y);
-            const path = new Path2D(obj.data.path);
-            ctx.lineWidth = (obj.strokeWidth || 2) + 6; // Add 6px to the original stroke width
-            ctx.stroke(path);
-          }
+          // Draw the exact same path but with a thicker blue stroke
+          ctx.translate(obj.x, obj.y);
+          const path = new Path2D(obj.data.path);
+          ctx.lineWidth = (obj.strokeWidth || 2) + 6; // Add 6px to the original stroke width
+          ctx.stroke(path);
           break;
         }
         case 'rectangle': {
-          if (obj.width && obj.height) {
-            // Draw the exact same rectangle but with thicker blue stroke
-            ctx.lineWidth = (obj.strokeWidth || 2) + 6;
-            ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
-          }
+          // Draw the exact same rectangle but with thicker blue stroke
+          ctx.lineWidth = (obj.strokeWidth || 2) + 6;
+          ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
           break;
         }
         case 'circle': {
-          if (obj.width && obj.height) {
-            // Draw the exact same ellipse but with thicker blue stroke
-            const radiusX = obj.width / 2;
-            const radiusY = obj.height / 2;
-            const centerX = obj.x + radiusX;
-            const centerY = obj.y + radiusY;
-            ctx.beginPath();
-            ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
-            ctx.lineWidth = (obj.strokeWidth || 2) + 6;
-            ctx.stroke();
-          }
+          // Draw the exact same ellipse but with thicker blue stroke
+          const radiusX = obj.width / 2;
+          const radiusY = obj.height / 2;
+          const centerX = obj.x + radiusX;
+          const centerY = obj.y + radiusY;
+          ctx.beginPath();
+          ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+          ctx.lineWidth = (obj.strokeWidth || 2) + 6;
+          ctx.stroke();
           break;
         }
         case 'triangle':
@@ -127,31 +121,29 @@ export const useCanvasRendering = (
         case 'hexagon':
         case 'star':
         case 'heart': {
-          if (obj.width && obj.height) {
-            // Draw selection outline for complex shapes
-            ctx.lineWidth = (obj.strokeWidth || 2) + 6;
-            
-            // Render the shape outline with thick blue stroke
-            switch (obj.type) {
-              case 'triangle':
-                renderTriangle(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
-                break;
-              case 'diamond':
-                renderDiamond(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
-                break;
-              case 'pentagon':
-                renderPentagon(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
-                break;
-              case 'hexagon':
-                renderHexagon(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
-                break;
-              case 'star':
-                renderStar(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
-                break;
-              case 'heart':
-                renderHeart(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
-                break;
-            }
+          // Draw selection outline for complex shapes
+          ctx.lineWidth = (obj.strokeWidth || 2) + 6;
+          
+          // Render the shape outline with thick blue stroke
+          switch (obj.type) {
+            case 'triangle':
+              renderTriangle(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              break;
+            case 'diamond':
+              renderDiamond(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              break;
+            case 'pentagon':
+              renderPentagon(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              break;
+            case 'hexagon':
+              renderHexagon(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              break;
+            case 'star':
+              renderStar(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              break;
+            case 'heart':
+              renderHeart(ctx, obj.x, obj.y, obj.width, obj.height, undefined, '#007AFF', ctx.lineWidth);
+              break;
           }
           break;
         }
@@ -382,10 +374,11 @@ export const useCanvasRendering = (
             ctx.restore();
           }
           
-          // Draw text box border for better visibility - align with selection outline
+          // Draw text box border - use blue when being edited, gray otherwise
           if (isSelected || contentToRender === 'Double-click to edit') {
             ctx.save();
-            ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc';
+            // Use blue color if this text is being edited, otherwise use the selection color or gray
+            ctx.strokeStyle = isBeingEdited ? '#007AFF' : (isSelected ? '#007AFF' : '#cccccc');
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
             ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
