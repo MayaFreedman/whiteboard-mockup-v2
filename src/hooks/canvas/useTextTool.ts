@@ -25,7 +25,7 @@ export const useTextTool = () => {
         content: 'Type here...',
         fontSize: toolStore.toolSettings.fontSize || 16,
         fontFamily: toolStore.toolSettings.fontFamily || 'Arial',
-        fontWeight: toolStore.toolSettings.fontWeight || 'normal',
+        fontWeight: 'normal',
       }
     };
 

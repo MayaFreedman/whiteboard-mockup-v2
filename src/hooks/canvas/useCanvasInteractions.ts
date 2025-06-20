@@ -372,9 +372,9 @@ export const useCanvasInteractions = (textTool?: any) => {
    * Handles double-click events for text editing
    */
   const handleDoubleClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current) return;
+    if (!event.currentTarget) return;
     
-    const coords = getCanvasCoordinates(event.nativeEvent, canvasRef.current);
+    const coords = getCanvasCoordinates(event.nativeEvent, event.currentTarget);
     const objectId = findObjectAt(coords.x, coords.y);
     
     if (objectId) {
@@ -714,18 +714,18 @@ export const useCanvasInteractions = (textTool?: any) => {
     handlePointerUp,
     handleMouseLeave,
     onMouseDown: (event: React.MouseEvent<HTMLCanvasElement>) => {
-      if (canvasRef.current) {
-        handlePointerDown(event.nativeEvent, canvasRef.current);
+      if (event.currentTarget) {
+        handlePointerDown(event.nativeEvent, event.currentTarget);
       }
     },
     onMouseMove: (event: React.MouseEvent<HTMLCanvasElement>) => {
-      if (canvasRef.current) {
-        handlePointerMove(event.nativeEvent, canvasRef.current);
+      if (event.currentTarget) {
+        handlePointerMove(event.nativeEvent, event.currentTarget);
       }
     },
     onMouseUp: (event: React.MouseEvent<HTMLCanvasElement>) => {
-      if (canvasRef.current) {
-        handlePointerUp(event.nativeEvent, canvasRef.current);
+      if (event.currentTarget) {
+        handlePointerUp(event.nativeEvent, event.currentTarget);
       }
     },
     onDoubleClick: handleDoubleClick,

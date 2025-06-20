@@ -186,7 +186,9 @@ export const useCanvasRendering = (
             path: preview.path,
             brushType: preview.brushType,
             isEraser: preview.isEraser
-          }
+          },
+          createdAt: Date.now(),
+          updatedAt: Date.now()
         });
       }
     }
@@ -205,7 +207,9 @@ export const useCanvasRendering = (
           stroke: preview.strokeColor,
           strokeWidth: preview.strokeWidth,
           opacity: preview.opacity,
-          fill: 'none'
+          fill: 'none',
+          createdAt: Date.now(),
+          updatedAt: Date.now()
         });
       }
     }

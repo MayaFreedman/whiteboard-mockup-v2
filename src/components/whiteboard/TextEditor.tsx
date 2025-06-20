@@ -68,7 +68,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({ objectId, onComplete, on
           color: textObject.stroke || toolSettings.strokeColor,
           fontSize: `${toolSettings.fontSize || 16}px`,
           fontFamily: toolSettings.fontFamily || 'Arial',
-          fontWeight: toolSettings.fontWeight || 'normal',
+          fontWeight: 'normal',
           minHeight: '20px',
         }}
         rows={1}

@@ -149,7 +149,7 @@ export const Canvas: React.FC = () => {
         onMouseDown={interactions.onMouseDown}
         onMouseMove={interactions.onMouseMove}
         onMouseUp={interactions.onMouseUp}
-        onMouseLeave={interactions.onMouseLeave}
+        onMouseLeave={interactions.handleMouseLeave}
         onDoubleClick={interactions.onDoubleClick}
       />
       
