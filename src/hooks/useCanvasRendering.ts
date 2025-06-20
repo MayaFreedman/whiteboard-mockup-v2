@@ -292,6 +292,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           const lineHeight = textData.fontSize * 1.2;
           let line = '';
           let y = obj.y + 4; // Small padding from top
+          let lastLineY = y; // Track the Y position of the last rendered line
           
           for (let n = 0; n < words.length; n++) {
             const testLine = line + words[n] + ' ';
@@ -300,6 +301,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
             
             if (testWidth > obj.width - 8 && n > 0) { // 8px padding on sides
               ctx.fillText(line, textX, y);
+              lastLineY = y; // Update last line position
               line = words[n] + ' ';
               y += lineHeight;
               
@@ -315,19 +317,25 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           // Render the last line
           if (line && y <= obj.y + obj.height - lineHeight) {
             ctx.fillText(line, textX, y);
+            lastLineY = y; // Update last line position
           }
           
-          // Draw underline if enabled
+          // Draw underline if enabled - position it directly under the last line of text
           if (textData.underline) {
             ctx.save();
             ctx.strokeStyle = obj.stroke || '#000000';
             ctx.lineWidth = 1;
             
-            // Simple underline at the bottom of the text area
-            const underlineY = obj.y + obj.height - 4;
+            // Calculate underline position based on the last rendered line
+            const underlineY = lastLineY + textData.fontSize + 2; // Position underline just below the text
+            const underlineStartX = textData.textAlign === 'center' ? obj.x + 4 : 
+                                  textData.textAlign === 'right' ? obj.x + 4 : obj.x + 4;
+            const underlineEndX = textData.textAlign === 'center' ? obj.x + obj.width - 4 :
+                                textData.textAlign === 'right' ? obj.x + obj.width - 4 : obj.x + obj.width - 4;
+            
             ctx.beginPath();
-            ctx.moveTo(obj.x + 4, underlineY);
-            ctx.lineTo(obj.x + obj.width - 4, underlineY);
+            ctx.moveTo(underlineStartX, underlineY);
+            ctx.lineTo(underlineEndX, underlineY);
             ctx.stroke();
             ctx.restore();
           }
