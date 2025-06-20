@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -102,7 +103,7 @@ export const Canvas: React.FC = () => {
       updateObject(editingTextId, {
         data: {
           ...objects[editingTextId]?.data,
-          content: editingText || 'Double-click to edit'
+          content: editingText || '' // Remove default "Double-click to edit" text
         }
       });
       redrawCanvas();
