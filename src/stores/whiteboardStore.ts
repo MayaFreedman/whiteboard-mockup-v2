@@ -52,13 +52,13 @@ export interface WhiteboardStore {
   setSettings: (settings: WhiteboardSettings) => void;
   updateSettings: (updates: Partial<WhiteboardSettings>) => void;
 
-  // Actions - FIXED: userId is now required
-  addObject: (object: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'>, userId: string) => string;
-  updateObject: (id: string, updates: Partial<WhiteboardObject>, userId: string) => void;
-  deleteObject: (id: string, userId: string) => void;
+  // Actions
+  addObject: (object: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'>, userId?: string) => string;
+  updateObject: (id: string, updates: Partial<WhiteboardObject>, userId?: string) => void;
+  deleteObject: (id: string, userId?: string) => void;
   clearObjects: () => void;
-  clearCanvas: (userId: string) => void;
-  selectObjects: (ids: string[], userId: string) => void;
+  clearCanvas: (userId?: string) => void;
+  selectObjects: (ids: string[], userId?: string) => void;
   clearSelection: () => void;
   updateObjectPosition: (id: string, x: number, y: number) => void;
   updateObjectSize: (id: string, width: number, height: number) => void;
@@ -83,7 +83,7 @@ export interface WhiteboardStore {
       opacity?: number;
       fill?: string;
     };
-  }, userId: string) => void;
+  }, userId?: string) => void;
   
   // Zoom & Pan
   zoomIn: () => void;
@@ -159,8 +159,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     settings: { ...state.settings, ...updates } 
   })),
 
-  // FIXED: userId is now required, no default
-  addObject: (object, userId) => {
+  addObject: (object, userId = 'local') => {
     const id = nanoid();
     const now = Date.now();
     const newObject = {
@@ -178,8 +177,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       userId,
     };
 
-    console.log('🎨 Adding object with userId:', userId, 'objectType:', object.type);
-
     set((state) => ({
       objects: {
         ...state.objects,
@@ -191,8 +188,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     return id;
   },
 
-  // FIXED: userId is now required, no default
-  updateObject: (id, updates, userId) => {
+  updateObject: (id, updates, userId = 'local') => {
     const state = get();
     const existingObject = state.objects[id];
     if (!existingObject) return;
@@ -205,8 +201,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       userId,
       previousState: { object: existingObject },
     };
-
-    console.log('🎨 Updating object with userId:', userId, 'objectId:', id.slice(0, 8));
 
     set((state) => ({
       objects: {
@@ -222,8 +216,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     get().recordAction(action);
   },
 
-  // FIXED: userId is now required, no default
-  deleteObject: (id, userId) => {
+  deleteObject: (id, userId = 'local') => {
     const state = get();
     const objectToDelete = state.objects[id];
     if (!objectToDelete) return;
@@ -236,8 +229,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       userId,
       previousState: { object: objectToDelete },
     };
-
-    console.log('🗑️ Deleting object with userId:', userId, 'objectId:', id.slice(0, 8));
 
     set((state) => {
       const newObjects = { ...state.objects };
@@ -256,8 +247,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     set({ objects: {}, selectedObjectIds: [] });
   },
 
-  // FIXED: userId is now required, no default
-  clearCanvas: (userId) => {
+  clearCanvas: (userId = 'local') => {
     const state = get();
     
     const action: WhiteboardAction = {
@@ -272,14 +262,11 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       },
     };
 
-    console.log('🧹 Clearing canvas with userId:', userId);
-
     set({ objects: {}, selectedObjectIds: [] });
     get().recordAction(action);
   },
 
-  // FIXED: userId is now required, no default
-  selectObjects: (ids, userId) => {
+  selectObjects: (ids, userId = 'local') => {
     const state = get();
     
     const action: WhiteboardAction = {
@@ -290,8 +277,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       userId,
       previousState: { selectedObjectIds: state.selectedObjectIds },
     };
-
-    console.log('🎯 Selecting objects with userId:', userId, 'count:', ids.length);
 
     set({ selectedObjectIds: ids });
     get().recordAction(action);
@@ -329,8 +314,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     }));
   },
   
-  // FIXED: userId is now required, no default
-  erasePath: (action, userId) => {
+  erasePath: (action, userId = 'local') => {
     const { originalObjectId, eraserPath, resultingSegments, originalObjectMetadata } = action;
     const originalObject = get().objects[originalObjectId];
     
@@ -348,8 +332,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       userId,
       previousState: { object: originalObject },
     };
-
-    console.log('✂️ Erasing path with userId:', userId, 'objectId:', originalObjectId.slice(0, 8));
     
     set((state) => {
       const newObjects = { ...state.objects };
@@ -404,6 +386,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     });
 
     get().recordAction(whiteboardAction);
+    
+    console.log('✂️ Erased path with preserved brush metadata:', {
+      originalId: originalObjectId.slice(0, 8),
+      segments: resultingSegments.length,
+      brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
+      preservedMetadata: originalObjectMetadata
+    });
   },
   
   zoomIn: () => {

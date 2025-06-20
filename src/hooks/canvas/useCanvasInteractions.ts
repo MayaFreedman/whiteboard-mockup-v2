@@ -1,155 +1,422 @@
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
+import { WhiteboardObject } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
-import { nanoid } from 'nanoid';
-
-interface DrawingState {
-  isDrawing: boolean;
-  currentPath: string;
-  lastPoint: { x: number; y: number } | null;
-  startPoint: { x: number; y: number } | null;
-}
-
-interface ShapeState {
-  isDrawingShape: boolean;
-  startPoint: { x: number; y: number } | null;
-  currentShape: {
-    type: string;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null;
-}
+import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 
 /**
- * Hook for handling canvas interactions including drawing, selection, and panning
- * FIXED: Now accepts userId parameter to properly track user actions
+ * Custom hook for handling canvas mouse and touch interactions
+ * Manages drawing state and coordinates tool-specific behaviors
  */
-export const useCanvasInteractions = (userId: string) => {
+export const useCanvasInteractions = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const { getCanvasCoordinates } = useCanvasCoordinates();
   const { findObjectAt } = useObjectDetection();
-  const eraserLogic = useEraserLogic();
-
-  // State management
-  const [drawingState, setDrawingState] = useState<DrawingState>({
-    isDrawing: false,
-    currentPath: '',
-    lastPoint: null,
-    startPoint: null,
-  });
-
-  const [shapeState, setShapeState] = useState<ShapeState>({
-    isDrawingShape: false,
-    startPoint: null,
-    currentShape: null,
-  });
-
-  const [isDragging, setIsDragging] = useState(false);
-  const [lastPanPoint, setLastPanPoint] = useState<{ x: number; y: number } | null>(null);
-  const [selectedObjectStartPositions, setSelectedObjectStartPositions] = useState<Map<string, {x: number, y: number}>>(new Map());
-
+  const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraserLogic();
+  
+  const isDrawingRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const pathStartRef = useRef<{ x: number; y: number } | null>(null);
   const redrawCanvasRef = useRef<(() => void) | null>(null);
+  
+  // Simple path builder for smooth drawing
+  const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
+  
+  // Store the current drawing preview for rendering
+  const currentDrawingPreviewRef = useRef<{
+    path: string;
+    startX: number;
+    startY: number;
+    strokeColor: string;
+    strokeWidth: number;
+    opacity: number;
+    brushType?: string;
+    isEraser?: boolean;
+  } | null>(null);
 
-  console.log('🎨 Canvas interactions initialized for userId:', userId.slice(0, 8));
+  // Store shape preview for rendering
+  const currentShapePreviewRef = useRef<{
+    type: string;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    strokeColor: string;
+    strokeWidth: number;
+    opacity: number;
+  } | null>(null);
 
+  /**
+   * Sets the redraw canvas function (called by Canvas component)
+   */
   const setRedrawCanvas = useCallback((redrawFn: () => void) => {
     redrawCanvasRef.current = redrawFn;
   }, []);
 
-  const redrawCanvas = useCallback(() => {
-    if (redrawCanvasRef.current) {
-      redrawCanvasRef.current();
+  /**
+   * Creates shape objects - all shapes as their native types
+   */
+  const createShapeObject = useCallback((
+    shapeType: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    strokeColor: string,
+    strokeWidth: number,
+    opacity: number
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
+    const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
+    
+    // All shapes are now created as native types
+    const baseShape = {
+      x,
+      y,
+      width,
+      height,
+      stroke: strokeColor,
+      fill: 'none',
+      strokeWidth: shapeBorderWeight,
+      opacity
+    };
+    
+    switch (shapeType) {
+      case 'rectangle':
+        return {
+          type: 'rectangle',
+          ...baseShape
+        };
+      
+      case 'circle':
+        return {
+          type: 'circle',
+          ...baseShape
+        };
+      
+      case 'triangle':
+        return {
+          type: 'triangle',
+          ...baseShape
+        };
+      
+      case 'diamond':
+        return {
+          type: 'diamond',
+          ...baseShape
+        };
+      
+      case 'pentagon':
+        return {
+          type: 'pentagon',
+          ...baseShape
+        };
+      
+      case 'hexagon':
+        return {
+          type: 'hexagon',
+          ...baseShape
+        };
+      
+      case 'star':
+        return {
+          type: 'star',
+          ...baseShape
+        };
+      
+      case 'heart':
+        return {
+          type: 'heart',
+          ...baseShape
+        };
+      
+      default:
+        return null;
+    }
+  }, [toolStore.toolSettings.shapeBorderWeight]);
+
+  /**
+   * Generates SVG path data for complex shapes
+   */
+  const generateShapePath = useCallback((shapeType: string, x: number, y: number, width: number, height: number): string => {
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+    
+    switch (shapeType) {
+      case 'triangle':
+        return `M ${centerX} ${y} L ${x + width} ${y + height} L ${x} ${y + height} Z`;
+      
+      case 'diamond':
+        return `M ${centerX} ${y} L ${x + width} ${centerY} L ${centerX} ${y + height} L ${x} ${centerY} Z`;
+      
+      case 'pentagon': {
+        const pentagonPoints = [];
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+          const px = centerX + (width / 2) * Math.cos(angle);
+          const py = centerY + (height / 2) * Math.sin(angle);
+          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+        }
+        return pentagonPoints.join(' ') + ' Z';
+      }
+      
+      case 'hexagon': {
+        const hexagonPoints = [];
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * 2 * Math.PI) / 6;
+          const px = centerX + (width / 2) * Math.cos(angle);
+          const py = centerY + (height / 2) * Math.sin(angle);
+          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+        }
+        return hexagonPoints.join(' ') + ' Z';
+      }
+      
+      case 'star': {
+        const starPoints = [];
+        const outerRadiusX = width / 2;
+        const outerRadiusY = height / 2;
+        const innerRadiusX = outerRadiusX * 0.4;
+        const innerRadiusY = outerRadiusY * 0.4;
+        
+        for (let i = 0; i < 10; i++) {
+          const angle = (i * Math.PI) / 5 - Math.PI / 2;
+          const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
+          const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
+          const px = centerX + radiusX * Math.cos(angle);
+          const py = centerY + radiusY * Math.sin(angle);
+          starPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+        }
+        return starPoints.join(' ') + ' Z';
+      }
+      
+      case 'heart': {
+        const heartWidth = width;
+        const heartHeight = height;
+        const topCurveHeight = heartHeight * 0.3;
+        const centerXHeart = x + width / 2;
+        
+        return `M ${centerXHeart} ${y + heartHeight * 0.3}
+                C ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.2} ${y}, ${centerXHeart - heartWidth * 0.4} ${y}
+                C ${centerXHeart - heartWidth * 0.6} ${y}, ${centerXHeart - heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}
+                C ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart} ${y + heartHeight}
+                C ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}
+                C ${centerXHeart + heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart + heartWidth * 0.6} ${y}, ${centerXHeart + heartWidth * 0.4} ${y}
+                C ${centerXHeart + heartWidth * 0.2} ${y}, ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart} ${y + heartHeight * 0.3} Z`;
+      }
+      
+      default:
+        return '';
     }
   }, []);
 
-  const getCurrentDrawingPreview = useCallback(() => {
-    if (!drawingState.isDrawing || !drawingState.currentPath) return null;
+  /**
+   * Handles fill tool click - fills the clicked shape with the current stroke color
+   */
+  const handleFillClick = useCallback((coords: { x: number; y: number }) => {
+    console.log('🎨 Fill tool clicked at:', coords);
     
-    return {
-      type: 'path' as const,
-      x: drawingState.startPoint?.x || 0,
-      y: drawingState.startPoint?.y || 0,
-      stroke: toolStore.toolSettings.strokeColor,
-      strokeWidth: toolStore.toolSettings.strokeWidth,
-      opacity: toolStore.toolSettings.opacity,
-      data: {
-        path: drawingState.currentPath,
-        brushType: toolStore.activeTool,
-      },
+    const objectId = findObjectAt(coords.x, coords.y);
+    if (!objectId) {
+      console.log('🎨 No object found to fill at:', coords);
+      return;
+    }
+    
+    const obj = whiteboardStore.objects[objectId];
+    if (!obj) {
+      console.log('🎨 Object not found in store:', objectId);
+      return;
+    }
+    
+    console.log('🎨 Found object to fill:', { 
+      id: objectId.slice(0, 8), 
+      type: obj.type, 
+      currentFill: obj.fill 
+    });
+    
+    // Use the current stroke color from toolbar as fill color
+    const fillColor = toolStore.toolSettings.strokeColor;
+    
+    // Update the object with the fill color
+    whiteboardStore.updateObject(objectId, {
+      fill: fillColor
+    });
+    
+    console.log('🎨 Filled object:', { 
+      objectId: objectId.slice(0, 8), 
+      fillColor,
+      previousFill: obj.fill 
+    });
+    
+    // Trigger redraw
+    if (redrawCanvasRef.current) {
+      redrawCanvasRef.current();
+    }
+  }, [findObjectAt, whiteboardStore, toolStore.toolSettings.strokeColor]);
+
+  /**
+   * Ends current drawing session and saves the path if valid
+   */
+  const endCurrentDrawing = useCallback(() => {
+    const activeTool = toolStore.activeTool;
+    
+    if ((activeTool === 'pencil' || activeTool === 'brush') && 
+        isDrawingRef.current && 
+        pathBuilderRef.current && 
+        pathStartRef.current &&
+        pathBuilderRef.current.getPointCount() > 1) {
+      
+      const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
+      
+      const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
+        type: 'path',
+        x: pathStartRef.current.x,
+        y: pathStartRef.current.y,
+        stroke: toolStore.toolSettings.strokeColor,
+        strokeWidth: toolStore.toolSettings.strokeWidth,
+        opacity: toolStore.toolSettings.opacity,
+        fill: 'none',
+        data: {
+          path: finalSmoothPath,
+          brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
+        }
+      };
+
+      const objectId = whiteboardStore.addObject(drawingObject);
+      console.log('✏️ Auto-saved drawing on mouse leave:', objectId.slice(0, 8));
+    }
+    
+    if (activeTool === 'eraser' && isDrawingRef.current) {
+      handleEraserEnd(redrawCanvasRef.current || undefined);
+      console.log('🧹 Auto-ended erasing on mouse leave');
+    }
+
+    // Handle shape completion
+    if (['rectangle', 'circle'].includes(activeTool) && 
+        isDrawingRef.current && 
+        currentShapePreviewRef.current) {
+      
+      const preview = currentShapePreviewRef.current;
+      const width = Math.abs(preview.endX - preview.startX);
+      const height = Math.abs(preview.endY - preview.startY);
+      
+      if (width > 5 && height > 5) {
+        const shapeObject = createShapeObject(
+          activeTool,
+          Math.min(preview.startX, preview.endX),
+          Math.min(preview.startY, preview.endY),
+          width,
+          height,
+          preview.strokeColor,
+          preview.strokeWidth,
+          preview.opacity
+        );
+
+        if (shapeObject) {
+          const objectId = whiteboardStore.addObject(shapeObject);
+          console.log('🔷 Auto-saved shape on mouse leave:', objectId.slice(0, 8));
+        }
+      }
+    }
+    
+    // Reset all drawing state
+    isDrawingRef.current = false;
+    isDraggingRef.current = false;
+    lastPointRef.current = null;
+    pathStartRef.current = null;
+    pathBuilderRef.current = null;
+    dragStartRef.current = null;
+    currentDrawingPreviewRef.current = null;
+    currentShapePreviewRef.current = null;
+    
+    if (redrawCanvasRef.current) {
+      redrawCanvasRef.current();
+    }
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject]);
+
+  // Add document-level mouseup listener to catch releases outside canvas
+  useEffect(() => {
+    const handleDocumentMouseUp = () => {
+      if (isDrawingRef.current || isDraggingRef.current) {
+        console.log('🖱️ Document mouse up - ending current interaction');
+        endCurrentDrawing();
+      }
     };
-  }, [drawingState, toolStore.toolSettings, toolStore.activeTool]);
 
-  const getCurrentShapePreview = useCallback(() => {
-    return shapeState.currentShape;
-  }, [shapeState.currentShape]);
+    document.addEventListener('mouseup', handleDocumentMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleDocumentMouseUp);
+    };
+  }, [endCurrentDrawing]);
 
-  // Handle pointer down events
-  const handlePointerDown = useCallback((event: PointerEvent | TouchEvent | MouseEvent, canvas: HTMLCanvasElement) => {
+  /**
+   * Handles mouse leaving the canvas area
+   */
+  const handleMouseLeave = useCallback(() => {
+    if (isDrawingRef.current || isDraggingRef.current) {
+      console.log('🖱️ Mouse left canvas - ending current interaction');
+      endCurrentDrawing();
+    }
+  }, [endCurrentDrawing]);
+
+  /**
+   * Handles the start of a drawing/interaction session
+   */
+  const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
+    event.preventDefault();
     const coords = getCanvasCoordinates(event, canvas);
-    if (!coords) return;
+    const activeTool = toolStore.activeTool;
 
-    const { activeTool, toolSettings } = toolStore;
-
-    console.log('🎯 Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8) });
+    console.log('🖱️ Pointer down:', { tool: activeTool, coords });
 
     switch (activeTool) {
+      case 'fill': {
+        handleFillClick(coords);
+        return;
+      }
+
       case 'select': {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
-          if (!whiteboardStore.selectedObjectIds.includes(objectId)) {
-            whiteboardStore.selectObjects([objectId], userId);
-          }
-          
-          const selectedObjects = whiteboardStore.selectedObjectIds
-            .map(id => whiteboardStore.objects[id])
-            .filter(Boolean);
-          
-          const startPositions = new Map();
-          selectedObjects.forEach(obj => {
-            startPositions.set(obj.id, { x: obj.x, y: obj.y });
-          });
-          setSelectedObjectStartPositions(startPositions);
-          
-          setIsDragging(true);
-          setLastPanPoint(coords);
+          whiteboardStore.selectObjects([objectId]);
+          isDraggingRef.current = true;
+          dragStartRef.current = coords;
+          console.log('🎯 Selected object for dragging:', objectId.slice(0, 8));
         } else {
-          whiteboardStore.selectObjects([], userId);
+          whiteboardStore.clearSelection();
+          console.log('🎯 Cleared selection');
         }
         break;
       }
 
-      case 'hand':
-        setIsDragging(true);
-        setLastPanPoint(coords);
-        break;
-
       case 'pencil':
       case 'brush': {
-        console.log('🎨 Starting drawing stroke with userId:', userId.slice(0, 8));
-        setDrawingState({
-          isDrawing: true,
-          currentPath: `M ${coords.x} ${coords.y}`,
-          lastPoint: coords,
-          startPoint: coords,
-        });
+        isDrawingRef.current = true;
+        lastPointRef.current = coords;
+        pathStartRef.current = coords;
+        
+        const config = getSmoothingConfig(activeTool);
+        pathBuilderRef.current = new SimplePathBuilder(config.minDistance, config.smoothingStrength);
+        
+        const initialPath = pathBuilderRef.current.addPoint({ x: 0, y: 0 });
+        
+        currentDrawingPreviewRef.current = {
+          path: initialPath,
+          startX: coords.x,
+          startY: coords.y,
+          strokeColor: toolStore.toolSettings.strokeColor,
+          strokeWidth: toolStore.toolSettings.strokeWidth,
+          opacity: toolStore.toolSettings.opacity,
+          brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
+        };
+        
+        console.log('✏️ Started simple smooth drawing at:', coords);
         break;
       }
-
-      case 'eraser':
-        eraserLogic.handleEraserStart(coords, findObjectAt, redrawCanvas);
-        setDrawingState({
-          isDrawing: true,
-          currentPath: '',
-          lastPoint: coords,
-          startPoint: coords,
-        });
-        break;
 
       case 'rectangle':
       case 'circle':
@@ -159,92 +426,97 @@ export const useCanvasInteractions = (userId: string) => {
       case 'hexagon':
       case 'star':
       case 'heart': {
-        console.log('🔷 Starting shape drawing with userId:', userId.slice(0, 8));
-        setShapeState({
-          isDrawingShape: true,
-          startPoint: coords,
-          currentShape: {
-            type: activeTool,
-            x: coords.x,
-            y: coords.y,
-            width: 0,
-            height: 0,
-          },
-        });
+        isDrawingRef.current = true;
+        lastPointRef.current = coords;
+        pathStartRef.current = coords;
+        
+        const shapeBorderWeight = toolStore.toolSettings.shapeBorderWeight || 2;
+        currentShapePreviewRef.current = {
+          type: activeTool,
+          startX: coords.x,
+          startY: coords.y,
+          endX: coords.x,
+          endY: coords.y,
+          strokeColor: toolStore.toolSettings.strokeColor,
+          strokeWidth: shapeBorderWeight,
+          opacity: toolStore.toolSettings.opacity
+        };
+        
+        console.log('🔷 Started shape drawing:', activeTool, coords);
         break;
       }
 
-      case 'fill': {
-        const objectId = findObjectAt(coords.x, coords.y);
-        if (objectId) {
-          console.log('🎨 Filling object with userId:', userId.slice(0, 8));
-          whiteboardStore.updateObject(objectId, {
-            fill: toolSettings.strokeColor, // Use strokeColor as fill since fillColor doesn't exist
-          }, userId);
-          redrawCanvas();
-        }
+      case 'eraser': {
+        isDrawingRef.current = true;
+        lastPointRef.current = coords;
+        
+        handleEraserStart(coords, findObjectAt, redrawCanvasRef.current || undefined);
+        
+        console.log('🧹 Started erasing:', { mode: toolStore.toolSettings.eraserMode, coords });
         break;
       }
+
+      default:
+        console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore, whiteboardStore, getCanvasCoordinates, findObjectAt, eraserLogic, redrawCanvas, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick]);
 
-  // Handle pointer move events
-  const handlePointerMove = useCallback((event: PointerEvent | TouchEvent | MouseEvent, canvas: HTMLCanvasElement) => {
+  /**
+   * Handles pointer movement during interaction
+   */
+  const handlePointerMove = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const coords = getCanvasCoordinates(event, canvas);
-    if (!coords) return;
-
-    const { activeTool } = toolStore;
+    const activeTool = toolStore.activeTool;
 
     switch (activeTool) {
-      case 'select':
-        if (isDragging && lastPanPoint && whiteboardStore.selectedObjectIds.length > 0) {
-          const deltaX = coords.x - lastPanPoint.x;
-          const deltaY = coords.y - lastPanPoint.y;
+      case 'select': {
+        if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+          const deltaX = coords.x - dragStartRef.current.x;
+          const deltaY = coords.y - dragStartRef.current.y;
           
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const obj = whiteboardStore.objects[objectId];
             if (obj) {
-              whiteboardStore.updateObjectPosition(obj.id, obj.x + deltaX, obj.y + deltaY);
+              whiteboardStore.updateObject(objectId, {
+                x: obj.x + deltaX,
+                y: obj.y + deltaY
+              });
             }
           });
           
-          setLastPanPoint(coords);
-          redrawCanvas();
+          dragStartRef.current = coords;
+          
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
         }
         break;
-
-      case 'hand':
-        if (isDragging && lastPanPoint) {
-          const deltaX = coords.x - lastPanPoint.x;
-          const deltaY = coords.y - lastPanPoint.y;
-          whiteboardStore.pan(-deltaX, -deltaY);
-          setLastPanPoint(coords);
-          redrawCanvas();
-        }
-        break;
+      }
 
       case 'pencil':
-      case 'brush':
-        if (drawingState.isDrawing && drawingState.lastPoint) {
-          const newPath = `${drawingState.currentPath} L ${coords.x} ${coords.y}`;
-          setDrawingState(prev => ({
-            ...prev,
-            currentPath: newPath,
-            lastPoint: coords,
-          }));
-          redrawCanvas();
+      case 'brush': {
+        if (isDrawingRef.current && lastPointRef.current && pathStartRef.current && pathBuilderRef.current) {
+          const relativeX = coords.x - pathStartRef.current.x;
+          const relativeY = coords.y - pathStartRef.current.y;
+          
+          const smoothPath = pathBuilderRef.current.addPoint({ x: relativeX, y: relativeY });
+          
+          lastPointRef.current = coords;
+          
+          if (currentDrawingPreviewRef.current) {
+            currentDrawingPreviewRef.current.path = smoothPath;
+          }
+          
+          if (redrawCanvasRef.current) {
+            requestAnimationFrame(() => {
+              if (redrawCanvasRef.current && isDrawingRef.current) {
+                redrawCanvasRef.current();
+              }
+            });
+          }
         }
         break;
-
-      case 'eraser':
-        if (drawingState.isDrawing && drawingState.lastPoint) {
-          eraserLogic.handleEraserMove(coords, drawingState.lastPoint, findObjectAt, redrawCanvas);
-          setDrawingState(prev => ({
-            ...prev,
-            lastPoint: coords,
-          }));
-        }
-        break;
+      }
 
       case 'rectangle':
       case 'circle':
@@ -253,93 +525,84 @@ export const useCanvasInteractions = (userId: string) => {
       case 'pentagon':
       case 'hexagon':
       case 'star':
-      case 'heart':
-        if (shapeState.isDrawingShape && shapeState.startPoint) {
-          const width = coords.x - shapeState.startPoint.x;
-          const height = coords.y - shapeState.startPoint.y;
+      case 'heart': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          currentShapePreviewRef.current.endX = coords.x;
+          currentShapePreviewRef.current.endY = coords.y;
           
-          setShapeState(prev => ({
-            ...prev,
-            currentShape: {
-              type: activeTool,
-              x: Math.min(shapeState.startPoint!.x, coords.x),
-              y: Math.min(shapeState.startPoint!.y, coords.y),
-              width: Math.abs(width),
-              height: Math.abs(height),
-            },
-          }));
-          redrawCanvas();
+          if (redrawCanvasRef.current) {
+            requestAnimationFrame(() => {
+              if (redrawCanvasRef.current && isDrawingRef.current) {
+                redrawCanvasRef.current();
+              }
+            });
+          }
         }
         break;
+      }
+
+      case 'eraser': {
+        if (isDrawingRef.current && lastPointRef.current) {
+          handleEraserMove(coords, lastPointRef.current, findObjectAt, redrawCanvasRef.current || undefined);
+          lastPointRef.current = coords;
+        }
+        break;
+      }
     }
-  }, [toolStore, whiteboardStore, getCanvasCoordinates, findObjectAt, eraserLogic, isDragging, lastPanPoint, drawingState, shapeState, redrawCanvas, userId]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt]);
 
-  // Handle pointer up events
-  const handlePointerUp = useCallback((event: PointerEvent | TouchEvent | MouseEvent, canvas: HTMLCanvasElement) => {
-    const coords = getCanvasCoordinates(event, canvas);
-    const { activeTool, toolSettings } = toolStore;
+  /**
+   * Handles the end of a drawing/interaction session
+   */
+  const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
+    const activeTool = toolStore.activeTool;
 
-    console.log('🎯 Pointer up:', { tool: activeTool, coords, userId: userId.slice(0, 8) });
+    console.log('🖱️ Pointer up:', { tool: activeTool, wasDrawing: isDrawingRef.current, wasDragging: isDraggingRef.current });
 
     switch (activeTool) {
-      case 'select':
-        if (isDragging && whiteboardStore.selectedObjectIds.length > 0) {
-          // Record position update actions for selected objects
-          whiteboardStore.selectedObjectIds.forEach(objectId => {
-            const obj = whiteboardStore.objects[objectId];
-            const startPos = selectedObjectStartPositions.get(objectId);
-            if (obj && startPos && (obj.x !== startPos.x || obj.y !== startPos.y)) {
-              console.log('🎯 Recording object move with userId:', userId.slice(0, 8));
-              whiteboardStore.updateObject(objectId, { x: obj.x, y: obj.y }, userId);
-            }
-          });
+      case 'select': {
+        if (isDraggingRef.current) {
+          console.log('🔄 Finished dragging objects');
         }
-        setIsDragging(false);
-        setLastPanPoint(null);
-        setSelectedObjectStartPositions(new Map());
+        isDraggingRef.current = false;
+        dragStartRef.current = null;
         break;
-
-      case 'hand':
-        setIsDragging(false);
-        setLastPanPoint(null);
-        break;
+      }
 
       case 'pencil':
-      case 'brush':
-        if (drawingState.isDrawing && drawingState.currentPath && drawingState.startPoint) {
-          console.log('🎨 Completing drawing stroke with userId:', userId.slice(0, 8));
-          whiteboardStore.addObject({
-            type: 'path',
-            x: drawingState.startPoint.x,
-            y: drawingState.startPoint.y,
-            stroke: toolSettings.strokeColor,
-            strokeWidth: toolSettings.strokeWidth,
-            opacity: toolSettings.opacity,
-            data: {
-              path: drawingState.currentPath,
-              brushType: activeTool,
-            },
-          }, userId);
+      case 'brush': {
+        if (isDrawingRef.current && pathBuilderRef.current && pathStartRef.current) {
+          const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
           
-          setDrawingState({
-            isDrawing: false,
-            currentPath: '',
-            lastPoint: null,
-            startPoint: null,
+          const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
+            type: 'path',
+            x: pathStartRef.current.x,
+            y: pathStartRef.current.y,
+            stroke: toolStore.toolSettings.strokeColor,
+            strokeWidth: toolStore.toolSettings.strokeWidth,
+            opacity: toolStore.toolSettings.opacity,
+            fill: 'none',
+            data: {
+              path: finalSmoothPath,
+              brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
+            }
+          };
+
+          const objectId = whiteboardStore.addObject(drawingObject);
+          console.log('✏️ Created smooth drawing object:', objectId.slice(0, 8), {
+            pointCount: pathBuilderRef.current.getPointCount(),
+            pathLength: finalSmoothPath.length
           });
-          redrawCanvas();
+          
+          currentDrawingPreviewRef.current = null;
+          pathBuilderRef.current = null;
+          
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
         }
         break;
-
-      case 'eraser':
-        eraserLogic.handleEraserEnd(redrawCanvas);
-        setDrawingState({
-          isDrawing: false,
-          currentPath: '',
-          lastPoint: null,
-          startPoint: null,
-        });
-        break;
+      }
 
       case 'rectangle':
       case 'circle':
@@ -348,68 +611,77 @@ export const useCanvasInteractions = (userId: string) => {
       case 'pentagon':
       case 'hexagon':
       case 'star':
-      case 'heart':
-        if (shapeState.isDrawingShape && shapeState.currentShape && shapeState.currentShape.width > 0 && shapeState.currentShape.height > 0) {
-          console.log('🔷 Completing shape drawing with userId:', userId.slice(0, 8));
-          whiteboardStore.addObject({
-            type: shapeState.currentShape.type as any,
-            x: shapeState.currentShape.x,
-            y: shapeState.currentShape.y,
-            width: shapeState.currentShape.width,
-            height: shapeState.currentShape.height,
-            fill: toolSettings.strokeColor, // Use strokeColor since fillColor doesn't exist
-            stroke: toolSettings.strokeColor,
-            strokeWidth: toolSettings.strokeWidth,
-            opacity: toolSettings.opacity,
-          }, userId);
+      case 'heart': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          const preview = currentShapePreviewRef.current;
+          const width = Math.abs(preview.endX - preview.startX);
+          const height = Math.abs(preview.endY - preview.startY);
           
-          setShapeState({
-            isDrawingShape: false,
-            startPoint: null,
-            currentShape: null,
-          });
-          redrawCanvas();
-        } else {
-          setShapeState({
-            isDrawingShape: false,
-            startPoint: null,
-            currentShape: null,
-          });
+          if (width > 5 && height > 5) {
+            const shapeObject = createShapeObject(
+              activeTool,
+              Math.min(preview.startX, preview.endX),
+              Math.min(preview.startY, preview.endY),
+              width,
+              height,
+              preview.strokeColor,
+              preview.strokeWidth,
+              preview.opacity
+            );
+
+            if (shapeObject) {
+              const objectId = whiteboardStore.addObject(shapeObject);
+              console.log('🔷 Created shape object:', activeTool, objectId.slice(0, 8), { width, height });
+            }
+          }
+          
+          currentShapePreviewRef.current = null;
+          
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
         }
         break;
-    }
-  }, [toolStore, whiteboardStore, getCanvasCoordinates, eraserLogic, isDragging, drawingState, shapeState, selectedObjectStartPositions, redrawCanvas, userId]);
+      }
 
-  const handleMouseLeave = useCallback(() => {
-    setIsDragging(false);
-    setLastPanPoint(null);
-    
-    if (drawingState.isDrawing) {
-      setDrawingState({
-        isDrawing: false,
-        currentPath: '',
-        lastPoint: null,
-        startPoint: null,
-      });
+      case 'eraser': {
+        if (isDrawingRef.current) {
+          handleEraserEnd(redrawCanvasRef.current || undefined);
+          console.log('🧹 Finished erasing:', { mode: toolStore.toolSettings.eraserMode });
+        }
+        break;
+      }
     }
-    
-    if (shapeState.isDrawingShape) {
-      setShapeState({
-        isDrawingShape: false,
-        startPoint: null,
-        currentShape: null,
-      });
-    }
-  }, [drawingState.isDrawing, shapeState.isDrawingShape]);
+
+    isDrawingRef.current = false;
+    lastPointRef.current = null;
+    pathStartRef.current = null;
+    pathBuilderRef.current = null;
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject]);
+
+  /**
+   * Gets the current drawing preview for rendering
+   */
+  const getCurrentDrawingPreview = useCallback(() => {
+    return currentDrawingPreviewRef.current;
+  }, []);
+
+  /**
+   * Gets the current shape preview for rendering
+   */
+  const getCurrentShapePreview = useCallback(() => {
+    return currentShapePreviewRef.current;
+  }, []);
 
   return {
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
     handleMouseLeave,
+    isDrawing: isDrawingRef.current,
+    isDragging: isDraggingRef.current,
     getCurrentDrawingPreview,
     getCurrentShapePreview,
-    setRedrawCanvas,
-    isDragging,
+    setRedrawCanvas
   };
 };

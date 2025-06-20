@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -9,12 +10,11 @@ import { nanoid } from 'nanoid';
 
 /**
  * Hook for handling eraser logic with stroke-based undo/redo
- * FIXED: Now gets userId directly from UserContext
  */
 export const useEraserLogic = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
-  const { userId } = useUser(); // FIXED: Get userId from context
+  const { userId } = useUser();
   
   // For real-time eraser: batch processing with line segment intersection
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
@@ -135,13 +135,12 @@ export const useEraserLogic = () => {
             }
           };
           
-          // FIXED: Pass userId to erasePath
           whiteboardStore.erasePath(enhancedAction, userId);
         }
       }
     });
     
-    console.log('🧹 Processed eraser batch with userId:', userId.slice(0, 8), {
+    console.log('🧹 Processed eraser batch:', {
       eraserPoints: eraserPointsRef.current.length,
       strokeInProgress: strokeInProgressRef.current,
       strokeOperations: strokeOperationsRef.current.length
@@ -154,7 +153,7 @@ export const useEraserLogic = () => {
   const handleEraserStart = useCallback((coords: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
-    console.log('🎨 Starting eraser stroke with userId:', userId.slice(0, 8), { mode: eraserMode, coords });
+    console.log('🎨 Starting eraser stroke:', { mode: eraserMode, coords });
     
     // Initialize stroke tracking for pixel mode
     if (eraserMode === 'pixel') {
@@ -281,7 +280,7 @@ export const useEraserLogic = () => {
   const handleEraserEnd = useCallback((redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
-    console.log('🎨 Ending eraser stroke with userId:', userId.slice(0, 8), { 
+    console.log('🎨 Ending eraser stroke:', { 
       mode: eraserMode, 
       strokeInProgress: strokeInProgressRef.current,
       operationsCount: strokeOperationsRef.current.length 
@@ -309,7 +308,7 @@ export const useEraserLogic = () => {
         redrawCanvas();
       }
     }
-  }, [toolStore.toolSettings, processEraserBatch, userId]);
+  }, [toolStore.toolSettings, processEraserBatch]);
 
   return {
     handleEraserStart,
