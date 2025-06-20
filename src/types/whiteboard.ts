@@ -164,6 +164,7 @@ export interface SyncUndoAction extends BaseAction {
   payload: {
     stateChange: Partial<WhiteboardState>;
     originalActionId: string;
+    originalUserId: string;
   };
 }
 
@@ -172,6 +173,7 @@ export interface SyncRedoAction extends BaseAction {
   payload: {
     stateChange: Partial<WhiteboardState>;
     redoneActionId: string;
+    originalUserId: string;
   };
 }
 
