@@ -1,4 +1,3 @@
-
 import { useCallback, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -16,8 +15,8 @@ export const useTextTool = () => {
       type: 'text',
       x,
       y,
-      width: 100,
-      height: 20,
+      width: 150,
+      height: 25,
       stroke: toolStore.toolSettings.strokeColor,
       fill: 'transparent',
       opacity: toolStore.toolSettings.opacity || 1,
@@ -25,7 +24,11 @@ export const useTextTool = () => {
         content: 'Type here...',
         fontSize: toolStore.toolSettings.fontSize || 16,
         fontFamily: toolStore.toolSettings.fontFamily || 'Arial',
-        fontWeight: 'normal',
+        bold: false,
+        italic: false,
+        underline: false,
+        alignment: 'left',
+        userResized: false
       }
     };
 
@@ -44,21 +47,32 @@ export const useTextTool = () => {
     const textObject = whiteboardStore.objects[objectId];
     if (!textObject) return;
 
-    // Calculate approximate text dimensions
-    const fontSize = textObject.data?.fontSize || 16;
-    const lines = content.split('\n').length;
-    const longestLine = Math.max(...content.split('\n').map(line => line.length));
-    const width = Math.max(100, longestLine * fontSize * 0.6);
-    const height = Math.max(20, lines * fontSize * 1.2);
+    // Only auto-resize if user hasn't manually resized
+    if (!textObject.data?.userResized) {
+      // Calculate approximate text dimensions
+      const fontSize = textObject.data?.fontSize || 16;
+      const lines = content.split('\n').length;
+      const longestLine = Math.max(...content.split('\n').map(line => line.length));
+      const width = Math.max(150, longestLine * fontSize * 0.6);
+      const height = Math.max(25, lines * fontSize * 1.2);
 
-    whiteboardStore.updateObject(objectId, {
-      data: {
-        ...textObject.data,
-        content
-      },
-      width,
-      height
-    }, userId);
+      whiteboardStore.updateObject(objectId, {
+        data: {
+          ...textObject.data,
+          content
+        },
+        width,
+        height
+      }, userId);
+    } else {
+      // Just update content, keep user-defined dimensions
+      whiteboardStore.updateObject(objectId, {
+        data: {
+          ...textObject.data,
+          content
+        }
+      }, userId);
+    }
 
     console.log('📝 Updated text content:', objectId.slice(0, 8), content.slice(0, 20));
   }, [whiteboardStore, userId]);
@@ -83,6 +97,18 @@ export const useTextTool = () => {
     startTextEditing(objectId);
   }, [startTextEditing]);
 
+  const markAsUserResized = useCallback((objectId: string) => {
+    const textObject = whiteboardStore.objects[objectId];
+    if (textObject && textObject.type === 'text') {
+      whiteboardStore.updateObject(objectId, {
+        data: {
+          ...textObject.data,
+          userResized: true
+        }
+      }, userId);
+    }
+  }, [whiteboardStore, userId]);
+
   return {
     editingTextId,
     createTextObject,
@@ -91,6 +117,7 @@ export const useTextTool = () => {
     endTextEditing,
     cancelTextEditing,
     handleTextClick,
-    handleTextDoubleClick
+    handleTextDoubleClick,
+    markAsUserResized
   };
 };

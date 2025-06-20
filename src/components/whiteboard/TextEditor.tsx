@@ -15,27 +15,50 @@ export const TextEditor: React.FC<TextEditorProps> = ({ objectId, onComplete, on
   const { toolSettings } = useToolStore();
   const { userId } = useUser();
   const [content, setContent] = useState('');
+  const [isPlaceholder, setIsPlaceholder] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const textObject = objects[objectId];
+  const defaultText = 'Type here...';
 
   useEffect(() => {
     if (textObject?.data?.content) {
-      setContent(textObject.data.content);
+      const objectContent = textObject.data.content;
+      setContent(objectContent);
+      setIsPlaceholder(objectContent === defaultText);
     }
-  }, [textObject]);
+  }, [textObject, defaultText]);
 
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.focus();
-      textareaRef.current.select();
+      if (isPlaceholder) {
+        textareaRef.current.select();
+      }
     }
-  }, []);
+  }, [isPlaceholder]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setContent(newContent);
+    
+    // If user starts typing and we're showing placeholder, clear it
+    if (isPlaceholder && newContent.length > 0) {
+      setIsPlaceholder(false);
+    }
+    
+    // If content becomes empty, show placeholder again
+    if (newContent.length === 0) {
+      setIsPlaceholder(true);
+      setContent(defaultText);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onComplete(content);
+      const finalContent = isPlaceholder ? '' : content;
+      onComplete(finalContent || defaultText);
     } else if (e.key === 'Escape') {
       e.preventDefault();
       onCancel();
@@ -43,7 +66,15 @@ export const TextEditor: React.FC<TextEditorProps> = ({ objectId, onComplete, on
   };
 
   const handleBlur = () => {
-    onComplete(content);
+    const finalContent = isPlaceholder ? '' : content;
+    onComplete(finalContent || defaultText);
+  };
+
+  const handleFocus = () => {
+    if (isPlaceholder) {
+      setContent('');
+      setIsPlaceholder(false);
+    }
   };
 
   if (!textObject) return null;
@@ -54,25 +85,31 @@ export const TextEditor: React.FC<TextEditorProps> = ({ objectId, onComplete, on
       style={{
         left: textObject.x,
         top: textObject.y,
-        minWidth: '100px',
+        minWidth: textObject.width || 100,
+        minHeight: textObject.height || 20,
       }}
     >
       <textarea
         ref={textareaRef}
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={handleChange}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
-        className="bg-transparent border-2 border-blue-500 outline-none resize-none overflow-hidden"
+        onFocus={handleFocus}
+        className="bg-transparent border-2 border-blue-500 outline-none resize-both overflow-hidden"
         style={{
-          color: textObject.stroke || toolSettings.strokeColor,
-          fontSize: `${toolSettings.fontSize || 16}px`,
-          fontFamily: toolSettings.fontFamily || 'Arial',
-          fontWeight: 'normal',
+          color: isPlaceholder ? 'rgba(156, 163, 175, 0.5)' : (textObject.stroke || toolSettings.strokeColor),
+          fontSize: `${textObject.data?.fontSize || toolSettings.fontSize || 16}px`,
+          fontFamily: textObject.data?.fontFamily || toolSettings.fontFamily || 'Arial',
+          fontWeight: textObject.data?.bold ? 'bold' : 'normal',
+          fontStyle: textObject.data?.italic ? 'italic' : 'normal',
+          textAlign: textObject.data?.alignment || 'left',
+          width: textObject.width || 100,
+          height: textObject.height || 20,
+          minWidth: '100px',
           minHeight: '20px',
         }}
-        rows={1}
-        placeholder="Type here..."
+        placeholder=""
       />
     </div>
   );

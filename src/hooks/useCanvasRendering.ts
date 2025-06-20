@@ -93,12 +93,17 @@ const renderTextObject = (ctx: CanvasRenderingContext2D, obj: WhiteboardObject) 
   const content = obj.data.content;
   const fontSize = obj.data.fontSize || 16;
   const fontFamily = obj.data.fontFamily || 'Arial';
-  const fontWeight = obj.data.fontWeight || 'normal';
+  const bold = obj.data.bold || false;
+  const italic = obj.data.italic || false;
+  const underline = obj.data.underline || false;
+  const alignment = obj.data.alignment || 'left';
 
   ctx.save();
   
   // Set text properties
-  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  const fontWeight = bold ? 'bold' : 'normal';
+  const fontStyle = italic ? 'italic' : 'normal';
+  ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
   ctx.fillStyle = obj.stroke || '#000000';
   ctx.globalAlpha = obj.opacity || 1;
   ctx.textBaseline = 'top';
@@ -108,7 +113,32 @@ const renderTextObject = (ctx: CanvasRenderingContext2D, obj: WhiteboardObject) 
   const lineHeight = fontSize * 1.2;
 
   lines.forEach((line, index) => {
-    ctx.fillText(line, obj.x, obj.y + (index * lineHeight));
+    let textX = obj.x;
+    
+    // Handle text alignment
+    if (alignment === 'center') {
+      const textWidth = ctx.measureText(line).width;
+      textX = obj.x + (obj.width || 100) / 2 - textWidth / 2;
+    } else if (alignment === 'right') {
+      const textWidth = ctx.measureText(line).width;
+      textX = obj.x + (obj.width || 100) - textWidth;
+    }
+    
+    const textY = obj.y + (index * lineHeight);
+    
+    ctx.fillText(line, textX, textY);
+    
+    // Handle underline
+    if (underline && line.trim()) {
+      const textWidth = ctx.measureText(line).width;
+      const underlineY = textY + fontSize;
+      ctx.beginPath();
+      ctx.moveTo(textX, underlineY);
+      ctx.lineTo(textX + textWidth, underlineY);
+      ctx.strokeStyle = obj.stroke || '#000000';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
   });
 
   ctx.restore();

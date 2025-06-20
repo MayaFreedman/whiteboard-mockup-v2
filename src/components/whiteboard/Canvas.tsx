@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -11,8 +12,6 @@ import { TextEditor } from './TextEditor';
 
 /**
  * Gets the appropriate cursor style based on the active tool
- * @param activeTool - The currently active tool
- * @returns CSS cursor value
  */
 const getCursorStyle = (activeTool: string): string => {
   switch (activeTool) {
@@ -35,35 +34,43 @@ const getCursorStyle = (activeTool: string): string => {
 
 /**
  * Main canvas component for the whiteboard
- * Handles rendering of background patterns, objects, and user interactions
  */
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { viewport, selectedObjectIds, updateObject } = useWhiteboardStore();
   const { activeTool } = useToolStore();
   
-  // Handle tool selection logic (clearing selection when switching tools)
+  // Handle tool selection logic
   useToolSelection();
   
   // Initialize text tool functionality
   const textTool = useTextTool();
   
-  // Initialize interactions hook first to get the preview functions
+  // Initialize interactions hook
   const interactions = useCanvasInteractions(textTool);
   
-  // Initialize rendering hook with both preview functions
+  // Initialize rendering hook
   const { redrawCanvas } = useCanvasRendering(
     canvasRef.current, 
     interactions.getCurrentDrawingPreview,
     interactions.getCurrentShapePreview
   );
   
-  // Update interactions hook with redraw function
-  interactions.setRedrawCanvas(redrawCanvas);
+  // Set redraw function for interactions
+  useEffect(() => {
+    interactions.setRedrawCanvas(redrawCanvas);
+  }, [interactions, redrawCanvas]);
 
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
-    updateObject(objectId, newBounds);
+    const obj = updateObject(objectId, newBounds);
+    
+    // Mark text objects as user-resized
+    const objectData = useWhiteboardStore.getState().objects[objectId];
+    if (objectData?.type === 'text') {
+      textTool.markAsUserResized(objectId);
+    }
+    
     redrawCanvas();
   };
 
@@ -87,7 +94,6 @@ export const Canvas: React.FC = () => {
       interactions.handlePointerUp(event, canvas);
     };
 
-    // Add touch event listeners with { passive: false } to allow preventDefault
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
     canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
     canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
@@ -99,44 +105,6 @@ export const Canvas: React.FC = () => {
     };
   }, [interactions]);
 
-  /**
-   * Handles mouse down events on the canvas
-   * @param event - Mouse event
-   */
-  const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvasRef.current) {
-      interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
-    }
-  };
-
-  /**
-   * Handles mouse move events on the canvas
-   * @param event - Mouse event
-   */
-  const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvasRef.current) {
-      interactions.handlePointerMove(event.nativeEvent, canvasRef.current);
-    }
-  };
-
-  /**
-   * Handles mouse up events on the canvas
-   * @param event - Mouse event
-   */
-  const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvasRef.current) {
-      interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
-    }
-  };
-
-  /**
-   * Handles mouse leaving the canvas area
-   * @param event - Mouse event
-   */
-  const onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    interactions.handleMouseLeave();
-  };
-
   return (
     <div className="w-full h-full relative bg-background overflow-hidden">
       <canvas
@@ -144,7 +112,7 @@ export const Canvas: React.FC = () => {
         className="absolute inset-0 w-full h-full"
         style={{
           cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
-          touchAction: 'none' // Prevent default touch behaviors
+          touchAction: 'none'
         }}
         onMouseDown={interactions.onMouseDown}
         onMouseMove={interactions.onMouseMove}
