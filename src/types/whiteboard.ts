@@ -200,7 +200,6 @@ export interface TextData {
   italic: boolean;
   underline: boolean;
   textAlign: 'left' | 'center' | 'right';
-  isPlaceholder?: boolean; // New flag to track placeholder state
 }
 
 export interface TextObject extends WhiteboardObject {

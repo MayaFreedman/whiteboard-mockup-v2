@@ -10,6 +10,8 @@ import { ResizeHandles } from './ResizeHandles';
 
 /**
  * Gets the appropriate cursor style based on the active tool
+ * @param activeTool - The currently active tool
+ * @returns CSS cursor value
  */
 const getCursorStyle = (activeTool: string): string => {
   switch (activeTool) {
@@ -24,7 +26,7 @@ const getCursorStyle = (activeTool: string): string => {
     case 'pencil':
     case 'brush':
     case 'eraser':
-      return 'none';
+      return 'none'; // Hide default cursor for tools with custom cursor
     default:
       return 'crosshair';
   }
@@ -32,6 +34,7 @@ const getCursorStyle = (activeTool: string): string => {
 
 /**
  * Main canvas component for the whiteboard
+ * Handles rendering of background patterns, objects, and user interactions
  */
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -43,13 +46,13 @@ export const Canvas: React.FC = () => {
   const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
   const [editingText, setEditingText] = useState('');
   
-  // Handle tool selection logic
+  // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
   
-  // Initialize interactions hook
+  // Initialize interactions hook first to get the preview functions
   const interactions = useCanvasInteractions();
   
-  // Initialize rendering hook
+  // Initialize rendering hook with both preview functions
   const { redrawCanvas } = useCanvasRendering(
     canvasRef.current, 
     interactions.getCurrentDrawingPreview,
@@ -90,24 +93,17 @@ export const Canvas: React.FC = () => {
         width: obj.width!,
         height: obj.height!
       });
-      
-      // If it's a placeholder, clear it; otherwise, use existing content
-      const isPlaceholder = obj.data?.isPlaceholder;
-      setEditingText(isPlaceholder ? '' : (obj.data?.content || ''));
+      setEditingText(obj.data?.content || '');
     }
   };
 
   // Handle text editing completion
   const handleTextEditComplete = () => {
     if (editingTextId && editingText !== undefined) {
-      const finalText = editingText.trim() || 'Tap to edit';
-      const isPlaceholder = !editingText.trim();
-      
       updateObject(editingTextId, {
         data: {
           ...objects[editingTextId]?.data,
-          content: finalText,
-          isPlaceholder
+          content: editingText || 'Double-click to edit'
         }
       });
       redrawCanvas();
@@ -130,48 +126,27 @@ export const Canvas: React.FC = () => {
     }
   };
 
-  // Set up touch event listeners
+  // Set up non-passive touch event listeners
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const handleTouchStart = (event: TouchEvent) => {
       event.preventDefault();
-      // Convert TouchEvent to PointerEvent-like object
-      const touch = event.touches[0];
-      const pointerEvent = {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        pointerId: 1,
-        pointerType: 'touch' as const
-      } as PointerEvent;
-      interactions.handlePointerDown(pointerEvent, canvas);
+      interactions.handlePointerDown(event, canvas);
     };
 
     const handleTouchMove = (event: TouchEvent) => {
       event.preventDefault();
-      const touch = event.touches[0];
-      const pointerEvent = {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        pointerId: 1,
-        pointerType: 'touch' as const
-      } as PointerEvent;
-      interactions.handlePointerMove(pointerEvent, canvas);
+      interactions.handlePointerMove(event, canvas);
     };
 
     const handleTouchEnd = (event: TouchEvent) => {
       event.preventDefault();
-      const touch = event.changedTouches[0];
-      const pointerEvent = {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        pointerId: 1,
-        pointerType: 'touch' as const
-      } as PointerEvent;
-      interactions.handlePointerUp(pointerEvent, canvas);
+      interactions.handlePointerUp(event, canvas);
     };
 
+    // Add touch event listeners with { passive: false } to allow preventDefault
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
     canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
     canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
@@ -183,24 +158,40 @@ export const Canvas: React.FC = () => {
     };
   }, [interactions]);
 
+  /**
+   * Handles mouse down events on the canvas
+   * @param event - Mouse event
+   */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      interactions.handlePointerDown(event.nativeEvent as PointerEvent, canvasRef.current);
+      interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
 
+  /**
+   * Handles mouse move events on the canvas
+   * @param event - Mouse event
+   */
   const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      interactions.handlePointerMove(event.nativeEvent as PointerEvent, canvasRef.current);
+      interactions.handlePointerMove(event.nativeEvent, canvasRef.current);
     }
   };
 
+  /**
+   * Handles mouse up events on the canvas
+   * @param event - Mouse event
+   */
   const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      interactions.handlePointerUp(event.nativeEvent as PointerEvent, canvasRef.current);
+      interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
     }
   };
 
+  /**
+   * Handles mouse leaving the canvas area
+   * @param event - Mouse event
+   */
   const onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
     interactions.handleMouseLeave();
   };
@@ -212,7 +203,7 @@ export const Canvas: React.FC = () => {
         className="absolute inset-0 w-full h-full"
         style={{
           cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
-          touchAction: 'none'
+          touchAction: 'none' // Prevent default touch behaviors
         }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
@@ -247,8 +238,10 @@ export const Canvas: React.FC = () => {
         />
       )}
       
+      {/* Custom Cursor */}
       <CustomCursor canvas={canvasRef.current} />
       
+      {/* Resize Handles for Selected Objects */}
       {activeTool === 'select' && selectedObjectIds.map(objectId => (
         <ResizeHandles
           key={objectId}
@@ -257,6 +250,7 @@ export const Canvas: React.FC = () => {
         />
       ))}
       
+      {/* Canvas Info Overlay */}
       <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
         Zoom: {Math.round(viewport.zoom * 100)}% | 
         Tool: {activeTool} |
