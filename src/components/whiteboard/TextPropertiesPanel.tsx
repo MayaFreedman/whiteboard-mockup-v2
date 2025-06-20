@@ -2,6 +2,7 @@
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
+import { useUser } from '../../contexts/UserContext';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -17,6 +18,7 @@ interface TextPropertiesPanelProps {
 export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ selectedObjectId }) => {
   const { objects, updateObject } = useWhiteboardStore();
   const { toolSettings, updateToolSettings } = useToolStore();
+  const { userId } = useUser();
   const obj = objects[selectedObjectId];
   
   if (!obj || obj.type !== 'text') return null;
@@ -25,7 +27,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
 
   const handleTextPropertyChange = (property: keyof TextData, value: any) => {
     const updatedData = { ...textData, [property]: value };
-    updateObject(selectedObjectId, { data: updatedData });
+    updateObject(selectedObjectId, { data: updatedData }, userId);
     
     // Also update tool settings for future text objects
     if (property === 'fontSize') updateToolSettings({ fontSize: value });
@@ -37,7 +39,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
   };
 
   const handleColorChange = (color: string) => {
-    updateObject(selectedObjectId, { stroke: color });
+    updateObject(selectedObjectId, { stroke: color }, userId);
     updateToolSettings({ strokeColor: color });
   };
 
