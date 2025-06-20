@@ -16,7 +16,13 @@ import {
  * Custom hook for handling canvas rendering operations
  * Manages drawing of objects, backgrounds, and selection indicators
  */
-export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentDrawingPreview?: () => any, getCurrentShapePreview?: () => any) => {
+export const useCanvasRendering = (
+  canvas: HTMLCanvasElement | null, 
+  getCurrentDrawingPreview?: () => any, 
+  getCurrentShapePreview?: () => any,
+  editingTextId?: string | null,
+  editingText?: string
+) => {
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
 
@@ -255,6 +261,10 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
         if (obj.data?.content && obj.width && obj.height) {
           const textData = obj.data as TextData;
           
+          // Get the text content to render - use live editing text if this object is being edited
+          const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
+          const contentToRender = isBeingEdited && editingText !== undefined ? editingText : textData.content;
+          
           // Set font properties
           let fontStyle = '';
           if (textData.italic) fontStyle += 'italic ';
@@ -288,7 +298,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
           }
           
           // Render text with word wrapping
-          const words = textData.content.split(' ');
+          const words = contentToRender.split(' ');
           const lineHeight = textData.fontSize * 1.2;
           let line = '';
           let y = obj.y + 4; // Small padding from top
@@ -355,7 +365,7 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
     }
 
     ctx.restore();
-  }, []);
+  }, [editingTextId, editingText]);
 
   /**
    * Renders the current drawing preview (work-in-progress path)
@@ -644,9 +654,10 @@ export const useCanvasRendering = (canvas: HTMLCanvasElement | null, getCurrentD
       selectedCount: selectedObjectIds.length,
       canvasSize: { width: canvas.width, height: canvas.height },
       hasDrawingPreview: !!getCurrentDrawingPreview?.(),
-      hasShapePreview: !!getCurrentShapePreview?.()
+      hasShapePreview: !!getCurrentShapePreview?.(),
+      editingTextId: editingTextId || 'none'
     });
-  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview]);
+  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText]);
 
   // Auto-redraw when state changes
   useEffect(() => {

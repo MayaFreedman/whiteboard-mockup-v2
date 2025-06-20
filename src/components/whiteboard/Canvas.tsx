@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -52,11 +51,13 @@ export const Canvas: React.FC = () => {
   // Initialize interactions hook first to get the preview functions
   const interactions = useCanvasInteractions();
   
-  // Initialize rendering hook with both preview functions
+  // Initialize rendering hook with both preview functions AND editing state
   const { redrawCanvas } = useCanvasRendering(
     canvasRef.current, 
     interactions.getCurrentDrawingPreview,
-    interactions.getCurrentShapePreview
+    interactions.getCurrentShapePreview,
+    editingTextId,
+    editingText
   );
   
   // Update interactions hook with redraw function
