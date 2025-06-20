@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -102,11 +101,12 @@ export const Canvas: React.FC = () => {
 
   // Handle text editing completion
   const handleTextEditComplete = () => {
-    if (editingTextId && editingText !== undefined) {
+    if (editingTextId) {
+      const finalText = editingText?.trim() || '';
       updateObject(editingTextId, {
         data: {
           ...objects[editingTextId]?.data,
-          content: editingText || '' // Remove default "Double-click to edit" text
+          content: finalText // Store empty string if no content
         }
       });
       redrawCanvas();

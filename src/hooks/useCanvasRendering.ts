@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -158,10 +157,9 @@ export const useCanvasRendering = (
         }
         case 'text': {
           if (obj.data?.content && obj.width && obj.height) {
-            // For text, draw a bounding box with blue outline
+            // For text, draw a bounding box with blue outline - align with dashed border
             ctx.lineWidth = 3;
-            const padding = 4;
-            ctx.strokeRect(obj.x - padding, obj.y - padding, obj.width + (padding * 2), obj.height + (padding * 2));
+            ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
           }
           break;
         }
@@ -299,7 +297,12 @@ export const useCanvasRendering = (
           
           // Get the text content to render - use live editing text if this object is being edited
           const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
-          const contentToRender = isBeingEdited && editingText !== undefined ? editingText : textData.content;
+          let contentToRender = isBeingEdited && editingText !== undefined ? editingText : textData.content;
+          
+          // Always show placeholder for empty content
+          if (!contentToRender || contentToRender.trim() === '') {
+            contentToRender = 'Double-click to edit';
+          }
           
           // Set font properties
           let fontStyle = '';
@@ -346,7 +349,7 @@ export const useCanvasRendering = (
           }
           
           // Draw underline if enabled - using accurate text measurements
-          if (textData.underline) {
+          if (textData.underline && contentToRender !== 'Double-click to edit') {
             ctx.save();
             ctx.strokeStyle = obj.stroke || '#000000';
             ctx.lineWidth = 1;
@@ -379,8 +382,8 @@ export const useCanvasRendering = (
             ctx.restore();
           }
           
-          // Draw text box border for better visibility
-          if (isSelected || textData.content === 'Double-click to edit') {
+          // Draw text box border for better visibility - align with selection outline
+          if (isSelected || contentToRender === 'Double-click to edit') {
             ctx.save();
             ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc';
             ctx.lineWidth = 1;
@@ -394,7 +397,7 @@ export const useCanvasRendering = (
     }
 
     ctx.restore();
-  }, [editingTextId, editingText]);
+  }, [editingTextId, editingText, objects]);
 
   /**
    * Renders the current drawing preview (work-in-progress path)
