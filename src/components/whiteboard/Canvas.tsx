@@ -1,8 +1,10 @@
+
 import React, { useRef, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
+import { useUser } from '../../contexts/UserContext';
 import { useCanvasInteractions } from '../../hooks/canvas/useCanvasInteractions';
-import { useCanvasRendering } from '../../hooks/useCanvasRendering';
+import { useCanvasRendering } from '../../hooks/canvas/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
@@ -21,7 +23,7 @@ const getCursorStyle = (activeTool: string): string => {
     case 'hand':
       return 'grab';
     case 'fill':
-      return 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m9 7 5 5v7a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1-2-2V9Z\'/%3E%3Cpath d=\'m8 11 2-2a2 2 0 0 1 2-2 2 2 0 0 1 2 2l6 6\'/%3E%3Cpath d=\'m9 7-6-6\'/%3E%3C/svg%3E") 12 12, auto';
+      return 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m9 7 5 5v7a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1-2-2V9Z\'/%3E%3Cpath d=\'m8 11 2-2a2 2 0 0 1 2 2 2 2 0 0 1 2 2l6 6\'/%3E%3Cpath d=\'m9 7-6-6\'/%3E%3C/svg%3E") 12 12, auto';
     case 'pencil':
     case 'brush':
     case 'eraser':
@@ -39,12 +41,14 @@ export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { viewport, selectedObjectIds, updateObject } = useWhiteboardStore();
   const { activeTool } = useToolStore();
+  const { userId } = useUser(); // FIXED: Get userId from context
   
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
   
   // Initialize interactions hook first to get the preview functions
-  const interactions = useCanvasInteractions();
+  // FIXED: Pass userId to interactions hook
+  const interactions = useCanvasInteractions(userId);
   
   // Initialize rendering hook with both preview functions
   const { redrawCanvas } = useCanvasRendering(
@@ -58,7 +62,8 @@ export const Canvas: React.FC = () => {
 
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
-    updateObject(objectId, newBounds);
+    // FIXED: Pass userId when updating objects
+    updateObject(objectId, newBounds, userId);
     redrawCanvas();
   };
 
@@ -163,6 +168,7 @@ export const Canvas: React.FC = () => {
       <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
         Zoom: {Math.round(viewport.zoom * 100)}% | 
         Tool: {activeTool} |
+        User: {userId.slice(0, 8)} |
         {interactions.isDragging && ' Dragging'}
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -10,11 +9,12 @@ import { nanoid } from 'nanoid';
 
 /**
  * Hook for handling eraser logic with stroke-based undo/redo
+ * FIXED: Now gets userId directly from UserContext
  */
 export const useEraserLogic = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
-  const { userId } = useUser();
+  const { userId } = useUser(); // FIXED: Get userId from context
   
   // For real-time eraser: batch processing with line segment intersection
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
@@ -135,12 +135,13 @@ export const useEraserLogic = () => {
             }
           };
           
+          // FIXED: Pass userId to erasePath
           whiteboardStore.erasePath(enhancedAction, userId);
         }
       }
     });
     
-    console.log('🧹 Processed eraser batch:', {
+    console.log('🧹 Processed eraser batch with userId:', userId.slice(0, 8), {
       eraserPoints: eraserPointsRef.current.length,
       strokeInProgress: strokeInProgressRef.current,
       strokeOperations: strokeOperationsRef.current.length
@@ -153,7 +154,7 @@ export const useEraserLogic = () => {
   const handleEraserStart = useCallback((coords: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
-    console.log('🎨 Starting eraser stroke:', { mode: eraserMode, coords });
+    console.log('🎨 Starting eraser stroke with userId:', userId.slice(0, 8), { mode: eraserMode, coords });
     
     // Initialize stroke tracking for pixel mode
     if (eraserMode === 'pixel') {
@@ -192,6 +193,7 @@ export const useEraserLogic = () => {
       }
       
       if (objectId) {
+        // FIXED: Pass userId to deleteObject
         whiteboardStore.deleteObject(objectId, userId);
         console.log('🗑️ Object eraser successfully deleted:', objectId.slice(0, 8));
         
@@ -234,6 +236,7 @@ export const useEraserLogic = () => {
       for (const testPos of testPositions) {
         const objectId = findObjectAt(testPos.x, testPos.y);
         if (objectId) {
+          // FIXED: Pass userId to deleteObject
           whiteboardStore.deleteObject(objectId, userId);
           console.log('🗑️ Object eraser deleted during drag:', objectId.slice(0, 8));
           
@@ -280,7 +283,7 @@ export const useEraserLogic = () => {
   const handleEraserEnd = useCallback((redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
-    console.log('🎨 Ending eraser stroke:', { 
+    console.log('🎨 Ending eraser stroke with userId:', userId.slice(0, 8), { 
       mode: eraserMode, 
       strokeInProgress: strokeInProgressRef.current,
       operationsCount: strokeOperationsRef.current.length 
@@ -308,7 +311,7 @@ export const useEraserLogic = () => {
         redrawCanvas();
       }
     }
-  }, [toolStore.toolSettings, processEraserBatch]);
+  }, [toolStore.toolSettings, processEraserBatch, userId]);
 
   return {
     handleEraserStart,
