@@ -259,8 +259,11 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
       if (shouldProcess) {
         processEraserBatch();
         
-        // Check if action batch is getting too large
-        actionBatching.checkBatchSize();
+        // Remove frequent batch size checking - let eraser accumulate more actions
+        // Only check occasionally to prevent memory issues
+        if (eraserPointsRef.current.length > 200) {
+          actionBatching.checkBatchSize(500); // Use higher limit
+        }
         
         // Keep some points for continuity but reduce the batch
         const lastFewPoints = eraserPointsRef.current.slice(-2);

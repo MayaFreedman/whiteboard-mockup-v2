@@ -38,9 +38,10 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
     store.endActionBatch();
   }, [store]);
 
-  const checkBatchSize = useCallback(() => {
+  const checkBatchSize = useCallback((customMaxSize?: number) => {
     const currentBatch = store.getState().currentBatch;
-    if (currentBatch.actions.length >= maxBatchSize) {
+    const effectiveMaxSize = customMaxSize || maxBatchSize;
+    if (currentBatch.actions.length >= effectiveMaxSize) {
       console.log('🎯 Auto-ending batch due to size limit');
       endBatch();
       return true;
