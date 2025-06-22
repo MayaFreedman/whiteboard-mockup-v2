@@ -48,6 +48,33 @@ export const useEraserLogic = () => {
   }, []);
 
   /**
+   * Simple bounding box distance check to skip distant objects
+   */
+  const isObjectNearEraser = useCallback((obj: any, eraserPoints: Array<{ x: number; y: number; radius: number }>): boolean => {
+    if (eraserPoints.length === 0) return false;
+    
+    // Get object bounds
+    const objLeft = obj.x;
+    const objRight = obj.x + (obj.width || 0);
+    const objTop = obj.y;
+    const objBottom = obj.y + (obj.height || 0);
+    
+    // Get eraser bounds with some padding
+    const maxRadius = Math.max(...eraserPoints.map(e => e.radius));
+    const padding = maxRadius * 2; // Extra padding for safety
+    
+    const eraserLeft = Math.min(...eraserPoints.map(e => e.x)) - padding;
+    const eraserRight = Math.max(...eraserPoints.map(e => e.x)) + padding;
+    const eraserTop = Math.min(...eraserPoints.map(e => e.y)) - padding;
+    const eraserBottom = Math.max(...eraserPoints.map(e => e.y)) + padding;
+    
+    // Check if bounding boxes overlap
+    const overlaps = !(objRight < eraserLeft || objLeft > eraserRight || objBottom < eraserTop || objTop > eraserBottom);
+    
+    return overlaps;
+  }, []);
+
+  /**
    * Processes accumulated eraser points with optimized batching
    */
   const processEraserBatch = useCallback(() => {
@@ -58,6 +85,11 @@ export const useEraserLogic = () => {
     objects.forEach(([id, obj]) => {
       // Skip eraser objects and already processed objects in this stroke
       if (obj.data?.isEraser || processedObjectsRef.current.has(id)) return;
+      
+      // NEW: Bounding box pre-filter to skip distant objects
+      if (!isObjectNearEraser(obj, eraserPointsRef.current)) {
+        return; // Skip expensive intersection calculations for distant objects
+      }
       
       let pathString = '';
       let shouldProcess = false;
@@ -133,7 +165,7 @@ export const useEraserLogic = () => {
         }
       }
     });
-  }, [whiteboardStore, convertShapeToPath, userId, eraserBatching]);
+  }, [whiteboardStore, convertShapeToPath, userId, eraserBatching, isObjectNearEraser]);
 
   /**
    * Handles eraser start logic with optimized batching
