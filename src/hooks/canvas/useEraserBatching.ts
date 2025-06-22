@@ -11,10 +11,10 @@ export const useEraserBatching = () => {
   const strokeIdRef = useRef<string | null>(null);
   const batchIdRef = useRef<string | null>(null);
   
-  // Use eraser-specific batching configuration
+  // Use eraser-specific batching configuration with smaller but optimized sizes
   const actionBatching = useActionBatching({
-    batchTimeout: 3000, // Longer timeout for eraser strokes
-    maxBatchSize: 500,  // Much higher limit for eraser operations
+    batchTimeout: 2000, // Reduced from 3000ms to 2000ms
+    maxBatchSize: 200,  // Reduced from 500 to 200
     isEraserBatch: true
   });
 
