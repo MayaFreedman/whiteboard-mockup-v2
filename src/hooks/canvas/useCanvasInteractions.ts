@@ -2,12 +2,13 @@ import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
-import { WhiteboardObject, TextData } from '../../types/whiteboard';
+import { WhiteboardObject, TextData, StampData } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
 import { useActionBatching } from '../useActionBatching';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
+import { getStampById } from '../../utils/stampUtils';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -264,6 +265,41 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
+   * Creates stamp objects with proper data structure
+   */
+  const createStampObject = useCallback((
+    x: number,
+    y: number,
+    stampId: string
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
+    const stampInfo = getStampById(stampId);
+    if (!stampInfo) {
+      console.error('🖼️ Stamp not found:', stampId);
+      return null;
+    }
+
+    const stampData: StampData = {
+      src: stampInfo.src,
+      category: stampInfo.category,
+      originalWidth: stampInfo.originalWidth,
+      originalHeight: stampInfo.originalHeight
+    };
+
+    return {
+      type: 'stamp',
+      x,
+      y,
+      width: stampInfo.originalWidth,
+      height: stampInfo.originalHeight,
+      fill: 'none',
+      stroke: 'none',
+      strokeWidth: 0,
+      opacity: toolStore.toolSettings.opacity,
+      data: stampData
+    };
+  }, [toolStore.toolSettings.opacity]);
+
+  /**
    * Handles fill tool click - fills the clicked shape with the current stroke color
    */
   const handleFillClick = useCallback((coords: { x: number; y: number }) => {
@@ -468,6 +504,11 @@ export const useCanvasInteractions = () => {
         return;
       }
 
+      case 'stamp': {
+        handleStampClick(coords);
+        return;
+      }
+
       case 'select': {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
@@ -581,7 +622,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, userId, startBatch]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, handleStampClick, createTextObject, userId, startBatch]);
 
   /**
    * Handles pointer movement during interaction
