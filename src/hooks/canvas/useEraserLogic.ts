@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -28,42 +29,6 @@ export const useEraserLogic = () => {
   const processedObjectsRef = useRef<Set<string>>(new Set());
 
   /**
-   * Checks if an object is potentially within eraser range using bounding box
-   */
-  const isObjectNearEraser = useCallback((obj: any, eraserPoints: Array<{ x: number; y: number; radius: number }>): boolean => {
-    if (!obj || eraserPoints.length === 0) return false;
-    
-    // Get the maximum eraser radius for this batch
-    const maxEraserRadius = Math.max(...eraserPoints.map(p => p.radius));
-    
-    // Get object bounds
-    const objLeft = obj.x || 0;
-    const objTop = obj.y || 0;
-    const objRight = objLeft + (obj.width || 0);
-    const objBottom = objTop + (obj.height || 0);
-    
-    // Check if any eraser point is near the object's bounding box
-    for (const eraserPoint of eraserPoints) {
-      const eraserLeft = eraserPoint.x - maxEraserRadius;
-      const eraserRight = eraserPoint.x + maxEraserRadius;
-      const eraserTop = eraserPoint.y - maxEraserRadius;
-      const eraserBottom = eraserPoint.y + maxEraserRadius;
-      
-      // Check for bounding box intersection with generous margin
-      const intersects = !(eraserRight < objLeft || 
-                          eraserLeft > objRight || 
-                          eraserBottom < objTop || 
-                          eraserTop > objBottom);
-      
-      if (intersects) {
-        return true;
-      }
-    }
-    
-    return false;
-  }, []);
-
-  /**
    * Converts shape objects to path format for erasing
    */
   const convertShapeToPath = useCallback((obj: any): string => {
@@ -84,6 +49,46 @@ export const useEraserLogic = () => {
   }, []);
 
   /**
+   * Simple bounding box distance check to skip distant objects
+   */
+  const isObjectNearEraser = useCallback((obj: any, eraserPoints: Array<{ x: number; y: number; radius: number }>): boolean => {
+    // Safety check - if no eraser points or invalid object, don't filter
+    if (!eraserPoints || eraserPoints.length === 0 || !obj) return true;
+    
+    // Safety check for object properties
+    if (typeof obj.x !== 'number' || typeof obj.y !== 'number') return true;
+    
+    try {
+      // Get object bounds
+      const objLeft = obj.x;
+      const objRight = obj.x + (obj.width || 0);
+      const objTop = obj.y;
+      const objBottom = obj.y + (obj.height || 0);
+      
+      // Get eraser bounds with some padding - with safety checks
+      const validEraserPoints = eraserPoints.filter(e => e && typeof e.x === 'number' && typeof e.y === 'number' && typeof e.radius === 'number');
+      if (validEraserPoints.length === 0) return true;
+      
+      const maxRadius = Math.max(...validEraserPoints.map(e => e.radius));
+      const padding = maxRadius * 2; // Extra padding for safety
+      
+      const eraserLeft = Math.min(...validEraserPoints.map(e => e.x)) - padding;
+      const eraserRight = Math.max(...validEraserPoints.map(e => e.x)) + padding;
+      const eraserTop = Math.min(...validEraserPoints.map(e => e.y)) - padding;
+      const eraserBottom = Math.max(...validEraserPoints.map(e => e.y)) + padding;
+      
+      // Check if bounding boxes overlap
+      const overlaps = !(objRight < eraserLeft || objLeft > eraserRight || objBottom < eraserTop || objTop > eraserBottom);
+      
+      return overlaps;
+    } catch (error) {
+      // If any error occurs in bounding box calculation, don't filter (safer)
+      console.warn('Error in bounding box calculation, skipping filter:', error);
+      return true;
+    }
+  }, []);
+
+  /**
    * Processes accumulated eraser points with optimized batching
    */
   const processEraserBatch = useCallback(() => {
@@ -95,9 +100,9 @@ export const useEraserLogic = () => {
       // Skip eraser objects and already processed objects in this stroke
       if (obj.data?.isEraser || processedObjectsRef.current.has(id)) return;
       
-      // OPTIMIZATION: Bounding box pre-filter to skip distant objects
+      // NEW: Bounding box pre-filter to skip distant objects (with safety checks)
       if (!isObjectNearEraser(obj, eraserPointsRef.current)) {
-        return; // Skip this object entirely - it's too far away
+        return; // Skip expensive intersection calculations for distant objects
       }
       
       let pathString = '';
