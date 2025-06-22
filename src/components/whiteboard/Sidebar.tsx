@@ -2,12 +2,6 @@
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent } from '../ui/sidebar';
 import { useToolStore } from '../../stores/toolStore';
-import { ColorSelector } from './ColorSelector';
-import { BrushSettings } from './BrushSettings';
-import { EraserSettings } from './EraserSettings';
-import { ShapeSettings } from './ShapeSettings';
-import { TextSettings } from './TextSettings';
-import { BackgroundSettings } from './BackgroundSettings';
 import { StampSelector } from './StampSelector';
 
 /**
@@ -22,51 +16,20 @@ export const WhiteboardSidebar: React.FC = () => {
    */
   const renderToolSettings = () => {
     switch (activeTool) {
-      case 'pencil':
-      case 'brush':
-        return (
-          <>
-            <ColorSelector />
-            <BrushSettings />
-          </>
-        );
-      
-      case 'eraser':
-        return <EraserSettings />;
-      
-      case 'rectangle':
-      case 'circle':
-      case 'triangle':
-      case 'diamond':
-      case 'pentagon':
-      case 'hexagon':
-      case 'star':
-      case 'heart':
-        return (
-          <>
-            <ColorSelector />
-            <ShapeSettings />
-          </>
-        );
-      
-      case 'text':
-        return (
-          <>
-            <ColorSelector />
-            <TextSettings />
-          </>
-        );
-
       case 'stamp':
         return <StampSelector />;
       
-      case 'fill':
-        return <ColorSelector />;
-      
-      case 'select':
-      case 'hand':
       default:
-        return <BackgroundSettings />;
+        return (
+          <div className="p-3">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">
+              {activeTool.charAt(0).toUpperCase() + activeTool.slice(1)} Tool
+            </h3>
+            <p className="text-xs text-gray-500">
+              Settings for the {activeTool} tool will appear here.
+            </p>
+          </div>
+        );
     }
   };
 
