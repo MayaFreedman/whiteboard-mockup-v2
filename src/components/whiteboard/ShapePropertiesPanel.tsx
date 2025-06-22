@@ -100,13 +100,13 @@ export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ sele
             style={{ 
               backgroundColor: colorMode === 'fill' 
                 ? (obj.fill === 'none' ? 'transparent' : obj.fill) 
-                : obj.stroke 
+                : (obj.stroke === 'none' ? 'transparent' : obj.stroke)
             }}
           />
           <span>
             {colorMode === 'fill' 
               ? (obj.fill === 'none' ? 'None' : obj.fill)
-              : obj.stroke
+              : (obj.stroke === 'none' ? 'None' : obj.stroke)
             }
           </span>
         </div>
@@ -120,6 +120,18 @@ export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ sele
             className="h-6 px-2 text-xs w-full"
           >
             No Fill
+          </Button>
+        )}
+
+        {/* None option for stroke */}
+        {colorMode === 'stroke' && (
+          <Button
+            variant={obj.stroke === 'none' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handlePropertyChange('stroke', 'none')}
+            className="h-6 px-2 text-xs w-full"
+          >
+            No Stroke
           </Button>
         )}
 
