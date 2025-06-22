@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { AVAILABLE_STAMPS, StampInfo } from '../utils/stampUtils';
 
 export type Tool = 
   | 'select'
@@ -106,11 +105,6 @@ interface ToolStore {
     settings: ToolSettings;
   }>;
   clearToolHistory: () => void;
-  
-  // Stamp management
-  getAvailableStamps: () => StampInfo[];
-  selectStamp: (stampId: string) => void;
-  getSelectedStamp: () => StampInfo | undefined;
 }
 
 /** Default settings for all tools */
@@ -332,35 +326,5 @@ export const useToolStore = create<ToolStore>((set, get) => ({
       stateVersion: state.stateVersion + 1,
       lastStateUpdate: Date.now()
     }));
-  },
-
-  getAvailableStamps: () => {
-    return AVAILABLE_STAMPS;
-  },
-
-  selectStamp: (stampId: string) => {
-    console.log('🖼️ Selecting stamp:', stampId);
-    
-    const stamp = AVAILABLE_STAMPS.find(s => s.id === stampId);
-    if (stamp) {
-      set((state) => ({
-        toolSettings: {
-          ...state.toolSettings,
-          selectedSticker: stampId
-        },
-        stateVersion: state.stateVersion + 1,
-        lastStateUpdate: Date.now()
-      }));
-      
-      console.log('🖼️ Stamp selected:', stamp.name);
-    } else {
-      console.warn('🖼️ Stamp not found:', stampId);
-    }
-  },
-
-  getSelectedStamp: () => {
-    const state = get();
-    const selectedId = state.toolSettings.selectedSticker;
-    return selectedId ? AVAILABLE_STAMPS.find(s => s.id === selectedId) : undefined;
   }
 }));

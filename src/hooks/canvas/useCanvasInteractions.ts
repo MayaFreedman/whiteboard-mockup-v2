@@ -2,13 +2,12 @@ import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
-import { WhiteboardObject, TextData, StampData } from '../../types/whiteboard';
+import { WhiteboardObject, TextData } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
 import { useActionBatching } from '../useActionBatching';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
-import { getStampById } from '../../utils/stampUtils';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -265,76 +264,6 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Creates stamp objects with proper data structure
-   */
-  const createStampObject = useCallback((
-    x: number,
-    y: number,
-    stampId: string
-  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> | null => {
-    const stampInfo = getStampById(stampId);
-    if (!stampInfo) {
-      console.error('🖼️ Stamp not found:', stampId);
-      return null;
-    }
-
-    const stampData: StampData = {
-      src: stampInfo.src,
-      category: stampInfo.category,
-      originalWidth: stampInfo.originalWidth,
-      originalHeight: stampInfo.originalHeight
-    };
-
-    return {
-      type: 'stamp',
-      x,
-      y,
-      width: stampInfo.originalWidth,
-      height: stampInfo.originalHeight,
-      fill: 'none',
-      stroke: 'none',
-      strokeWidth: 0,
-      opacity: toolStore.toolSettings.opacity,
-      data: stampData
-    };
-  }, [toolStore.toolSettings.opacity]);
-
-  /**
-   * Handles stamp tool click - places a stamp at the clicked position
-   */
-  const handleStampClick = useCallback((coords: { x: number; y: number }) => {
-    console.log('🖼️ Stamp tool clicked at:', coords);
-    
-    const selectedStamp = toolStore.getSelectedStamp();
-    if (!selectedStamp) {
-      console.log('🖼️ No stamp selected');
-      return;
-    }
-    
-    // Center the stamp on the click position
-    const stampX = coords.x - selectedStamp.originalWidth / 2;
-    const stampY = coords.y - selectedStamp.originalHeight / 2;
-    
-    const stampObject = createStampObject(stampX, stampY, selectedStamp.id);
-    if (!stampObject) {
-      console.error('🖼️ Failed to create stamp object');
-      return;
-    }
-    
-    const objectId = whiteboardStore.addObject(stampObject, userId);
-    console.log('🖼️ Created stamp object:', objectId.slice(0, 8), {
-      stamp: selectedStamp.name,
-      position: { x: stampX, y: stampY },
-      userId: userId.slice(0, 8)
-    });
-    
-    // Trigger redraw
-    if (redrawCanvasRef.current) {
-      redrawCanvasRef.current();
-    }
-  }, [toolStore, createStampObject, whiteboardStore, userId]);
-
-  /**
    * Handles fill tool click - fills the clicked shape with the current stroke color
    */
   const handleFillClick = useCallback((coords: { x: number; y: number }) => {
@@ -539,11 +468,6 @@ export const useCanvasInteractions = () => {
         return;
       }
 
-      case 'stamp': {
-        handleStampClick(coords);
-        return;
-      }
-
       case 'select': {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
@@ -657,7 +581,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, handleStampClick, createTextObject, userId, startBatch]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, userId, startBatch]);
 
   /**
    * Handles pointer movement during interaction

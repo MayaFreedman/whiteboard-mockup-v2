@@ -3,7 +3,7 @@ import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
   id: string;
-  type: 'path' | 'rectangle' | 'circle' | 'text' | 'triangle' | 'diamond' | 'pentagon' | 'hexagon' | 'star' | 'heart' | 'stamp';
+  type: 'path' | 'rectangle' | 'circle' | 'text' | 'triangle' | 'diamond' | 'pentagon' | 'hexagon' | 'star' | 'heart';
   x: number;
   y: number;
   width?: number;
@@ -217,19 +217,4 @@ export interface TextObject extends WhiteboardObject {
   width: number;
   height: number;
   data: TextData;
-}
-
-// Stamp-specific interfaces
-export interface StampData {
-  src: string;
-  category: string;
-  originalWidth: number;
-  originalHeight: number;
-}
-
-export interface StampObject extends WhiteboardObject {
-  type: 'stamp';
-  width: number;
-  height: number;
-  data: StampData;
 }

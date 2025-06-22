@@ -3,7 +3,7 @@ import React from 'react';
 import { Toolbar } from './whiteboard/Toolbar';
 import { Canvas } from './whiteboard/Canvas';
 import { WhiteboardSidebar } from './whiteboard/Sidebar';
-import { SidebarProvider, SidebarInset, SidebarTrigger } from './ui/sidebar';
+import { SidebarProvider, SidebarInset } from './ui/sidebar';
 import { ConnectionStatus } from './ConnectionStatus';
 import { useMultiplayerSync } from '../hooks/useMultiplayerSync';
 
@@ -17,28 +17,25 @@ export const Whiteboard: React.FC = () => {
 
   return (
     <SidebarProvider>
-      <div className="h-screen flex w-full bg-background">
+      <div className="h-screen flex flex-col bg-background w-full">
         {/* Connection Status - Fixed overlay */}
         <ConnectionStatus />
         
-        {/* Left Sidebar - Managed by SidebarProvider */}
-        <WhiteboardSidebar />
+        {/* Top Toolbar - Fixed at the top */}
+        <Toolbar />
         
-        {/* Main Content Area - Canvas and Toolbar */}
-        <SidebarInset className="flex flex-col flex-1">
-          {/* Top Toolbar - Fixed at the top with sidebar trigger */}
-          <div className="flex items-center gap-2 border-b border-border bg-card px-4 py-2">
-            <SidebarTrigger />
-            <div className="flex-1">
-              <Toolbar />
-            </div>
+        {/* Main Content Area - Flexible layout with sidebar and canvas */}
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* Left Sidebar - Positioned absolute to overlay content */}
+          <div className="absolute top-0 left-0 z-10 h-full pt-0">
+            <WhiteboardSidebar />
           </div>
           
           {/* Canvas Area - Takes remaining space */}
-          <div className="flex-1 overflow-hidden">
+          <SidebarInset className="w-full">
             <Canvas />
-          </div>
-        </SidebarInset>
+          </SidebarInset>
+        </div>
       </div>
     </SidebarProvider>
   );

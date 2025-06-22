@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
-import { WhiteboardObject, TextData, StampData } from '../types/whiteboard';
+import { WhiteboardObject, TextData } from '../types/whiteboard';
 import { renderPaintbrush, renderChalk, renderSpray, renderCrayon } from '../utils/brushEffects';
 import { 
   renderTriangle, 
@@ -11,7 +11,6 @@ import {
   renderStar, 
   renderHeart 
 } from '../utils/shapeRendering';
-import { loadStampImage } from '../utils/stampUtils';
 
 /**
  * Wraps text to fit within the specified width
@@ -60,67 +59,6 @@ const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   });
   
   return wrappedLines.length > 0 ? wrappedLines : [''];
-};
-
-/**
- * Draws a grid pattern on the canvas
- * @param ctx - Canvas rendering context
- * @param width - Canvas width
- * @param height - Canvas height
- */
-const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
-  const GRID_SIZE = 20;
-  const GRID_COLOR = '#e5e7eb';
-  
-  ctx.strokeStyle = GRID_COLOR;
-  ctx.lineWidth = 1;
-
-  // Draw vertical lines
-  for (let x = 0; x <= width; x += GRID_SIZE) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
-  }
-
-  // Draw horizontal lines
-  for (let y = 0; y <= height; y += GRID_SIZE) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
-  }
-};
-
-const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
-  const LINE_SPACING = 24;
-  const LINE_COLOR = '#ddd6fe';
-  
-  ctx.strokeStyle = LINE_COLOR;
-  ctx.lineWidth = 1;
-
-  for (let y = LINE_SPACING; y <= height; y += LINE_SPACING) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
-  }
-};
-
-const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
-  const DOT_SPACING = 20;
-  const DOT_COLOR = '#d1d5db';
-  const DOT_RADIUS = 1;
-  
-  ctx.fillStyle = DOT_COLOR;
-  
-  for (let x = DOT_SPACING; x <= width; x += DOT_SPACING) {
-    for (let y = DOT_SPACING; y <= height; y += DOT_SPACING) {
-      ctx.beginPath();
-      ctx.arc(x, y, DOT_RADIUS, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-  }
 };
 
 /**
@@ -263,12 +201,6 @@ export const useCanvasRendering = (
               renderHeart(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
               break;
           }
-          break;
-        }
-        case 'stamp': {
-          // Draw selection outline for stamps - use pixel-perfect positioning
-          ctx.lineWidth = 3;
-          ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
           break;
         }
       }
@@ -512,53 +444,10 @@ export const useCanvasRendering = (
         }
         break;
       }
-
-      case 'stamp': {
-        if (obj.data?.src && obj.width && obj.height) {
-          const stampData = obj.data as StampData;
-          
-          // Load and render the stamp image
-          loadStampImage(stampData.src).then((img) => {
-            if (img.complete) {
-              ctx.drawImage(
-                img,
-                Math.round(obj.x),
-                Math.round(obj.y),
-                Math.round(obj.width),
-                Math.round(obj.height)
-              );
-              
-              // Force a redraw if this was the first time loading the image
-              if (canvas) {
-                const needsRedraw = !img.complete;
-                if (needsRedraw) {
-                  requestAnimationFrame(() => {
-                    redrawCanvas();
-                  });
-                }
-              }
-            }
-          }).catch((error) => {
-            console.error('Failed to render stamp:', error);
-            
-            // Draw a placeholder rectangle if image fails to load
-            ctx.strokeStyle = '#ccc';
-            ctx.setLineDash([5, 5]);
-            ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
-            
-            // Draw error text
-            ctx.fillStyle = '#999';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Stamp', obj.x + obj.width / 2, obj.y + obj.height / 2);
-          });
-        }
-        break;
-      }
     }
 
     ctx.restore();
-  }, [editingTextId, editingText, objects, canvas]);
+  }, [editingTextId, editingText, objects]);
 
   /**
    * Renders the current drawing preview (work-in-progress path)
@@ -859,4 +748,65 @@ export const useCanvasRendering = (
     renderObject,
     renderAllObjects
   };
+};
+
+/**
+ * Draws a grid pattern on the canvas
+ * @param ctx - Canvas rendering context
+ * @param width - Canvas width
+ * @param height - Canvas height
+ */
+const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
+  const GRID_SIZE = 20;
+  const GRID_COLOR = '#e5e7eb';
+  
+  ctx.strokeStyle = GRID_COLOR;
+  ctx.lineWidth = 1;
+
+  // Draw vertical lines
+  for (let x = 0; x <= width; x += GRID_SIZE) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
+  }
+
+  // Draw horizontal lines
+  for (let y = 0; y <= height; y += GRID_SIZE) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+};
+
+const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
+  const LINE_SPACING = 24;
+  const LINE_COLOR = '#ddd6fe';
+  
+  ctx.strokeStyle = LINE_COLOR;
+  ctx.lineWidth = 1;
+
+  for (let y = LINE_SPACING; y <= height; y += LINE_SPACING) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+};
+
+const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
+  const DOT_SPACING = 20;
+  const DOT_COLOR = '#d1d5db';
+  const DOT_RADIUS = 1;
+  
+  ctx.fillStyle = DOT_COLOR;
+  
+  for (let x = DOT_SPACING; x <= width; x += DOT_SPACING) {
+    for (let y = DOT_SPACING; y <= height; y += DOT_SPACING) {
+      ctx.beginPath();
+      ctx.arc(x, y, DOT_RADIUS, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  }
 };
