@@ -19,12 +19,18 @@ export const useCanvasInteractions = () => {
   const { userId } = useUser();
   const { getCanvasCoordinates } = useCanvasCoordinates();
   const { findObjectAt } = useObjectDetection();
-  const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraserLogic();
   
   // Initialize action batching with optimized settings
   const { startBatch, endBatch, checkBatchSize } = useActionBatching({
     batchTimeout: 1000, // 1 second timeout for batch completion
     maxBatchSize: 50 // Max 50 actions per batch
+  });
+  
+  // Pass action batching to eraser logic
+  const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraserLogic({
+    startBatch,
+    endBatch,
+    checkBatchSize
   });
   
   const isDrawingRef = useRef(false);
