@@ -28,6 +28,42 @@ export const useEraserLogic = () => {
   const processedObjectsRef = useRef<Set<string>>(new Set());
 
   /**
+   * Checks if an object is potentially within eraser range using bounding box
+   */
+  const isObjectNearEraser = useCallback((obj: any, eraserPoints: Array<{ x: number; y: number; radius: number }>): boolean => {
+    if (!obj || eraserPoints.length === 0) return false;
+    
+    // Get the maximum eraser radius for this batch
+    const maxEraserRadius = Math.max(...eraserPoints.map(p => p.radius));
+    
+    // Get object bounds
+    const objLeft = obj.x || 0;
+    const objTop = obj.y || 0;
+    const objRight = objLeft + (obj.width || 0);
+    const objBottom = objTop + (obj.height || 0);
+    
+    // Check if any eraser point is near the object's bounding box
+    for (const eraserPoint of eraserPoints) {
+      const eraserLeft = eraserPoint.x - maxEraserRadius;
+      const eraserRight = eraserPoint.x + maxEraserRadius;
+      const eraserTop = eraserPoint.y - maxEraserRadius;
+      const eraserBottom = eraserPoint.y + maxEraserRadius;
+      
+      // Check for bounding box intersection with generous margin
+      const intersects = !(eraserRight < objLeft || 
+                          eraserLeft > objRight || 
+                          eraserBottom < objTop || 
+                          eraserTop > objBottom);
+      
+      if (intersects) {
+        return true;
+      }
+    }
+    
+    return false;
+  }, []);
+
+  /**
    * Converts shape objects to path format for erasing
    */
   const convertShapeToPath = useCallback((obj: any): string => {
@@ -58,6 +94,11 @@ export const useEraserLogic = () => {
     objects.forEach(([id, obj]) => {
       // Skip eraser objects and already processed objects in this stroke
       if (obj.data?.isEraser || processedObjectsRef.current.has(id)) return;
+      
+      // OPTIMIZATION: Bounding box pre-filter to skip distant objects
+      if (!isObjectNearEraser(obj, eraserPointsRef.current)) {
+        return; // Skip this object entirely - it's too far away
+      }
       
       let pathString = '';
       let shouldProcess = false;
@@ -133,7 +174,7 @@ export const useEraserLogic = () => {
         }
       }
     });
-  }, [whiteboardStore, convertShapeToPath, userId, eraserBatching]);
+  }, [whiteboardStore, convertShapeToPath, userId, eraserBatching, isObjectNearEraser]);
 
   /**
    * Handles eraser start logic with optimized batching
