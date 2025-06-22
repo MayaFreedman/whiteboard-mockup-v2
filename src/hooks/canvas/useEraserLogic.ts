@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -49,46 +48,6 @@ export const useEraserLogic = () => {
   }, []);
 
   /**
-   * Simple bounding box distance check to skip distant objects
-   */
-  const isObjectNearEraser = useCallback((obj: any, eraserPoints: Array<{ x: number; y: number; radius: number }>): boolean => {
-    // Safety check - if no eraser points or invalid object, don't filter
-    if (!eraserPoints || eraserPoints.length === 0 || !obj) return true;
-    
-    // Safety check for object properties
-    if (typeof obj.x !== 'number' || typeof obj.y !== 'number') return true;
-    
-    try {
-      // Get object bounds
-      const objLeft = obj.x;
-      const objRight = obj.x + (obj.width || 0);
-      const objTop = obj.y;
-      const objBottom = obj.y + (obj.height || 0);
-      
-      // Get eraser bounds with some padding - with safety checks
-      const validEraserPoints = eraserPoints.filter(e => e && typeof e.x === 'number' && typeof e.y === 'number' && typeof e.radius === 'number');
-      if (validEraserPoints.length === 0) return true;
-      
-      const maxRadius = Math.max(...validEraserPoints.map(e => e.radius));
-      const padding = maxRadius * 2; // Extra padding for safety
-      
-      const eraserLeft = Math.min(...validEraserPoints.map(e => e.x)) - padding;
-      const eraserRight = Math.max(...validEraserPoints.map(e => e.x)) + padding;
-      const eraserTop = Math.min(...validEraserPoints.map(e => e.y)) - padding;
-      const eraserBottom = Math.max(...validEraserPoints.map(e => e.y)) + padding;
-      
-      // Check if bounding boxes overlap
-      const overlaps = !(objRight < eraserLeft || objLeft > eraserRight || objBottom < eraserTop || objTop > eraserBottom);
-      
-      return overlaps;
-    } catch (error) {
-      // If any error occurs in bounding box calculation, don't filter (safer)
-      console.warn('Error in bounding box calculation, skipping filter:', error);
-      return true;
-    }
-  }, []);
-
-  /**
    * Processes accumulated eraser points with optimized batching
    */
   const processEraserBatch = useCallback(() => {
@@ -99,11 +58,6 @@ export const useEraserLogic = () => {
     objects.forEach(([id, obj]) => {
       // Skip eraser objects and already processed objects in this stroke
       if (obj.data?.isEraser || processedObjectsRef.current.has(id)) return;
-      
-      // NEW: Bounding box pre-filter to skip distant objects (with safety checks)
-      if (!isObjectNearEraser(obj, eraserPointsRef.current)) {
-        return; // Skip expensive intersection calculations for distant objects
-      }
       
       let pathString = '';
       let shouldProcess = false;
@@ -179,7 +133,7 @@ export const useEraserLogic = () => {
         }
       }
     });
-  }, [whiteboardStore, convertShapeToPath, userId, eraserBatching, isObjectNearEraser]);
+  }, [whiteboardStore, convertShapeToPath, userId, eraserBatching]);
 
   /**
    * Handles eraser start logic with optimized batching
