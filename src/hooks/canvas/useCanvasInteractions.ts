@@ -26,12 +26,8 @@ export const useCanvasInteractions = () => {
     maxBatchSize: 50 // Max 50 actions per batch
   });
   
-  // Pass action batching to eraser logic
-  const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraserLogic({
-    startBatch,
-    endBatch,
-    checkBatchSize
-  });
+  // Use eraser logic without passing arguments since it manages its own batching
+  const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraserLogic();
   
   const isDrawingRef = useRef(false);
   const isDraggingRef = useRef(false);
@@ -573,15 +569,12 @@ export const useCanvasInteractions = () => {
       }
 
       case 'eraser': {
-        // START BATCH for erasing
-        currentBatchIdRef.current = startBatch('ERASE_PATH', 'erasing', userId);
-        
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         
         handleEraserStart(coords, findObjectAt, redrawCanvasRef.current || undefined);
         
-        console.log('🧹 Started erasing with batch:', currentBatchIdRef.current?.slice(0, 8), ':', { mode: toolStore.toolSettings.eraserMode, coords, userId: userId.slice(0, 8) });
+        console.log('🧹 Started erasing:', { mode: toolStore.toolSettings.eraserMode, coords, userId: userId.slice(0, 8) });
         break;
       }
 
@@ -686,11 +679,6 @@ export const useCanvasInteractions = () => {
         if (isDrawingRef.current && lastPointRef.current) {
           handleEraserMove(coords, lastPointRef.current, findObjectAt, redrawCanvasRef.current || undefined);
           lastPointRef.current = coords;
-          
-          // Check if batch is getting too large
-          if (currentBatchIdRef.current) {
-            checkBatchSize();
-          }
         }
         break;
       }
@@ -844,13 +832,7 @@ export const useCanvasInteractions = () => {
       case 'eraser': {
         if (isDrawingRef.current) {
           handleEraserEnd(redrawCanvasRef.current || undefined);
-          console.log('🧹 Finished erasing, ending batch:', currentBatchIdRef.current?.slice(0, 8), ':', { mode: toolStore.toolSettings.eraserMode, userId: userId.slice(0, 8) });
-          
-          // END BATCH for erasing
-          if (currentBatchIdRef.current) {
-            endBatch();
-            currentBatchIdRef.current = null;
-          }
+          console.log('🧹 Finished erasing:', { mode: toolStore.toolSettings.eraserMode, userId: userId.slice(0, 8) });
         }
         break;
       }
