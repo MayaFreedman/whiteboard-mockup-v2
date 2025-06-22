@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for rendering complex shapes
  */
@@ -28,7 +27,7 @@ export const renderTriangle = (
     ctx.fillStyle = fill;
     ctx.fill();
   }
-  if (stroke) {
+  if (stroke && stroke !== 'none') {
     ctx.strokeStyle = stroke;
     ctx.lineWidth = strokeWidth || 2;
     ctx.stroke();
@@ -62,7 +61,7 @@ export const renderDiamond = (
     ctx.fillStyle = fill;
     ctx.fill();
   }
-  if (stroke) {
+  if (stroke && stroke !== 'none') {
     ctx.strokeStyle = stroke;
     ctx.lineWidth = strokeWidth || 2;
     ctx.stroke();
@@ -102,7 +101,7 @@ export const renderPentagon = (
     ctx.fillStyle = fill;
     ctx.fill();
   }
-  if (stroke) {
+  if (stroke && stroke !== 'none') {
     ctx.strokeStyle = stroke;
     ctx.lineWidth = strokeWidth || 2;
     ctx.stroke();
@@ -142,7 +141,7 @@ export const renderHexagon = (
     ctx.fillStyle = fill;
     ctx.fill();
   }
-  if (stroke) {
+  if (stroke && stroke !== 'none') {
     ctx.strokeStyle = stroke;
     ctx.lineWidth = strokeWidth || 2;
     ctx.stroke();
@@ -188,7 +187,7 @@ export const renderStar = (
     ctx.fillStyle = fill;
     ctx.fill();
   }
-  if (stroke) {
+  if (stroke && stroke !== 'none') {
     ctx.strokeStyle = stroke;
     ctx.lineWidth = strokeWidth || 2;
     ctx.stroke();
@@ -253,7 +252,7 @@ export const renderHeart = (
     ctx.fillStyle = fill;
     ctx.fill();
   }
-  if (stroke) {
+  if (stroke && stroke !== 'none') {
     ctx.strokeStyle = stroke;
     ctx.lineWidth = strokeWidth || 2;
     ctx.stroke();
