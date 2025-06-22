@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
+import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { Separator } from '../ui/separator';
+import { Toggle } from '../ui/toggle';
 
 interface ShapePropertiesPanelProps {
   selectedObjectId: string;
@@ -13,7 +15,11 @@ interface ShapePropertiesPanelProps {
 
 export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ selectedObjectId }) => {
   const { objects, updateObject } = useWhiteboardStore();
+  const { getActiveColors } = useToolStore();
+  const [colorMode, setColorMode] = useState<'fill' | 'stroke'>('fill');
+  
   const obj = objects[selectedObjectId];
+  const activeColors = getActiveColors();
   
   if (!obj) return null;
 
@@ -21,40 +27,16 @@ export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ sele
     updateObject(selectedObjectId, { [property]: value });
   };
 
-  const colors = [
-    '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00', 
-    '#ff00ff', '#00ffff', '#ffffff', '#808080', '#ffa500'
-  ];
+  const handleColorSelect = (color: string) => {
+    if (colorMode === 'fill') {
+      handlePropertyChange('fill', color);
+    } else {
+      handlePropertyChange('stroke', color);
+    }
+  };
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4 min-w-64">
-      <h3 className="font-semibold text-sm">Shape Properties</h3>
-      
-      {/* Position */}
-      <div className="space-y-2">
-        <Label className="text-xs">Position</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Label className="text-xs text-muted-foreground">X</Label>
-            <Input
-              type="number"
-              value={Math.round(obj.x)}
-              onChange={(e) => handlePropertyChange('x', parseFloat(e.target.value) || 0)}
-              className="h-8 text-xs"
-            />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Y</Label>
-            <Input
-              type="number"
-              value={Math.round(obj.y)}
-              onChange={(e) => handlePropertyChange('y', parseFloat(e.target.value) || 0)}
-              className="h-8 text-xs"
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Size */}
       {obj.width && obj.height && (
         <div className="space-y-2">
@@ -86,41 +68,74 @@ export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ sele
 
       <Separator />
 
-      {/* Fill Color */}
-      <div className="space-y-2">
-        <Label className="text-xs">Fill</Label>
-        <div className="flex flex-wrap gap-1">
+      {/* Fill/Stroke Color Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Color</Label>
+          <div className="flex gap-1">
+            <Toggle
+              pressed={colorMode === 'fill'}
+              onPressedChange={(pressed) => pressed && setColorMode('fill')}
+              size="sm"
+              className="text-xs"
+            >
+              Fill
+            </Toggle>
+            <Toggle
+              pressed={colorMode === 'stroke'}
+              onPressedChange={(pressed) => pressed && setColorMode('stroke')}
+              size="sm"
+              className="text-xs"
+            >
+              Stroke
+            </Toggle>
+          </div>
+        </div>
+
+        {/* Color Preview */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>Current {colorMode}:</span>
+          <div 
+            className="w-4 h-4 rounded border"
+            style={{ 
+              backgroundColor: colorMode === 'fill' 
+                ? (obj.fill === 'none' ? 'transparent' : obj.fill) 
+                : obj.stroke 
+            }}
+          />
+          <span>
+            {colorMode === 'fill' 
+              ? (obj.fill === 'none' ? 'None' : obj.fill)
+              : obj.stroke
+            }
+          </span>
+        </div>
+
+        {/* None option for fill */}
+        {colorMode === 'fill' && (
           <Button
             variant={obj.fill === 'none' ? 'default' : 'outline'}
             size="sm"
             onClick={() => handlePropertyChange('fill', 'none')}
-            className="h-6 px-2 text-xs"
+            className="h-6 px-2 text-xs w-full"
           >
-            None
+            No Fill
           </Button>
-          {colors.map(color => (
-            <button
-              key={color}
-              className={`w-6 h-6 rounded border-2 ${obj.fill === color ? 'border-primary' : 'border-border'}`}
-              style={{ backgroundColor: color }}
-              onClick={() => handlePropertyChange('fill', color)}
-              title={`Fill: ${color}`}
-            />
-          ))}
-        </div>
-      </div>
+        )}
 
-      {/* Stroke Color */}
-      <div className="space-y-2">
-        <Label className="text-xs">Stroke</Label>
+        {/* Active Color Palette */}
         <div className="flex flex-wrap gap-1">
-          {colors.map(color => (
+          {activeColors.map((color, index) => (
             <button
-              key={color}
-              className={`w-6 h-6 rounded border-2 ${obj.stroke === color ? 'border-primary' : 'border-border'}`}
+              key={index}
+              className={`w-6 h-6 rounded border-2 transition-all ${
+                (colorMode === 'fill' ? obj.fill : obj.stroke) === color 
+                  ? 'border-primary ring-2 ring-primary/30' 
+                  : 'border-border hover:border-primary'
+              }`}
               style={{ backgroundColor: color }}
-              onClick={() => handlePropertyChange('stroke', color)}
-              title={`Stroke: ${color}`}
+              onClick={() => handleColorSelect(color)}
+              title={`${colorMode === 'fill' ? 'Fill' : 'Stroke'}: ${color}`}
             />
           ))}
         </div>
