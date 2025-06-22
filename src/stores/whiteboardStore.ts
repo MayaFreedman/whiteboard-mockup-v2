@@ -154,12 +154,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   recordAction: (action) => {
     const state = get();
     
-    // Check if this action should be added to current batch
+    // Enhanced batching logic for eraser strokes
     const canAddToBatch = state.currentBatch.id && 
                          state.currentBatch.actionType === action.type &&
-                         state.currentBatch.objectId === getActionObjectId(action) &&
                          state.currentBatch.userId === action.userId &&
-                         (Date.now() - (state.currentBatch.startTime || 0)) < 5000; // 5 second timeout
+                         (
+                           // Same object ID OR eraser stroke (which can affect multiple objects)
+                           state.currentBatch.objectId === getActionObjectId(action) ||
+                           (state.currentBatch.actionType === 'ERASE_PATH' && action.type === 'ERASE_PATH')
+                         ) &&
+                         (Date.now() - (state.currentBatch.startTime || 0)) < 10000; // 10 second timeout for eraser
     
     if (canAddToBatch) {
       get().addToBatch(action);

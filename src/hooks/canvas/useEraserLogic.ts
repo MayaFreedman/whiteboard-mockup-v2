@@ -6,31 +6,26 @@ import { interpolatePoints } from '../../utils/path/pathInterpolation';
 import { doesPathIntersectEraserBatch, erasePointsFromPathBatch } from '../../utils/path/pathErasing';
 import { pathToPoints } from '../../utils/path/pathConversion';
 import { nanoid } from 'nanoid';
-
-interface ActionBatching {
-  startBatch: (actionType: string, objectId: string, userId?: string) => string;
-  endBatch: () => void;
-  checkBatchSize: () => boolean;
-}
+import { useEraserBatching } from './useEraserBatching';
 
 /**
- * Hook for handling eraser logic with action batching integration
+ * Hook for handling eraser logic with optimized action batching
  */
-export const useEraserLogic = (actionBatching: ActionBatching) => {
+export const useEraserLogic = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const { userId } = useUser();
+  const eraserBatching = useEraserBatching();
   
-  // For real-time eraser: batch processing with line segment intersection
+  // For real-time eraser: optimized batch processing
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
   const lastEraserProcessRef = useRef<number>(0);
-  const ERASER_BATCH_SIZE = 8; // Process points in batches for performance
-  const ERASER_THROTTLE_MS = 50; // Throttle processing for performance
+  const ERASER_BATCH_SIZE = 20; // Larger batches for better performance
+  const ERASER_THROTTLE_MS = 100; // Less frequent processing
 
-  // Stroke tracking - now integrated with action batching
+  // Stroke tracking
   const strokeInProgressRef = useRef<boolean>(false);
   const processedObjectsRef = useRef<Set<string>>(new Set());
-  const currentBatchIdRef = useRef<string | null>(null);
 
   /**
    * Converts shape objects to path format for erasing
@@ -53,10 +48,10 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
   }, []);
 
   /**
-   * Processes accumulated eraser points - now uses action batching
+   * Processes accumulated eraser points with optimized batching
    */
   const processEraserBatch = useCallback(() => {
-    if (eraserPointsRef.current.length === 0) return;
+    if (eraserPointsRef.current.length === 0 || !eraserBatching.isStrokeActive()) return;
     
     const objects = Object.entries(whiteboardStore.objects);
     
@@ -105,7 +100,7 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
           // Mark object as processed in this stroke
           processedObjectsRef.current.add(id);
           
-          // Apply the erasure - this will be batched automatically by the action batching system
+          // Apply the erasure - this will be batched automatically
           const enhancedAction = {
             originalObjectId: id,
             eraserPath: {
@@ -132,16 +127,16 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
           console.log('🧹 Processed eraser action for object:', {
             objectId: id.slice(0, 8),
             segments: segmentsWithIds.length,
-            batchId: currentBatchIdRef.current?.slice(0, 8),
+            strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8),
             userId: userId.slice(0, 8)
           });
         }
       }
     });
-  }, [whiteboardStore, convertShapeToPath, userId]);
+  }, [whiteboardStore, convertShapeToPath, userId, eraserBatching]);
 
   /**
-   * Handles eraser start logic with action batching
+   * Handles eraser start logic with optimized batching
    */
   const handleEraserStart = useCallback((coords: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -189,7 +184,8 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
         console.log('❌ Object eraser found no objects to delete at:', coords);
       }
     } else {
-      currentBatchIdRef.current = actionBatching.startBatch('ERASE_PATH', 'eraser-stroke', userId);
+      // Start the eraser stroke batch
+      eraserBatching.startEraserStroke(userId);
       strokeInProgressRef.current = true;
       processedObjectsRef.current.clear();
       
@@ -202,13 +198,13 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
       }];
       lastEraserProcessRef.current = Date.now();
       
-      console.log('🧹 Started pixel eraser batch:', {
-        batchId: currentBatchIdRef.current?.slice(0, 8),
+      console.log('🧹 Started pixel eraser stroke:', {
+        strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8),
         coords,
         userId: userId.slice(0, 8)
       });
     }
-  }, [toolStore.toolSettings, whiteboardStore, userId, actionBatching]);
+  }, [toolStore.toolSettings, whiteboardStore, userId, eraserBatching]);
 
   /**
    * Handles eraser move logic during stroke
@@ -217,6 +213,7 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
     if (eraserMode === 'object') {
+      // ... keep existing code (object mode handling) the same
       const searchRadius = 6;
       const testPositions = [
         coords,
@@ -259,11 +256,8 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
       if (shouldProcess) {
         processEraserBatch();
         
-        // Check if action batch is getting too large
-        actionBatching.checkBatchSize();
-        
         // Keep some points for continuity but reduce the batch
-        const lastFewPoints = eraserPointsRef.current.slice(-2);
+        const lastFewPoints = eraserPointsRef.current.slice(-3);
         eraserPointsRef.current = lastFewPoints;
         lastEraserProcessRef.current = now;
         
@@ -272,10 +266,10 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
         }
       }
     }
-  }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId, actionBatching]);
+  }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
   /**
-   * Handles eraser end logic and ends the action batch
+   * Handles eraser end logic and ends the stroke batch
    */
   const handleEraserEnd = useCallback((redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -284,7 +278,7 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
       mode: eraserMode, 
       strokeInProgress: strokeInProgressRef.current,
       remainingPoints: eraserPointsRef.current.length,
-      batchId: currentBatchIdRef.current?.slice(0, 8)
+      strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8)
     });
     
     if (eraserMode === 'pixel') {
@@ -294,11 +288,9 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
         eraserPointsRef.current = [];
       }
       
-      // End the action batch - this groups all erase operations into one undo entry
-      if (strokeInProgressRef.current && currentBatchIdRef.current) {
-        actionBatching.endBatch();
-        console.log('🧹 Ended pixel eraser batch:', currentBatchIdRef.current.slice(0, 8));
-        currentBatchIdRef.current = null;
+      // End the eraser stroke batch - this groups ALL erase operations into one undo entry
+      if (strokeInProgressRef.current && eraserBatching.isStrokeActive()) {
+        eraserBatching.endEraserStroke();
       }
       
       // Clean up stroke tracking
@@ -309,7 +301,7 @@ export const useEraserLogic = (actionBatching: ActionBatching) => {
         redrawCanvas();
       }
     }
-  }, [toolStore.toolSettings, processEraserBatch, actionBatching]);
+  }, [toolStore.toolSettings, processEraserBatch, eraserBatching]);
 
   return {
     handleEraserStart,
