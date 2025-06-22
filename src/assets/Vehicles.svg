@@ -1,0 +1,36 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_2041_2082)">
+<rect y="-0.00195312" width="80.0039" height="80.0039" rx="40.002" fill="#CA9FB5"/>
+<path d="M65.8856 28.3588L88.5096 50.9828L47.9621 91.5304L7.17389 50.7422L65.8856 28.3588Z" fill="url(#paint0_linear_2041_2082)"/>
+<g filter="url(#filter0_d_2041_2082)">
+<path d="M7.19498 50.5582C7.19498 41.3652 14.6474 33.9128 23.8405 33.9128H69.1775V50.5582H7.19498Z" fill="#694A59"/>
+<path d="M22.9644 44.6448C22.9644 31.0971 33.9469 20.1146 47.4945 20.1146C61.0422 20.1146 72.0247 31.0971 72.0247 44.6448V50.5583H22.9644V44.6448Z" fill="#694A59"/>
+<path d="M49.9039 24.4952H52.7513C59.1626 24.4952 64.3599 29.6925 64.3599 36.1038H49.9039V24.4952Z" fill="#DFCEE1"/>
+<path d="M29.973 36.1038C29.973 29.6925 35.1703 24.4952 41.5816 24.4952H45.3052V36.1038H29.973Z" fill="#DFCEE1"/>
+<circle cx="28.7684" cy="47.8212" r="7.11852" fill="#DFCEE1"/>
+<circle cx="28.7825" cy="47.8056" r="3.90305" fill="#2F522E"/>
+<circle cx="12.4517" cy="45.5212" r="2.4096" fill="#DFCEE1"/>
+<circle cx="58.7745" cy="47.8212" r="7.11852" fill="#DFCEE1"/>
+<circle cx="59.0279" cy="47.8056" r="3.90305" fill="#2F522E"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_2041_2082" x="5.24366" y="18.1633" width="70.6837" height="40.679" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dx="0.975657" dy="0.975657"/>
+<feGaussianBlur stdDeviation="1.46349"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.388151 0 0 0 0 0.235243 0 0 0 0 0.313763 0 0 0 0.5 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2041_2082"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2041_2082" result="shape"/>
+</filter>
+<linearGradient id="paint0_linear_2041_2082" x1="1.98617" y1="45.467" x2="46.7499" y2="90.2307" gradientUnits="userSpaceOnUse">
+<stop stop-color="#633C50" stop-opacity="0.2"/>
+<stop offset="1" stop-color="#CA9FB5"/>
+</linearGradient>
+<clipPath id="clip0_2041_2082">
+<rect y="-0.00195312" width="80.0039" height="80.0039" rx="40.002" fill="white"/>
+</clipPath>
+</defs>
+</svg>
