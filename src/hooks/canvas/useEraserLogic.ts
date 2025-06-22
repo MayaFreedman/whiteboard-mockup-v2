@@ -17,11 +17,11 @@ export const useEraserLogic = () => {
   const { userId } = useUser();
   const eraserBatching = useEraserBatching();
   
-  // For real-time eraser: optimized batch processing
+  // For real-time eraser: optimized batch processing with smoother visual feedback
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
   const lastEraserProcessRef = useRef<number>(0);
-  const ERASER_BATCH_SIZE = 30; // Increased from 20 to 30
-  const ERASER_THROTTLE_MS = 120; // Increased from 100ms to 120ms
+  const ERASER_BATCH_SIZE = 10; // Reduced from 30 to 10 for smoother visual feedback
+  const ERASER_THROTTLE_MS = 60; // Reduced from 120ms to 60ms for faster processing
 
   // Stroke tracking
   const strokeInProgressRef = useRef<boolean>(false);
