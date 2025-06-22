@@ -20,8 +20,8 @@ export const useEraserLogic = () => {
   // For real-time eraser: optimized batch processing
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
   const lastEraserProcessRef = useRef<number>(0);
-  const ERASER_BATCH_SIZE = 20; // Larger batches for better performance
-  const ERASER_THROTTLE_MS = 100; // Less frequent processing
+  const ERASER_BATCH_SIZE = 30; // Increased from 20 to 30
+  const ERASER_THROTTLE_MS = 120; // Increased from 100ms to 120ms
 
   // Stroke tracking
   const strokeInProgressRef = useRef<boolean>(false);
@@ -213,7 +213,6 @@ export const useEraserLogic = () => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
     if (eraserMode === 'object') {
-      // ... keep existing code (object mode handling) the same
       const searchRadius = 6;
       const testPositions = [
         coords,
