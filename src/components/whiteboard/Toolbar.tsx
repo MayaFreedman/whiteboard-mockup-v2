@@ -253,16 +253,16 @@ export const Toolbar: React.FC = () => {
   const isShapeSelected = !!selectedShape;
 
   return (
-    <div ref={toolbarRef} className="bg-card border-b border-border relative">
+    <div ref={toolbarRef} className="bg-transparent relative">
       {/* Desktop Action Buttons - Fixed to the right */}
-      <div className={`absolute right-4 top-0 h-full items-center gap-2 z-10 ${isMobile ? 'hidden' : 'flex'}`}>
+      <div className={`absolute right-0 top-0 h-full items-center gap-2 z-10 ${isMobile ? 'hidden' : 'flex'}`}>
         <ActionButtons />
       </div>
 
       {/* Scrollable Content Container */}
       <div 
         className="overflow-x-auto scrollbar-hide"
-        style={{ paddingRight: isMobile ? '16px' : '200px' }}
+        style={{ paddingRight: isMobile ? '0' : '200px' }}
       >
         <style>{`
           .scrollbar-hide {
@@ -275,7 +275,7 @@ export const Toolbar: React.FC = () => {
         `}</style>
         
         {/* Main Toolbar Content */}
-        <div className="min-h-16 flex items-center px-4 gap-4 w-max">
+        <div className="min-h-12 flex items-center gap-4 w-max">
           {/* Basic Tools Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {BASIC_TOOLS.map((tool) => (
@@ -308,7 +308,7 @@ export const Toolbar: React.FC = () => {
                   <ChevronDown className="w-3 h-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="bg-popover">
+              <DropdownMenuContent align="start" className="bg-popover z-50">
                 {SHAPE_TOOLS.map((shape) => (
                   <DropdownMenuItem
                     key={shape.id}
