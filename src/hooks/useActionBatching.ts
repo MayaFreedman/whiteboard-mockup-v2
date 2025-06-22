@@ -3,9 +3,9 @@ import { useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 
 interface BatchingOptions {
-  batchTimeout?: number; // Time in ms to wait before ending batch
-  maxBatchSize?: number; // Maximum actions per batch
-  isEraserBatch?: boolean; // Special handling for eraser operations
+  batchTimeout?: number;
+  maxBatchSize?: number;
+  isEraserBatch?: boolean;
 }
 
 export const useActionBatching = (options: BatchingOptions = {}) => {
@@ -21,16 +21,14 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
 
     const batchId = store.startActionBatch(actionType, objectId, userId);
     
-    // Set timeout to auto-end batch (longer for eraser operations)
-    const timeout = isEraserBatch ? batchTimeout * 3 : batchTimeout;
+    // Simplified timeout handling - no complex multipliers
     batchTimeoutRef.current = setTimeout(() => {
-      console.log('🎯 Auto-ending batch due to timeout');
       store.endActionBatch();
       batchTimeoutRef.current = null;
-    }, timeout);
+    }, batchTimeout);
 
     return batchId;
-  }, [store, batchTimeout, isEraserBatch]);
+  }, [store, batchTimeout]);
 
   const endBatch = useCallback(() => {
     if (batchTimeoutRef.current) {
@@ -42,16 +40,14 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
 
   const checkBatchSize = useCallback(() => {
     const currentBatch = store.getState().currentBatch;
-    // For eraser operations, use much higher limits and don't auto-end during stroke
-    const effectiveMaxSize = isEraserBatch ? maxBatchSize * 10 : maxBatchSize;
     
-    if (currentBatch.actions.length >= effectiveMaxSize) {
-      console.log('🎯 Auto-ending batch due to size limit');
+    // Simplified size checking - no special eraser handling during stroke
+    if (currentBatch.actions.length >= maxBatchSize) {
       endBatch();
       return true;
     }
     return false;
-  }, [store, maxBatchSize, endBatch, isEraserBatch]);
+  }, [store, maxBatchSize, endBatch]);
 
   return {
     startBatch,
