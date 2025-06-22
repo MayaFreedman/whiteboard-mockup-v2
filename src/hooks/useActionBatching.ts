@@ -3,9 +3,9 @@ import { useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 
 interface BatchingOptions {
-  batchTimeout?: number;
-  maxBatchSize?: number;
-  isEraserBatch?: boolean;
+  batchTimeout?: number; // Time in ms to wait before ending batch
+  maxBatchSize?: number; // Maximum actions per batch
+  isEraserBatch?: boolean; // Special handling for eraser operations
 }
 
 export const useActionBatching = (options: BatchingOptions = {}) => {
@@ -21,14 +21,16 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
 
     const batchId = store.startActionBatch(actionType, objectId, userId);
     
-    // Set timeout for batch completion
+    // Set timeout to auto-end batch (longer for eraser operations)
+    const timeout = isEraserBatch ? batchTimeout * 3 : batchTimeout;
     batchTimeoutRef.current = setTimeout(() => {
+      console.log('🎯 Auto-ending batch due to timeout');
       store.endActionBatch();
       batchTimeoutRef.current = null;
-    }, batchTimeout);
+    }, timeout);
 
     return batchId;
-  }, [store, batchTimeout]);
+  }, [store, batchTimeout, isEraserBatch]);
 
   const endBatch = useCallback(() => {
     if (batchTimeoutRef.current) {
@@ -40,13 +42,16 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
 
   const checkBatchSize = useCallback(() => {
     const currentBatch = store.getState().currentBatch;
+    // For eraser operations, use much higher limits and don't auto-end during stroke
+    const effectiveMaxSize = isEraserBatch ? maxBatchSize * 10 : maxBatchSize;
     
-    if (currentBatch.actions.length >= maxBatchSize) {
+    if (currentBatch.actions.length >= effectiveMaxSize) {
+      console.log('🎯 Auto-ending batch due to size limit');
       endBatch();
       return true;
     }
     return false;
-  }, [store, maxBatchSize, endBatch]);
+  }, [store, maxBatchSize, endBatch, isEraserBatch]);
 
   return {
     startBatch,

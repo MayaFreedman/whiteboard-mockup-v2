@@ -9,7 +9,7 @@ import { nanoid } from 'nanoid';
 import { useEraserBatching } from './useEraserBatching';
 
 /**
- * Hook for handling eraser logic with optimized performance
+ * Hook for handling eraser logic with optimized action batching
  */
 export const useEraserLogic = () => {
   const whiteboardStore = useWhiteboardStore();
@@ -17,16 +17,19 @@ export const useEraserLogic = () => {
   const { userId } = useUser();
   const eraserBatching = useEraserBatching();
   
-  // Optimized batch processing - moderate batch sizes
+  // For real-time eraser: optimized batch processing
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
   const lastEraserProcessRef = useRef<number>(0);
-  const ERASER_BATCH_SIZE = 25; // Reduced from 40 back to 25
-  const ERASER_THROTTLE_MS = 120; // Reduced from 150ms to 120ms
+  const ERASER_BATCH_SIZE = 20; // Larger batches for better performance
+  const ERASER_THROTTLE_MS = 100; // Less frequent processing
 
   // Stroke tracking
   const strokeInProgressRef = useRef<boolean>(false);
   const processedObjectsRef = useRef<Set<string>>(new Set());
 
+  /**
+   * Converts shape objects to path format for erasing
+   */
   const convertShapeToPath = useCallback((obj: any): string => {
     switch (obj.type) {
       case 'rectangle':
@@ -45,38 +48,16 @@ export const useEraserLogic = () => {
   }, []);
 
   /**
-   * Core batch processing with bounding box optimization
+   * Processes accumulated eraser points with optimized batching
    */
   const processEraserBatch = useCallback(() => {
     if (eraserPointsRef.current.length === 0 || !eraserBatching.isStrokeActive()) return;
     
     const objects = Object.entries(whiteboardStore.objects);
     
-    // Get eraser bounding box for quick filtering
-    const eraserBounds = eraserPointsRef.current.reduce((bounds, point) => ({
-      minX: Math.min(bounds.minX, point.x - point.radius),
-      maxX: Math.max(bounds.maxX, point.x + point.radius),
-      minY: Math.min(bounds.minY, point.y - point.radius),
-      maxY: Math.max(bounds.maxY, point.y + point.radius)
-    }), {
-      minX: Infinity,
-      maxX: -Infinity,
-      minY: Infinity,
-      maxY: -Infinity
-    });
-    
     objects.forEach(([id, obj]) => {
-      // Skip eraser objects and already processed objects
+      // Skip eraser objects and already processed objects in this stroke
       if (obj.data?.isEraser || processedObjectsRef.current.has(id)) return;
-      
-      // Quick bounding box check
-      const objMaxX = obj.x + (obj.width || 0);
-      const objMaxY = obj.y + (obj.height || 0);
-      
-      if (objMaxX < eraserBounds.minX || obj.x > eraserBounds.maxX ||
-          objMaxY < eraserBounds.minY || obj.y > eraserBounds.maxY) {
-        return;
-      }
       
       let pathString = '';
       let shouldProcess = false;
@@ -116,9 +97,10 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
-          // Mark object as processed
+          // Mark object as processed in this stroke
           processedObjectsRef.current.add(id);
           
+          // Apply the erasure - this will be batched automatically
           const enhancedAction = {
             originalObjectId: id,
             eraserPath: {
@@ -141,15 +123,29 @@ export const useEraserLogic = () => {
           };
           
           whiteboardStore.erasePath(enhancedAction, userId);
+          
+          console.log('🧹 Processed eraser action for object:', {
+            objectId: id.slice(0, 8),
+            segments: segmentsWithIds.length,
+            strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8),
+            userId: userId.slice(0, 8)
+          });
         }
       }
     });
   }, [whiteboardStore, convertShapeToPath, userId, eraserBatching]);
 
+  /**
+   * Handles eraser start logic with optimized batching
+   */
   const handleEraserStart = useCallback((coords: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
+    console.log('🎨 Starting eraser stroke:', { mode: eraserMode, coords });
+    
     if (eraserMode === 'object') {
+      console.log('🎯 Object eraser starting at:', coords);
+      
       const searchRadius = 8;
       const testPositions = [
         coords,
@@ -168,18 +164,27 @@ export const useEraserLogic = () => {
       for (const testPos of testPositions) {
         objectId = findObjectAt(testPos.x, testPos.y);
         if (objectId) {
+          console.log('🎯 Found object at test position:', { 
+            testPos, 
+            originalPos: coords, 
+            objectId: objectId.slice(0, 8) 
+          });
           break;
         }
       }
       
       if (objectId) {
         whiteboardStore.deleteObject(objectId, userId);
+        console.log('🗑️ Object eraser successfully deleted:', objectId.slice(0, 8));
+        
         if (redrawCanvas) {
           redrawCanvas();
         }
+      } else {
+        console.log('❌ Object eraser found no objects to delete at:', coords);
       }
     } else {
-      // Start pixel eraser stroke
+      // Start the eraser stroke batch
       eraserBatching.startEraserStroke(userId);
       strokeInProgressRef.current = true;
       processedObjectsRef.current.clear();
@@ -192,13 +197,23 @@ export const useEraserLogic = () => {
         radius: eraserRadius
       }];
       lastEraserProcessRef.current = Date.now();
+      
+      console.log('🧹 Started pixel eraser stroke:', {
+        strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8),
+        coords,
+        userId: userId.slice(0, 8)
+      });
     }
   }, [toolStore.toolSettings, whiteboardStore, userId, eraserBatching]);
 
+  /**
+   * Handles eraser move logic during stroke
+   */
   const handleEraserMove = useCallback((coords: { x: number; y: number }, lastPoint: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
     if (eraserMode === 'object') {
+      // ... keep existing code (object mode handling) the same
       const searchRadius = 6;
       const testPositions = [
         coords,
@@ -212,6 +227,8 @@ export const useEraserLogic = () => {
         const objectId = findObjectAt(testPos.x, testPos.y);
         if (objectId) {
           whiteboardStore.deleteObject(objectId, userId);
+          console.log('🗑️ Object eraser deleted during drag:', objectId.slice(0, 8));
+          
           if (redrawCanvas) {
             redrawCanvas();
           }
@@ -221,10 +238,9 @@ export const useEraserLogic = () => {
     } else {
       const eraserRadius = toolStore.toolSettings.eraserSize / 2;
       
-      // Add interpolated points
-      const interpolatedPoints = interpolatePoints(lastPoint, coords, eraserRadius);
+      const interpolatedPoints = interpolatePoints(lastPoint, coords, eraserRadius / 2);
       
-      interpolatedPoints.slice(1).forEach((point) => {
+      interpolatedPoints.slice(1).forEach(point => {
         eraserPointsRef.current.push({
           x: point.x,
           y: point.y,
@@ -240,8 +256,8 @@ export const useEraserLogic = () => {
       if (shouldProcess) {
         processEraserBatch();
         
-        // Keep last few points for continuity
-        const lastFewPoints = eraserPointsRef.current.slice(-5);
+        // Keep some points for continuity but reduce the batch
+        const lastFewPoints = eraserPointsRef.current.slice(-3);
         eraserPointsRef.current = lastFewPoints;
         lastEraserProcessRef.current = now;
         
@@ -252,29 +268,38 @@ export const useEraserLogic = () => {
     }
   }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
+  /**
+   * Handles eraser end logic and ends the stroke batch
+   */
   const handleEraserEnd = useCallback((redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
+    console.log('🎨 Ending eraser stroke:', { 
+      mode: eraserMode, 
+      strokeInProgress: strokeInProgressRef.current,
+      remainingPoints: eraserPointsRef.current.length,
+      strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8)
+    });
+    
     if (eraserMode === 'pixel') {
-      // Process any remaining points
+      // Process any remaining eraser points
       if (eraserPointsRef.current.length > 0) {
         processEraserBatch();
         eraserPointsRef.current = [];
       }
       
-      // End the stroke batch
+      // End the eraser stroke batch - this groups ALL erase operations into one undo entry
       if (strokeInProgressRef.current && eraserBatching.isStrokeActive()) {
         eraserBatching.endEraserStroke();
       }
       
-      // Final redraw
+      // Clean up stroke tracking
+      strokeInProgressRef.current = false;
+      processedObjectsRef.current.clear();
+      
       if (redrawCanvas) {
         redrawCanvas();
       }
-      
-      // Clean up
-      strokeInProgressRef.current = false;
-      processedObjectsRef.current.clear();
     }
   }, [toolStore.toolSettings, processEraserBatch, eraserBatching]);
 
