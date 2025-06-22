@@ -300,6 +300,41 @@ export const useCanvasInteractions = () => {
   }, [toolStore.toolSettings.opacity]);
 
   /**
+   * Handles stamp tool click - places a stamp at the clicked position
+   */
+  const handleStampClick = useCallback((coords: { x: number; y: number }) => {
+    console.log('🖼️ Stamp tool clicked at:', coords);
+    
+    const selectedStamp = toolStore.getSelectedStamp();
+    if (!selectedStamp) {
+      console.log('🖼️ No stamp selected');
+      return;
+    }
+    
+    // Center the stamp on the click position
+    const stampX = coords.x - selectedStamp.originalWidth / 2;
+    const stampY = coords.y - selectedStamp.originalHeight / 2;
+    
+    const stampObject = createStampObject(stampX, stampY, selectedStamp.id);
+    if (!stampObject) {
+      console.error('🖼️ Failed to create stamp object');
+      return;
+    }
+    
+    const objectId = whiteboardStore.addObject(stampObject, userId);
+    console.log('🖼️ Created stamp object:', objectId.slice(0, 8), {
+      stamp: selectedStamp.name,
+      position: { x: stampX, y: stampY },
+      userId: userId.slice(0, 8)
+    });
+    
+    // Trigger redraw
+    if (redrawCanvasRef.current) {
+      redrawCanvasRef.current();
+    }
+  }, [toolStore, createStampObject, whiteboardStore, userId]);
+
+  /**
    * Handles fill tool click - fills the clicked shape with the current stroke color
    */
   const handleFillClick = useCallback((coords: { x: number; y: number }) => {

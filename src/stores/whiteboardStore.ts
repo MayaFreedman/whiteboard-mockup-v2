@@ -1,23 +1,7 @@
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { Viewport } from '../types/viewport';
-import { WhiteboardAction } from '../types/whiteboard';
-
-export type WhiteboardObject = {
-  id: string;
-  type: 'path' | 'rectangle' | 'circle' | 'triangle' | 'diamond' | 'pentagon' | 'hexagon' | 'star' | 'heart' | 'text';
-  x: number;
-  y: number;
-  width?: number;
-  height?: number;
-  fill?: string;
-  stroke?: string;
-  strokeWidth?: number;
-  opacity?: number;
-  data?: any;
-  createdAt: number;
-  updatedAt: number;
-};
+import { WhiteboardAction, WhiteboardObject } from '../types/whiteboard';
 
 export interface WhiteboardSettings {
   gridVisible: boolean;
