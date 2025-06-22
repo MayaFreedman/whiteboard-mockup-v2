@@ -21,7 +21,7 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
 
     const batchId = store.startActionBatch(actionType, objectId, userId);
     
-    // Simplified timeout handling - no complex multipliers
+    // Set timeout for batch completion
     batchTimeoutRef.current = setTimeout(() => {
       store.endActionBatch();
       batchTimeoutRef.current = null;
@@ -41,7 +41,6 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
   const checkBatchSize = useCallback(() => {
     const currentBatch = store.getState().currentBatch;
     
-    // Simplified size checking - no special eraser handling during stroke
     if (currentBatch.actions.length >= maxBatchSize) {
       endBatch();
       return true;

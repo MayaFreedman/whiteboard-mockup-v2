@@ -17,16 +17,15 @@ export const useEraserLogic = () => {
   const { userId } = useUser();
   const eraserBatching = useEraserBatching();
   
-  // Optimized batch processing with larger batches and less frequent processing
+  // Optimized batch processing - moderate batch sizes
   const eraserPointsRef = useRef<Array<{ x: number; y: number; radius: number }>>([]);
   const lastEraserProcessRef = useRef<number>(0);
-  const ERASER_BATCH_SIZE = 40; // Increased from 20 to 40
-  const ERASER_THROTTLE_MS = 150; // Increased from 100ms to 150ms
+  const ERASER_BATCH_SIZE = 25; // Reduced from 40 back to 25
+  const ERASER_THROTTLE_MS = 120; // Reduced from 150ms to 120ms
 
   // Stroke tracking
   const strokeInProgressRef = useRef<boolean>(false);
   const processedObjectsRef = useRef<Set<string>>(new Set());
-  const pendingRedrawRef = useRef<boolean>(false);
 
   const convertShapeToPath = useCallback((obj: any): string => {
     switch (obj.type) {
@@ -46,7 +45,7 @@ export const useEraserLogic = () => {
   }, []);
 
   /**
-   * Optimized batch processing with bounding box pre-filtering
+   * Core batch processing with bounding box optimization
    */
   const processEraserBatch = useCallback(() => {
     if (eraserPointsRef.current.length === 0 || !eraserBatching.isStrokeActive()) return;
@@ -70,13 +69,13 @@ export const useEraserLogic = () => {
       // Skip eraser objects and already processed objects
       if (obj.data?.isEraser || processedObjectsRef.current.has(id)) return;
       
-      // Quick bounding box check to skip distant objects
+      // Quick bounding box check
       const objMaxX = obj.x + (obj.width || 0);
       const objMaxY = obj.y + (obj.height || 0);
       
       if (objMaxX < eraserBounds.minX || obj.x > eraserBounds.maxX ||
           objMaxY < eraserBounds.minY || obj.y > eraserBounds.maxY) {
-        return; // Object is too far from eraser path
+        return;
       }
       
       let pathString = '';
@@ -142,23 +141,10 @@ export const useEraserLogic = () => {
           };
           
           whiteboardStore.erasePath(enhancedAction, userId);
-          pendingRedrawRef.current = true;
         }
       }
     });
   }, [whiteboardStore, convertShapeToPath, userId, eraserBatching]);
-
-  // Throttled redraw function
-  const scheduleRedraw = useCallback((redrawCanvas?: () => void) => {
-    if (pendingRedrawRef.current && redrawCanvas) {
-      requestAnimationFrame(() => {
-        if (redrawCanvas && pendingRedrawRef.current) {
-          redrawCanvas();
-          pendingRedrawRef.current = false;
-        }
-      });
-    }
-  }, []);
 
   const handleEraserStart = useCallback((coords: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -197,7 +183,6 @@ export const useEraserLogic = () => {
       eraserBatching.startEraserStroke(userId);
       strokeInProgressRef.current = true;
       processedObjectsRef.current.clear();
-      pendingRedrawRef.current = false;
       
       const eraserRadius = toolStore.toolSettings.eraserSize / 2;
       
@@ -236,18 +221,15 @@ export const useEraserLogic = () => {
     } else {
       const eraserRadius = toolStore.toolSettings.eraserSize / 2;
       
-      // Simplified point interpolation - less dense
+      // Add interpolated points
       const interpolatedPoints = interpolatePoints(lastPoint, coords, eraserRadius);
       
-      // Add only every other interpolated point to reduce density
-      interpolatedPoints.slice(1).forEach((point, index) => {
-        if (index % 2 === 0) { // Skip every other point
-          eraserPointsRef.current.push({
-            x: point.x,
-            y: point.y,
-            radius: eraserRadius
-          });
-        }
+      interpolatedPoints.slice(1).forEach((point) => {
+        eraserPointsRef.current.push({
+          x: point.x,
+          y: point.y,
+          radius: eraserRadius
+        });
       });
       
       const now = Date.now();
@@ -258,16 +240,17 @@ export const useEraserLogic = () => {
       if (shouldProcess) {
         processEraserBatch();
         
-        // Keep only last 5 points for continuity
+        // Keep last few points for continuity
         const lastFewPoints = eraserPointsRef.current.slice(-5);
         eraserPointsRef.current = lastFewPoints;
         lastEraserProcessRef.current = now;
         
-        // Schedule redraw instead of immediate redraw
-        scheduleRedraw(redrawCanvas);
+        if (redrawCanvas) {
+          redrawCanvas();
+        }
       }
     }
-  }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId, scheduleRedraw]);
+  }, [toolStore.toolSettings, whiteboardStore, processEraserBatch, userId]);
 
   const handleEraserEnd = useCallback((redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
@@ -292,7 +275,6 @@ export const useEraserLogic = () => {
       // Clean up
       strokeInProgressRef.current = false;
       processedObjectsRef.current.clear();
-      pendingRedrawRef.current = false;
     }
   }, [toolStore.toolSettings, processEraserBatch, eraserBatching]);
 
