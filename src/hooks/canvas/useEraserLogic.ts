@@ -10,7 +10,7 @@ import { nanoid } from 'nanoid';
 interface ActionBatching {
   startBatch: (actionType: string, objectId: string, userId?: string) => string;
   endBatch: () => void;
-  checkBatchSize: () => boolean;
+  checkBatchSize: (customMaxSize?: number) => boolean;
 }
 
 /**
