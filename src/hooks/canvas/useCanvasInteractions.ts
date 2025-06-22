@@ -20,17 +20,17 @@ export const useCanvasInteractions = () => {
   const { getCanvasCoordinates } = useCanvasCoordinates();
   const { findObjectAt } = useObjectDetection();
   
-  // Initialize action batching with different settings for different tools
+  // Initialize action batching with optimized settings
   const { startBatch, endBatch, checkBatchSize } = useActionBatching({
     batchTimeout: 1000, // 1 second timeout for batch completion
-    maxBatchSize: 50 // Default batch size for most operations
+    maxBatchSize: 50 // Max 50 actions per batch
   });
   
-  // Pass action batching to eraser logic with higher limits
+  // Pass action batching to eraser logic
   const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraserLogic({
     startBatch,
     endBatch,
-    checkBatchSize: (customSize?: number) => checkBatchSize(customSize || 500) // Much higher limit for eraser
+    checkBatchSize
   });
   
   const isDrawingRef = useRef(false);
@@ -614,7 +614,7 @@ export const useCanvasInteractions = () => {
             }
           });
           
-          // Check if batch is getting too large for normal operations
+          // Check if batch is getting too large
           if (currentBatchIdRef.current) {
             checkBatchSize();
           }
@@ -666,7 +666,7 @@ export const useCanvasInteractions = () => {
             currentDrawingPreviewRef.current.path = smoothPath;
           }
           
-          // Check if batch is getting too large for normal operations
+          // Check if batch is getting too large
           if (currentBatchIdRef.current) {
             checkBatchSize();
           }
@@ -687,8 +687,10 @@ export const useCanvasInteractions = () => {
           handleEraserMove(coords, lastPointRef.current, findObjectAt, redrawCanvasRef.current || undefined);
           lastPointRef.current = coords;
           
-          // Remove frequent batch size checking for eraser - let it accumulate more actions
-          // The eraser logic will handle its own batching with higher limits
+          // Check if batch is getting too large
+          if (currentBatchIdRef.current) {
+            checkBatchSize();
+          }
         }
         break;
       }
