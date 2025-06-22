@@ -54,6 +54,9 @@ export interface ToolSettings {
   
   // Stamp settings
   selectedSticker?: string;
+  
+  // Shape properties panel settings
+  shapeColorMode: 'fill' | 'stroke';
 }
 
 interface ToolStore {
@@ -123,7 +126,8 @@ const defaultToolSettings: ToolSettings = {
   showGrid: false,
   showLinedPaper: false,
   showDots: false,
-  selectedSticker: undefined
+  selectedSticker: undefined,
+  shapeColorMode: 'fill'
 };
 
 /** Predefined color palettes for the whiteboard */

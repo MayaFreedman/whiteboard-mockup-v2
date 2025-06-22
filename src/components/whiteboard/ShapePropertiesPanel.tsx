@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { Button } from '../ui/button';
@@ -15,11 +15,11 @@ interface ShapePropertiesPanelProps {
 
 export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ selectedObjectId }) => {
   const { objects, updateObject } = useWhiteboardStore();
-  const { getActiveColors } = useToolStore();
-  const [colorMode, setColorMode] = useState<'fill' | 'stroke'>('fill');
+  const { getActiveColors, toolSettings, updateToolSettings } = useToolStore();
   
   const obj = objects[selectedObjectId];
   const activeColors = getActiveColors();
+  const colorMode = toolSettings.shapeColorMode;
   
   if (!obj) return null;
 
@@ -33,6 +33,10 @@ export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ sele
     } else {
       handlePropertyChange('stroke', color);
     }
+  };
+
+  const setColorMode = (mode: 'fill' | 'stroke') => {
+    updateToolSettings({ shapeColorMode: mode });
   };
 
   return (
