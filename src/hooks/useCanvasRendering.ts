@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -7,8 +8,7 @@ import {
   renderPaintbrushOptimized, 
   renderChalkOptimized, 
   renderSprayOptimized, 
-  renderCrayonOptimized,
-  renderWatercolorOptimized
+  renderCrayonOptimized 
 } from '../utils/brushEffectsOptimized';
 import { 
   renderTriangle, 
@@ -321,8 +321,6 @@ export const useCanvasRendering = (
           renderSprayOptimized(ctx, obj.data.path, strokeColor, strokeWidth, opacity, objectId);
         } else if (brushType === 'crayon') {
           renderCrayonOptimized(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
-        } else if (brushType === 'watercolor') {
-          renderWatercolorOptimized(ctx, obj.data.path, strokeColor, strokeWidth, opacity, objectId);
         } else {
           // Default rendering for pencil or unknown brush types
           const path = new Path2D(obj.data.path);
@@ -605,8 +603,6 @@ export const useCanvasRendering = (
         renderSprayOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else if (brushType === 'crayon') {
         renderCrayonOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
-      } else if (brushType === 'watercolor') {
-        renderWatercolorOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else {
         // Default rendering for pencil
         const path = new Path2D(preview.path);

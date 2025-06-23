@@ -5,11 +5,9 @@ import {
   brushEffectCache, 
   precalculateSprayEffect, 
   precalculateChalkEffect,
-  precalculateWatercolorEffect,
   pathToPointsForBrush,
   SprayEffectData,
-  ChalkEffectData,
-  WatercolorEffectData
+  ChalkEffectData
 } from './brushCache';
 
 /**
@@ -164,77 +162,6 @@ export const renderChalkOptimized = (
       ctx.arc(pathPoint.x + particle.offsetX, pathPoint.y + particle.offsetY, particle.size, 0, 2 * Math.PI);
       ctx.fill();
     }
-  });
-  
-  ctx.restore();
-};
-
-/**
- * Renders cached watercolor effect with consistent blurred layers
- */
-export const renderWatercolorOptimized = (
-  ctx: CanvasRenderingContext2D,
-  path: string,
-  strokeColor: string,
-  strokeWidth: number,
-  opacity: number,
-  pathId?: string
-) => {
-  ctx.save();
-  
-  const pathObj = new Path2D(path);
-  let watercolorData: WatercolorEffectData;
-  let pathPoints: Array<{ x: number; y: number }>;
-  
-  // Try to get cached effect data
-  if (pathId) {
-    const cached = brushEffectCache.get(pathId, 'watercolor');
-    if (cached && cached.effectData) {
-      watercolorData = cached.effectData as WatercolorEffectData;
-      pathPoints = cached.points;
-    } else {
-      // Calculate and cache new effect data - use coordinate-based seed for consistency
-      pathPoints = pathToPointsForBrush(path);
-      const baseSeed = generateCoordinateBasedSeed(pathPoints);
-      watercolorData = precalculateWatercolorEffect(pathPoints, strokeWidth, baseSeed);
-      
-      brushEffectCache.store(pathId, 'watercolor', {
-        type: 'watercolor',
-        points: pathPoints,
-        strokeWidth,
-        strokeColor,
-        opacity,
-        effectData: watercolorData
-      });
-    }
-  } else {
-    // Fallback for preview mode - use coordinate-based seed for stability
-    pathPoints = pathToPointsForBrush(path);
-    const baseSeed = generateCoordinateBasedSeed(pathPoints);
-    watercolorData = precalculateWatercolorEffect(pathPoints, strokeWidth, baseSeed);
-  }
-  
-  // Render each blur layer for watercolor effect
-  watercolorData.blurLayers.forEach((layer) => {
-    ctx.save();
-    ctx.translate(layer.offsetX, layer.offsetY);
-    ctx.globalCompositeOperation = layer.compositeOperation as GlobalCompositeOperation;
-    ctx.globalAlpha = opacity * layer.alpha;
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = strokeWidth * layer.width;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    
-    // Apply blur effect for watercolor bleeding
-    if (layer.blur > 0) {
-      ctx.shadowColor = strokeColor;
-      ctx.shadowBlur = layer.blur;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-    }
-    
-    ctx.stroke(pathObj);
-    ctx.restore();
   });
   
   ctx.restore();
