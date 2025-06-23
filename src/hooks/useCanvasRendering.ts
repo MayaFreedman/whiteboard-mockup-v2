@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
@@ -74,6 +74,75 @@ export const useCanvasRendering = (
 ) => {
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
+  
+  // Image cache to prevent blinking/glitching
+  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
+  const loadingImages = useRef<Set<string>>(new Set());
+
+  /**
+   * Loads and caches an image for synchronous rendering
+   */
+  const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
+    // Return cached image if available
+    if (imageCache.current.has(src)) {
+      return imageCache.current.get(src)!;
+    }
+    
+    // Prevent duplicate loading requests
+    if (loadingImages.current.has(src)) {
+      return null;
+    }
+    
+    loadingImages.current.add(src);
+    
+    try {
+      const img = new Image();
+      
+      return new Promise((resolve, reject) => {
+        img.onload = () => {
+          // Cache the loaded image
+          imageCache.current.set(src, img);
+          loadingImages.current.delete(src);
+          resolve(img);
+        };
+        
+        img.onerror = () => {
+          loadingImages.current.delete(src);
+          console.warn('Failed to load image:', src);
+          reject(new Error(`Failed to load image: ${src}`));
+        };
+        
+        // Handle SVG files by converting to blob URL
+        if (src.endsWith('.svg')) {
+          fetch(src)
+            .then(response => response.text())
+            .then(svgText => {
+              const blob = new Blob([svgText], { type: 'image/svg+xml' });
+              const url = URL.createObjectURL(blob);
+              img.src = url;
+              
+              // Clean up blob URL after image loads
+              img.onload = () => {
+                imageCache.current.set(src, img);
+                loadingImages.current.delete(src);
+                URL.revokeObjectURL(url);
+                resolve(img);
+              };
+            })
+            .catch(error => {
+              loadingImages.current.delete(src);
+              console.warn('Failed to fetch SVG:', error);
+              reject(error);
+            });
+        } else {
+          img.src = src;
+        }
+      });
+    } catch (error) {
+      loadingImages.current.delete(src);
+      return null;
+    }
+  }, []);
 
   /**
    * Sets up canvas for crisp rendering with proper pixel alignment
@@ -296,47 +365,27 @@ export const useCanvasRendering = (
       case 'image': {
         if (obj.data?.src && obj.width && obj.height) {
           const imageData = obj.data as ImageData;
+          const cachedImage = imageCache.current.get(imageData.src);
           
-          // Create an image element for the SVG
-          const img = new Image();
-          img.onload = () => {
-            // Draw the image at the specified position and size
+          if (cachedImage) {
+            // Draw immediately from cache - no blinking!
             ctx.drawImage(
-              img, 
+              cachedImage, 
               Math.round(obj.x), 
               Math.round(obj.y), 
               Math.round(obj.width), 
               Math.round(obj.height)
             );
-          };
-          
-          // For SVG assets, we need to create a data URL
-          if (imageData.src.endsWith('.svg')) {
-            // Fetch the SVG content and create a data URL
-            fetch(imageData.src)
-              .then(response => response.text())
-              .then(svgText => {
-                const blob = new Blob([svgText], { type: 'image/svg+xml' });
-                const url = URL.createObjectURL(blob);
-                img.src = url;
-                
-                // Clean up the blob URL after use
-                img.onload = () => {
-                  ctx.drawImage(
-                    img, 
-                    Math.round(obj.x), 
-                    Math.round(obj.y), 
-                    Math.round(obj.width), 
-                    Math.round(obj.height)
-                  );
-                  URL.revokeObjectURL(url);
-                };
-              })
-              .catch(error => {
-                console.warn('Failed to load SVG:', error);
-              });
           } else {
-            img.src = imageData.src;
+            // Load image asynchronously and trigger redraw when ready
+            getOrLoadImage(imageData.src).then(() => {
+              // Only redraw if canvas still exists
+              if (canvas) {
+                redrawCanvas();
+              }
+            }).catch(error => {
+              console.warn('Failed to load image for rendering:', error);
+            });
           }
         }
         break;
@@ -506,7 +555,7 @@ export const useCanvasRendering = (
     }
 
     ctx.restore();
-  }, [editingTextId, editingText, objects]);
+  }, [editingTextId, editingText, objects, getOrLoadImage, canvas]);
 
   /**
    * Renders the current drawing preview (work-in-progress path)
@@ -793,7 +842,8 @@ export const useCanvasRendering = (
       devicePixelRatio: window.devicePixelRatio || 1,
       hasDrawingPreview: !!getCurrentDrawingPreview?.(),
       hasShapePreview: !!getCurrentShapePreview?.(),
-      editingTextId: editingTextId || 'none'
+      editingTextId: editingTextId || 'none',
+      cachedImages: imageCache.current.size
     });
   }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, setupCanvasForCrispRendering]);
 
