@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
@@ -25,8 +24,6 @@ import {
   Eraser,
   Undo,
   Redo,
-  ZoomIn,
-  ZoomOut,
   PaintBucket,
   Triangle,
   Hexagon,
@@ -148,7 +145,7 @@ const ColorButton: React.FC<{
 );
 
 /**
- * Renders action buttons (undo, redo, zoom) using the new undo/redo hook
+ * Renders action buttons (undo, redo) using the undo/redo hook
  */
 const ActionButtons: React.FC = () => {
   const { userId } = useUser();
@@ -199,12 +196,6 @@ const ActionButtons: React.FC = () => {
         disabled={!canRedo(userId)}
       >
         <Redo className="w-4 h-4" />
-      </Button>
-      <Button variant="ghost" size="sm" title="Zoom Out">
-        <ZoomOut className="w-4 h-4" />
-      </Button>
-      <Button variant="ghost" size="sm" title="Zoom In">
-        <ZoomIn className="w-4 h-4" />
       </Button>
     </div>
   );
@@ -262,7 +253,7 @@ export const Toolbar: React.FC = () => {
       {/* Scrollable Content Container */}
       <div 
         className="overflow-x-auto scrollbar-hide"
-        style={{ paddingRight: isMobile ? '16px' : '200px' }}
+        style={{ paddingRight: isMobile ? '16px' : '120px' }}
       >
         <style>{`
           .scrollbar-hide {
