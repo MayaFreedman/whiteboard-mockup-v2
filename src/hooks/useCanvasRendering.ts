@@ -834,7 +834,7 @@ export const useCanvasRendering = (
       hasDrawingPreview: !!getCurrentDrawingPreview?.(),
       hasShapePreview: !!getCurrentShapePreview?.(),
       editingTextId: editingTextId || 'none',
-      cachedImages: imageCache.getCachedImages().length
+      cachedImages: imageCache.getStats().size
     });
   }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
 
