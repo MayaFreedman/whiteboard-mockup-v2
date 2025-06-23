@@ -17,36 +17,52 @@ class ImageCacheManager {
   private maxAge = 5 * 60 * 1000; // 5 minutes
 
   /**
+   * Converts src paths to proper URLs that work in both dev and production
+   */
+  private resolveImageUrl(src: string): string {
+    // If it starts with /src/assets/, convert it to a proper import
+    if (src.startsWith('/src/assets/')) {
+      const assetPath = src.replace('/src/assets/', '');
+      // In Vite, we need to import the asset to get the correct URL
+      // For now, we'll try to convert it to a relative path
+      return `./src/assets/${assetPath}`;
+    }
+    return src;
+  }
+
+  /**
    * Gets a cached image or loads it if not cached
    */
   async getImage(src: string): Promise<HTMLImageElement | null> {
+    const resolvedSrc = this.resolveImageUrl(src);
+    
     // Check if we have a valid cached entry
-    const cached = this.cache.get(src);
+    const cached = this.cache.get(resolvedSrc);
     if (cached && cached.status === 'loaded' && this.isEntryValid(cached)) {
       return cached.image;
     }
 
     // Check if we're already loading this image
-    if (this.loadingPromises.has(src)) {
+    if (this.loadingPromises.has(resolvedSrc)) {
       try {
-        return await this.loadingPromises.get(src)!;
+        return await this.loadingPromises.get(resolvedSrc)!;
       } catch (error) {
-        console.warn('Failed to load image from existing promise:', src, error);
+        console.warn('Failed to load image from existing promise:', resolvedSrc, error);
         return null;
       }
     }
 
     // Start loading the image
-    const loadPromise = this.loadImage(src);
-    this.loadingPromises.set(src, loadPromise);
+    const loadPromise = this.loadImage(resolvedSrc);
+    this.loadingPromises.set(resolvedSrc, loadPromise);
 
     try {
       const image = await loadPromise;
-      this.loadingPromises.delete(src);
+      this.loadingPromises.delete(resolvedSrc);
       return image;
     } catch (error) {
-      this.loadingPromises.delete(src);
-      console.warn('Failed to load image:', src, error);
+      this.loadingPromises.delete(resolvedSrc);
+      console.warn('Failed to load image:', resolvedSrc, error);
       return null;
     }
   }
@@ -55,7 +71,8 @@ class ImageCacheManager {
    * Gets a cached image synchronously if available
    */
   getCachedImage(src: string): HTMLImageElement | null {
-    const cached = this.cache.get(src);
+    const resolvedSrc = this.resolveImageUrl(src);
+    const cached = this.cache.get(resolvedSrc);
     if (cached && cached.status === 'loaded' && this.isEntryValid(cached)) {
       return cached.image;
     }
@@ -66,7 +83,8 @@ class ImageCacheManager {
    * Checks if we're currently loading an image
    */
   isLoading(src: string): boolean {
-    return this.loadingPromises.has(src);
+    const resolvedSrc = this.resolveImageUrl(src);
+    return this.loadingPromises.has(resolvedSrc);
   }
 
   /**
@@ -108,7 +126,7 @@ class ImageCacheManager {
         reject(new Error(`Failed to load image: ${src}`));
       };
 
-      // Handle SVG files specially
+      // Handle SVG files specially - try dynamic import first, then fetch
       if (src.endsWith('.svg')) {
         this.loadSvgImage(img, src).catch(reject);
       } else {
@@ -118,10 +136,22 @@ class ImageCacheManager {
   }
 
   /**
-   * Loads SVG images by converting to blob URL
+   * Loads SVG images with better path resolution
    */
   private async loadSvgImage(img: HTMLImageElement, src: string): Promise<void> {
     try {
+      // Try to dynamically import the SVG first (works better with Vite)
+      if (src.startsWith('./src/assets/')) {
+        try {
+          const module = await import(/* @vite-ignore */ src);
+          img.src = module.default || src;
+          return;
+        } catch (importError) {
+          console.log('Dynamic import failed, trying fetch:', importError);
+        }
+      }
+      
+      // Fallback to fetch
       const response = await fetch(src);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
