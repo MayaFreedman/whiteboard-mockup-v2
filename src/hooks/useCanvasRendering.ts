@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -813,8 +812,12 @@ export const useCanvasRendering = (
 
     const now = Date.now();
     
-    // If immediate redraw is requested or enough time has passed, redraw now
-    if (immediate || now - lastRedrawTime.current >= REDRAW_THROTTLE_MS) {
+    // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
+    const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
+    const shouldRedrawImmediately = immediate || !hasDrawingPreview;
+    
+    // If immediate redraw is requested, no drawing preview (drawing ended), or enough time has passed, redraw now
+    if (shouldRedrawImmediately || now - lastRedrawTime.current >= REDRAW_THROTTLE_MS) {
       lastRedrawTime.current = now;
       
       // Clear any pending timeout
@@ -825,7 +828,7 @@ export const useCanvasRendering = (
       
       performRedraw();
     } else {
-      // Throttle the redraw - schedule it for later if not already scheduled
+      // Throttle the redraw only during active drawing - schedule it for later if not already scheduled
       if (!redrawTimeoutRef.current) {
         const timeUntilNextRedraw = REDRAW_THROTTLE_MS - (now - lastRedrawTime.current);
         
@@ -850,7 +853,7 @@ export const useCanvasRendering = (
     canvas.style.width = rect.width + 'px';
     canvas.style.height = rect.height + 'px';
     
-    const ctx = canvas.getContext('2d')!; // Fix: Define ctx variable
+    const ctx = canvas.getContext('2d')!;
     ctx.scale(devicePixelRatio, devicePixelRatio);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
@@ -900,7 +903,7 @@ export const useCanvasRendering = (
       editingTextId: editingTextId || 'none',
       cachedImages: imageCache.current.size
     });
-  }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, setupCanvasForCrispRendering]);
+  }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
 
   // Auto-redraw when state changes
   useEffect(() => {
