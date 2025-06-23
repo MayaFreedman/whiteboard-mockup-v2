@@ -230,8 +230,6 @@ export const Canvas: React.FC = () => {
       const finalText = editingText?.trim() || '';
       const textObject = objects[editingTextId];
       
-      console.log('📝 Completing text edit:', { finalText, textObjectId: editingTextId });
-      
       // Update the text content
       updateObject(editingTextId, {
         data: {
@@ -254,27 +252,6 @@ export const Canvas: React.FC = () => {
     setEditingTextId(null);
     setTextEditorPosition(null);
     setEditingText('');
-  };
-
-  // Handle text input changes to update wrapped content in real-time
-  const handleTextChange = (newText: string) => {
-    console.log('📝 Text changed:', newText);
-    setEditingText(newText);
-    
-    // Update the object in real-time for better visual feedback
-    if (editingTextId && objects[editingTextId]) {
-      const textObject = objects[editingTextId];
-      updateObject(editingTextId, {
-        data: {
-          ...textObject.data,
-          content: newText
-        }
-      });
-      
-      // Auto-resize bounds based on new content
-      updateTextBounds(textObject, newText);
-      redrawCanvas();
-    }
   };
 
   // Handle text input key events
@@ -418,7 +395,6 @@ export const Canvas: React.FC = () => {
             wordWrap: 'break-word', // Enable word wrapping
             whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
             overflowWrap: 'break-word', // Break long words if necessary
-            wordBreak: 'break-all', // Force breaking of long words
             // Font rendering optimizations to match canvas
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
@@ -430,7 +406,7 @@ export const Canvas: React.FC = () => {
             boxSizing: 'border-box'
           }}
           value={editingText}
-          onChange={(e) => handleTextChange(e.target.value)}
+          onChange={(e) => setEditingText(e.target.value)}
           onBlur={handleTextEditComplete}
           onKeyDown={handleTextKeyDown}
           autoFocus
