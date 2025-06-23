@@ -1,13 +1,8 @@
-
 import { useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
-import { WhiteboardObject, TextData } from '../types/whiteboard';
+import { useViewportStore } from '../stores/viewportStore';
+import { Point, WhiteboardObject, TextData } from '../types/whiteboard';
 import { measureText } from '../utils/textMeasurement';
-
-interface Point {
-  x: number;
-  y: number;
-}
 
 export const useCanvasRendering = (
   canvas: HTMLCanvasElement | null,
@@ -17,7 +12,11 @@ export const useCanvasRendering = (
   editingText?: string
 ) => {
   const { objects, selectedObjectIds } = useWhiteboardStore();
-  const { viewport } = useWhiteboardStore();
+  const { viewport } = useViewportStore();
+  
+  useEffect(() => {
+    redrawCanvas();
+  }, [objects, selectedObjectIds, viewport, redrawCanvas]);
   
   /**
    * Renders a path object on the canvas
@@ -25,32 +24,32 @@ export const useCanvasRendering = (
    * @param obj - Path object to render
    */
   const renderPath = (ctx: CanvasRenderingContext2D, obj: WhiteboardObject) => {
-    if (!obj.data?.points || obj.data.points.length < 2) return;
+    if (!obj.points || obj.points.length < 2) return;
     
     ctx.strokeStyle = obj.stroke || '#000000';
-    ctx.lineWidth = obj.data.strokeWidth || 2;
+    ctx.lineWidth = obj.size || 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     
     ctx.beginPath();
-    ctx.moveTo(obj.data.points[0].x, obj.data.points[0].y);
+    ctx.moveTo(obj.points[0].x, obj.points[0].y);
     
-    for (let i = 1; i < obj.data.points.length; i++) {
-      ctx.lineTo(obj.data.points[i].x, obj.data.points[i].y);
+    for (let i = 1; i < obj.points.length; i++) {
+      ctx.lineTo(obj.points[i].x, obj.points[i].y);
     }
     
     ctx.stroke();
   };
   
   /**
-   * Renders a shape object (rectangle, circle, triangle) on the canvas
+   * Renders a shape object (rectangle, circle, triangle, line, arrow) on the canvas
    * @param ctx - Canvas context
    * @param obj - Shape object to render
    */
   const renderShape = (ctx: CanvasRenderingContext2D, obj: WhiteboardObject) => {
     ctx.fillStyle = obj.fill || 'transparent';
     ctx.strokeStyle = obj.stroke || '#000000';
-    ctx.lineWidth = obj.data?.strokeWidth || 2;
+    ctx.lineWidth = obj.size || 2;
     
     switch (obj.type) {
       case 'rectangle':
@@ -72,6 +71,34 @@ export const useCanvasRendering = (
         ctx.lineTo(obj.x + obj.width, obj.y + obj.height);
         ctx.closePath();
         ctx.fill();
+        ctx.stroke();
+        break;
+      }
+      case 'line':
+        ctx.beginPath();
+        ctx.moveTo(obj.x, obj.y);
+        ctx.lineTo(obj.x + obj.width, obj.y + obj.height);
+        ctx.stroke();
+        break;
+      case 'arrow': {
+        const arrowHeadSize = 10;
+        const angle = Math.atan2(obj.height, obj.width);
+        
+        ctx.beginPath();
+        ctx.moveTo(obj.x, obj.y);
+        ctx.lineTo(obj.x + obj.width, obj.y + obj.height);
+        
+        // Arrowhead
+        ctx.lineTo(
+          obj.x + obj.width - arrowHeadSize * Math.cos(angle - Math.PI / 6),
+          obj.y + obj.height - arrowHeadSize * Math.sin(angle - Math.PI / 6)
+        );
+        ctx.moveTo(obj.x + obj.width, obj.y + obj.height);
+        ctx.lineTo(
+          obj.x + obj.width - arrowHeadSize * Math.cos(angle + Math.PI / 6),
+          obj.y + obj.height - arrowHeadSize * Math.sin(angle + Math.PI / 6)
+        );
+        
         ctx.stroke();
         break;
       }
@@ -219,7 +246,7 @@ export const useCanvasRendering = (
   };
   
   /**
-   * Renders the current shape preview (for rectangle, circle, triangle)
+   * Renders the current shape preview (for rectangle, circle, triangle, line, arrow)
    * @param ctx - Canvas context
    */
   const renderCurrentShapePreview = (ctx: CanvasRenderingContext2D) => {
@@ -255,6 +282,34 @@ export const useCanvasRendering = (
         ctx.stroke();
         break;
       }
+      case 'line':
+        ctx.beginPath();
+        ctx.moveTo(preview.x, preview.y);
+        ctx.lineTo(preview.x + preview.width, preview.y + preview.height);
+        ctx.stroke();
+        break;
+      case 'arrow': {
+        const arrowHeadSize = 10;
+        const angle = Math.atan2(preview.height, preview.width);
+        
+        ctx.beginPath();
+        ctx.moveTo(preview.x, preview.y);
+        ctx.lineTo(preview.x + preview.width, preview.y + preview.height);
+        
+        // Arrowhead
+        ctx.lineTo(
+          preview.x + preview.width - arrowHeadSize * Math.cos(angle - Math.PI / 6),
+          preview.y + preview.height - arrowHeadSize * Math.sin(angle - Math.PI / 6)
+        );
+        ctx.moveTo(preview.x + preview.width, preview.y + preview.height);
+        ctx.lineTo(
+          preview.x + preview.width - arrowHeadSize * Math.cos(angle + Math.PI / 6),
+          preview.y + preview.height - arrowHeadSize * Math.sin(angle + Math.PI / 6)
+        );
+        
+        ctx.stroke();
+        break;
+      }
       default:
         console.warn('Unknown shape type:', preview.type);
     }
@@ -276,18 +331,17 @@ export const useCanvasRendering = (
     ctx.save();
     
     // Apply viewport transformations (scale and translation)
-    const currentViewport = viewport || { x: 0, y: 0, zoom: 1 };
-    ctx.translate(currentViewport.x, currentViewport.y);
-    ctx.scale(currentViewport.zoom, currentViewport.zoom);
+    ctx.translate(viewport.x, viewport.y);
+    ctx.scale(viewport.zoom, viewport.zoom);
     
     // Render a grid
     const gridSize = 50; // Adjust as needed
     const gridColor = '#f0f0f0'; // Light gray color
     
-    const minX = -currentViewport.x / currentViewport.zoom;
-    const minY = -currentViewport.y / currentViewport.zoom;
-    const maxX = minX + canvas.width / currentViewport.zoom;
-    const maxY = minY + canvas.height / currentViewport.zoom;
+    const minX = -viewport.x / viewport.zoom;
+    const minY = -viewport.y / viewport.zoom;
+    const maxX = minX + canvas.width / viewport.zoom;
+    const maxY = minY + canvas.height / viewport.zoom;
     
     ctx.strokeStyle = gridColor;
     ctx.lineWidth = 0.5;
@@ -327,6 +381,8 @@ export const useCanvasRendering = (
         case 'rectangle':
         case 'circle':
         case 'triangle':
+        case 'line':
+        case 'arrow':
           renderShape(ctx, obj);
           break;
         case 'text':
