@@ -105,6 +105,18 @@ export const useObjectDetection = () => {
   }, []);
 
   /**
+   * Checks if a point is inside an image with padding
+   */
+  const isPointInImage = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
+    if (!obj.width || !obj.height) return false;
+    
+    // Add 5px padding for easier selection
+    const padding = 5;
+    return x >= obj.x - padding && x <= obj.x + obj.width + padding &&
+           y >= obj.y - padding && y <= obj.y + obj.height + padding;
+  }, []);
+
+  /**
    * Checks if a point is inside a complex shape
    */
   const isPointInComplexShape = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
@@ -221,6 +233,16 @@ export const useObjectDetection = () => {
           break;
         }
         
+        case 'image': {
+          isHit = isPointInImage(obj, x, y);
+          console.log('🖼️ Image hit test:', {
+            id: id.slice(0, 8),
+            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+            isHit
+          });
+          break;
+        }
+        
         case 'triangle':
         case 'diamond':
         case 'pentagon':
@@ -263,7 +285,7 @@ export const useObjectDetection = () => {
     
     console.log('❌ No object found at coordinates');
     return null;
-  }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInText, isPointInComplexShape]);
+  }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInText, isPointInImage, isPointInComplexShape]);
 
   return {
     findObjectAt,
@@ -271,6 +293,7 @@ export const useObjectDetection = () => {
     isPointInRectangle,
     isPointInCircle,
     isPointInText,
+    isPointInImage,
     isPointInComplexShape
   };
 };

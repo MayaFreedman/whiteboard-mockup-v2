@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
-import { WhiteboardObject, TextData } from '../types/whiteboard';
+import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
 import { renderPaintbrush, renderChalk, renderSpray, renderCrayon } from '../utils/brushEffects';
 import { 
   renderTriangle, 
@@ -165,6 +165,12 @@ export const useCanvasRendering = (
           ctx.stroke();
           break;
         }
+        case 'image': {
+          // Draw selection outline for image objects - use pixel-perfect positioning
+          ctx.lineWidth = 6;
+          ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
+          break;
+        }
         case 'triangle':
         case 'diamond':
         case 'pentagon':
@@ -282,6 +288,55 @@ export const useCanvasRendering = (
             ctx.strokeStyle = obj.stroke;
             ctx.lineWidth = obj.strokeWidth || 2;
             ctx.stroke();
+          }
+        }
+        break;
+      }
+
+      case 'image': {
+        if (obj.data?.src && obj.width && obj.height) {
+          const imageData = obj.data as ImageData;
+          
+          // Create an image element for the SVG
+          const img = new Image();
+          img.onload = () => {
+            // Draw the image at the specified position and size
+            ctx.drawImage(
+              img, 
+              Math.round(obj.x), 
+              Math.round(obj.y), 
+              Math.round(obj.width), 
+              Math.round(obj.height)
+            );
+          };
+          
+          // For SVG assets, we need to create a data URL
+          if (imageData.src.endsWith('.svg')) {
+            // Fetch the SVG content and create a data URL
+            fetch(imageData.src)
+              .then(response => response.text())
+              .then(svgText => {
+                const blob = new Blob([svgText], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                img.src = url;
+                
+                // Clean up the blob URL after use
+                img.onload = () => {
+                  ctx.drawImage(
+                    img, 
+                    Math.round(obj.x), 
+                    Math.round(obj.y), 
+                    Math.round(obj.width), 
+                    Math.round(obj.height)
+                  );
+                  URL.revokeObjectURL(url);
+                };
+              })
+              .catch(error => {
+                console.warn('Failed to load SVG:', error);
+              });
+          } else {
+            img.src = imageData.src;
           }
         }
         break;
