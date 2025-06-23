@@ -117,7 +117,11 @@ const ToolButton: React.FC<{
     variant={isActive ? "default" : "ghost"}
     size="sm"
     onClick={onClick}
-    className="p-2"
+    className={`p-2 transition-all duration-200 ${
+      isActive 
+        ? "bg-company-dark-blue text-white hover:bg-company-dark-blue/90" 
+        : "hover:bg-company-light-pink-tint hover:text-company-dark-pink"
+    }`}
     title={tool.label}
   >
     <tool.icon className="w-4 h-4" />
@@ -244,7 +248,7 @@ export const Toolbar: React.FC = () => {
   const isShapeSelected = !!selectedShape;
 
   return (
-    <div ref={toolbarRef} className="bg-card border-b border-border relative">
+    <div ref={toolbarRef} className="bg-card border-b border-company-light-blue/20 relative">
       {/* Desktop Action Buttons - Fixed to the right */}
       <div className={`absolute right-4 top-0 h-full items-center gap-2 z-10 ${isMobile ? 'hidden' : 'flex'}`}>
         <ActionButtons />
@@ -279,7 +283,7 @@ export const Toolbar: React.FC = () => {
             ))}
           </div>
 
-          <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+          <Separator orientation="vertical" className="h-8 flex-shrink-0 bg-company-light-blue/30" />
 
           {/* Shapes Dropdown Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -288,7 +292,11 @@ export const Toolbar: React.FC = () => {
                 <Button
                   variant={isShapeSelected ? "default" : "ghost"}
                   size="sm"
-                  className="p-2 gap-1"
+                  className={`p-2 gap-1 transition-all duration-200 ${
+                    isShapeSelected 
+                      ? "bg-company-dark-blue text-white hover:bg-company-dark-blue/90" 
+                      : "hover:bg-company-light-pink-tint hover:text-company-dark-pink"
+                  }`}
                   title={selectedShape ? selectedShape.label : "Select Shape"}
                 >
                   {selectedShape ? (
@@ -299,12 +307,12 @@ export const Toolbar: React.FC = () => {
                   <ChevronDown className="w-3 h-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="bg-popover">
+              <DropdownMenuContent align="start" className="bg-popover border-company-light-blue/20">
                 {SHAPE_TOOLS.map((shape) => (
                   <DropdownMenuItem
                     key={shape.id}
                     onClick={() => handleToolSelect(shape.id)}
-                    className="flex items-center gap-2 cursor-pointer"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-company-light-pink-tint hover:text-company-dark-pink"
                   >
                     <shape.icon className="w-4 h-4" />
                     <span>{shape.label}</span>
@@ -314,11 +322,11 @@ export const Toolbar: React.FC = () => {
             </DropdownMenu>
           </div>
 
-          <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+          <Separator orientation="vertical" className="h-8 flex-shrink-0 bg-company-light-blue/30" />
 
           {/* Color Palette Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className={`text-sm font-medium whitespace-nowrap ${isMobile ? 'hidden' : ''}`}>
+            <span className={`text-sm font-medium whitespace-nowrap text-company-light-blue ${isMobile ? 'hidden' : ''}`}>
               Colors:
             </span>
             <div className="flex gap-1 items-center">
@@ -336,7 +344,7 @@ export const Toolbar: React.FC = () => {
           {/* Mobile Action Buttons - Show at the end on mobile */}
           {isMobile && (
             <>
-              <Separator orientation="vertical" className="h-8 flex-shrink-0" />
+              <Separator orientation="vertical" className="h-8 flex-shrink-0 bg-company-light-blue/30" />
               <div className="flex items-center gap-2 flex-shrink-0">
                 <ActionButtons />
               </div>

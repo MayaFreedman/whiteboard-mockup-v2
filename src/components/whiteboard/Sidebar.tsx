@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
@@ -79,7 +78,7 @@ export const WhiteboardSidebar: React.FC = () => {
     <>
       <UISidebar 
         side="left" 
-        className="border-r w-96" 
+        className="border-r border-company-light-blue/20 w-96" 
         collapsible="offcanvas"
         style={{
           transform: open ? 'translateX(0)' : 'translateX(-100%)',
@@ -87,14 +86,14 @@ export const WhiteboardSidebar: React.FC = () => {
           marginTop: 'var(--toolbar-height, 0px)'
         }}
       >
-        <SidebarHeader className="border-b px-4 py-3 flex-shrink-0">
+        <SidebarHeader className="border-b border-company-light-blue/20 px-4 py-3 flex-shrink-0 bg-company-light-pink-tint/30">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Tools & Settings</h2>
+            <h2 className="font-semibold text-company-dark-blue">Tools & Settings</h2>
             <Button
               onClick={toggleSidebar}
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 hover:bg-company-light-pink-tint hover:text-company-dark-pink"
             >
               <ChevronsLeft className="h-4 w-4" />
               <span className="sr-only">Collapse sidebar</span>
@@ -105,9 +104,19 @@ export const WhiteboardSidebar: React.FC = () => {
           <ScrollArea className="h-full">
             <div className="p-4 pb-24">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="tools">Tools</TabsTrigger>
-                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 bg-company-light-pink-tint/50">
+                  <TabsTrigger 
+                    value="tools" 
+                    className="data-[state=active]:bg-company-dark-blue data-[state=active]:text-white hover:bg-company-light-pink-tint hover:text-company-dark-pink transition-all duration-200"
+                  >
+                    Tools
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="settings"
+                    className="data-[state=active]:bg-company-light-blue data-[state=active]:text-white hover:bg-company-light-pink-tint hover:text-company-dark-pink transition-all duration-200"
+                  >
+                    Settings
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="tools" className="space-y-4">
@@ -116,9 +125,9 @@ export const WhiteboardSidebar: React.FC = () => {
 
                 <TabsContent value="settings" className="space-y-4">
                   {/* Colors & Palettes */}
-                  <Card>
-                    <CardHeader className="bg-muted/80 py-3">
-                      <CardTitle className="text-lg">Colors & Palettes</CardTitle>
+                  <Card className="border-company-light-pink/30">
+                    <CardHeader className="bg-company-light-pink-tint/40 py-3 border-b border-company-light-pink/20">
+                      <CardTitle className="text-lg text-company-dark-blue">Colors & Palettes</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 pt-6">
                       {Object.entries(colorPalettes).map(([name, colors]) => (
@@ -128,13 +137,13 @@ export const WhiteboardSidebar: React.FC = () => {
                               onClick={() => setActiveColorPalette(name as any)}
                               className={`flex items-center gap-2 text-left p-2 rounded transition-colors ${
                                 activeColorPalette === name 
-                                  ? 'bg-primary/10 text-primary font-medium' 
-                                  : 'hover:bg-muted/50'
+                                  ? 'bg-company-dark-pink/10 text-company-dark-blue font-medium border border-company-dark-pink/20' 
+                                  : 'hover:bg-company-light-pink-tint/50 hover:text-company-dark-pink'
                               }`}
                             >
                               <span className="capitalize">{name}</span>
                               {activeColorPalette === name && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Check className="w-4 h-4 text-company-dark-pink" />
                               )}
                             </button>
                           </div>
@@ -142,12 +151,12 @@ export const WhiteboardSidebar: React.FC = () => {
                             {colors.slice(0, 8).map((color, index) => (
                               <div
                                 key={index}
-                                className="w-5 h-5 rounded border border-border"
+                                className="w-5 h-5 rounded border border-company-light-blue/30"
                                 style={{ backgroundColor: color }}
                               />
                             ))}
                             {colors.length > 8 && (
-                              <div className="flex items-center justify-center w-5 h-5 text-xs text-muted-foreground border border-border rounded">
+                              <div className="flex items-center justify-center w-5 h-5 text-xs text-company-light-blue border border-company-light-blue/30 rounded">
                                 +{colors.length - 8}
                               </div>
                             )}
@@ -158,13 +167,13 @@ export const WhiteboardSidebar: React.FC = () => {
                   </Card>
 
                   {/* Canvas Settings */}
-                  <Card>
-                    <CardHeader className="bg-muted/80 py-3">
-                      <CardTitle className="text-lg">Canvas Settings</CardTitle>
+                  <Card className="border-company-light-blue/30">
+                    <CardHeader className="bg-company-light-blue-tint/40 py-3 border-b border-company-light-blue/20">
+                      <CardTitle className="text-lg text-company-dark-blue">Canvas Settings</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                       <div className="space-y-3">
-                        <p className="text-sm text-muted-foreground">Background Options (choose one):</p>
+                        <p className="text-sm text-company-light-blue">Background Options (choose one):</p>
                         
                         <div className="flex items-center justify-between">
                           <label className="text-sm font-medium">Show Grid</label>
@@ -192,12 +201,12 @@ export const WhiteboardSidebar: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium mb-3 block">Set Custom Background</label>
+                        <label className="text-sm font-medium mb-3 block text-company-dark-blue">Set Custom Background</label>
                         <div className="grid grid-cols-2 gap-2">
                           {backgroundImages.map((bg) => (
                             <button
                               key={bg.name}
-                              className="relative w-full h-16 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
+                              className="relative w-full h-16 rounded border-2 border-company-light-pink/30 hover:border-company-dark-pink transition-colors overflow-hidden group"
                               onClick={() => updateSettings({ backgroundColor: `url(${bg.url})` })}
                               title={bg.name}
                             >
@@ -216,10 +225,10 @@ export const WhiteboardSidebar: React.FC = () => {
                           ))}
                         </div>
                         <button
-                          className="mt-2 w-full h-8 rounded border-2 border-border hover:border-primary transition-colors bg-background"
+                          className="mt-2 w-full h-8 rounded border-2 border-company-light-pink/30 hover:border-company-dark-pink transition-colors bg-background hover:bg-company-light-pink-tint/30"
                           onClick={() => updateSettings({ backgroundColor: '#ffffff' })}
                         >
-                          <span className="text-xs text-muted-foreground">Clear Background</span>
+                          <span className="text-xs text-company-light-blue">Clear Background</span>
                         </button>
                       </div>
                     </CardContent>
@@ -235,7 +244,7 @@ export const WhiteboardSidebar: React.FC = () => {
       {!open && (
         <button
           onClick={toggleSidebar}
-          className="fixed z-50 bg-background/95 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-r-md cursor-pointer shadow-md hover:shadow-lg border-0 outline-none"
+          className="fixed z-50 bg-background/95 backdrop-blur-sm text-company-light-blue hover:text-company-dark-blue hover:bg-company-light-pink-tint/50 transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-r-md cursor-pointer shadow-md hover:shadow-lg border-0 outline-none border-r border-company-light-pink/20"
           style={{
             left: '0',
             top: 'var(--toolbar-height, 64px)'
