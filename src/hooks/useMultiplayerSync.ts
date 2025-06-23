@@ -1,4 +1,3 @@
-
 import { useEffect, useContext, useRef } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
@@ -95,10 +94,19 @@ export const useMultiplayerSync = () => {
       if (message.type === 'request_state') {
         console.log('🔄 Received state request from:', message.requesterId)
         
-        // Only respond if we have objects and we're not the requester
-        if (message.requesterId !== room.sessionId && !hasReceivedInitialStateRef.current) {
+        // FIXED: Only respond if we're not the requester AND we have objects to share
+        if (message.requesterId !== room.sessionId) {
           const currentState = whiteboardStore.getStateSnapshot()
-          if (Object.keys(currentState.objects).length > 0) {
+          const hasObjectsToShare = Object.keys(currentState.objects).length > 0
+          
+          console.log('🔍 State sharing decision:', {
+            isRequester: message.requesterId === room.sessionId,
+            hasObjects: hasObjectsToShare,
+            objectCount: Object.keys(currentState.objects).length,
+            willRespond: hasObjectsToShare
+          })
+          
+          if (hasObjectsToShare) {
             console.log('📤 Responding to state request with', Object.keys(currentState.objects).length, 'objects')
             
             // Small delay to avoid multiple responses at the same time
@@ -108,6 +116,8 @@ export const useMultiplayerSync = () => {
           } else {
             console.log('🔄 Not responding to state request - no objects to share')
           }
+        } else {
+          console.log('🔄 Not responding to state request - we are the requester')
         }
         return
       }
@@ -132,12 +142,23 @@ export const useMultiplayerSync = () => {
             stateRequestTimeoutRef.current = undefined
           }
           
-          // Apply the received state
-          if (message.state?.objects) {
+          // Apply the received state with improved object conversion
+          if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
+            console.log('🔄 Converting and applying received objects...')
+            
             // Convert objects to actions and apply them
             const actions: WhiteboardAction[] = Object.values(message.state.objects).map((obj: any) => ({
               type: 'ADD_OBJECT',
-              payload: { object: obj },
+              payload: { 
+                object: {
+                  ...obj,
+                  // Ensure all required properties are present
+                  createdAt: obj.createdAt || Date.now(),
+                  updatedAt: obj.updatedAt || Date.now(),
+                  // Preserve all object data including brush metadata
+                  data: obj.data || {}
+                }
+              },
               timestamp: obj.createdAt || Date.now(),
               id: `sync-${obj.id}`,
               userId: 'sync'
@@ -152,12 +173,16 @@ export const useMultiplayerSync = () => {
           // Apply viewport if provided
           if (message.state?.viewport) {
             whiteboardStore.setViewport(message.state.viewport)
+            console.log('✅ Applied viewport state')
           }
           
           // Apply settings if provided
           if (message.state?.settings) {
             whiteboardStore.setSettings(message.state.settings)
+            console.log('✅ Applied settings state')
           }
+        } else {
+          console.log('🔄 Ignoring state response - not for us or already received initial state')
         }
         return
       }

@@ -567,12 +567,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
 
   // State management methods
   getState: () => get(),
-  getStateSnapshot: () => ({
-    objects: get().objects,
-    viewport: get().viewport,
-    settings: get().settings,
-    actionCount: get().actionHistory.length,
-  }),
+  getStateSnapshot: () => {
+    const state = get()
+    return {
+      objects: { ...state.objects }, // Create a clean copy
+      viewport: { ...state.viewport },
+      settings: { ...state.settings },
+      actionCount: state.actionHistory.length,
+      timestamp: Date.now()
+    }
+  },
   getActionsSince: (timestamp) => {
     return get().actionHistory.filter(action => action.timestamp > timestamp);
   },
