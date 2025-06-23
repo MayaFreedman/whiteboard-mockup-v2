@@ -1,7 +1,7 @@
+
 import { useCallback, useEffect, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { WhiteboardObject } from '../types/whiteboard';
-import { useSettings } from '../contexts/SettingsContext';
 
 interface CanvasRenderingProps {
   settings: {
@@ -23,9 +23,15 @@ export const useCanvasRendering = (
   editingTextId?: string | null,
   editingText?: string
 ) => {
-  const { objects, selectedObjectIds } = useWhiteboardStore();
-  const { settings, viewport } = useSettings() as CanvasRenderingProps;
+  const { objects, selectedObjectIds, viewport } = useWhiteboardStore();
   const imageCache = useRef(new Map());
+
+  // Default settings - these should be made configurable later
+  const settings = {
+    gridVisible: false,
+    linedPaperVisible: false,
+    backgroundColor: '#ffffff'
+  };
 
   /**
    * Loads an image into the cache
