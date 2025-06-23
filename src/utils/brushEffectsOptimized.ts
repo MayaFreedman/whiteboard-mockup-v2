@@ -1,4 +1,3 @@
-
 /**
  * Optimized brush effects with caching for consistent rendering
  */
@@ -25,21 +24,23 @@ export const renderSprayOptimized = (
   ctx.save();
   
   let sprayData: SprayEffectData;
+  let pathPoints: Array<{ x: number; y: number }>;
   
   // Try to get cached effect data
   if (pathId) {
     const cached = brushEffectCache.get(pathId, 'spray');
     if (cached && cached.effectData) {
       sprayData = cached.effectData as SprayEffectData;
+      pathPoints = cached.points;
     } else {
       // Calculate and cache new effect data
-      const points = pathToPointsForBrush(path);
+      pathPoints = pathToPointsForBrush(path);
       const baseSeed = pathId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      sprayData = precalculateSprayEffect(points, strokeWidth, baseSeed);
+      sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
       
       brushEffectCache.store(pathId, 'spray', {
         type: 'spray',
-        points,
+        points: pathPoints,
         strokeWidth,
         strokeColor,
         opacity,
@@ -48,19 +49,24 @@ export const renderSprayOptimized = (
     }
   } else {
     // Fallback for preview mode
-    const points = pathToPointsForBrush(path);
+    pathPoints = pathToPointsForBrush(path);
     const baseSeed = Date.now(); // Use timestamp for preview
-    sprayData = precalculateSprayEffect(points, strokeWidth, baseSeed);
+    sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
   }
   
-  // Render the cached spray dots
+  // Render the cached spray dots - apply them relative to each path point
   ctx.fillStyle = strokeColor;
   
   sprayData.dots.forEach(dot => {
-    ctx.globalAlpha = opacity * dot.opacity;
-    ctx.beginPath();
-    ctx.arc(dot.offsetX, dot.offsetY, dot.size, 0, 2 * Math.PI);
-    ctx.fill();
+    // Get the path point this dot is associated with
+    const pathPoint = pathPoints[dot.pointIndex];
+    if (pathPoint) {
+      ctx.globalAlpha = opacity * dot.opacity;
+      ctx.beginPath();
+      // Apply the dot offset relative to the path point position
+      ctx.arc(pathPoint.x + dot.offsetX, pathPoint.y + dot.offsetY, dot.size, 0, 2 * Math.PI);
+      ctx.fill();
+    }
   });
   
   ctx.restore();
@@ -81,21 +87,23 @@ export const renderChalkOptimized = (
   
   const pathObj = new Path2D(path);
   let chalkData: ChalkEffectData;
+  let pathPoints: Array<{ x: number; y: number }>;
   
   // Try to get cached effect data
   if (pathId) {
     const cached = brushEffectCache.get(pathId, 'chalk');
     if (cached && cached.effectData) {
       chalkData = cached.effectData as ChalkEffectData;
+      pathPoints = cached.points;
     } else {
       // Calculate and cache new effect data
-      const points = pathToPointsForBrush(path);
+      pathPoints = pathToPointsForBrush(path);
       const baseSeed = pathId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      chalkData = precalculateChalkEffect(points, strokeWidth, baseSeed);
+      chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
       
       brushEffectCache.store(pathId, 'chalk', {
         type: 'chalk',
-        points,
+        points: pathPoints,
         strokeWidth,
         strokeColor,
         opacity,
@@ -104,9 +112,9 @@ export const renderChalkOptimized = (
     }
   } else {
     // Fallback for preview mode
-    const points = pathToPointsForBrush(path);
+    pathPoints = pathToPointsForBrush(path);
     const baseSeed = Date.now();
-    chalkData = precalculateChalkEffect(points, strokeWidth, baseSeed);
+    chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
   }
   
   // Draw the main stroke with roughness layers
@@ -128,16 +136,21 @@ export const renderChalkOptimized = (
     ctx.restore();
   });
   
-  // Add cached dust particles
+  // Add cached dust particles - apply them relative to each path point
   ctx.globalAlpha = opacity * 0.25;
   ctx.fillStyle = strokeColor;
   ctx.shadowBlur = 0;
   
   chalkData.dustParticles.forEach(particle => {
-    ctx.globalAlpha = opacity * particle.opacity;
-    ctx.beginPath();
-    ctx.arc(particle.offsetX, particle.offsetY, particle.size, 0, 2 * Math.PI);
-    ctx.fill();
+    // Get the path point this particle is associated with
+    const pathPoint = pathPoints[particle.pointIndex];
+    if (pathPoint) {
+      ctx.globalAlpha = opacity * particle.opacity;
+      ctx.beginPath();
+      // Apply the particle offset relative to the path point position
+      ctx.arc(pathPoint.x + particle.offsetX, pathPoint.y + particle.offsetY, particle.size, 0, 2 * Math.PI);
+      ctx.fill();
+    }
   });
   
   ctx.restore();
