@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
@@ -43,6 +42,7 @@ export const WhiteboardSidebar: React.FC = () => {
     }
   };
 
+  // ... keep existing code (backgroundImages array)
   const backgroundImages = [
     {
       name: 'Forest',
@@ -212,20 +212,6 @@ export const WhiteboardSidebar: React.FC = () => {
                         >
                           <span className="text-xs text-muted-foreground">Clear Background</span>
                         </button>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* General Settings */}
-                  <Card>
-                    <CardHeader className="bg-muted/80 py-3">
-                      <CardTitle className="text-lg">General Settings</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-6">
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                          Zoom controls and other general options will be added here.
-                        </p>
                       </div>
                     </CardContent>
                   </Card>
