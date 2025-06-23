@@ -57,15 +57,21 @@ export const measureText = (
       const words = paragraph.split(' ');
       let currentLine = '';
       
+      console.log('📏 Word wrapping with maxWidth:', maxWidth, 'for text:', paragraph);
+      
       words.forEach(word => {
         const testLine = currentLine ? `${currentLine} ${word}` : word;
         const testWidth = ctx.measureText(testLine).width;
+        
+        console.log('📏 Testing word:', word, 'testLine:', testLine, 'width:', testWidth, 'maxWidth:', maxWidth);
         
         if (testWidth <= maxWidth || currentLine === '') {
           // If the word fits or this is the first word on the line
           if (currentLine === '' && testWidth > maxWidth) {
             // Single word is too long, break it
+            console.log('📏 Breaking long word:', word, 'width:', testWidth);
             const brokenWords = breakLongWord(word, maxWidth, ctx);
+            console.log('📏 Broken into pieces:', brokenWords);
             brokenWords.forEach((brokenWord, index) => {
               if (index === 0) {
                 currentLine = brokenWord;
@@ -88,7 +94,9 @@ export const measureText = (
           // Check if the single word is too long for a line
           const wordWidth = ctx.measureText(word).width;
           if (wordWidth > maxWidth) {
+            console.log('📏 Breaking long word on new line:', word, 'width:', wordWidth);
             const brokenWords = breakLongWord(word, maxWidth, ctx);
+            console.log('📏 Broken into pieces:', brokenWords);
             brokenWords.forEach((brokenWord, index) => {
               if (index === 0) {
                 currentLine = brokenWord;
@@ -116,6 +124,8 @@ export const measureText = (
   });
   
   const totalHeight = wrappedLines.length * lineHeight;
+  
+  console.log('📏 Final wrapped lines:', wrappedLines);
   
   return {
     width: maxLineWidth,
