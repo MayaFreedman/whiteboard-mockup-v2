@@ -117,10 +117,10 @@ export const WhiteboardSidebar: React.FC = () => {
                 <TabsContent value="settings" className="space-y-4">
                   {/* Colors & Palettes */}
                   <Card>
-                    <CardHeader className="bg-company-light-pink py-3">
+                    <CardHeader className="bg-company-light-pink py-3 px-6">
                       <CardTitle className="text-lg text-company-light-pink-foreground">Colors & Palettes</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3 pt-6">
+                    <CardContent className="space-y-3 pt-6 px-6">
                       {Object.entries(colorPalettes).map(([name, colors]) => (
                         <div key={name} className="space-y-2">
                           <div className="flex items-center justify-between">
@@ -159,10 +159,10 @@ export const WhiteboardSidebar: React.FC = () => {
 
                   {/* Canvas Settings */}
                   <Card>
-                    <CardHeader className="bg-company-light-pink py-3">
+                    <CardHeader className="bg-company-light-pink py-3 px-6">
                       <CardTitle className="text-lg text-company-light-pink-foreground">Canvas Settings</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4 pt-6">
+                    <CardContent className="space-y-4 pt-6 px-6">
                       <div className="space-y-3">
                         <p className="text-sm text-muted-foreground">Background Options (choose one):</p>
                         
