@@ -244,7 +244,7 @@ export const Toolbar: React.FC = () => {
   const isShapeSelected = !!selectedShape;
 
   return (
-    <div ref={toolbarRef} className="bg-card border-b border-border relative">
+    <div ref={toolbarRef} className="bg-card border-b border-company-light-pink/20 relative">
       {/* Desktop Action Buttons - Fixed to the right */}
       <div className={`absolute right-4 top-0 h-full items-center gap-2 z-10 ${isMobile ? 'hidden' : 'flex'}`}>
         <ActionButtons />
