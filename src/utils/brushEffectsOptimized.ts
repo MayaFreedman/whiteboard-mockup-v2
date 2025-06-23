@@ -1,4 +1,3 @@
-
 /**
  * Optimized brush effects with caching for consistent rendering
  */
@@ -10,17 +9,6 @@ import {
   SprayEffectData,
   ChalkEffectData
 } from './brushCache';
-
-/**
- * Calculates how much of the cached effect should be visible based on current path length
- */
-const calculatePathProgression = (currentPath: string, cachedPointsLength: number): number => {
-  // Quick estimation of current path length based on string length
-  // This gives us a rough progression without expensive re-parsing
-  const currentPathLength = currentPath.length;
-  const estimatedFullLength = cachedPointsLength * 20; // Rough estimation
-  return Math.min(1, currentPathLength / estimatedFullLength);
-};
 
 /**
  * Renders cached spray effect with consistent dot patterns
@@ -45,7 +33,7 @@ export const renderSprayOptimized = (
       sprayData = cached.effectData as SprayEffectData;
       pathPoints = cached.points;
     } else {
-      // Calculate and cache new effect data ONLY if not cached
+      // Calculate and cache new effect data
       pathPoints = pathToPointsForBrush(path);
       const baseSeed = pathId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
       sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
@@ -58,12 +46,6 @@ export const renderSprayOptimized = (
         opacity,
         effectData: sprayData
       });
-      
-      console.log('🎨 Cached NEW spray effect:', {
-        pathId: pathId.slice(0, 8),
-        pointCount: pathPoints.length,
-        dotCount: sprayData.dots.length
-      });
     }
   } else {
     // Fallback for preview mode
@@ -72,24 +54,18 @@ export const renderSprayOptimized = (
     sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
   }
   
-  // Calculate how much of the effect to show based on path progression
-  const pathProgression = calculatePathProgression(path, pathPoints.length);
-  const maxPointsToShow = Math.floor(pathPoints.length * pathProgression);
-  
-  // Render the cached spray dots using ONLY cached points for positioning
+  // Render the cached spray dots - apply them relative to each path point
   ctx.fillStyle = strokeColor;
   
   sprayData.dots.forEach(dot => {
-    // Only render dots for points that should be visible based on path progression
-    if (dot.pointIndex < maxPointsToShow) {
-      const pathPoint = pathPoints[dot.pointIndex];
-      if (pathPoint) {
-        ctx.globalAlpha = opacity * dot.opacity;
-        ctx.beginPath();
-        // Apply the dot offset relative to the CACHED path point position
-        ctx.arc(pathPoint.x + dot.offsetX, pathPoint.y + dot.offsetY, dot.size, 0, 2 * Math.PI);
-        ctx.fill();
-      }
+    // Get the path point this dot is associated with
+    const pathPoint = pathPoints[dot.pointIndex];
+    if (pathPoint) {
+      ctx.globalAlpha = opacity * dot.opacity;
+      ctx.beginPath();
+      // Apply the dot offset relative to the path point position
+      ctx.arc(pathPoint.x + dot.offsetX, pathPoint.y + dot.offsetY, dot.size, 0, 2 * Math.PI);
+      ctx.fill();
     }
   });
   
@@ -120,7 +96,7 @@ export const renderChalkOptimized = (
       chalkData = cached.effectData as ChalkEffectData;
       pathPoints = cached.points;
     } else {
-      // Calculate and cache new effect data ONLY if not cached
+      // Calculate and cache new effect data
       pathPoints = pathToPointsForBrush(path);
       const baseSeed = pathId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
       chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
@@ -132,12 +108,6 @@ export const renderChalkOptimized = (
         strokeColor,
         opacity,
         effectData: chalkData
-      });
-      
-      console.log('🎨 Cached NEW chalk effect:', {
-        pathId: pathId.slice(0, 8),
-        pointCount: pathPoints.length,
-        particleCount: chalkData.dustParticles.length
       });
     }
   } else {
@@ -166,26 +136,20 @@ export const renderChalkOptimized = (
     ctx.restore();
   });
   
-  // Calculate how much of the effect to show based on path progression
-  const pathProgression = calculatePathProgression(path, pathPoints.length);
-  const maxPointsToShow = Math.floor(pathPoints.length * pathProgression);
-  
-  // Add cached dust particles using ONLY cached points for positioning
+  // Add cached dust particles - apply them relative to each path point
   ctx.globalAlpha = opacity * 0.25;
   ctx.fillStyle = strokeColor;
   ctx.shadowBlur = 0;
   
   chalkData.dustParticles.forEach(particle => {
-    // Only render particles for points that should be visible based on path progression
-    if (particle.pointIndex < maxPointsToShow) {
-      const pathPoint = pathPoints[particle.pointIndex];
-      if (pathPoint) {
-        ctx.globalAlpha = opacity * particle.opacity;
-        ctx.beginPath();
-        // Apply the particle offset relative to the CACHED path point position
-        ctx.arc(pathPoint.x + particle.offsetX, pathPoint.y + particle.offsetY, particle.size, 0, 2 * Math.PI);
-        ctx.fill();
-      }
+    // Get the path point this particle is associated with
+    const pathPoint = pathPoints[particle.pointIndex];
+    if (pathPoint) {
+      ctx.globalAlpha = opacity * particle.opacity;
+      ctx.beginPath();
+      // Apply the particle offset relative to the path point position
+      ctx.arc(pathPoint.x + particle.offsetX, pathPoint.y + particle.offsetY, particle.size, 0, 2 * Math.PI);
+      ctx.fill();
     }
   });
   

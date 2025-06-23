@@ -301,7 +301,7 @@ export function precalculateChalkEffect(
 
 /**
  * Improved function to convert SVG path to points array for effect calculation
- * Handles both complete paths and paths being drawn incrementally
+ * Properly handles various SVG path commands and extracts all coordinate pairs
  */
 export function pathToPointsForBrush(path: string): Array<{ x: number; y: number }> {
   const points: Array<{ x: number; y: number }> = [];
@@ -310,128 +310,94 @@ export function pathToPointsForBrush(path: string): Array<{ x: number; y: number
     return points;
   }
 
-  // Clean up the path string and handle incremental drawing
-  const cleanPath = path.trim();
+  // Split the path into commands, handling both uppercase and lowercase
+  const commands = path.match(/[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*/g) || [];
   
-  // For drawing paths, extract coordinates more directly
-  // Match all coordinate pairs, handling both space and comma separators
-  const coordMatches = cleanPath.match(/-?\d+(?:\.\d+)?/g);
+  let currentX = 0;
+  let currentY = 0;
   
-  if (coordMatches && coordMatches.length >= 2) {
-    // Convert string coordinates to numbers and pair them
-    const coords = coordMatches.map(Number);
+  commands.forEach(command => {
+    const type = command[0];
+    const isAbsolute = type === type.toUpperCase();
+    const coords = command.slice(1).trim().split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
     
-    // Group coordinates into x,y pairs
-    for (let i = 0; i < coords.length - 1; i += 2) {
-      if (!isNaN(coords[i]) && !isNaN(coords[i + 1])) {
-        points.push({
-          x: coords[i],
-          y: coords[i + 1]
-        });
-      }
-    }
-  }
-  
-  // Fallback: if we didn't get enough points, try the old method
-  if (points.length < 2) {
-    const commands = cleanPath.match(/[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*/g) || [];
-    
-    let currentX = 0;
-    let currentY = 0;
-    
-    commands.forEach(command => {
-      const type = command[0];
-      const isAbsolute = type === type.toUpperCase();
-      const coords = command.slice(1).trim().split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
-      
-      switch (type.toUpperCase()) {
-        case 'M': // Move to
-          if (coords.length >= 2) {
-            currentX = isAbsolute ? coords[0] : currentX + coords[0];
-            currentY = isAbsolute ? coords[1] : currentY + coords[1];
-            points.push({ x: currentX, y: currentY });
-            
-            // Handle additional coordinate pairs as implicit line-to commands
-            for (let i = 2; i < coords.length; i += 2) {
-              if (i + 1 < coords.length) {
-                currentX = isAbsolute ? coords[i] : currentX + coords[i];
-                currentY = isAbsolute ? coords[i + 1] : currentY + coords[i + 1];
-                points.push({ x: currentX, y: currentY });
-              }
-            }
-          }
-          break;
+    switch (type.toUpperCase()) {
+      case 'M': // Move to
+        if (coords.length >= 2) {
+          currentX = isAbsolute ? coords[0] : currentX + coords[0];
+          currentY = isAbsolute ? coords[1] : currentY + coords[1];
+          points.push({ x: currentX, y: currentY });
           
-        case 'L': // Line to
-          for (let i = 0; i < coords.length; i += 2) {
+          // Handle additional coordinate pairs as implicit line-to commands
+          for (let i = 2; i < coords.length; i += 2) {
             if (i + 1 < coords.length) {
               currentX = isAbsolute ? coords[i] : currentX + coords[i];
               currentY = isAbsolute ? coords[i + 1] : currentY + coords[i + 1];
               points.push({ x: currentX, y: currentY });
             }
           }
-          break;
-          
-        case 'H': // Horizontal line to
-          for (let i = 0; i < coords.length; i++) {
+        }
+        break;
+        
+      case 'L': // Line to
+        for (let i = 0; i < coords.length; i += 2) {
+          if (i + 1 < coords.length) {
             currentX = isAbsolute ? coords[i] : currentX + coords[i];
+            currentY = isAbsolute ? coords[i + 1] : currentY + coords[i + 1];
             points.push({ x: currentX, y: currentY });
           }
-          break;
-          
-        case 'V': // Vertical line to
-          for (let i = 0; i < coords.length; i++) {
-            currentY = isAbsolute ? coords[i] : currentY + coords[i];
+        }
+        break;
+        
+      case 'H': // Horizontal line to
+        for (let i = 0; i < coords.length; i++) {
+          currentX = isAbsolute ? coords[i] : currentX + coords[i];
+          points.push({ x: currentX, y: currentY });
+        }
+        break;
+        
+      case 'V': // Vertical line to
+        for (let i = 0; i < coords.length; i++) {
+          currentY = isAbsolute ? coords[i] : currentY + coords[i];
+          points.push({ x: currentX, y: currentY });
+        }
+        break;
+        
+      case 'C': // Cubic Bezier curve
+        for (let i = 0; i < coords.length; i += 6) {
+          if (i + 5 < coords.length) {
+            // For now, just take the end point of the curve
+            // TODO: Could interpolate along the curve for more accuracy
+            currentX = isAbsolute ? coords[i + 4] : currentX + coords[i + 4];
+            currentY = isAbsolute ? coords[i + 5] : currentY + coords[i + 5];
             points.push({ x: currentX, y: currentY });
           }
-          break;
-          
-        case 'C': // Cubic Bezier curve
-          for (let i = 0; i < coords.length; i += 6) {
-            if (i + 5 < coords.length) {
-              // For now, just take the end point of the curve
-              currentX = isAbsolute ? coords[i + 4] : currentX + coords[i + 4];
-              currentY = isAbsolute ? coords[i + 5] : currentY + coords[i + 5];
-              points.push({ x: currentX, y: currentY });
-            }
+        }
+        break;
+        
+      case 'Q': // Quadratic Bezier curve
+        for (let i = 0; i < coords.length; i += 4) {
+          if (i + 3 < coords.length) {
+            // For now, just take the end point of the curve
+            currentX = isAbsolute ? coords[i + 2] : currentX + coords[i + 2];
+            currentY = isAbsolute ? coords[i + 3] : currentY + coords[i + 3];
+            points.push({ x: currentX, y: currentY });
           }
-          break;
-          
-        case 'Q': // Quadratic Bezier curve
-          for (let i = 0; i < coords.length; i += 4) {
-            if (i + 3 < coords.length) {
-              currentX = isAbsolute ? coords[i + 2] : currentX + coords[i + 2];
-              currentY = isAbsolute ? coords[i + 3] : currentY + coords[i + 3];
-              points.push({ x: currentX, y: currentY });
-            }
-          }
-          break;
-          
-        case 'Z': // Close path
-          break;
-      }
-    });
-  }
-  
-  // Remove duplicate consecutive points to prevent effect clustering
-  const filteredPoints: Array<{ x: number; y: number }> = [];
-  for (let i = 0; i < points.length; i++) {
-    const current = points[i];
-    const previous = filteredPoints[filteredPoints.length - 1];
-    
-    if (!previous || 
-        Math.abs(current.x - previous.x) > 1 || 
-        Math.abs(current.y - previous.y) > 1) {
-      filteredPoints.push(current);
+        }
+        break;
+        
+      case 'Z': // Close path
+        // Don't add a point for close path command
+        break;
     }
-  }
-  
-  console.log('🔍 Path to points conversion (improved):', {
-    inputPath: path.slice(0, 100) + (path.length > 100 ? '...' : ''),
-    extractedPoints: filteredPoints.length,
-    firstFewPoints: filteredPoints.slice(0, 3),
-    lastFewPoints: filteredPoints.slice(-3)
   });
   
-  return filteredPoints;
+  console.log('🔍 Path to points conversion:', {
+    inputPath: path.slice(0, 100) + (path.length > 100 ? '...' : ''),
+    commandCount: commands.length,
+    extractedPoints: points.length,
+    firstFewPoints: points.slice(0, 3)
+  });
+  
+  return points;
 }

@@ -58,7 +58,7 @@ export const Canvas: React.FC = () => {
   const interactions = useCanvasInteractions();
   
   // Initialize rendering hook with both preview functions AND editing state
-  const { redrawCanvas, resetPreviewId } = useCanvasRendering(
+  const { redrawCanvas } = useCanvasRendering(
     canvasRef.current, 
     interactions.getCurrentDrawingPreview,
     interactions.getCurrentShapePreview,
@@ -306,8 +306,6 @@ export const Canvas: React.FC = () => {
     const handleTouchEnd = (event: TouchEvent) => {
       event.preventDefault();
       interactions.handlePointerUp(event, canvas);
-      // Reset preview ID when drawing stops
-      resetPreviewId();
     };
 
     // Add touch event listeners with { passive: false } to allow preventDefault
@@ -320,7 +318,7 @@ export const Canvas: React.FC = () => {
       canvas.removeEventListener('touchmove', handleTouchMove);
       canvas.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [interactions, resetPreviewId]);
+  }, [interactions]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -366,8 +364,6 @@ export const Canvas: React.FC = () => {
   const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
       interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
-      // Reset preview ID when drawing stops
-      resetPreviewId();
     }
   };
 
@@ -377,8 +373,6 @@ export const Canvas: React.FC = () => {
    */
   const onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
     interactions.handleMouseLeave();
-    // Reset preview ID when leaving canvas
-    resetPreviewId();
   };
 
   return (
