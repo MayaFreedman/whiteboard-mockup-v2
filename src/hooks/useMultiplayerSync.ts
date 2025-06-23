@@ -24,6 +24,11 @@ export const useMultiplayerSync = () => {
   const stateRequestAttemptsRef = useRef(0)
   const maxStateRequestAttempts = 3
   const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
+  
+  // Ping system state
+  const pingTimeoutRef = useRef<NodeJS.Timeout>()
+  const pingResponsesRef = useRef<Set<string>>(new Set())
+  const [isActuallyAlone, setIsActuallyAlone] = useState(false)
 
   // If no multiplayer context, return null values (graceful degradation)
   if (!multiplayerContext) {
@@ -42,17 +47,54 @@ export const useMultiplayerSync = () => {
   const isReadyToSend = () => {
     const hasServerInstance = !!serverInstance
     const hasRoom = !!(serverInstance?.server?.room)
+    const playersLength = serverInstance?.server?.room?.state?.players?.size || 0
     const ready = hasServerInstance && hasRoom && isConnected
     
     console.log('🔍 Detailed connection readiness check:', {
       hasServerInstance,
       hasRoom,
       isConnected,
+      playersLength,
       roomId: serverInstance?.server?.room?.id || 'none',
       ready
     })
     
     return ready
+  }
+
+  // Quick ping system to check if other users are actually active
+  const checkIfActuallyAlone = () => {
+    if (!isReadyToSend()) return
+
+    const playersLength = serverInstance?.server?.room?.state?.players?.size || 0
+    if (playersLength <= 1) {
+      setIsActuallyAlone(true)
+      return
+    }
+
+    console.log('🏓 Starting ping check - players count says', playersLength)
+    
+    // Clear previous responses and send ping
+    pingResponsesRef.current.clear()
+    
+    try {
+      serverInstance.sendEvent({
+        type: 'ping_check',
+        requesterId: serverInstance.server.room.sessionId,
+        timestamp: Date.now()
+      })
+      
+      // Set timeout - if no responses in 2 seconds, assume we're alone
+      pingTimeoutRef.current = setTimeout(() => {
+        const responseCount = pingResponsesRef.current.size
+        console.log('🏓 Ping timeout - received', responseCount, 'responses')
+        setIsActuallyAlone(responseCount === 0)
+      }, 2000)
+      
+    } catch (error) {
+      console.error('❌ Failed to send ping:', error)
+      setIsActuallyAlone(true)
+    }
   }
 
   // Process queued actions when connection becomes ready
@@ -78,6 +120,14 @@ export const useMultiplayerSync = () => {
   // Improved state request function with retry logic
   const requestInitialState = () => {
     if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
+      return
+    }
+
+    // Check if we're actually alone first
+    if (isActuallyAlone) {
+      console.log('🔄 Skipping state request - detected we are actually alone')
+      hasReceivedInitialStateRef.current = true
+      setIsWaitingForInitialState(false)
       return
     }
 
@@ -137,6 +187,43 @@ export const useMultiplayerSync = () => {
         actionType: message.action?.type,
         actionUserId: message.action?.userId
       })
+      
+      // Handle ping check messages
+      if (message.type === 'ping_check') {
+        if (message.requesterId !== room.sessionId) {
+          console.log('🏓 Received ping check, responding...')
+          // Respond to ping
+          try {
+            serverInstance.sendEvent({
+              type: 'ping_response',
+              originalRequesterId: message.requesterId,
+              responderId: room.sessionId,
+              timestamp: Date.now()
+            })
+          } catch (error) {
+            console.error('❌ Failed to send ping response:', error)
+          }
+        }
+        return
+      }
+      
+      // Handle ping response messages
+      if (message.type === 'ping_response') {
+        if (message.originalRequesterId === room.sessionId) {
+          console.log('🏓 Received ping response from:', message.responderId)
+          pingResponsesRef.current.add(message.responderId)
+          
+          // Clear timeout since we got a response
+          if (pingTimeoutRef.current) {
+            clearTimeout(pingTimeoutRef.current)
+            pingTimeoutRef.current = undefined
+          }
+          
+          // We're not alone!
+          setIsActuallyAlone(false)
+        }
+        return
+      }
       
       // Handle state request messages
       if (message.type === 'request_state') {
@@ -269,11 +356,19 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
     console.log('✅ Message handlers set up for room:', room.id)
 
+    // Check if we're actually alone when we first connect
+    checkIfActuallyAlone()
+
     // Start state request process if we haven't received initial state yet
     if (!hasReceivedInitialStateRef.current) {
       console.log('🔄 Starting initial state request process...')
       stateRequestAttemptsRef.current = 0
-      requestInitialState()
+      // Add small delay to let ping check complete first
+      setTimeout(() => {
+        if (!isActuallyAlone) {
+          requestInitialState()
+        }
+      }, 2500)
     }
 
     // Process any queued actions now that we're connected
@@ -286,6 +381,11 @@ export const useMultiplayerSync = () => {
       if (stateRequestTimeoutRef.current) {
         clearTimeout(stateRequestTimeoutRef.current)
         stateRequestTimeoutRef.current = undefined
+      }
+      
+      if (pingTimeoutRef.current) {
+        clearTimeout(pingTimeoutRef.current)
+        pingTimeoutRef.current = undefined
       }
     }
   }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId])
@@ -373,9 +473,14 @@ export const useMultiplayerSync = () => {
     if (!isConnected) {
       hasReceivedInitialStateRef.current = false
       setIsWaitingForInitialState(false)
+      setIsActuallyAlone(false)
       if (stateRequestTimeoutRef.current) {
         clearTimeout(stateRequestTimeoutRef.current)
         stateRequestTimeoutRef.current = undefined
+      }
+      if (pingTimeoutRef.current) {
+        clearTimeout(pingTimeoutRef.current)
+        pingTimeoutRef.current = undefined
       }
     }
   }, [isConnected])
