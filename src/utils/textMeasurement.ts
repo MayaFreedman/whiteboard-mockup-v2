@@ -62,13 +62,45 @@ export const measureText = (
         const testWidth = ctx.measureText(testLine).width;
         
         if (testWidth <= maxWidth || currentLine === '') {
-          currentLine = testLine;
+          // If the word fits or this is the first word on the line
+          if (currentLine === '' && testWidth > maxWidth) {
+            // Single word is too long, break it
+            const brokenWords = breakLongWord(word, maxWidth, ctx);
+            brokenWords.forEach((brokenWord, index) => {
+              if (index === 0) {
+                currentLine = brokenWord;
+              } else {
+                wrappedLines.push(currentLine);
+                maxLineWidth = Math.max(maxLineWidth, ctx.measureText(currentLine).width);
+                currentLine = brokenWord;
+              }
+            });
+          } else {
+            currentLine = testLine;
+          }
         } else {
+          // Word doesn't fit, start new line
           if (currentLine) {
             wrappedLines.push(currentLine);
             maxLineWidth = Math.max(maxLineWidth, ctx.measureText(currentLine).width);
           }
-          currentLine = word;
+          
+          // Check if the single word is too long for a line
+          const wordWidth = ctx.measureText(word).width;
+          if (wordWidth > maxWidth) {
+            const brokenWords = breakLongWord(word, maxWidth, ctx);
+            brokenWords.forEach((brokenWord, index) => {
+              if (index === 0) {
+                currentLine = brokenWord;
+              } else {
+                wrappedLines.push(currentLine);
+                maxLineWidth = Math.max(maxLineWidth, ctx.measureText(currentLine).width);
+                currentLine = brokenWord;
+              }
+            });
+          } else {
+            currentLine = word;
+          }
         }
       });
       
@@ -91,6 +123,38 @@ export const measureText = (
     lines: wrappedLines,
     lineHeight
   };
+};
+
+/**
+ * Breaks a long word that exceeds maxWidth into smaller pieces
+ */
+const breakLongWord = (word: string, maxWidth: number, ctx: CanvasRenderingContext2D): string[] => {
+  const pieces: string[] = [];
+  let currentPiece = '';
+  
+  for (let i = 0; i < word.length; i++) {
+    const testPiece = currentPiece + word[i];
+    const testWidth = ctx.measureText(testPiece).width;
+    
+    if (testWidth <= maxWidth) {
+      currentPiece = testPiece;
+    } else {
+      // Current piece is at max width, start a new piece
+      if (currentPiece) {
+        pieces.push(currentPiece);
+        currentPiece = word[i];
+      } else {
+        // Even a single character is too wide, just add it anyway
+        pieces.push(word[i]);
+      }
+    }
+  }
+  
+  if (currentPiece) {
+    pieces.push(currentPiece);
+  }
+  
+  return pieces.length > 0 ? pieces : [word];
 };
 
 /**
