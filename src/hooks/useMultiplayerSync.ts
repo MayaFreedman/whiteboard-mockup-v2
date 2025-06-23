@@ -1,3 +1,4 @@
+
 import { useEffect, useContext, useRef } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
@@ -21,6 +22,8 @@ export const useMultiplayerSync = () => {
   const actionQueueRef = useRef<WhiteboardAction[]>([])
   const stateRequestTimeoutRef = useRef<NodeJS.Timeout>()
   const hasReceivedInitialStateRef = useRef(false)
+  const stateRequestAttemptsRef = useRef(0)
+  const maxStateRequestAttempts = 3
 
   // If no multiplayer context, return null values (graceful degradation)
   if (!multiplayerContext) {
@@ -71,6 +74,43 @@ export const useMultiplayerSync = () => {
     }
   }
 
+  // Improved state request function with retry logic
+  const requestInitialState = () => {
+    if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
+      return
+    }
+
+    stateRequestAttemptsRef.current += 1
+    console.log(`🔄 Requesting initial state (attempt ${stateRequestAttemptsRef.current}/${maxStateRequestAttempts})`)
+    
+    try {
+      serverInstance.requestInitialState()
+      console.log('✅ Successfully sent state request')
+      
+      // Set timeout for this attempt - longer timeout for later attempts
+      const timeoutDuration = 3000 + (stateRequestAttemptsRef.current * 2000) // 3s, 5s, 7s
+      stateRequestTimeoutRef.current = setTimeout(() => {
+        console.log(`⏰ State request attempt ${stateRequestAttemptsRef.current} timed out after ${timeoutDuration}ms`)
+        
+        if (stateRequestAttemptsRef.current < maxStateRequestAttempts) {
+          console.log('🔄 Retrying state request...')
+          requestInitialState()
+        } else {
+          console.log('⏰ All state request attempts exhausted - proceeding without initial state')
+          hasReceivedInitialStateRef.current = true
+        }
+      }, timeoutDuration)
+      
+    } catch (error) {
+      console.error('❌ Failed to send state request:', error)
+      if (stateRequestAttemptsRef.current < maxStateRequestAttempts) {
+        setTimeout(() => requestInitialState(), 1000) // Retry after 1 second
+      } else {
+        hasReceivedInitialStateRef.current = true
+      }
+    }
+  }
+
   // Set up message-based sync when connection is ready
   useEffect(() => {
     if (!isReadyToSend()) {
@@ -94,7 +134,7 @@ export const useMultiplayerSync = () => {
       if (message.type === 'request_state') {
         console.log('🔄 Received state request from:', message.requesterId)
         
-        // FIXED: Only respond if we're not the requester AND we have objects to share
+        // Only respond if we're not the requester AND we have objects to share
         if (message.requesterId !== room.sessionId) {
           const currentState = whiteboardStore.getStateSnapshot()
           const hasObjectsToShare = Object.keys(currentState.objects).length > 0
@@ -109,10 +149,10 @@ export const useMultiplayerSync = () => {
           if (hasObjectsToShare) {
             console.log('📤 Responding to state request with', Object.keys(currentState.objects).length, 'objects')
             
-            // Small delay to avoid multiple responses at the same time
+            // Increased random delay to better avoid conflicts
             setTimeout(() => {
               serverInstance.sendStateResponse(message.requesterId, currentState)
-            }, Math.random() * 100 + 50) // 50-150ms random delay
+            }, Math.random() * 300 + 100) // 100-400ms random delay
           } else {
             console.log('🔄 Not responding to state request - no objects to share')
           }
@@ -220,12 +260,11 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
     console.log('✅ Message handlers set up for room:', room.id)
 
-    // Set up timeout for state request (if we haven't received initial state yet)
+    // Start state request process if we haven't received initial state yet
     if (!hasReceivedInitialStateRef.current) {
-      stateRequestTimeoutRef.current = setTimeout(() => {
-        console.log('⏰ State request timeout - proceeding without initial state')
-        hasReceivedInitialStateRef.current = true
-      }, 5000) // 5 second timeout
+      console.log('🔄 Starting initial state request process...')
+      stateRequestAttemptsRef.current = 0
+      requestInitialState()
     }
 
     // Process any queued actions now that we're connected
