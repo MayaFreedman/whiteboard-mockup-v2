@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -572,7 +571,7 @@ export const useCanvasRendering = (
   }, [editingTextId, editingText, objects, getOrLoadImage, canvas]);
 
   /**
-   * Renders the current drawing preview (work-in-progress path) - SIMPLIFIED for immediate response
+   * Renders the current drawing preview with lightweight brush effects
    * @param ctx - Canvas rendering context
    * @param preview - Drawing preview data
    */
@@ -596,38 +595,56 @@ export const useCanvasRendering = (
       ctx.stroke(path);
     } else {
       const brushType = preview.brushType;
+      const path = new Path2D(preview.path);
       
-      // For preview rendering, use SIMPLE immediate rendering without caching
-      // This ensures immediate response and no lag behind actual drawing
+      // Lightweight preview effects that show brush characteristics
       if (brushType === 'paintbrush') {
-        renderPaintbrushOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
-      } else if (brushType === 'chalk') {
-        // For preview, use simplified chalk without caching - just the main stroke with slight roughness
+        // Paintbrush preview: soft shadow effect
+        ctx.shadowColor = preview.strokeColor;
+        ctx.shadowBlur = preview.strokeWidth * 0.2;
         ctx.globalAlpha = preview.opacity * 0.9;
         ctx.strokeStyle = preview.strokeColor;
         ctx.lineWidth = preview.strokeWidth;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.shadowColor = preview.strokeColor;
-        ctx.shadowBlur = preview.strokeWidth * 0.2;
-        
-        const path = new Path2D(preview.path);
         ctx.stroke(path);
-      } else if (brushType === 'spray') {
-        // For preview, use simplified spray without caching - just the main stroke with slight roughness
+      } else if (brushType === 'chalk') {
+        // Chalk preview: main stroke with slight blur to hint at texture
         ctx.globalAlpha = preview.opacity * 0.8;
         ctx.strokeStyle = preview.strokeColor;
-        ctx.lineWidth = preview.strokeWidth * 1.2;
+        ctx.lineWidth = preview.strokeWidth;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        ctx.shadowColor = preview.strokeColor;
+        ctx.shadowBlur = preview.strokeWidth * 0.15;
+        ctx.stroke(path);
         
+        // Add a slightly thicker underlying stroke for chalk feel
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = preview.opacity * 0.4;
+        ctx.lineWidth = preview.strokeWidth * 1.1;
+        ctx.stroke(path);
+      } else if (brushType === 'spray') {
+        // Spray preview: slightly fuzzy stroke that hints at spray texture
+        ctx.globalAlpha = preview.opacity * 0.7;
+        ctx.strokeStyle = preview.strokeColor;
+        ctx.lineWidth = preview.strokeWidth * 1.3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.shadowColor = preview.strokeColor;
+        ctx.shadowBlur = preview.strokeWidth * 0.3;
         const path = new Path2D(preview.path);
+        ctx.stroke(path);
+        
+        // Add a second layer for spray feel
+        ctx.shadowBlur = preview.strokeWidth * 0.5;
+        ctx.globalAlpha = preview.opacity * 0.3;
+        ctx.lineWidth = preview.strokeWidth * 0.8;
         ctx.stroke(path);
       } else if (brushType === 'crayon') {
         renderCrayonOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else {
         // Default rendering for pencil
-        const path = new Path2D(preview.path);
         ctx.strokeStyle = preview.strokeColor;
         ctx.lineWidth = preview.strokeWidth;
         ctx.lineCap = 'round';
