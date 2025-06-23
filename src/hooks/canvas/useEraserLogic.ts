@@ -117,7 +117,7 @@ export const useEraserLogic = () => {
           // Mark object as processed in this stroke
           processedObjectsRef.current.add(id);
           
-          // Apply the erasure - this will be batched automatically
+          // Apply the erasure with complete metadata for multiplayer sync
           const enhancedAction = {
             originalObjectId: id,
             eraserPath: {
@@ -130,6 +130,7 @@ export const useEraserLogic = () => {
               }, '')
             },
             resultingSegments: segmentsWithIds,
+            // Include complete metadata for multiplayer sync
             originalObjectMetadata: {
               brushType: obj.data?.brushType,
               stroke: obj.stroke,
@@ -147,7 +148,8 @@ export const useEraserLogic = () => {
             strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8),
             userId: userId.slice(0, 8),
             brushType: obj.data?.brushType,
-            preservedEffects: !!(brushType && (brushType === 'spray' || brushType === 'chalk'))
+            preservedEffects: !!(brushType && (brushType === 'spray' || brushType === 'chalk')),
+            metadataIncluded: true
           });
         }
       }

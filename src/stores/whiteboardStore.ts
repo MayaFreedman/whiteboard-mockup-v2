@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { Viewport } from '../types/viewport';
 import { WhiteboardAction, WhiteboardObject } from '../types/whiteboard';
+import { brushEffectCache } from '../utils/brushCache';
 
 export interface WhiteboardSettings {
   gridVisible: boolean;
@@ -678,9 +679,41 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           const originalObject = get().objects[originalObjectId];
           
           if (originalObject) {
+            // Extract brush metadata from the action payload if available
+            const originalObjectMetadata = (action as any).payload.originalObjectMetadata || {
+              brushType: originalObject.data?.brushType,
+              stroke: originalObject.stroke,
+              strokeWidth: originalObject.strokeWidth,
+              opacity: originalObject.opacity,
+              fill: originalObject.fill
+            };
+            
+            console.log('🎨 Processing remote ERASE_PATH with brush metadata:', {
+              originalId: originalObjectId.slice(0, 8),
+              brushType: originalObjectMetadata.brushType,
+              segmentCount: resultingSegments.length,
+              hasMetadata: !!originalObjectMetadata
+            });
+            
             set((state) => {
               const newObjects = { ...state.objects };
               const newRelationships = new Map(state.objectRelationships);
+              
+              // PRESERVE brush effects before removing original object
+              const brushType = originalObjectMetadata?.brushType;
+              if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
+                console.log('🎨 Preserving brush effects for remote eraser action:', {
+                  originalId: originalObjectId.slice(0, 8),
+                  brushType,
+                  segmentCount: resultingSegments.length
+                });
+                
+                // Transfer brush effects to segments BEFORE clearing the original
+                brushEffectCache.transferToSegments(originalObjectId, brushType, resultingSegments);
+                
+                // Now it's safe to remove the original cache entry
+                brushEffectCache.remove(originalObjectId, brushType);
+              }
               
               // Remove the original object
               delete newObjects[originalObjectId];
@@ -691,7 +724,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 newRelationships.set(segmentId, { originalId: originalObjectId });
               });
               
-              // Add resulting segments as new objects
+              // Add resulting segments as new objects with preserved metadata
               resultingSegments.forEach((segment) => {
                 if (segment.points.length >= 2) {
                   const pathString = segment.points.reduce((path, point, index) => {
@@ -699,21 +732,23 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                     return `${path} ${command} ${point.x} ${point.y}`;
                   }, '');
                   
+                  // Create new object with preserved metadata - use the metadata from the action
                   newObjects[segment.id] = {
                     id: segment.id,
                     type: 'path',
                     x: originalObject.x,
                     y: originalObject.y,
-                    stroke: originalObject.stroke || '#000000',
-                    strokeWidth: originalObject.strokeWidth || 2,
-                    opacity: originalObject.opacity || 1,
-                    fill: originalObject.fill,
+                    stroke: originalObjectMetadata?.stroke || originalObject.stroke || '#000000',
+                    strokeWidth: originalObjectMetadata?.strokeWidth || originalObject.strokeWidth || 2,
+                    opacity: originalObjectMetadata?.opacity || originalObject.opacity || 1,
+                    fill: originalObjectMetadata?.fill || originalObject.fill,
                     createdAt: Date.now(),
                     updatedAt: Date.now(),
                     data: {
                       path: pathString,
-                      brushType: originalObject.data?.brushType,
-                      isEraser: false
+                      // Only preserve the essential brush metadata from the action
+                      brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
+                      isEraser: false // Ensure segments are not marked as eraser
                     }
                   };
                 }
@@ -724,6 +759,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 objectRelationships: newRelationships,
                 selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
               };
+            });
+            
+            console.log('✅ Remote ERASE_PATH applied with preserved brush effects:', {
+              originalId: originalObjectId.slice(0, 8),
+              segments: resultingSegments.length,
+              brushType: originalObjectMetadata?.brushType,
+              preservedEffects: !!(originalObjectMetadata?.brushType && (originalObjectMetadata.brushType === 'spray' || originalObjectMetadata.brushType === 'chalk'))
             });
           }
         }
