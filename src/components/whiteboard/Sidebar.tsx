@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -17,9 +18,17 @@ import {
 import { DynamicToolSettings } from './settings/DynamicToolSettings';
 
 export const WhiteboardSidebar: React.FC = () => {
-  const { toolSettings, updateToolSettings, colorPalettes, activeColorPalette, setActiveColorPalette } = useToolStore();
+  const { toolSettings, updateToolSettings, colorPalettes, activeColorPalette, setActiveColorPalette, activeTool } = useToolStore();
   const { settings, updateSettings } = useWhiteboardStore();
   const { open, toggleSidebar } = useSidebar();
+  const [activeTab, setActiveTab] = useState('tools');
+
+  // Switch to tools tab when a tool is selected while on settings tab
+  useEffect(() => {
+    if (activeTab === 'settings') {
+      setActiveTab('tools');
+    }
+  }, [activeTool]);
 
   // Handle exclusive background options
   const handleBackgroundToggle = (option: 'grid' | 'lines' | 'dots', enabled: boolean) => {
@@ -95,7 +104,7 @@ export const WhiteboardSidebar: React.FC = () => {
         <SidebarContent className="flex-1 min-h-0 p-0">
           <ScrollArea className="h-full">
             <div className="p-4 pb-24">
-              <Tabs defaultValue="tools" className="w-full">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="tools">Tools</TabsTrigger>
                   <TabsTrigger value="settings">Settings</TabsTrigger>
