@@ -1,4 +1,3 @@
-
 import { useEffect, useContext, useRef, useState } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
@@ -58,6 +57,27 @@ export const useMultiplayerSync = () => {
       clientsKeys: room.clients && typeof room.clients === 'object' ? Object.keys(room.clients) : 'not object'
     })
     
+    // Log detailed player information
+    if (room.state?.players) {
+      console.log('🔍 Detailed player analysis:', {
+        playersType: typeof room.state.players,
+        playersKeys: Object.keys(room.state.players),
+        playersCount: Object.keys(room.state.players).length,
+        currentSessionId: room.sessionId
+      })
+      
+      // Log each player's details
+      Object.entries(room.state.players).forEach(([playerId, player]: [string, any]) => {
+        console.log(`🔍 Player ${playerId}:`, {
+          isCurrentSession: playerId === room.sessionId,
+          playerData: player,
+          isActive: player?.isActive,
+          lastSeen: player?.lastSeen,
+          connected: player?.connected
+        })
+      })
+    }
+    
     try {
       let actualUserCount = 1 // At minimum we know we're here
       
@@ -72,12 +92,29 @@ export const useMultiplayerSync = () => {
         }
       }
       
-      // Check room.state.players as backup
+      // Check room.state.players as backup, but filter for active/connected players only
       if (room.state?.players) {
-        const playerCount = Object.keys(room.state.players).length
-        console.log('🔍 Found players in state:', playerCount)
-        // Use the higher of the two counts
-        actualUserCount = Math.max(actualUserCount, playerCount)
+        const allPlayers = Object.keys(room.state.players)
+        const activePlayers = allPlayers.filter(playerId => {
+          const player = room.state.players[playerId]
+          // Consider a player active if they don't have explicit inactive flags
+          return !player || player.connected !== false
+        })
+        
+        console.log('🔍 Player analysis:', {
+          allPlayers: allPlayers.length,
+          activePlayers: activePlayers.length,
+          currentSessionInPlayers: allPlayers.includes(room.sessionId)
+        })
+        
+        // Use active player count if it's higher, but don't let stale data fool us
+        if (activePlayers.length > 0 && activePlayers.length < allPlayers.length) {
+          actualUserCount = Math.max(actualUserCount, activePlayers.length)
+        } else if (activePlayers.length <= 2) {
+          // If we have reasonable number of "active" players, use that
+          actualUserCount = Math.max(actualUserCount, activePlayers.length)
+        }
+        // If we have many "active" players but no clients, something's wrong - trust clients count
       }
       
       const alone = actualUserCount <= 1
