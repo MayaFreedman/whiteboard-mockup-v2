@@ -38,17 +38,65 @@ export const useMultiplayerSync = () => {
 
   const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext
 
+  // Check if user is alone in the room
+  const isAloneInRoom = () => {
+    if (!serverInstance?.server?.room) {
+      console.log('🔍 No room available - assuming alone')
+      return true
+    }
+    
+    const room = serverInstance.server.room
+    console.log('🔍 Checking if alone in room:', {
+      roomId: room.roomId,
+      sessionId: room.sessionId,
+      hasState: !!room.state,
+      hasPlayers: !!(room.state?.players),
+      hasClients: !!(room.clients)
+    })
+    
+    try {
+      // Try multiple ways to get client/player count
+      let playerCount = 0
+      let clientCount = 0
+      
+      if (room.state?.players) {
+        playerCount = Object.keys(room.state.players).length
+        console.log('🔍 Player count from state:', playerCount)
+      }
+      
+      if (room.clients) {
+        clientCount = Array.isArray(room.clients) ? room.clients.length : Object.keys(room.clients).length
+        console.log('🔍 Client count from room:', clientCount)
+      }
+      
+      const maxCount = Math.max(playerCount, clientCount)
+      const alone = maxCount <= 1
+      
+      console.log('🔍 Alone check result:', {
+        playerCount,
+        clientCount,
+        maxCount,
+        alone
+      })
+      
+      return alone
+    } catch (error) {
+      console.error('❌ Error checking if alone:', error)
+      return true // Assume alone if we can't determine
+    }
+  }
+
   // Improved readiness check with detailed logging
   const isReadyToSend = () => {
     const hasServerInstance = !!serverInstance
     const hasRoom = !!(serverInstance?.server?.room)
     const ready = hasServerInstance && hasRoom && isConnected
     
-    console.log('🔍 Detailed connection readiness check:', {
+    console.log('🔍 Connection readiness check:', {
       hasServerInstance,
       hasRoom,
       isConnected,
-      roomId: serverInstance?.server?.room?.id || 'none',
+      roomId: serverInstance?.server?.room?.roomId || 'none',
       ready
     })
     
@@ -75,9 +123,17 @@ export const useMultiplayerSync = () => {
     }
   }
 
-  // Improved state request function with retry logic
+  // Improved state request function with solo user detection
   const requestInitialState = () => {
     if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
+      return
+    }
+
+    // Check if user is alone in the room
+    if (isAloneInRoom()) {
+      console.log('👤 User is alone in room - skipping initial state request')
+      hasReceivedInitialStateRef.current = true
+      setIsWaitingForInitialState(false)
       return
     }
 
@@ -93,8 +149,8 @@ export const useMultiplayerSync = () => {
       serverInstance.requestInitialState()
       console.log('✅ Successfully sent state request')
       
-      // Set timeout for this attempt - longer timeout for later attempts
-      const timeoutDuration = 3000 + (stateRequestAttemptsRef.current * 2000) // 3s, 5s, 7s
+      // Set timeout for this attempt - shorter timeout since we know others are present
+      const timeoutDuration = 2000 + (stateRequestAttemptsRef.current * 1000) // 2s, 3s, 4s
       stateRequestTimeoutRef.current = setTimeout(() => {
         console.log(`⏰ State request attempt ${stateRequestAttemptsRef.current} timed out after ${timeoutDuration}ms`)
         
@@ -127,7 +183,7 @@ export const useMultiplayerSync = () => {
     }
 
     const room = serverInstance.server.room
-    console.log('🔄 Setting up message-based sync for room:', room.id)
+    console.log('🔄 Setting up message-based sync for room:', room.roomId)
 
     const handleBroadcastMessage = (message: any) => {
       console.log('📥 Received broadcast message:', {
@@ -157,10 +213,10 @@ export const useMultiplayerSync = () => {
           if (hasObjectsToShare) {
             console.log('📤 Responding to state request with', Object.keys(currentState.objects).length, 'objects')
             
-            // Increased random delay to better avoid conflicts
+            // Random delay to avoid conflicts
             setTimeout(() => {
               serverInstance.sendStateResponse(message.requesterId, currentState)
-            }, Math.random() * 300 + 100) // 100-400ms random delay
+            }, Math.random() * 200 + 50) // 50-250ms random delay
           } else {
             console.log('🔄 Not responding to state request - no objects to share')
           }
@@ -267,7 +323,7 @@ export const useMultiplayerSync = () => {
 
     // Set up message handler
     room.onMessage('broadcast', handleBroadcastMessage)
-    console.log('✅ Message handlers set up for room:', room.id)
+    console.log('✅ Message handlers set up for room:', room.roomId)
 
     // Start state request process if we haven't received initial state yet
     if (!hasReceivedInitialStateRef.current) {
@@ -280,7 +336,7 @@ export const useMultiplayerSync = () => {
     processActionQueue()
 
     return () => {
-      console.log('🧹 Cleaning up message-based sync for room:', room.id)
+      console.log('🧹 Cleaning up message-based sync for room:', room.roomId)
       room.removeAllListeners('broadcast')
       
       if (stateRequestTimeoutRef.current) {
