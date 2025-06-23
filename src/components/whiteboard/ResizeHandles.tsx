@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { RotateCw } from 'lucide-react';
 
 interface ResizeHandlesProps {
   objectId: string;
@@ -9,21 +8,12 @@ interface ResizeHandlesProps {
 }
 
 export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize }) => {
-  const { objects, updateObject } = useWhiteboardStore();
+  const { objects } = useWhiteboardStore();
   const obj = objects[objectId];
   
   if (!obj || !obj.width || !obj.height) return null;
 
   const handleSize = 8;
-  const rotation = obj.rotation || 0;
-
-  // Calculate rotation handle position (top-right corner with offset)
-  const rotationHandleDistance = 30;
-  const centerX = obj.x + obj.width / 2;
-  const centerY = obj.y + obj.height / 2;
-  const rotationHandleX = obj.x + obj.width + rotationHandleDistance;
-  const rotationHandleY = obj.y;
-
   const handles = [
     { id: 'nw', x: obj.x - handleSize/2, y: obj.y - handleSize/2, cursor: 'nw-resize' },
     { id: 'n', x: obj.x + obj.width/2 - handleSize/2, y: obj.y - handleSize/2, cursor: 'n-resize' },
@@ -112,30 +102,6 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  const handleRotationMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-    const startRotation = rotation;
-    
-    const handleMouseMove = (e: MouseEvent) => {
-      const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-      const deltaAngle = currentAngle - startAngle;
-      const newRotation = (startRotation + (deltaAngle * 180 / Math.PI)) % 360;
-      
-      updateObject(objectId, { rotation: newRotation });
-    };
-    
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-    
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
   return (
     <>
       {/* Selection outline */}
@@ -148,9 +114,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
           height: obj.height + 4,
           border: '2px dashed #007acc',
           pointerEvents: 'none',
-          zIndex: 1000,
-          transformOrigin: `${obj.width / 2 + 2}px ${obj.height / 2 + 2}px`,
-          transform: `rotate(${rotation}deg)`
+          zIndex: 1000
         }}
       />
       
@@ -172,44 +136,6 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
           onMouseDown={(e) => handleMouseDown(e, handle.id)}
         />
       ))}
-      
-      {/* Rotation handle */}
-      <div
-        style={{
-          position: 'absolute',
-          left: rotationHandleX - handleSize/2,
-          top: rotationHandleY - handleSize/2,
-          width: handleSize + 4,
-          height: handleSize + 4,
-          backgroundColor: '#00cc88',
-          border: '2px solid #fff',
-          borderRadius: '50%',
-          cursor: 'grab',
-          zIndex: 1001,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-        onMouseDown={handleRotationMouseDown}
-        title="Rotate object"
-      >
-        <RotateCw size={8} color="white" />
-      </div>
-      
-      {/* Connection line from object to rotation handle */}
-      <div
-        style={{
-          position: 'absolute',
-          left: obj.x + obj.width,
-          top: obj.y + obj.height / 2,
-          width: rotationHandleDistance,
-          height: 1,
-          backgroundColor: '#007acc',
-          zIndex: 999,
-          transformOrigin: '0 50%',
-          transform: `rotate(${Math.atan2(rotationHandleY - (obj.y + obj.height / 2), rotationHandleX - (obj.x + obj.width)) * 180 / Math.PI}deg)`
-        }}
-      />
     </>
   );
 };

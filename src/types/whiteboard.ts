@@ -1,4 +1,3 @@
-
 import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
@@ -12,7 +11,6 @@ export interface WhiteboardObject {
   stroke?: string;
   strokeWidth?: number;
   opacity?: number;
-  rotation?: number; // Add rotation property in degrees
   data?: any;
   createdAt: number;
   updatedAt: number;
