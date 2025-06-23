@@ -110,7 +110,7 @@ interface ToolStore {
 /** Default settings for all tools */
 const defaultToolSettings: ToolSettings = {
   strokeColor: '#000000',
-  strokeWidth: 2,
+  strokeWidth: 8,
   opacity: 1,
   brushType: 'paintbrush',
   eraserMode: 'pixel',

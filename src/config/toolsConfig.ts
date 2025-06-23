@@ -132,8 +132,8 @@ export const toolsConfig: Record<string, ToolConfig> = {
         type: 'slider',
         label: 'Stamp Size',
         key: 'strokeWidth',
-        min: 1,
-        max: 10,
+        min: 5,
+        max: 20,
         step: 1,
         showValue: true,
         valueFormatter: (value) => `${value * 10}px`
