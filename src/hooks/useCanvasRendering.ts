@@ -571,7 +571,7 @@ export const useCanvasRendering = (
   }, [editingTextId, editingText, objects, getOrLoadImage, canvas]);
 
   /**
-   * Renders the current drawing preview with lightweight brush effects
+   * Renders the current drawing preview with true 1:1 brush effects
    * @param ctx - Canvas rendering context
    * @param preview - Drawing preview data
    */
@@ -580,6 +580,12 @@ export const useCanvasRendering = (
     
     ctx.save();
     ctx.translate(preview.startX, preview.startY);
+    
+    // Generate a consistent preview ID for this drawing session
+    // This ensures consistent brush effects during preview
+    if (!currentPreviewId.current) {
+      currentPreviewId.current = `preview-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
     
     // Check if this is an eraser preview
     if (preview.isEraser) {
@@ -595,52 +601,15 @@ export const useCanvasRendering = (
       ctx.stroke(path);
     } else {
       const brushType = preview.brushType;
-      const path = new Path2D(preview.path);
       
-      // Lightweight preview effects that show brush characteristics
+      // Use the ACTUAL optimized brush functions for true 1:1 preview
+      // This ensures the preview shows exactly what the final stroke will look like
       if (brushType === 'paintbrush') {
-        // Paintbrush preview: soft shadow effect
-        ctx.shadowColor = preview.strokeColor;
-        ctx.shadowBlur = preview.strokeWidth * 0.2;
-        ctx.globalAlpha = preview.opacity * 0.9;
-        ctx.strokeStyle = preview.strokeColor;
-        ctx.lineWidth = preview.strokeWidth;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke(path);
+        renderPaintbrushOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else if (brushType === 'chalk') {
-        // Chalk preview: main stroke with slight blur to hint at texture
-        ctx.globalAlpha = preview.opacity * 0.8;
-        ctx.strokeStyle = preview.strokeColor;
-        ctx.lineWidth = preview.strokeWidth;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.shadowColor = preview.strokeColor;
-        ctx.shadowBlur = preview.strokeWidth * 0.15;
-        ctx.stroke(path);
-        
-        // Add a slightly thicker underlying stroke for chalk feel
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = preview.opacity * 0.4;
-        ctx.lineWidth = preview.strokeWidth * 1.1;
-        ctx.stroke(path);
+        renderChalkOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity, currentPreviewId.current);
       } else if (brushType === 'spray') {
-        // Spray preview: slightly fuzzy stroke that hints at spray texture
-        ctx.globalAlpha = preview.opacity * 0.7;
-        ctx.strokeStyle = preview.strokeColor;
-        ctx.lineWidth = preview.strokeWidth * 1.3;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.shadowColor = preview.strokeColor;
-        ctx.shadowBlur = preview.strokeWidth * 0.3;
-        const path = new Path2D(preview.path);
-        ctx.stroke(path);
-        
-        // Add a second layer for spray feel
-        ctx.shadowBlur = preview.strokeWidth * 0.5;
-        ctx.globalAlpha = preview.opacity * 0.3;
-        ctx.lineWidth = preview.strokeWidth * 0.8;
-        ctx.stroke(path);
+        renderSprayOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity, currentPreviewId.current);
       } else if (brushType === 'crayon') {
         renderCrayonOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else {
@@ -650,6 +619,7 @@ export const useCanvasRendering = (
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.globalAlpha = preview.opacity;
+        const path = new Path2D(preview.path);
         ctx.stroke(path);
       }
     }
