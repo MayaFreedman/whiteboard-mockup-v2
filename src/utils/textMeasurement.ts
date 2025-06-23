@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for accurate text measurement
  */
@@ -52,35 +53,68 @@ export const measureText = (
     }
     
     if (maxWidth && maxWidth > 0) {
-      // Use aggressive character-by-character breaking like CSS word-break: break-all
-      console.log('📏 Using character-level breaking for paragraph:', paragraph);
-      
+      // Wrap text if maxWidth is specified
+      const words = paragraph.split(' ');
       let currentLine = '';
       
-      for (let i = 0; i < paragraph.length; i++) {
-        const char = paragraph[i];
-        const testLine = currentLine + char;
+      console.log('📏 Word wrapping with maxWidth:', maxWidth, 'for text:', paragraph);
+      
+      words.forEach(word => {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
         const testWidth = ctx.measureText(testLine).width;
         
-        console.log('📏 Testing character:', char, 'currentLine:', currentLine, 'testWidth:', testWidth, 'maxWidth:', maxWidth);
+        console.log('📏 Testing word:', word, 'testLine:', testLine, 'width:', testWidth, 'maxWidth:', maxWidth);
         
-        if (testWidth <= maxWidth) {
-          currentLine = testLine;
+        if (testWidth <= maxWidth || currentLine === '') {
+          // If the word fits or this is the first word on the line
+          if (currentLine === '' && testWidth > maxWidth) {
+            // Single word is too long, break it
+            console.log('📏 Breaking long word:', word, 'width:', testWidth);
+            const brokenWords = breakLongWord(word, maxWidth, ctx);
+            console.log('📏 Broken into pieces:', brokenWords);
+            brokenWords.forEach((brokenWord, index) => {
+              if (index === 0) {
+                currentLine = brokenWord;
+              } else {
+                wrappedLines.push(currentLine);
+                maxLineWidth = Math.max(maxLineWidth, ctx.measureText(currentLine).width);
+                currentLine = brokenWord;
+              }
+            });
+          } else {
+            currentLine = testLine;
+          }
         } else {
-          // Character doesn't fit, start new line
+          // Word doesn't fit, start new line
           if (currentLine) {
             wrappedLines.push(currentLine);
             maxLineWidth = Math.max(maxLineWidth, ctx.measureText(currentLine).width);
-            console.log('📏 Line completed:', currentLine, 'width:', ctx.measureText(currentLine).width);
           }
-          currentLine = char;
+          
+          // Check if the single word is too long for a line
+          const wordWidth = ctx.measureText(word).width;
+          if (wordWidth > maxWidth) {
+            console.log('📏 Breaking long word on new line:', word, 'width:', wordWidth);
+            const brokenWords = breakLongWord(word, maxWidth, ctx);
+            console.log('📏 Broken into pieces:', brokenWords);
+            brokenWords.forEach((brokenWord, index) => {
+              if (index === 0) {
+                currentLine = brokenWord;
+              } else {
+                wrappedLines.push(currentLine);
+                maxLineWidth = Math.max(maxLineWidth, ctx.measureText(currentLine).width);
+                currentLine = brokenWord;
+              }
+            });
+          } else {
+            currentLine = word;
+          }
         }
-      }
+      });
       
       if (currentLine) {
         wrappedLines.push(currentLine);
         maxLineWidth = Math.max(maxLineWidth, ctx.measureText(currentLine).width);
-        console.log('📏 Final line:', currentLine, 'width:', ctx.measureText(currentLine).width);
       }
     } else {
       // No wrapping - measure the full line
@@ -91,8 +125,7 @@ export const measureText = (
   
   const totalHeight = wrappedLines.length * lineHeight;
   
-  console.log('📏 Final wrapped lines (char-level):', wrappedLines);
-  console.log('📏 Total dimensions:', { width: maxLineWidth, height: totalHeight });
+  console.log('📏 Final wrapped lines:', wrappedLines);
   
   return {
     width: maxLineWidth,
