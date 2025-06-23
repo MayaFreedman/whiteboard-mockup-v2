@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -86,6 +85,9 @@ export const useCanvasRendering = (
   // Image cache to prevent blinking/glitching
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
   const loadingImages = useRef<Set<string>>(new Set());
+
+  // Store current preview ID for consistent brush rendering
+  const currentPreviewId = useRef<string | null>(null);
 
   /**
    * Loads and caches an image for synchronous rendering
@@ -576,6 +578,11 @@ export const useCanvasRendering = (
   const renderDrawingPreview = useCallback((ctx: CanvasRenderingContext2D, preview: any) => {
     if (!preview) return;
     
+    // Generate or maintain consistent preview ID for this drawing session
+    if (!currentPreviewId.current || preview.isNewStroke) {
+      currentPreviewId.current = `preview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+    
     ctx.save();
     ctx.translate(preview.startX, preview.startY);
     
@@ -594,13 +601,13 @@ export const useCanvasRendering = (
     } else {
       const brushType = preview.brushType;
       
-      // Render preview based on brush type (no caching for previews)
+      // Render preview based on brush type - NOW WITH CONSISTENT pathId
       if (brushType === 'paintbrush') {
         renderPaintbrushOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else if (brushType === 'chalk') {
-        renderChalkOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+        renderChalkOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity, currentPreviewId.current);
       } else if (brushType === 'spray') {
-        renderSprayOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+        renderSprayOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity, currentPreviewId.current);
       } else if (brushType === 'crayon') {
         renderCrayonOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else {
@@ -802,6 +809,16 @@ export const useCanvasRendering = (
     });
   }, [objects, selectedObjectIds, renderObject]);
 
+  /**
+   * Resets the current preview ID
+   */
+  const resetPreviewId = useCallback(() => {
+    currentPreviewId.current = null;
+  }, []);
+
+  /**
+   * Redraws the canvas with crisp rendering
+   */
   const redrawCanvas = useCallback(() => {
     if (!canvas) return;
 
@@ -866,7 +883,8 @@ export const useCanvasRendering = (
   return {
     redrawCanvas,
     renderObject,
-    renderAllObjects
+    renderAllObjects,
+    resetPreviewId
   };
 };
 
