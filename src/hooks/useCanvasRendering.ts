@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -308,9 +309,16 @@ export const useCanvasRendering = (
       case 'image': {
         if (obj.data?.src && obj.width && obj.height) {
           const imageData = obj.data as ImageData;
+          console.log('🖼️ Attempting to render image:', {
+            src: imageData.src,
+            dimensions: { width: obj.width, height: obj.height },
+            position: { x: obj.x, y: obj.y }
+          });
+          
           const cachedImage = imageCache.getCachedImage(imageData.src);
           
           if (cachedImage) {
+            console.log('✅ Image found in cache, rendering:', imageData.src);
             // Draw immediately from cache - no blinking!
             ctx.drawImage(
               cachedImage, 
@@ -319,16 +327,24 @@ export const useCanvasRendering = (
               Math.round(obj.width), 
               Math.round(obj.height)
             );
-          } else if (!imageCache.isLoading(imageData.src)) {
-            // Load image asynchronously and trigger redraw when ready
-            imageCache.getImage(imageData.src).then(() => {
-              // Only redraw if canvas still exists
-              if (canvas) {
-                redrawCanvas();
-              }
-            }).catch(error => {
-              console.warn('Failed to load image for rendering:', error);
-            });
+          } else {
+            console.log('⏳ Image not in cache, checking if loading:', imageData.src);
+            
+            if (!imageCache.isLoading(imageData.src)) {
+              console.log('🔄 Starting image load:', imageData.src);
+              // Load image asynchronously and trigger redraw when ready
+              imageCache.getImage(imageData.src).then((loadedImage) => {
+                console.log('✅ Image loaded successfully:', imageData.src);
+                // Only redraw if canvas still exists
+                if (canvas) {
+                  redrawCanvas();
+                }
+              }).catch(error => {
+                console.warn('❌ Failed to load image for rendering:', imageData.src, error);
+              });
+            } else {
+              console.log('⏳ Image already loading:', imageData.src);
+            }
           }
           // If image is loading, we just don't render it yet (no flickering)
         }
