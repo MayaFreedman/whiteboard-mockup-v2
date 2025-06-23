@@ -88,7 +88,7 @@ export const WhiteboardSidebar: React.FC = () => {
       >
         <SidebarHeader className="border-b px-4 py-3 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Tools & Settings</h2>
+            <h2 className="font-semibold text-company-dark-blue">Tools & Settings</h2>
             <Button
               onClick={toggleSidebar}
               variant="ghost"
@@ -127,13 +127,13 @@ export const WhiteboardSidebar: React.FC = () => {
                               onClick={() => setActiveColorPalette(name as any)}
                               className={`flex items-center gap-2 text-left p-2 rounded transition-colors ${
                                 activeColorPalette === name 
-                                  ? 'bg-primary/10 text-primary font-medium' 
+                                  ? 'bg-company-dark-blue/10 text-company-dark-blue font-medium' 
                                   : 'hover:bg-muted/50'
                               }`}
                             >
                               <span className="capitalize">{name}</span>
                               {activeColorPalette === name && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Check className="w-4 h-4 text-company-dark-blue" />
                               )}
                             </button>
                           </div>
@@ -166,7 +166,7 @@ export const WhiteboardSidebar: React.FC = () => {
                         <p className="text-sm text-muted-foreground">Background Options (choose one):</p>
                         
                         <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium">Show Grid</label>
+                          <label className="text-sm font-medium text-company-dark-blue">Show Grid</label>
                           <Switch
                             checked={settings.gridVisible}
                             onCheckedChange={(checked) => handleBackgroundToggle('grid', checked)}
@@ -174,7 +174,7 @@ export const WhiteboardSidebar: React.FC = () => {
                         </div>
 
                         <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium">Show Lined Paper</label>
+                          <label className="text-sm font-medium text-company-dark-blue">Show Lined Paper</label>
                           <Switch
                             checked={toolSettings.showLinedPaper}
                             onCheckedChange={(checked) => handleBackgroundToggle('lines', checked)}
@@ -182,7 +182,7 @@ export const WhiteboardSidebar: React.FC = () => {
                         </div>
 
                         <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium">Show Dots</label>
+                          <label className="text-sm font-medium text-company-dark-blue">Show Dots</label>
                           <Switch
                             checked={toolSettings.showDots || false}
                             onCheckedChange={(checked) => handleBackgroundToggle('dots', checked)}
@@ -191,12 +191,12 @@ export const WhiteboardSidebar: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium mb-3 block">Set Custom Background</label>
+                        <label className="text-sm font-medium text-company-dark-blue mb-3 block">Set Custom Background</label>
                         <div className="grid grid-cols-2 gap-2">
                           {backgroundImages.map((bg) => (
                             <button
                               key={bg.name}
-                              className="relative w-full h-16 rounded border-2 border-border hover:border-primary transition-colors overflow-hidden group"
+                              className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group"
                               onClick={() => updateSettings({ backgroundColor: `url(${bg.url})` })}
                               title={bg.name}
                             >
@@ -215,7 +215,7 @@ export const WhiteboardSidebar: React.FC = () => {
                           ))}
                         </div>
                         <button
-                          className="mt-2 w-full h-8 rounded border-2 border-border hover:border-primary transition-colors bg-background"
+                          className="mt-2 w-full h-8 rounded border-2 border-border hover:border-company-dark-blue transition-colors bg-background"
                           onClick={() => updateSettings({ backgroundColor: '#ffffff' })}
                         >
                           <span className="text-xs text-muted-foreground">Clear Background</span>
@@ -234,7 +234,7 @@ export const WhiteboardSidebar: React.FC = () => {
       {!open && (
         <button
           onClick={toggleSidebar}
-          className="fixed z-50 bg-background/95 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-r-md cursor-pointer shadow-md hover:shadow-lg border-0 outline-none"
+          className="fixed z-50 bg-background/95 backdrop-blur-sm text-muted-foreground hover:text-company-dark-blue transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-r-md cursor-pointer shadow-md hover:shadow-lg border-0 outline-none"
           style={{
             left: '0',
             top: 'var(--toolbar-height, 64px)'

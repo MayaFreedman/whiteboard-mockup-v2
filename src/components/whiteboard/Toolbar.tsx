@@ -135,7 +135,7 @@ const ColorButton: React.FC<{
   <button
     className={`w-6 h-6 rounded border-2 transition-all flex-shrink-0 ${
       isSelected 
-        ? 'border-primary scale-110' 
+        ? 'border-company-dark-blue scale-110' 
         : 'border-border hover:border-muted-foreground/50'
     }`}
     style={{ backgroundColor: color }}
