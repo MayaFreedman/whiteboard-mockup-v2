@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -176,87 +177,107 @@ export const useCanvasRendering = (
         const radiusY = obj.height / 2;
         ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
         break;
-      case 'triangle': {
-        const path = `M ${obj.x + obj.width / 2} ${obj.y} L ${obj.x + obj.width} ${obj.y + obj.height} L ${obj.x} ${obj.y + obj.height} Z`;
-        const p = new Path2D(path);
-        ctx.fill(p);
+      case 'triangle':
+        ctx.moveTo(obj.x + obj.width / 2, obj.y);
+        ctx.lineTo(obj.x + obj.width, obj.y + obj.height);
+        ctx.lineTo(obj.x, obj.y + obj.height);
+        ctx.closePath();
         break;
-      }
-      case 'diamond': {
-        const path = `M ${obj.x + obj.width / 2} ${obj.y} L ${obj.x + obj.width} ${obj.y + obj.height / 2} L ${obj.x + obj.width / 2} ${obj.y + obj.height} L ${obj.x} ${obj.y + obj.height / 2} Z`;
-        const p = new Path2D(path);
-        ctx.fill(p);
+      case 'diamond':
+        ctx.moveTo(obj.x + obj.width / 2, obj.y);
+        ctx.lineTo(obj.x + obj.width, obj.y + obj.height / 2);
+        ctx.lineTo(obj.x + obj.width / 2, obj.y + obj.height);
+        ctx.lineTo(obj.x, obj.y + obj.height / 2);
+        ctx.closePath();
         break;
-      }
-      case 'pentagon': {
-        const pentagonPoints = [];
-        const centerX = obj.x + obj.width / 2;
-        const centerY = obj.y + obj.height / 2;
+      case 'pentagon':
         for (let i = 0; i < 5; i++) {
           const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
           const px = centerX + (obj.width / 2) * Math.cos(angle);
           const py = centerY + (obj.height / 2) * Math.sin(angle);
-          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+          if (i === 0) {
+            ctx.moveTo(px, py);
+          } else {
+            ctx.lineTo(px, py);
+          }
         }
-        const path = pentagonPoints.join(' ') + ' Z';
-        const p = new Path2D(path);
-        ctx.fill(p);
+        ctx.closePath();
         break;
-      }
-      case 'hexagon': {
-        const hexagonPoints = [];
-        const centerX = obj.x + obj.width / 2;
-        const centerY = obj.y + obj.height / 2;
+      case 'hexagon':
         for (let i = 0; i < 6; i++) {
           const angle = (i * 2 * Math.PI) / 6;
           const px = centerX + (obj.width / 2) * Math.cos(angle);
           const py = centerY + (obj.height / 2) * Math.sin(angle);
-          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+          if (i === 0) {
+            ctx.moveTo(px, py);
+          } else {
+            ctx.lineTo(px, py);
+          }
         }
-        const path = hexagonPoints.join(' ') + ' Z';
-        const p = new Path2D(path);
-        ctx.fill(p);
+        ctx.closePath();
         break;
-      }
-      case 'star': {
-        const starPoints = [];
-        const centerX = obj.x + obj.width / 2;
-        const centerY = obj.y + obj.height / 2;
-        const outerRadiusX = obj.width / 2;
-        const outerRadiusY = obj.height / 2;
-        const innerRadiusX = outerRadiusX * 0.4;
-        const innerRadiusY = outerRadiusY * 0.4;
-        
+      case 'star':
         for (let i = 0; i < 10; i++) {
           const angle = (i * Math.PI) / 5 - Math.PI / 2;
+          const outerRadiusX = obj.width / 2;
+          const outerRadiusY = obj.height / 2;
+          const innerRadiusX = outerRadiusX * 0.4;
+          const innerRadiusY = outerRadiusY * 0.4;
           const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
           const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
           const px = centerX + radiusX * Math.cos(angle);
           const py = centerY + radiusY * Math.sin(angle);
-          starPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
+          if (i === 0) {
+            ctx.moveTo(px, py);
+          } else {
+            ctx.lineTo(px, py);
+          }
         }
-        const path = starPoints.join(' ') + ' Z';
-        const p = new Path2D(path);
-        ctx.fill(p);
+        ctx.closePath();
         break;
-      }
-      case 'heart': {
+      case 'heart':
         const heartWidth = obj.width;
         const heartHeight = obj.height;
         const topCurveHeight = heartHeight * 0.3;
         const centerXHeart = obj.x + obj.width / 2;
         
-        const path = `M ${centerXHeart} ${obj.y + heartHeight * 0.3}
-                C ${centerXHeart} ${obj.y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.2} ${obj.y}, ${centerXHeart - heartWidth * 0.4} ${obj.y}
-                C ${centerXHeart - heartWidth * 0.6} ${obj.y}, ${centerXHeart - heartWidth * 0.8} ${obj.y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.5} ${obj.y + topCurveHeight}
-                C ${centerXHeart - heartWidth * 0.5} ${obj.y + topCurveHeight}, ${centerXHeart} ${obj.y + heartHeight * 0.6}, ${centerXHeart} ${obj.y + heartHeight}
-                C ${centerXHeart} ${obj.y + heartHeight * 0.6}, ${centerXHeart + heartWidth * 0.5} ${obj.y + topCurveHeight}, ${centerXHeart + heartWidth * 0.5} ${obj.y + topCurveHeight}
-                C ${centerXHeart + heartWidth * 0.8} ${obj.y + topCurveHeight * 0.5}, ${centerXHeart + heartWidth * 0.6} ${obj.y}, ${centerXHeart + heartWidth * 0.4} ${obj.y}
-                C ${centerXHeart + heartWidth * 0.2} ${obj.y}, ${centerXHeart} ${obj.y + topCurveHeight * 0.5}, ${centerXHeart} ${obj.y + heartHeight * 0.3} Z`;
-        const p = new Path2D(path);
-        ctx.fill(p);
+        ctx.moveTo(centerXHeart, obj.y + heartHeight * 0.3);
+        // Left curve
+        ctx.bezierCurveTo(
+          centerXHeart, obj.y + topCurveHeight * 0.5,
+          centerXHeart - heartWidth * 0.2, obj.y,
+          centerXHeart - heartWidth * 0.4, obj.y
+        );
+        ctx.bezierCurveTo(
+          centerXHeart - heartWidth * 0.6, obj.y,
+          centerXHeart - heartWidth * 0.8, obj.y + topCurveHeight * 0.5,
+          centerXHeart - heartWidth * 0.5, obj.y + topCurveHeight
+        );
+        // Left side to bottom
+        ctx.bezierCurveTo(
+          centerXHeart - heartWidth * 0.5, obj.y + topCurveHeight,
+          centerXHeart, obj.y + heartHeight * 0.6,
+          centerXHeart, obj.y + heartHeight
+        );
+        // Right side to bottom
+        ctx.bezierCurveTo(
+          centerXHeart, obj.y + heartHeight * 0.6,
+          centerXHeart + heartWidth * 0.5, obj.y + topCurveHeight,
+          centerXHeart + heartWidth * 0.5, obj.y + topCurveHeight
+        );
+        // Right curve
+        ctx.bezierCurveTo(
+          centerXHeart + heartWidth * 0.8, obj.y + topCurveHeight * 0.5,
+          centerXHeart + heartWidth * 0.6, obj.y,
+          centerXHeart + heartWidth * 0.4, obj.y
+        );
+        ctx.bezierCurveTo(
+          centerXHeart + heartWidth * 0.2, obj.y,
+          centerXHeart, obj.y + topCurveHeight * 0.5,
+          centerXHeart, obj.y + heartHeight * 0.3
+        );
+        ctx.closePath();
         break;
-      }
     }
 
     if (obj.fill && obj.fill !== 'none' && obj.fill !== 'transparent') {
