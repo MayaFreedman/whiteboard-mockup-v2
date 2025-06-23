@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -51,13 +52,11 @@ export const Canvas: React.FC = () => {
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Handle tool selection logic (clearing selection when switching tools)
+  // IMPORTANT: Call all hooks unconditionally at the top level
   useToolSelection();
   
-  // Initialize interactions hook first to get the preview functions
   const interactions = useCanvasInteractions();
   
-  // Initialize rendering hook with both preview functions AND editing state
   const { redrawCanvas } = useCanvasRendering(
     canvasRef.current, 
     interactions.getCurrentDrawingPreview,
@@ -66,10 +65,12 @@ export const Canvas: React.FC = () => {
     editingText
   );
   
-  // Update interactions hook with redraw function and double-click protection AND editing state
-  interactions.setRedrawCanvas(redrawCanvas);
-  interactions.setDoubleClickProtection(isHandlingDoubleClick);
-  interactions.setEditingState(editingTextId !== null);
+  // Set up interactions after all hooks are initialized
+  useEffect(() => {
+    interactions.setRedrawCanvas(redrawCanvas);
+    interactions.setDoubleClickProtection(isHandlingDoubleClick);
+    interactions.setEditingState(editingTextId !== null);
+  }, [interactions, redrawCanvas, isHandlingDoubleClick, editingTextId]);
 
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
