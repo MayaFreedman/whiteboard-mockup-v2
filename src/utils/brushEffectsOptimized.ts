@@ -1,3 +1,4 @@
+
 /**
  * Optimized brush effects with caching for consistent rendering
  */
@@ -9,6 +10,17 @@ import {
   SprayEffectData,
   ChalkEffectData
 } from './brushCache';
+
+/**
+ * Generates a stable seed from path coordinates for consistent preview rendering
+ */
+const generateCoordinateBasedSeed = (pathPoints: Array<{ x: number; y: number }>): number => {
+  if (pathPoints.length === 0) return 12345; // fallback seed
+  
+  // Use the first point's coordinates to create a stable seed
+  const firstPoint = pathPoints[0];
+  return Math.floor(firstPoint.x * 1000 + firstPoint.y * 1000);
+};
 
 /**
  * Renders cached spray effect with consistent dot patterns
@@ -48,9 +60,9 @@ export const renderSprayOptimized = (
       });
     }
   } else {
-    // Fallback for preview mode
+    // Fallback for preview mode - use coordinate-based seed for stability
     pathPoints = pathToPointsForBrush(path);
-    const baseSeed = Date.now(); // Use timestamp for preview
+    const baseSeed = generateCoordinateBasedSeed(pathPoints);
     sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
   }
   
@@ -111,9 +123,9 @@ export const renderChalkOptimized = (
       });
     }
   } else {
-    // Fallback for preview mode
+    // Fallback for preview mode - use coordinate-based seed for stability
     pathPoints = pathToPointsForBrush(path);
-    const baseSeed = Date.now();
+    const baseSeed = generateCoordinateBasedSeed(pathPoints);
     chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
   }
   
