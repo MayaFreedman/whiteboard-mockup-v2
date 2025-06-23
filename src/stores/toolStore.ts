@@ -126,7 +126,7 @@ const defaultToolSettings: ToolSettings = {
   showGrid: false,
   showLinedPaper: false,
   showDots: false,
-  selectedSticker: '😊', // Default to happy face emoji
+  selectedSticker: '⭐', // Default to star emoji since it works
   shapeColorMode: 'fill'
 };
 

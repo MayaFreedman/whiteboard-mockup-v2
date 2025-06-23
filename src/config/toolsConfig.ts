@@ -1,4 +1,3 @@
-
 export interface ToolSettingConfig {
   type: 'slider' | 'badges' | 'select' | 'toggleGroup' | 'grid' | 'text';
   label: string;
@@ -144,34 +143,34 @@ export const toolsConfig: Record<string, ToolConfig> = {
         key: 'selectedSticker',
         gridItems: [
           {
-            name: 'Happy Face',
-            url: '😊',
-            preview: '😊'
-          },
-          {
-            name: 'Heart',
-            url: '❤️',
-            preview: '❤️'
-          },
-          {
             name: 'Star',
             url: '⭐',
             preview: '⭐'
           },
           {
-            name: 'Thumbs Up',
-            url: '👍',
-            preview: '👍'
-          },
-          {
-            name: 'Fire',
-            url: '🔥',
-            preview: '🔥'
-          },
-          {
             name: 'Lightning',
             url: '⚡',
             preview: '⚡'
+          },
+          {
+            name: 'Circle',
+            url: '⭕',
+            preview: '⭕'
+          },
+          {
+            name: 'Check Mark',
+            url: '✅',
+            preview: '✅'
+          },
+          {
+            name: 'Cross Mark',
+            url: '❌',
+            preview: '❌'
+          },
+          {
+            name: 'Question Mark',
+            url: '❓',
+            preview: '❓'
           }
         ]
       }
