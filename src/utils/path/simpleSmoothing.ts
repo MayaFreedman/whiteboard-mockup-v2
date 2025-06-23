@@ -2,12 +2,12 @@
 import { Point } from './pathConversion';
 
 /**
- * Subtle real-time path smoothing with light velocity awareness
- * Provides gentle smoothing for fast movements while maintaining responsiveness
+ * Enhanced real-time path smoothing with stronger velocity awareness
+ * Provides more aggressive smoothing for fast movements while maintaining responsiveness
  */
 
 /**
- * Simple path builder with subtle velocity-aware smoothing
+ * Simple path builder with enhanced velocity-aware smoothing
  */
 export class SimplePathBuilder {
   private points: Point[] = [];
@@ -15,13 +15,13 @@ export class SimplePathBuilder {
   private smoothingStrength: number;
   private lastVelocity: number = 0;
   
-  constructor(minDistance: number = 1.5, smoothingStrength: number = 0.15) {
+  constructor(minDistance: number = 1.5, smoothingStrength: number = 0.25) {
     this.minDistance = minDistance;
     this.smoothingStrength = smoothingStrength;
   }
   
   /**
-   * Adds a new point with subtle velocity-aware smoothing
+   * Adds a new point with enhanced velocity-aware smoothing
    */
   addPoint(point: Point): string {
     // Always add the first point
@@ -34,33 +34,43 @@ export class SimplePathBuilder {
     const lastPoint = this.points[this.points.length - 1];
     const distance = Math.sqrt((point.x - lastPoint.x) ** 2 + (point.y - lastPoint.y) ** 2);
     
-    // Light adaptive distance filtering
+    // Enhanced adaptive distance filtering
     const velocity = distance;
-    const adaptiveMinDistance = this.minDistance * (1 + Math.min(velocity / 60, 0.3));
+    const adaptiveMinDistance = this.minDistance * (1 + Math.min(velocity / 40, 0.5));
     
     if (distance < adaptiveMinDistance) {
       return this.getCurrentPath();
     }
     
-    // Apply smoothing with boost only for very fast movements
+    // Apply enhanced smoothing with stronger velocity boost
     let smoothedPoint = point;
     if (this.points.length >= 2 && this.smoothingStrength > 0) {
       const prev1 = this.points[this.points.length - 1];
       
-      // Only apply extra smoothing when moving VERY fast (velocity > 50)
-      const isVeryFast = velocity > 50;
-      const velocityBoost = isVeryFast ? Math.min((velocity - 50) / 100, 0.4) : 0;
+      // More aggressive smoothing for fast movements (velocity > 30)
+      const isFast = velocity > 30;
+      const velocityBoost = isFast ? Math.min((velocity - 30) / 60, 0.6) : 0;
       const dynamicSmoothing = this.smoothingStrength * (1 + velocityBoost);
       
-      // Simple 2-point averaging
-      smoothedPoint = {
-        x: point.x * (1 - dynamicSmoothing) + prev1.x * dynamicSmoothing,
-        y: point.y * (1 - dynamicSmoothing) + prev1.y * dynamicSmoothing
-      };
+      // Enhanced multi-point averaging for better smoothness
+      if (this.points.length >= 3) {
+        const prev2 = this.points[this.points.length - 2];
+        // Use weighted averaging with previous two points for stronger smoothing
+        smoothedPoint = {
+          x: point.x * (1 - dynamicSmoothing) + prev1.x * (dynamicSmoothing * 0.7) + prev2.x * (dynamicSmoothing * 0.3),
+          y: point.y * (1 - dynamicSmoothing) + prev1.y * (dynamicSmoothing * 0.7) + prev2.y * (dynamicSmoothing * 0.3)
+        };
+      } else {
+        // Standard 2-point averaging with enhanced strength
+        smoothedPoint = {
+          x: point.x * (1 - dynamicSmoothing) + prev1.x * dynamicSmoothing,
+          y: point.y * (1 - dynamicSmoothing) + prev1.y * dynamicSmoothing
+        };
+      }
     }
     
-    // Light velocity smoothing
-    this.lastVelocity = this.lastVelocity * 0.8 + velocity * 0.2;
+    // Enhanced velocity smoothing
+    this.lastVelocity = this.lastVelocity * 0.7 + velocity * 0.3;
     
     this.points.push(smoothedPoint);
     return this.getCurrentPath();
@@ -99,17 +109,17 @@ export class SimplePathBuilder {
 }
 
 /**
- * Light smoothing configurations
+ * Enhanced smoothing configurations with stronger smoothing
  */
 export const getSmoothingConfig = (toolType: string) => {
   switch (toolType) {
     case 'brush':
-      return { minDistance: 2, smoothingStrength: 0.2 }; // Just a touch more for brush
+      return { minDistance: 2, smoothingStrength: 0.35 }; // Increased from 0.2
     case 'pencil':
-      return { minDistance: 1.5, smoothingStrength: 0.15 }; // Very light
+      return { minDistance: 1.5, smoothingStrength: 0.25 }; // Increased from 0.15
     case 'eraser':
       return { minDistance: 1, smoothingStrength: 0 }; // No smoothing for eraser
     default:
-      return { minDistance: 1.5, smoothingStrength: 0.15 };
+      return { minDistance: 1.5, smoothingStrength: 0.25 };
   }
 };
