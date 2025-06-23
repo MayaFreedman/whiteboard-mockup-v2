@@ -18,14 +18,13 @@ interface TextPropertiesPanelProps {
 
 export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ selectedObjectId }) => {
   const { objects, updateObject } = useWhiteboardStore();
-  const { toolSettings, updateToolSettings, getActiveColors } = useToolStore();
+  const { toolSettings, updateToolSettings } = useToolStore();
   const { userId } = useUser();
   const obj = objects[selectedObjectId];
   
   if (!obj || obj.type !== 'text') return null;
 
   const textData = obj.data as TextData;
-  const activeColors = getActiveColors();
 
   // Auto-resize text object to fit content
   const updateTextBounds = (textObject: any, updatedData: TextData) => {
@@ -192,7 +191,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
       <div className="space-y-2">
         <Label className="text-sm font-medium">Text Color</Label>
         <div className="flex gap-1 flex-wrap">
-          {activeColors.map(color => (
+          {['#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'].map(color => (
             <button
               key={color}
               className={`w-6 h-6 rounded border-2 ${obj.stroke === color ? 'border-primary' : 'border-border'}`}

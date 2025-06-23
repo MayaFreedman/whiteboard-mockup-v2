@@ -79,13 +79,10 @@ export const EraserSettings: React.FC = () => {
       <div>
         <Label className="text-sm font-medium">Clear Canvas</Label>
         <Button
-          variant="ghost"
+          variant="destructive"
           size="sm"
           onClick={handleClearCanvas}
-          className="w-full mt-2 flex items-center gap-2 text-white hover:text-white"
-          style={{ backgroundColor: '#7b5d6d' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#9d7a8a'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7b5d6d'}
+          className="w-full mt-2 flex items-center gap-2"
           title="Clear entire canvas"
         >
           <Trash2 className="w-4 h-4" />
