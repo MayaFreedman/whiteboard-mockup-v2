@@ -36,7 +36,7 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
             <img 
               src={item.preview} 
               alt={item.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           </button>
         ))}
