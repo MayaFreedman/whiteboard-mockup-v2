@@ -288,7 +288,7 @@ export const Toolbar: React.FC = () => {
                 <Button
                   variant={isShapeSelected ? "default" : "ghost"}
                   size="sm"
-                  className="p-2 gap-1"
+                  className={`p-2 gap-1 ${isShapeSelected ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
                   title={selectedShape ? selectedShape.label : "Select Shape"}
                 >
                   {selectedShape ? (
@@ -313,8 +313,6 @@ export const Toolbar: React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-
-          <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
           {/* Color Palette Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
