@@ -7,9 +7,10 @@ import { doesPathIntersectEraserBatch, erasePointsFromPathBatch } from '../../ut
 import { pathToPoints } from '../../utils/path/pathConversion';
 import { nanoid } from 'nanoid';
 import { useEraserBatching } from './useEraserBatching';
+import { brushEffectCache } from '../../utils/brushCache';
 
 /**
- * Hook for handling eraser logic with optimized action batching
+ * Hook for handling eraser logic with optimized action batching and brush effect preservation
  */
 export const useEraserLogic = () => {
   const whiteboardStore = useWhiteboardStore();
@@ -48,7 +49,7 @@ export const useEraserLogic = () => {
   }, []);
 
   /**
-   * Processes accumulated eraser points with optimized batching
+   * Processes accumulated eraser points with optimized batching and brush effect preservation
    */
   const processEraserBatch = useCallback(() => {
     if (eraserPointsRef.current.length === 0 || !eraserBatching.isStrokeActive()) return;
@@ -97,6 +98,11 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
+          // Clear cached brush effects for the original object since it's being erased
+          if (obj.data?.brushType && (obj.data.brushType === 'spray' || obj.data.brushType === 'chalk')) {
+            brushEffectCache.remove(id, obj.data.brushType);
+          }
+          
           // Mark object as processed in this stroke
           processedObjectsRef.current.add(id);
           
@@ -128,7 +134,9 @@ export const useEraserLogic = () => {
             objectId: id.slice(0, 8),
             segments: segmentsWithIds.length,
             strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8),
-            userId: userId.slice(0, 8)
+            userId: userId.slice(0, 8),
+            brushType: obj.data?.brushType,
+            clearedCache: !!(obj.data?.brushType && (obj.data.brushType === 'spray' || obj.data.brushType === 'chalk'))
           });
         }
       }

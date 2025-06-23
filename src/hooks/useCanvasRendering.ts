@@ -1,8 +1,15 @@
+
 import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
-import { renderPaintbrush, renderChalk, renderSpray, renderCrayon } from '../utils/brushEffects';
+// Import optimized brush effects
+import { 
+  renderPaintbrushOptimized, 
+  renderChalkOptimized, 
+  renderSprayOptimized, 
+  renderCrayonOptimized 
+} from '../utils/brushEffectsOptimized';
 import { 
   renderTriangle, 
   renderDiamond, 
@@ -294,6 +301,9 @@ export const useCanvasRendering = (
         const strokeWidth = obj.strokeWidth || 2;
         const opacity = obj.opacity || 1;
         
+        // Get object ID for caching
+        const objectId = Object.keys(objects).find(id => objects[id] === obj);
+        
         // Render based on brush type or if it's an eraser
         if (isEraser) {
           // Render eraser as a solid path with round caps for smooth erasing
@@ -304,13 +314,13 @@ export const useCanvasRendering = (
           ctx.lineJoin = 'round';
           ctx.stroke(path);
         } else if (brushType === 'paintbrush') {
-          renderPaintbrush(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+          renderPaintbrushOptimized(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
         } else if (brushType === 'chalk') {
-          renderChalk(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+          renderChalkOptimized(ctx, obj.data.path, strokeColor, strokeWidth, opacity, objectId);
         } else if (brushType === 'spray') {
-          renderSpray(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+          renderSprayOptimized(ctx, obj.data.path, strokeColor, strokeWidth, opacity, objectId);
         } else if (brushType === 'crayon') {
-          renderCrayon(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+          renderCrayonOptimized(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
         } else {
           // Default rendering for pencil or unknown brush types
           const path = new Path2D(obj.data.path);
@@ -584,15 +594,15 @@ export const useCanvasRendering = (
     } else {
       const brushType = preview.brushType;
       
-      // Render preview based on brush type
+      // Render preview based on brush type (no caching for previews)
       if (brushType === 'paintbrush') {
-        renderPaintbrush(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+        renderPaintbrushOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else if (brushType === 'chalk') {
-        renderChalk(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+        renderChalkOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else if (brushType === 'spray') {
-        renderSpray(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+        renderSprayOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else if (brushType === 'crayon') {
-        renderCrayon(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
+        renderCrayonOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else {
         // Default rendering for pencil
         const path = new Path2D(preview.path);
