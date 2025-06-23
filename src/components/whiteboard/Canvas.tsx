@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -44,7 +43,7 @@ export const Canvas: React.FC = () => {
   
   // Text editing state
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
-  const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
+  const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number, lineHeight: number } | null>(null);
   const [editingText, setEditingText] = useState('');
   
   // Double-click protection flag - increased timeout
@@ -75,6 +74,31 @@ export const Canvas: React.FC = () => {
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
     updateObject(objectId, newBounds);
     redrawCanvas();
+  };
+
+  // Utility function to calculate exact text positioning using canvas metrics
+  const calculateTextPosition = (textObject: any, canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx || !textObject.data) return null;
+
+    const textData = textObject.data;
+    
+    // Set the exact same font properties as canvas rendering
+    let fontStyle = '';
+    if (textData.italic) fontStyle += 'italic ';
+    if (textData.bold) fontStyle += 'bold ';
+    ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
+    
+    // Use the exact same line height calculation as canvas
+    const lineHeight = Math.round(textData.fontSize * 1.2);
+    
+    return {
+      x: Math.round(textObject.x + 4), // Same 4px padding as canvas
+      y: Math.round(textObject.y + 4), // Same 4px padding as canvas  
+      width: Math.round(textObject.width - 8), // Account for left/right padding
+      height: Math.round(textObject.height - 8), // Account for top/bottom padding
+      lineHeight: lineHeight
+    };
   };
 
   // Handle double-click on text objects
@@ -119,13 +143,12 @@ export const Canvas: React.FC = () => {
       console.log('🖱️ Found text object to edit:', objectId.slice(0, 8));
       
       setEditingTextId(objectId);
-      // Position textarea to match canvas text positioning exactly with 4px padding
-      setTextEditorPosition({
-        x: obj.x + 4, // Match the 4px left padding
-        y: obj.y + 4, // Match the 4px top padding
-        width: obj.width! - 8, // Account for left and right padding
-        height: obj.height! - 8 // Account for top and bottom padding
-      });
+      
+      // Calculate exact text position using canvas metrics
+      const position = calculateTextPosition(obj, canvasRef.current);
+      if (position) {
+        setTextEditorPosition(position);
+      }
       
       // Only clear text if it's the placeholder text, otherwise keep the existing text
       const currentContent = obj.data?.content || '';
@@ -285,11 +308,11 @@ export const Canvas: React.FC = () => {
         onDoubleClick={handleDoubleClick}
       />
       
-      {/* Text Editor Overlay - Positioned to match canvas text exactly with padding and wrapping */}
+      {/* Text Editor Overlay - Positioned to match canvas text exactly */}
       {editingTextId && textEditorPosition && (
         <textarea
           ref={textareaRef}
-          className="absolute bg-transparent border-none resize-none outline-none"
+          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
           style={{
             left: textEditorPosition.x,
             top: textEditorPosition.y,
@@ -304,11 +327,22 @@ export const Canvas: React.FC = () => {
             color: 'transparent', // Make the text invisible
             caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
             zIndex: 1000,
-            lineHeight: (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px', // Match canvas line height
+            lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
             padding: '0', // Remove default textarea padding since we handle it with positioning
+            margin: '0', // Remove default margins
+            border: 'none', // Remove borders
             wordWrap: 'break-word', // Enable word wrapping
             whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
-            overflowWrap: 'break-word' // Break long words if necessary
+            overflowWrap: 'break-word', // Break long words if necessary
+            // Font rendering optimizations to match canvas
+            textRendering: 'optimizeLegibility',
+            fontSmooth: 'antialiased',
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            // Disable browser text selection styling
+            WebkitTextSizeAdjust: '100%',
+            // Ensure consistent box model
+            boxSizing: 'border-box'
           }}
           value={editingText}
           onChange={(e) => setEditingText(e.target.value)}
