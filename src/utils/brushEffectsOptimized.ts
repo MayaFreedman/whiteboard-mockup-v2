@@ -1,4 +1,3 @@
-
 /**
  * Optimized brush effects with caching for consistent rendering
  */
@@ -45,9 +44,9 @@ export const renderSprayOptimized = (
       sprayData = cached.effectData as SprayEffectData;
       pathPoints = cached.points;
     } else {
-      // Calculate and cache new effect data
+      // Calculate and cache new effect data - use coordinate-based seed for consistency
       pathPoints = pathToPointsForBrush(path);
-      const baseSeed = pathId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const baseSeed = generateCoordinateBasedSeed(pathPoints);
       sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
       
       brushEffectCache.store(pathId, 'spray', {
@@ -108,9 +107,9 @@ export const renderChalkOptimized = (
       chalkData = cached.effectData as ChalkEffectData;
       pathPoints = cached.points;
     } else {
-      // Calculate and cache new effect data
+      // Calculate and cache new effect data - use coordinate-based seed for consistency
       pathPoints = pathToPointsForBrush(path);
-      const baseSeed = pathId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const baseSeed = generateCoordinateBasedSeed(pathPoints);
       chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
       
       brushEffectCache.store(pathId, 'chalk', {
