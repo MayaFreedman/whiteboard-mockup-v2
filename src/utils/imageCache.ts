@@ -1,4 +1,3 @@
-
 /**
  * Robust image cache utility for handling SVG and regular images
  * Persists across component lifecycles and prevents race conditions
@@ -19,13 +18,68 @@ class ImageCacheManager {
   /**
    * Converts src paths to proper URLs that work in both dev and production
    */
-  private resolveImageUrl(src: string): string {
-    // If it starts with /src/assets/, convert it to a proper import
+  private async resolveImageUrl(src: string): Promise<string> {
+    // If it starts with /src/assets/, we need to use Vite's import system
     if (src.startsWith('/src/assets/')) {
       const assetPath = src.replace('/src/assets/', '');
-      // In Vite, we need to import the asset to get the correct URL
-      // For now, we'll try to convert it to a relative path
-      return `./src/assets/${assetPath}`;
+      
+      // Try to dynamically import the asset to get the correct URL
+      try {
+        let assetUrl: string;
+        
+        // Handle specific known assets
+        switch (assetPath) {
+          case 'Animals.svg':
+            assetUrl = (await import('../assets/Animals.svg')).default;
+            break;
+          case 'Plants.svg':
+            assetUrl = (await import('../assets/Plants.svg')).default;
+            break;
+          case 'Vehicles.svg':
+            assetUrl = (await import('../assets/Vehicles.svg')).default;
+            break;
+          case 'fantasy.svg':
+            assetUrl = (await import('../assets/fantasy.svg')).default;
+            break;
+          case 'religious.svg':
+            assetUrl = (await import('../assets/religious.svg')).default;
+            break;
+          case 'sports.svg':
+            assetUrl = (await import('../assets/sports.svg')).default;
+            break;
+          default:
+            // For background assets or other paths
+            if (assetPath.startsWith('backgrounds/')) {
+              const bgName = assetPath.replace('backgrounds/', '');
+              switch (bgName) {
+                case 'brick-wall.svg':
+                  assetUrl = (await import('../assets/backgrounds/brick-wall.svg')).default;
+                  break;
+                case 'bubbles.svg':
+                  assetUrl = (await import('../assets/backgrounds/bubbles.svg')).default;
+                  break;
+                case 'i-like-food.svg':
+                  assetUrl = (await import('../assets/backgrounds/i-like-food.svg')).default;
+                  break;
+                case 'topography.svg':
+                  assetUrl = (await import('../assets/backgrounds/topography.svg')).default;
+                  break;
+                default:
+                  console.warn('Unknown background asset:', bgName);
+                  return src;
+              }
+            } else {
+              console.warn('Unknown asset:', assetPath);
+              return src;
+            }
+        }
+        
+        console.log('✅ Resolved asset URL:', { original: src, resolved: assetUrl });
+        return assetUrl;
+      } catch (error) {
+        console.warn('Failed to resolve asset:', src, error);
+        return src;
+      }
     }
     return src;
   }
@@ -34,7 +88,7 @@ class ImageCacheManager {
    * Gets a cached image or loads it if not cached
    */
   async getImage(src: string): Promise<HTMLImageElement | null> {
-    const resolvedSrc = this.resolveImageUrl(src);
+    const resolvedSrc = await this.resolveImageUrl(src);
     
     // Check if we have a valid cached entry
     const cached = this.cache.get(resolvedSrc);
@@ -71,19 +125,28 @@ class ImageCacheManager {
    * Gets a cached image synchronously if available
    */
   getCachedImage(src: string): HTMLImageElement | null {
-    const resolvedSrc = this.resolveImageUrl(src);
-    const cached = this.cache.get(resolvedSrc);
+    // For synchronous access, we can't resolve the URL, so try both original and common resolved patterns
+    let cached = this.cache.get(src);
     if (cached && cached.status === 'loaded' && this.isEntryValid(cached)) {
       return cached.image;
     }
+    
+    // Also check if we have it cached under a resolved URL pattern
+    // This is a fallback for when we've already resolved the URL before
+    for (const [cachedSrc, entry] of this.cache.entries()) {
+      if (cachedSrc.includes(src.replace('/src/assets/', '')) && entry.status === 'loaded' && this.isEntryValid(entry)) {
+        return entry.image;
+      }
+    }
+    
     return null;
   }
 
   /**
    * Checks if we're currently loading an image
    */
-  isLoading(src: string): boolean {
-    const resolvedSrc = this.resolveImageUrl(src);
+  async isLoading(src: string): Promise<boolean> {
+    const resolvedSrc = await this.resolveImageUrl(src);
     return this.loadingPromises.has(resolvedSrc);
   }
 
@@ -126,64 +189,12 @@ class ImageCacheManager {
         reject(new Error(`Failed to load image: ${src}`));
       };
 
-      // Handle SVG files specially - try dynamic import first, then fetch
-      if (src.endsWith('.svg')) {
-        this.loadSvgImage(img, src).catch(reject);
-      } else {
-        img.src = src;
-      }
+      // For resolved URLs (which should already be correct), just set the src directly
+      img.src = src;
     });
   }
 
-  /**
-   * Loads SVG images with better path resolution
-   */
-  private async loadSvgImage(img: HTMLImageElement, src: string): Promise<void> {
-    try {
-      // Try to dynamically import the SVG first (works better with Vite)
-      if (src.startsWith('./src/assets/')) {
-        try {
-          const module = await import(/* @vite-ignore */ src);
-          img.src = module.default || src;
-          return;
-        } catch (importError) {
-          console.log('Dynamic import failed, trying fetch:', importError);
-        }
-      }
-      
-      // Fallback to fetch
-      const response = await fetch(src);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const svgText = await response.text();
-      const blob = new Blob([svgText], { type: 'image/svg+xml' });
-      const blobUrl = URL.createObjectURL(blob);
-      
-      // Set up cleanup for blob URL
-      const originalOnload = img.onload;
-      img.onload = (event) => {
-        URL.revokeObjectURL(blobUrl);
-        if (originalOnload) {
-          originalOnload.call(img, event);
-        }
-      };
-      
-      const originalOnerror = img.onerror;
-      img.onerror = (event) => {
-        URL.revokeObjectURL(blobUrl);
-        if (originalOnerror) {
-          originalOnerror.call(img, event);
-        }
-      };
-      
-      img.src = blobUrl;
-    } catch (error) {
-      throw new Error(`Failed to fetch SVG: ${error}`);
-    }
-  }
-
+  
   /**
    * Checks if a cache entry is still valid
    */
