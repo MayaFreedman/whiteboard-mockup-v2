@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -19,6 +18,7 @@ import {
   renderHeart 
 } from '../utils/shapeRendering';
 import { measureText } from '../utils/textMeasurement';
+import { pathPointsCache } from '../utils/pathPointsCache';
 
 /**
  * Wraps text to fit within the specified width
@@ -75,8 +75,8 @@ const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
  */
 export const useCanvasRendering = (
   canvas: HTMLCanvasElement | null, 
-  getCurrentDrawingPreview?: () => any, 
-  getCurrentShapePreview?: () => any,
+  getCurrentDrawingPreview: () => any, 
+  getCurrentShapePreview: () => any,
   editingTextId?: string | null,
   editingText?: string
 ) => {
@@ -802,14 +802,56 @@ export const useCanvasRendering = (
     });
   }, [objects, selectedObjectIds, renderObject]);
 
-  const redrawCanvas = useCallback(() => {
+  // Throttle canvas redraws to improve performance during drawing
+  const lastRedrawTime = useRef<number>(0);
+  const redrawTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const REDRAW_THROTTLE_MS = 16; // 60fps throttling
+
+  const redrawCanvas = useCallback((immediate = false) => {
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const now = Date.now();
+    
+    // If immediate redraw is requested or enough time has passed, redraw now
+    if (immediate || now - lastRedrawTime.current >= REDRAW_THROTTLE_MS) {
+      lastRedrawTime.current = now;
+      
+      // Clear any pending timeout
+      if (redrawTimeoutRef.current) {
+        clearTimeout(redrawTimeoutRef.current);
+        redrawTimeoutRef.current = null;
+      }
+      
+      performRedraw();
+    } else {
+      // Throttle the redraw - schedule it for later if not already scheduled
+      if (!redrawTimeoutRef.current) {
+        const timeUntilNextRedraw = REDRAW_THROTTLE_MS - (now - lastRedrawTime.current);
+        
+        redrawTimeoutRef.current = setTimeout(() => {
+          redrawTimeoutRef.current = null;
+          lastRedrawTime.current = Date.now();
+          performRedraw();
+        }, timeUntilNextRedraw);
+      }
+    }
+  }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText]);
+
+  const performRedraw = useCallback(() => {
+    if (!canvas) return;
 
     // Set up canvas for crisp, pixel-aligned rendering
-    setupCanvasForCrispRendering(canvas, ctx);
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    
+    canvas.width = rect.width * devicePixelRatio;
+    canvas.height = rect.height * devicePixelRatio;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     // Clear the entire canvas completely
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -856,12 +898,21 @@ export const useCanvasRendering = (
       editingTextId: editingTextId || 'none',
       cachedImages: imageCache.current.size
     });
-  }, [canvas, objects, selectedObjectIds, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, setupCanvasForCrispRendering]);
+  }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, setupCanvasForCrispRendering]);
 
   // Auto-redraw when state changes
   useEffect(() => {
     redrawCanvas();
   }, [redrawCanvas]);
+
+  // Cleanup throttle timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (redrawTimeoutRef.current) {
+        clearTimeout(redrawTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     redrawCanvas,

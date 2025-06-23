@@ -1,4 +1,3 @@
-
 /**
  * Brush effect caching system for consistent rendering
  * Stores pre-calculated brush patterns to maintain visual consistency
@@ -304,15 +303,30 @@ export function precalculateChalkEffect(
 
 /**
  * Improved function to convert SVG path to points array for effect calculation
- * Properly handles various SVG path commands and extracts all coordinate pairs
+ * Now uses caching to improve performance during drawing
  */
 export function pathToPointsForBrush(path: string): Array<{ x: number; y: number }> {
-  const points: Array<{ x: number; y: number }> = [];
-  
   if (!path || typeof path !== 'string') {
-    return points;
+    return [];
   }
 
+  // Try to get from cache first
+  const cachedPoints = pathPointsCache.get(path);
+  if (cachedPoints) {
+    console.log('🎯 Using cached path-to-points conversion:', {
+      pathLength: path.length,
+      pointCount: cachedPoints.length
+    });
+    return cachedPoints;
+  }
+
+  console.log('🔍 Computing path-to-points conversion:', {
+    inputPath: path.slice(0, 100) + (path.length > 100 ? '...' : ''),
+    pathLength: path.length
+  });
+
+  const points: Array<{ x: number; y: number }> = [];
+  
   // Split the path into commands, handling both uppercase and lowercase
   const commands = path.match(/[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*/g) || [];
   
@@ -395,8 +409,10 @@ export function pathToPointsForBrush(path: string): Array<{ x: number; y: number
     }
   });
   
-  console.log('🔍 Path to points conversion:', {
-    inputPath: path.slice(0, 100) + (path.length > 100 ? '...' : ''),
+  // Cache the result for future use
+  pathPointsCache.set(path, points);
+  
+  console.log('✅ Path-to-points conversion complete:', {
     commandCount: commands.length,
     extractedPoints: points.length,
     firstFewPoints: points.slice(0, 3)
