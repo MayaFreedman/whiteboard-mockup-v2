@@ -141,29 +141,38 @@ export const useCanvasInteractions = () => {
   }, [toolStore.toolSettings]);
 
   /**
-   * Creates image objects for stamps
+   * Creates emoji stamp objects
    */
   const createStampObject = useCallback((
     x: number,
     y: number,
     size: number
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
-    const selectedSticker = toolStore.toolSettings.selectedSticker || '/src/assets/Animals.svg';
+    const selectedSticker = toolStore.toolSettings.selectedSticker || '😊';
     const actualSize = size * 10; // Convert slider value to actual pixel size
     
-    const imageData: ImageData = {
-      src: selectedSticker,
-      alt: 'Stamp'
+    // Create a text object for emoji stamps
+    const stampData = {
+      content: selectedSticker,
+      fontSize: actualSize,
+      fontFamily: 'Arial',
+      bold: false,
+      italic: false,
+      underline: false,
+      textAlign: 'center' as const
     };
 
     return {
-      type: 'image',
+      type: 'text',
       x: x - actualSize / 2, // Center the stamp on the click point
       y: y - actualSize / 2,
       width: actualSize,
       height: actualSize,
+      stroke: '#000000',
+      fill: 'transparent',
+      strokeWidth: 0,
       opacity: toolStore.toolSettings.opacity,
-      data: imageData
+      data: stampData
     };
   }, [toolStore.toolSettings]);
 

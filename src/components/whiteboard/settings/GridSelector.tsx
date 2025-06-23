@@ -25,7 +25,7 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
         {items.map((item) => (
           <button
             key={item.name}
-            className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden group ${
+            className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden group flex items-center justify-center ${
               selectedValue === item.url
                 ? 'border-primary ring-2 ring-primary/20'
                 : 'border-border hover:border-primary'
@@ -33,11 +33,16 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
             onClick={() => onChange(item.url)}
             title={item.name}
           >
-            <img 
-              src={item.preview} 
-              alt={item.name}
-              className="w-full h-full object-contain"
-            />
+            {/* Check if it's an emoji or SVG */}
+            {item.preview.length <= 4 ? (
+              <span className="text-3xl">{item.preview}</span>
+            ) : (
+              <img 
+                src={item.preview} 
+                alt={item.name}
+                className="w-full h-full object-contain"
+              />
+            )}
           </button>
         ))}
       </div>

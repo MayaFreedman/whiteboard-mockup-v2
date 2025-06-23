@@ -140,38 +140,38 @@ export const toolsConfig: Record<string, ToolConfig> = {
       },
       {
         type: 'grid',
-        label: 'Stamp Categories',
+        label: 'Emoji Stamps',
         key: 'selectedSticker',
         gridItems: [
           {
-            name: 'Animals',
-            url: '/src/assets/Animals.svg',
-            preview: '/src/assets/Animals.svg'
+            name: 'Happy Face',
+            url: '😊',
+            preview: '😊'
           },
           {
-            name: 'Plants',
-            url: '/src/assets/Plants.svg',
-            preview: '/src/assets/Plants.svg'
+            name: 'Heart',
+            url: '❤️',
+            preview: '❤️'
           },
           {
-            name: 'Vehicles',
-            url: '/src/assets/Vehicles.svg',
-            preview: '/src/assets/Vehicles.svg'
+            name: 'Star',
+            url: '⭐',
+            preview: '⭐'
           },
           {
-            name: 'Fantasy',
-            url: '/src/assets/fantasy.svg',
-            preview: '/src/assets/fantasy.svg'
+            name: 'Thumbs Up',
+            url: '👍',
+            preview: '👍'
           },
           {
-            name: 'Religious',
-            url: '/src/assets/religious.svg',
-            preview: '/src/assets/religious.svg'
+            name: 'Fire',
+            url: '🔥',
+            preview: '🔥'
           },
           {
-            name: 'Sports',
-            url: '/src/assets/sports.svg',
-            preview: '/src/assets/sports.svg'
+            name: 'Lightning',
+            url: '⚡',
+            preview: '⚡'
           }
         ]
       }
