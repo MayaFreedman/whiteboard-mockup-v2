@@ -1,4 +1,3 @@
-
 /**
  * Brush effect caching system for consistent rendering
  * Stores pre-calculated brush patterns to maintain visual consistency
@@ -67,6 +66,145 @@ class BrushEffectCache {
   remove(pathId: string, brushType: string): void {
     const key = this.generateCacheKey(pathId, brushType);
     this.cache.delete(key);
+  }
+
+  /**
+   * Transfers brush effect data from a parent object to its segments after erasing
+   */
+  transferToSegments(
+    originalPathId: string, 
+    brushType: string, 
+    segments: Array<{ points: Array<{ x: number; y: number }>; id: string }>
+  ): void {
+    const originalData = this.get(originalPathId, brushType);
+    if (!originalData || !originalData.effectData) return;
+
+    console.log('🔄 Transferring brush effects from parent to segments:', {
+      originalPathId: originalPathId.slice(0, 8),
+      brushType,
+      segmentCount: segments.length,
+      originalEffectData: originalData.effectData
+    });
+
+    // Transfer appropriate brush effects to each segment
+    segments.forEach(segment => {
+      if (brushType === 'spray') {
+        const sprayData = originalData.effectData as SprayEffectData;
+        const segmentSprayData = this.mapSprayDataToSegment(sprayData, originalData.points, segment.points);
+        
+        this.store(segment.id, brushType, {
+          type: brushType as any,
+          points: segment.points,
+          strokeWidth: originalData.strokeWidth,
+          strokeColor: originalData.strokeColor,
+          opacity: originalData.opacity,
+          effectData: segmentSprayData
+        });
+      } else if (brushType === 'chalk') {
+        const chalkData = originalData.effectData as ChalkEffectData;
+        const segmentChalkData = this.mapChalkDataToSegment(chalkData, originalData.points, segment.points);
+        
+        this.store(segment.id, brushType, {
+          type: brushType as any,
+          points: segment.points,
+          strokeWidth: originalData.strokeWidth,
+          strokeColor: originalData.strokeColor,
+          opacity: originalData.opacity,
+          effectData: segmentChalkData
+        });
+      }
+    });
+
+    console.log('✅ Brush effect transfer complete');
+  }
+
+  /**
+   * Maps spray dots from original path to a segment
+   */
+  private mapSprayDataToSegment(
+    originalSprayData: SprayEffectData,
+    originalPoints: Array<{ x: number; y: number }>,
+    segmentPoints: Array<{ x: number; y: number }>
+  ): SprayEffectData {
+    const segmentDots: SprayEffectData['dots'] = [];
+    
+    // Map each original spray dot to the segment if it belongs there
+    originalSprayData.dots.forEach(dot => {
+      const originalPoint = originalPoints[dot.pointIndex];
+      if (!originalPoint) return;
+
+      // Find the closest point in the segment
+      let closestSegmentIndex = -1;
+      let minDistance = Infinity;
+      
+      segmentPoints.forEach((segmentPoint, index) => {
+        const distance = Math.sqrt(
+          Math.pow(originalPoint.x - segmentPoint.x, 2) + 
+          Math.pow(originalPoint.y - segmentPoint.y, 2)
+        );
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestSegmentIndex = index;
+        }
+      });
+
+      // If the dot is close enough to a segment point, include it
+      if (closestSegmentIndex !== -1 && minDistance < 20) { // 20px tolerance
+        segmentDots.push({
+          ...dot,
+          pointIndex: closestSegmentIndex
+        });
+      }
+    });
+
+    return { dots: segmentDots };
+  }
+
+  /**
+   * Maps chalk particles from original path to a segment
+   */
+  private mapChalkDataToSegment(
+    originalChalkData: ChalkEffectData,
+    originalPoints: Array<{ x: number; y: number }>,
+    segmentPoints: Array<{ x: number; y: number }>
+  ): ChalkEffectData {
+    const segmentParticles: ChalkEffectData['dustParticles'] = [];
+    
+    // Map each original chalk particle to the segment if it belongs there
+    originalChalkData.dustParticles.forEach(particle => {
+      const originalPoint = originalPoints[particle.pointIndex];
+      if (!originalPoint) return;
+
+      // Find the closest point in the segment
+      let closestSegmentIndex = -1;
+      let minDistance = Infinity;
+      
+      segmentPoints.forEach((segmentPoint, index) => {
+        const distance = Math.sqrt(
+          Math.pow(originalPoint.x - segmentPoint.x, 2) + 
+          Math.pow(originalPoint.y - segmentPoint.y, 2)
+        );
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestSegmentIndex = index;
+        }
+      });
+
+      // If the particle is close enough to a segment point, include it
+      if (closestSegmentIndex !== -1 && minDistance < 20) { // 20px tolerance
+        segmentParticles.push({
+          ...particle,
+          pointIndex: closestSegmentIndex
+        });
+      }
+    });
+
+    return { 
+      dustParticles: segmentParticles,
+      roughnessLayers: originalChalkData.roughnessLayers // Keep the same roughness layers
+    };
   }
 }
 
@@ -162,17 +300,103 @@ export function precalculateChalkEffect(
 }
 
 /**
- * Converts SVG path to points array for effect calculation
+ * Improved function to convert SVG path to points array for effect calculation
+ * Properly handles various SVG path commands and extracts all coordinate pairs
  */
 export function pathToPointsForBrush(path: string): Array<{ x: number; y: number }> {
   const points: Array<{ x: number; y: number }> = [];
-  const commands = path.split(/[ML]/).filter(cmd => cmd.trim());
   
-  commands.forEach(cmd => {
-    const coords = cmd.trim().split(' ').map(Number).filter(n => !isNaN(n));
-    if (coords.length >= 2) {
-      points.push({ x: coords[0], y: coords[1] });
+  if (!path || typeof path !== 'string') {
+    return points;
+  }
+
+  // Split the path into commands, handling both uppercase and lowercase
+  const commands = path.match(/[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*/g) || [];
+  
+  let currentX = 0;
+  let currentY = 0;
+  
+  commands.forEach(command => {
+    const type = command[0];
+    const isAbsolute = type === type.toUpperCase();
+    const coords = command.slice(1).trim().split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
+    
+    switch (type.toUpperCase()) {
+      case 'M': // Move to
+        if (coords.length >= 2) {
+          currentX = isAbsolute ? coords[0] : currentX + coords[0];
+          currentY = isAbsolute ? coords[1] : currentY + coords[1];
+          points.push({ x: currentX, y: currentY });
+          
+          // Handle additional coordinate pairs as implicit line-to commands
+          for (let i = 2; i < coords.length; i += 2) {
+            if (i + 1 < coords.length) {
+              currentX = isAbsolute ? coords[i] : currentX + coords[i];
+              currentY = isAbsolute ? coords[i + 1] : currentY + coords[i + 1];
+              points.push({ x: currentX, y: currentY });
+            }
+          }
+        }
+        break;
+        
+      case 'L': // Line to
+        for (let i = 0; i < coords.length; i += 2) {
+          if (i + 1 < coords.length) {
+            currentX = isAbsolute ? coords[i] : currentX + coords[i];
+            currentY = isAbsolute ? coords[i + 1] : currentY + coords[i + 1];
+            points.push({ x: currentX, y: currentY });
+          }
+        }
+        break;
+        
+      case 'H': // Horizontal line to
+        for (let i = 0; i < coords.length; i++) {
+          currentX = isAbsolute ? coords[i] : currentX + coords[i];
+          points.push({ x: currentX, y: currentY });
+        }
+        break;
+        
+      case 'V': // Vertical line to
+        for (let i = 0; i < coords.length; i++) {
+          currentY = isAbsolute ? coords[i] : currentY + coords[i];
+          points.push({ x: currentX, y: currentY });
+        }
+        break;
+        
+      case 'C': // Cubic Bezier curve
+        for (let i = 0; i < coords.length; i += 6) {
+          if (i + 5 < coords.length) {
+            // For now, just take the end point of the curve
+            // TODO: Could interpolate along the curve for more accuracy
+            currentX = isAbsolute ? coords[i + 4] : currentX + coords[i + 4];
+            currentY = isAbsolute ? coords[i + 5] : currentY + coords[i + 5];
+            points.push({ x: currentX, y: currentY });
+          }
+        }
+        break;
+        
+      case 'Q': // Quadratic Bezier curve
+        for (let i = 0; i < coords.length; i += 4) {
+          if (i + 3 < coords.length) {
+            // For now, just take the end point of the curve
+            currentX = isAbsolute ? coords[i + 2] : currentX + coords[i + 2];
+            currentY = isAbsolute ? coords[i + 3] : currentY + coords[i + 3];
+            points.push({ x: currentX, y: currentY });
+          }
+        }
+        break;
+        
+      case 'Z': // Close path
+        // Don't add a point for close path command
+        break;
     }
+  });
+  
+  console.log('🔍 Path to points conversion:', {
+    inputPath: path.slice(0, 100) + (path.length > 100 ? '...' : ''),
+    commandCount: commands.length,
+    extractedPoints: points.length,
+    firstFewPoints: points.slice(0, 3)
   });
   
   return points;

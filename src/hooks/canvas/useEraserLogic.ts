@@ -98,9 +98,20 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
-          // Clear cached brush effects for the original object since it's being erased
-          if (obj.data?.brushType && (obj.data.brushType === 'spray' || obj.data.brushType === 'chalk')) {
-            brushEffectCache.remove(id, obj.data.brushType);
+          // PRESERVE brush effects before clearing cache
+          const brushType = obj.data?.brushType;
+          if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
+            console.log('🎨 Preserving brush effects for segments:', {
+              originalId: id.slice(0, 8),
+              brushType,
+              segmentCount: segmentsWithIds.length
+            });
+            
+            // Transfer brush effects to segments BEFORE clearing the original
+            brushEffectCache.transferToSegments(id, brushType, segmentsWithIds);
+            
+            // Now it's safe to remove the original cache entry
+            brushEffectCache.remove(id, brushType);
           }
           
           // Mark object as processed in this stroke
@@ -136,7 +147,7 @@ export const useEraserLogic = () => {
             strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8),
             userId: userId.slice(0, 8),
             brushType: obj.data?.brushType,
-            clearedCache: !!(obj.data?.brushType && (obj.data.brushType === 'spray' || obj.data.brushType === 'chalk'))
+            preservedEffects: !!(brushType && (brushType === 'spray' || brushType === 'chalk'))
           });
         }
       }
