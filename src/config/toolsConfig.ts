@@ -1,4 +1,3 @@
-
 export interface ToolSettingConfig {
   type: 'slider' | 'badges' | 'select' | 'toggleGroup' | 'grid' | 'text';
   label: string;
@@ -60,7 +59,8 @@ export const toolsConfig: Record<string, ToolConfig> = {
           { value: 'paintbrush', label: 'paintbrush' },
           { value: 'chalk', label: 'chalk' },
           { value: 'spray', label: 'spray' },
-          { value: 'crayon', label: 'crayon' }
+          { value: 'crayon', label: 'crayon' },
+          { value: 'watercolor', label: 'watercolor' }
         ]
       },
       {

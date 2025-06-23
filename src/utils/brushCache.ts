@@ -4,7 +4,7 @@
  */
 
 export interface BrushEffectData {
-  type: 'paintbrush' | 'chalk' | 'spray' | 'crayon';
+  type: 'paintbrush' | 'chalk' | 'spray' | 'crayon' | 'watercolor';
   points: Array<{ x: number; y: number }>;
   strokeWidth: number;
   strokeColor: string;
@@ -36,6 +36,17 @@ export interface ChalkEffectData {
     offsetY: number;
     alpha: number;
     width: number;
+  }>;
+}
+
+export interface WatercolorEffectData {
+  blurLayers: Array<{
+    offsetX: number;
+    offsetY: number;
+    alpha: number;
+    blur: number;
+    width: number;
+    compositeOperation: string;
   }>;
 }
 
@@ -111,6 +122,18 @@ class BrushEffectCache {
           strokeColor: originalData.strokeColor,
           opacity: originalData.opacity,
           effectData: segmentChalkData
+        });
+      } else if (brushType === 'watercolor') {
+        // Watercolor layers apply to the entire path, so we can reuse them
+        const watercolorData = originalData.effectData as WatercolorEffectData;
+        
+        this.store(segment.id, brushType, {
+          type: brushType as any,
+          points: segment.points,
+          strokeWidth: originalData.strokeWidth,
+          strokeColor: originalData.strokeColor,
+          opacity: originalData.opacity,
+          effectData: watercolorData
         });
       }
     });
@@ -297,6 +320,44 @@ export function precalculateChalkEffect(
   ];
   
   return { dustParticles, roughnessLayers };
+}
+
+/**
+ * Pre-calculates watercolor effect data for consistent rendering
+ */
+export function precalculateWatercolorEffect(
+  points: Array<{ x: number; y: number }>,
+  strokeWidth: number,
+  baseSeed: number
+): WatercolorEffectData {
+  const seededRandom = createSeededRandom(baseSeed);
+  const blurLayers: WatercolorEffectData['blurLayers'] = [];
+  
+  // Create 5 layers with decreasing blur for authentic watercolor effect
+  const layerConfigs = [
+    { blur: strokeWidth * 0.8, alpha: 0.03, width: 1.4, composite: 'multiply' },
+    { blur: strokeWidth * 0.5, alpha: 0.04, width: 1.2, composite: 'multiply' },
+    { blur: strokeWidth * 0.3, alpha: 0.05, width: 1.1, composite: 'source-over' },
+    { blur: strokeWidth * 0.15, alpha: 0.06, width: 1.0, composite: 'source-over' },
+    { blur: 0, alpha: 0.08, width: 0.9, composite: 'source-over' }
+  ];
+  
+  layerConfigs.forEach((config, index) => {
+    // Add slight random offset for natural watercolor bleeding
+    const offsetX = (seededRandom() - 0.5) * strokeWidth * 0.1;
+    const offsetY = (seededRandom() - 0.5) * strokeWidth * 0.1;
+    
+    blurLayers.push({
+      offsetX,
+      offsetY,
+      alpha: config.alpha,
+      blur: config.blur,
+      width: config.width,
+      compositeOperation: config.composite
+    });
+  });
+  
+  return { blurLayers };
 }
 
 /**
