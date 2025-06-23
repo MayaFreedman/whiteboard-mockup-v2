@@ -154,7 +154,7 @@ export const useCanvasRendering = (
           break;
         }
         case 'circle': {
-          // Draw the exact same ellipse but with thicker blue stroke - use pixel-perfect positioning
+          // Draw the exact same circle but with thicker blue stroke - use pixel-perfect positioning
           const radiusX = Math.round(obj.width / 2);
           const radiusY = Math.round(obj.height / 2);
           const centerX = Math.round(obj.x + radiusX);
@@ -210,41 +210,39 @@ export const useCanvasRendering = (
     // Now draw the actual object ON TOP of the selection highlight
     switch (obj.type) {
       case 'path': {
-        if (obj.data?.path) {
-          // For paths, we need to apply translation and then draw the relative path
-          ctx.translate(obj.x, obj.y);
-          
-          const brushType = obj.data?.brushType;
-          const strokeColor = obj.stroke || '#000000';
-          const strokeWidth = obj.strokeWidth || 2;
-          const opacity = obj.opacity || 1;
-
-          // Render based on brush type or if it's an eraser
-          if (isEraser) {
-            // Render eraser as a solid path with round caps for smooth erasing
-            const path = new Path2D(obj.data.path);
-            ctx.strokeStyle = '#000000'; // Color doesn't matter for destination-out
-            ctx.lineWidth = strokeWidth;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.stroke(path);
-          } else if (brushType === 'paintbrush') {
-            renderPaintbrush(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
-          } else if (brushType === 'chalk') {
-            renderChalk(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
-          } else if (brushType === 'spray') {
-            renderSpray(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
-          } else if (brushType === 'crayon') {
-            renderCrayon(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
-          } else {
-            // Default rendering for pencil or unknown brush types
-            const path = new Path2D(obj.data.path);
-            ctx.strokeStyle = strokeColor;
-            ctx.lineWidth = strokeWidth;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.stroke(path);
-          }
+        // For paths, we need to apply translation and then draw the relative path
+        ctx.translate(obj.x, obj.y);
+        
+        const brushType = obj.data?.brushType;
+        const strokeColor = obj.stroke || '#000000';
+        const strokeWidth = obj.strokeWidth || 2;
+        const opacity = obj.opacity || 1;
+        
+        // Render based on brush type or if it's an eraser
+        if (isEraser) {
+          // Render eraser as a solid path with round caps for smooth erasing
+          const path = new Path2D(obj.data.path);
+          ctx.strokeStyle = '#000000'; // Color doesn't matter for destination-out
+          ctx.lineWidth = strokeWidth;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke(path);
+        } else if (brushType === 'paintbrush') {
+          renderPaintbrush(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+        } else if (brushType === 'chalk') {
+          renderChalk(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+        } else if (brushType === 'spray') {
+          renderSpray(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+        } else if (brushType === 'crayon') {
+          renderCrayon(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
+        } else {
+          // Default rendering for pencil or unknown brush types
+          const path = new Path2D(obj.data.path);
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = strokeWidth;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke(path);
         }
         break;
       }
@@ -442,6 +440,12 @@ export const useCanvasRendering = (
             ctx.restore();
           }
         }
+        break;
+      }
+      
+      default: {
+        // Handle unknown object types gracefully
+        console.warn('Unknown object type:', obj.type);
         break;
       }
     }
