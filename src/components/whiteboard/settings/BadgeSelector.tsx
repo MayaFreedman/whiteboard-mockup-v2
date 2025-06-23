@@ -1,0 +1,35 @@
+
+import React from 'react';
+import { Badge } from '../../ui/badge';
+
+interface BadgeSelectorProps {
+  label: string;
+  items: Array<{ value: string; label: string }>;
+  selectedValue: string;
+  onChange: (value: string) => void;
+}
+
+export const BadgeSelector: React.FC<BadgeSelectorProps> = ({
+  label,
+  items,
+  selectedValue,
+  onChange
+}) => {
+  return (
+    <div>
+      <label className="text-sm font-medium mb-2 block">{label}</label>
+      <div className="flex gap-2">
+        {items.map((item) => (
+          <Badge
+            key={item.value}
+            variant={selectedValue === item.value ? 'default' : 'outline'}
+            className="cursor-pointer capitalize"
+            onClick={() => onChange(item.value)}
+          >
+            {item.label}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+};
