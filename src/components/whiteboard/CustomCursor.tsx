@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
+import { Droplet } from 'lucide-react';
 
 interface CustomCursorProps {
   canvas: HTMLCanvasElement | null;
@@ -15,7 +16,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ canvas }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   // Tools that should show the custom cursor
-  const toolsWithCustomCursor = ['pencil', 'brush', 'eraser'];
+  const toolsWithCustomCursor = ['pencil', 'brush', 'eraser', 'fill'];
   const shouldShowCursor = toolsWithCustomCursor.includes(activeTool);
 
   // Get the appropriate size for the cursor
@@ -26,6 +27,8 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ canvas }) => {
         return toolSettings.strokeWidth * 2; // Make it a bit more visible
       case 'eraser':
         return toolSettings.eraserSize; // Use the full size (diameter), not radius
+      case 'fill':
+        return 24; // Fixed size for fill tool
       default:
         return 20;
     }
@@ -74,6 +77,28 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ canvas }) => {
 
   const size = getCursorSize();
 
+  // Render water droplet for fill tool
+  if (activeTool === 'fill') {
+    return (
+      <div
+        className="fixed pointer-events-none z-50 flex items-center justify-center"
+        style={{
+          left: cursorPosition.x - size / 2,
+          top: cursorPosition.y - size / 2,
+          width: size,
+          height: size,
+        }}
+      >
+        <Droplet 
+          size={size * 0.8} 
+          className="text-blue-500"
+          fill="currentColor"
+        />
+      </div>
+    );
+  }
+
+  // Render circle for other tools
   return (
     <div
       className="fixed pointer-events-none z-50"
