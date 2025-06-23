@@ -150,6 +150,7 @@ export const useCanvasInteractions = () => {
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
     const selectedSticker = toolStore.toolSettings.selectedSticker || '/src/assets/Animals.svg';
     const actualSize = size * 10; // Convert slider value to actual pixel size
+    const rotation = toolStore.toolSettings.stampRotation || 0;
     
     const imageData: ImageData = {
       src: selectedSticker,
@@ -163,6 +164,7 @@ export const useCanvasInteractions = () => {
       width: actualSize,
       height: actualSize,
       opacity: toolStore.toolSettings.opacity,
+      rotation: rotation, // Add rotation to the stamp object
       data: imageData
     };
   }, [toolStore.toolSettings]);
