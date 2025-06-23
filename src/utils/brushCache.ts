@@ -1,3 +1,4 @@
+
 /**
  * Brush effect caching system for consistent rendering
  * Stores pre-calculated brush patterns to maintain visual consistency
@@ -259,7 +260,7 @@ export function precalculateSprayEffect(
 }
 
 /**
- * Pre-calculates chalk effect data for consistent rendering
+ * Pre-calculates enhanced chalk effect data for more noticeable chalk appearance
  */
 export function precalculateChalkEffect(
   points: Array<{ x: number; y: number }>,
@@ -270,30 +271,32 @@ export function precalculateChalkEffect(
   
   points.forEach((point, pointIndex) => {
     const seededRandom = createSeededRandom(baseSeed + pointIndex * 1000);
-    const dustCount = Math.max(3, Math.floor(strokeWidth / 2));
+    const dustCount = Math.max(5, Math.floor(strokeWidth * 1.5)); // Increased dust count
     
     for (let i = 0; i < dustCount; i++) {
       const angle = seededRandom() * Math.PI * 2;
-      const distance = seededRandom() * strokeWidth * 0.6;
-      const size = seededRandom() * (strokeWidth * 0.15) + 0.5;
+      const distance = seededRandom() * strokeWidth * 0.8; // Increased spread
+      const size = seededRandom() * (strokeWidth * 0.2) + 0.8; // Larger particles
       
       dustParticles.push({
         offsetX: Math.cos(angle) * distance,
         offsetY: Math.sin(angle) * distance,
         size,
-        opacity: 0.25,
+        opacity: 0.4, // Increased opacity from 0.25
         pointIndex
       });
     }
   });
   
-  // Pre-calculate roughness layers
+  // Enhanced roughness layers with more variation
   const roughnessLayers = [
-    { offsetX: 0, offsetY: 0, alpha: 0.7, width: 1.0 },
-    { offsetX: 0.3, offsetY: 0.2, alpha: 0.4, width: 0.9 },
-    { offsetX: -0.2, offsetY: 0.4, alpha: 0.4, width: 0.8 },
-    { offsetX: 0.4, offsetY: -0.3, alpha: 0.3, width: 0.9 },
-    { offsetX: -0.3, offsetY: -0.2, alpha: 0.3, width: 0.85 }
+    { offsetX: 0, offsetY: 0, alpha: 0.8, width: 1.0 },
+    { offsetX: 0.5, offsetY: 0.3, alpha: 0.5, width: 0.9 },
+    { offsetX: -0.3, offsetY: 0.6, alpha: 0.5, width: 0.8 },
+    { offsetX: 0.6, offsetY: -0.4, alpha: 0.4, width: 0.9 },
+    { offsetX: -0.4, offsetY: -0.3, alpha: 0.4, width: 0.85 },
+    { offsetX: 0.2, offsetY: 0.7, alpha: 0.3, width: 0.7 }, // Additional layer
+    { offsetX: -0.6, offsetY: 0.2, alpha: 0.3, width: 0.8 }  // Additional layer
   ];
   
   return { dustParticles, roughnessLayers };
