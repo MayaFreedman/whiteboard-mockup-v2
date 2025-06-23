@@ -1,3 +1,4 @@
+
 import { useEffect, useContext, useRef, useState } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
@@ -46,37 +47,45 @@ export const useMultiplayerSync = () => {
     }
     
     const room = serverInstance.server.room
-    console.log('🔍 Checking if alone in room:', {
+    console.log('🔍 Checking if alone in room - Raw room data:', {
       roomId: room.roomId,
       sessionId: room.sessionId,
       hasState: !!room.state,
-      hasPlayers: !!(room.state?.players),
-      hasClients: !!(room.clients)
+      stateKeys: room.state ? Object.keys(room.state) : [],
+      hasClients: !!room.clients,
+      clientsType: room.clients ? typeof room.clients : 'undefined',
+      clientsLength: room.clients ? room.clients.length : 'no length property',
+      clientsKeys: room.clients && typeof room.clients === 'object' ? Object.keys(room.clients) : 'not object'
     })
     
     try {
-      // Try multiple ways to get client/player count
-      let playerCount = 0
-      let clientCount = 0
+      let actualUserCount = 1 // At minimum we know we're here
       
-      if (room.state?.players) {
-        playerCount = Object.keys(room.state.players).length
-        console.log('🔍 Player count from state:', playerCount)
-      }
-      
+      // Check room.clients first (most reliable for Colyseus)
       if (room.clients) {
-        clientCount = Array.isArray(room.clients) ? room.clients.length : Object.keys(room.clients).length
-        console.log('🔍 Client count from room:', clientCount)
+        if (Array.isArray(room.clients)) {
+          actualUserCount = room.clients.length
+          console.log('🔍 Found clients array with length:', actualUserCount)
+        } else if (typeof room.clients === 'object') {
+          actualUserCount = Object.keys(room.clients).length
+          console.log('🔍 Found clients object with keys:', Object.keys(room.clients), 'count:', actualUserCount)
+        }
       }
       
-      const maxCount = Math.max(playerCount, clientCount)
-      const alone = maxCount <= 1
+      // Check room.state.players as backup
+      if (room.state?.players) {
+        const playerCount = Object.keys(room.state.players).length
+        console.log('🔍 Found players in state:', playerCount)
+        // Use the higher of the two counts
+        actualUserCount = Math.max(actualUserCount, playerCount)
+      }
       
-      console.log('🔍 Alone check result:', {
-        playerCount,
-        clientCount,
-        maxCount,
-        alone
+      const alone = actualUserCount <= 1
+      
+      console.log('🔍 Final alone check result:', {
+        actualUserCount,
+        alone,
+        conclusion: alone ? 'USER IS ALONE' : 'OTHER USERS PRESENT'
       })
       
       return alone
