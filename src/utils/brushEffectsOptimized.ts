@@ -1,6 +1,5 @@
-
 /**
- * Optimized brush effects with caching for consistent rendering
+ * Optimized brush effects with caching and performance improvements
  */
 import { 
   brushEffectCache, 
@@ -10,6 +9,11 @@ import {
   SprayEffectData,
   ChalkEffectData
 } from './brushCache';
+
+// Performance optimization: Limit effect complexity based on viewport
+const MAX_SPRAY_DOTS_PER_POINT = 8; // Reduced from previous values
+const MAX_CHALK_PARTICLES_PER_POINT = 6; // Reduced for better performance
+const MIN_POINT_DISTANCE = 2; // Skip points that are too close together
 
 /**
  * Generates a stable seed from path coordinates for consistent preview rendering
@@ -23,7 +27,37 @@ const generateCoordinateBasedSeed = (pathPoints: Array<{ x: number; y: number }>
 };
 
 /**
- * Renders cached spray effect with consistent dot patterns
+ * Optimizes path points by removing points that are too close together
+ */
+const optimizePathPoints = (points: Array<{ x: number; y: number }>): Array<{ x: number; y: number }> => {
+  if (points.length <= 2) return points;
+  
+  const optimized = [points[0]]; // Always keep first point
+  
+  for (let i = 1; i < points.length - 1; i++) {
+    const lastPoint = optimized[optimized.length - 1];
+    const currentPoint = points[i];
+    
+    const distance = Math.sqrt(
+      Math.pow(currentPoint.x - lastPoint.x, 2) + 
+      Math.pow(currentPoint.y - lastPoint.y, 2)
+    );
+    
+    if (distance >= MIN_POINT_DISTANCE) {
+      optimized.push(currentPoint);
+    }
+  }
+  
+  // Always keep last point
+  if (points.length > 1) {
+    optimized.push(points[points.length - 1]);
+  }
+  
+  return optimized;
+};
+
+/**
+ * Renders cached spray effect with performance optimizations
  */
 export const renderSprayOptimized = (
   ctx: CanvasRenderingContext2D,
@@ -45,8 +79,9 @@ export const renderSprayOptimized = (
       sprayData = cached.effectData as SprayEffectData;
       pathPoints = cached.points;
     } else {
-      // Calculate and cache new effect data - use coordinate-based seed for consistency
-      pathPoints = pathToPointsForBrush(path);
+      // Calculate and cache new effect data with optimization
+      const rawPoints = pathToPointsForBrush(path);
+      pathPoints = optimizePathPoints(rawPoints);
       const baseSeed = generateCoordinateBasedSeed(pathPoints);
       sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
       
@@ -60,32 +95,37 @@ export const renderSprayOptimized = (
       });
     }
   } else {
-    // Fallback for preview mode - use coordinate-based seed for stability
-    pathPoints = pathToPointsForBrush(path);
+    // Fallback for preview mode with optimization
+    const rawPoints = pathToPointsForBrush(path);
+    pathPoints = optimizePathPoints(rawPoints);
     const baseSeed = generateCoordinateBasedSeed(pathPoints);
     sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
   }
   
-  // Render the cached spray dots - apply them relative to each path point
+  // Render with batching for better performance
   ctx.fillStyle = strokeColor;
+  ctx.globalAlpha = opacity;
+  
+  // Use path for better performance than individual arc calls
+  const sprayPath = new Path2D();
   
   sprayData.dots.forEach(dot => {
-    // Get the path point this dot is associated with
     const pathPoint = pathPoints[dot.pointIndex];
-    if (pathPoint) {
-      ctx.globalAlpha = opacity * dot.opacity;
-      ctx.beginPath();
-      // Apply the dot offset relative to the path point position
-      ctx.arc(pathPoint.x + dot.offsetX, pathPoint.y + dot.offsetY, dot.size, 0, 2 * Math.PI);
-      ctx.fill();
+    if (pathPoint && dot.opacity > 0.1) { // Skip very transparent dots
+      const x = pathPoint.x + dot.offsetX;
+      const y = pathPoint.y + dot.offsetY;
+      
+      sprayPath.moveTo(x + dot.size, y);
+      sprayPath.arc(x, y, dot.size, 0, 2 * Math.PI);
     }
   });
   
+  ctx.fill(sprayPath);
   ctx.restore();
 };
 
 /**
- * Renders cached chalk effect with enhanced dust and roughness
+ * Renders cached chalk effect with performance optimizations
  */
 export const renderChalkOptimized = (
   ctx: CanvasRenderingContext2D,
@@ -108,8 +148,9 @@ export const renderChalkOptimized = (
       chalkData = cached.effectData as ChalkEffectData;
       pathPoints = cached.points;
     } else {
-      // Calculate and cache new effect data - use coordinate-based seed for consistency
-      pathPoints = pathToPointsForBrush(path);
+      // Calculate and cache new effect data with optimization
+      const rawPoints = pathToPointsForBrush(path);
+      pathPoints = optimizePathPoints(rawPoints);
       const baseSeed = generateCoordinateBasedSeed(pathPoints);
       chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
       
@@ -123,14 +164,17 @@ export const renderChalkOptimized = (
       });
     }
   } else {
-    // Fallback for preview mode - use coordinate-based seed for stability
-    pathPoints = pathToPointsForBrush(path);
+    // Fallback for preview mode with optimization
+    const rawPoints = pathToPointsForBrush(path);
+    pathPoints = optimizePathPoints(rawPoints);
     const baseSeed = generateCoordinateBasedSeed(pathPoints);
     chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
   }
   
-  // Draw the main stroke with enhanced roughness layers
-  chalkData.roughnessLayers.forEach((layer) => {
+  // Render only the most important layers for performance
+  const importantLayers = chalkData.roughnessLayers.slice(0, 4); // Limit to 4 layers
+  
+  importantLayers.forEach((layer) => {
     ctx.save();
     ctx.translate(layer.offsetX, layer.offsetY);
     ctx.globalAlpha = opacity * layer.alpha;
@@ -139,31 +183,34 @@ export const renderChalkOptimized = (
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     
-    // Enhanced shadow effect for more chalky appearance
-    ctx.shadowColor = strokeColor;
-    ctx.shadowBlur = strokeWidth * 0.4; // Increased from 0.2
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
+    // Reduced shadow for performance
+    if (layer.alpha > 0.6) { // Only add shadow to main layers
+      ctx.shadowColor = strokeColor;
+      ctx.shadowBlur = strokeWidth * 0.2;
+    }
     
     ctx.stroke(pathObj);
     ctx.restore();
   });
   
-  // Add enhanced dust particles with more visibility
+  // Render dust particles with batching
   ctx.fillStyle = strokeColor;
   ctx.shadowBlur = 0;
   
+  const dustPath = new Path2D();
   chalkData.dustParticles.forEach(particle => {
-    // Get the path point this particle is associated with
     const pathPoint = pathPoints[particle.pointIndex];
-    if (pathPoint) {
-      ctx.globalAlpha = opacity * particle.opacity * 0.7; // Increased visibility
-      ctx.beginPath();
-      // Apply the particle offset relative to the path point position
-      ctx.arc(pathPoint.x + particle.offsetX, pathPoint.y + particle.offsetY, particle.size, 0, 2 * Math.PI);
-      ctx.fill();
+    if (pathPoint && particle.opacity > 0.2) { // Skip very transparent particles
+      const x = pathPoint.x + particle.offsetX;
+      const y = pathPoint.y + particle.offsetY;
+      
+      dustPath.moveTo(x + particle.size, y);
+      dustPath.arc(x, y, particle.size, 0, 2 * Math.PI);
     }
   });
+  
+  ctx.globalAlpha = opacity * 0.6;
+  ctx.fill(dustPath);
   
   ctx.restore();
 };
