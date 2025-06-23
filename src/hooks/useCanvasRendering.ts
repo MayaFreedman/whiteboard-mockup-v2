@@ -18,7 +18,7 @@ import {
   renderHeart 
 } from '../utils/shapeRendering';
 import { measureText } from '../utils/textMeasurement';
-import { pathPointsCache } from '../utils/pathPointsCache';
+import { imageCache } from '../utils/imageCache';
 
 /**
  * Wraps text to fit within the specified width
@@ -83,74 +83,36 @@ export const useCanvasRendering = (
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
   
-  // Image cache to prevent blinking/glitching
-  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
-  const loadingImages = useRef<Set<string>>(new Set());
+  // Track pending image loads to avoid redundant redraws
+  const pendingImageLoads = useRef<Set<string>>(new Set());
 
   /**
-   * Loads and caches an image for synchronous rendering
+   * Optimized image loading using the new cache manager
    */
   const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
-    // Return cached image if available
-    if (imageCache.current.has(src)) {
-      return imageCache.current.get(src)!;
-    }
-    
-    // Prevent duplicate loading requests
-    if (loadingImages.current.has(src)) {
-      return null;
-    }
-    
-    loadingImages.current.add(src);
-    
     try {
-      const img = new Image();
+      const image = await imageCache.getImage(src);
       
-      return new Promise((resolve, reject) => {
-        img.onload = () => {
-          // Cache the loaded image
-          imageCache.current.set(src, img);
-          loadingImages.current.delete(src);
-          resolve(img);
-        };
+      // If this was a pending load, trigger redraw and remove from pending
+      if (pendingImageLoads.current.has(src)) {
+        pendingImageLoads.current.delete(src);
         
-        img.onerror = () => {
-          loadingImages.current.delete(src);
-          console.warn('Failed to load image:', src);
-          reject(new Error(`Failed to load image: ${src}`));
-        };
-        
-        // Handle SVG files by converting to blob URL
-        if (src.endsWith('.svg')) {
-          fetch(src)
-            .then(response => response.text())
-            .then(svgText => {
-              const blob = new Blob([svgText], { type: 'image/svg+xml' });
-              const url = URL.createObjectURL(blob);
-              img.src = url;
-              
-              // Clean up blob URL after image loads
-              img.onload = () => {
-                imageCache.current.set(src, img);
-                loadingImages.current.delete(src);
-                URL.revokeObjectURL(url);
-                resolve(img);
-              };
-            })
-            .catch(error => {
-              loadingImages.current.delete(src);
-              console.warn('Failed to fetch SVG:', error);
-              reject(error);
-            });
-        } else {
-          img.src = src;
+        // Only redraw if canvas still exists and we got an image
+        if (canvas && image) {
+          // Use requestAnimationFrame to avoid excessive redraws
+          requestAnimationFrame(() => {
+            redrawCanvas(true); // Force immediate redraw for loaded images
+          });
         }
-      });
+      }
+      
+      return image;
     } catch (error) {
-      loadingImages.current.delete(src);
+      pendingImageLoads.current.delete(src);
+      console.warn('Failed to load image for rendering:', error);
       return null;
     }
-  }, []);
+  }, [canvas]);
 
   /**
    * Sets up canvas for crisp rendering with proper pixel alignment
@@ -376,28 +338,43 @@ export const useCanvasRendering = (
       case 'image': {
         if (obj.data?.src && obj.width && obj.height) {
           const imageData = obj.data as ImageData;
-          const cachedImage = imageCache.current.get(imageData.src);
           
-          if (cachedImage) {
-            // Draw immediately from cache - no blinking!
-            ctx.drawImage(
-              cachedImage, 
-              Math.round(obj.x), 
-              Math.round(obj.y), 
-              Math.round(obj.width), 
-              Math.round(obj.height)
-            );
-          } else {
-            // Load image asynchronously and trigger redraw when ready
-            getOrLoadImage(imageData.src).then(() => {
-              // Only redraw if canvas still exists
-              if (canvas) {
-                redrawCanvas();
+          // Use the new cache manager for image loading
+          const loadImage = async () => {
+            const image = await getOrLoadImage(imageData.src);
+            if (image) {
+              // Draw the image with pixel-perfect positioning
+              ctx.drawImage(
+                image, 
+                Math.round(obj.x), 
+                Math.round(obj.y), 
+                Math.round(obj.width), 
+                Math.round(obj.height)
+              );
+            }
+          };
+
+          // Try to get image immediately (will be from cache if available)
+          imageCache.getImage(imageData.src).then(image => {
+            if (image) {
+              // Draw immediately if we have the image
+              ctx.drawImage(
+                image, 
+                Math.round(obj.x), 
+                Math.round(obj.y), 
+                Math.round(obj.width), 
+                Math.round(obj.height)
+              );
+            } else {
+              // Track this as a pending load to avoid excessive redraws
+              if (!pendingImageLoads.current.has(imageData.src)) {
+                pendingImageLoads.current.add(imageData.src);
+                loadImage(); // Async load
               }
-            }).catch(error => {
-              console.warn('Failed to load image for rendering:', error);
-            });
-          }
+            }
+          }).catch(error => {
+            console.warn('Failed to render image:', error);
+          });
         }
         break;
       }
@@ -787,7 +764,7 @@ export const useCanvasRendering = (
   }, []);
 
   /**
-   * Renders all whiteboard objects on the canvas
+   * Renders all whiteboard objects on the canvas with batching optimization
    * @param ctx - Canvas rendering context
    */
   const renderAllObjects = useCallback((ctx: CanvasRenderingContext2D) => {
@@ -796,28 +773,72 @@ export const useCanvasRendering = (
     // Sort by creation time to maintain z-order
     objectEntries.sort(([, a], [, b]) => a.createdAt - b.createdAt);
     
+    // Batch render objects by type for better performance
+    const objectsByType = new Map<string, Array<[string, WhiteboardObject]>>();
+    
     objectEntries.forEach(([id, obj]) => {
-      const isSelected = selectedObjectIds.includes(id);
-      renderObject(ctx, obj, isSelected);
+      const type = obj.type;
+      if (!objectsByType.has(type)) {
+        objectsByType.set(type, []);
+      }
+      objectsByType.get(type)!.push([id, obj]);
     });
+
+    // Render in optimal order (images first to avoid blend mode issues)
+    const renderOrder = ['image', 'path', 'rectangle', 'circle', 'triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart', 'text'];
+    
+    for (const type of renderOrder) {
+      const typeObjects = objectsByType.get(type);
+      if (typeObjects) {
+        for (const [id, obj] of typeObjects) {
+          const isSelected = selectedObjectIds.includes(id);
+          renderObject(ctx, obj, isSelected);
+        }
+      }
+    }
+    
+    // Render any remaining object types not in the order list
+    for (const [type, typeObjects] of objectsByType) {
+      if (!renderOrder.includes(type)) {
+        for (const [id, obj] of typeObjects) {
+          const isSelected = selectedObjectIds.includes(id);
+          renderObject(ctx, obj, isSelected);
+        }
+      }
+    }
   }, [objects, selectedObjectIds, renderObject]);
 
-  // Throttle canvas redraws to improve performance during drawing
+  // Smart throttle canvas redraws with dynamic throttling based on activity
   const lastRedrawTime = useRef<number>(0);
   const redrawTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const REDRAW_THROTTLE_MS = 16; // 60fps throttling
+  const isHighActivity = useRef<boolean>(false);
+  
+  // Dynamic throttling: 16ms during drawing (60fps), 100ms when idle
+  const getThrottleMs = useCallback(() => {
+    const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
+    const hasShapePreview = getCurrentShapePreview && getCurrentShapePreview();
+    const isDrawing = hasDrawingPreview || hasShapePreview;
+    
+    if (isDrawing) {
+      isHighActivity.current = true;
+      return 16; // 60fps for smooth drawing
+    } else if (isHighActivity.current) {
+      // Gradual cooldown after drawing stops
+      setTimeout(() => { isHighActivity.current = false; }, 1000);
+      return 33; // 30fps cooldown
+    } else {
+      return 100; // 10fps when idle
+    }
+  }, [getCurrentDrawingPreview, getCurrentShapePreview]);
 
   const redrawCanvas = useCallback((immediate = false) => {
     if (!canvas) return;
 
     const now = Date.now();
+    const throttleMs = getThrottleMs();
     
-    // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
-    const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
-    const shouldRedrawImmediately = immediate || !hasDrawingPreview;
-    
-    // If immediate redraw is requested, no drawing preview (drawing ended), or enough time has passed, redraw now
-    if (shouldRedrawImmediately || now - lastRedrawTime.current >= REDRAW_THROTTLE_MS) {
+    // Always redraw immediately if explicitly requested
+    if (immediate || now - lastRedrawTime.current >= throttleMs) {
       lastRedrawTime.current = now;
       
       // Clear any pending timeout
@@ -828,9 +849,9 @@ export const useCanvasRendering = (
       
       performRedraw();
     } else {
-      // Throttle the redraw only during active drawing - schedule it for later if not already scheduled
+      // Throttle the redraw - schedule it for later if not already scheduled
       if (!redrawTimeoutRef.current) {
-        const timeUntilNextRedraw = REDRAW_THROTTLE_MS - (now - lastRedrawTime.current);
+        const timeUntilNextRedraw = throttleMs - (now - lastRedrawTime.current);
         
         redrawTimeoutRef.current = setTimeout(() => {
           redrawTimeoutRef.current = null;
@@ -839,7 +860,7 @@ export const useCanvasRendering = (
         }, timeUntilNextRedraw);
       }
     }
-  }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText]);
+  }, [canvas, getThrottleMs]);
 
   const performRedraw = useCallback(() => {
     if (!canvas) return;
@@ -874,7 +895,7 @@ export const useCanvasRendering = (
       drawDots(ctx, canvas.width, canvas.height);
     }
 
-    // Draw all objects with their current positions
+    // Draw all objects with optimized batching
     renderAllObjects(ctx);
 
     // Draw current drawing preview if available
@@ -893,7 +914,9 @@ export const useCanvasRendering = (
       }
     }
 
-    console.log('🎨 Canvas redrawn with crisp rendering:', {
+    // Log performance info periodically
+    const cacheStats = imageCache.getStats();
+    console.log('🎨 Canvas redrawn with optimized rendering:', {
       objectCount: Object.keys(objects).length,
       selectedCount: selectedObjectIds.length,
       canvasSize: { width: canvas.width, height: canvas.height },
@@ -901,7 +924,10 @@ export const useCanvasRendering = (
       hasDrawingPreview: !!getCurrentDrawingPreview?.(),
       hasShapePreview: !!getCurrentShapePreview?.(),
       editingTextId: editingTextId || 'none',
-      cachedImages: imageCache.current.size
+      cacheHitRate: cacheStats.hitCount + cacheStats.missCount > 0 ? 
+        Math.round(cacheStats.hitCount / (cacheStats.hitCount + cacheStats.missCount) * 100) : 0,
+      cacheMemoryMB: cacheStats.memoryMB,
+      pendingLoads: pendingImageLoads.current.size
     });
   }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
 

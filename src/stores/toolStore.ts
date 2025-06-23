@@ -1,330 +1,180 @@
 import { create } from 'zustand';
+import { preloadStampImages } from '../utils/imageCache';
 
-export type Tool = 
-  | 'select'
-  | 'hand' 
-  | 'pencil'
-  | 'brush'
-  | 'eraser'
-  | 'rectangle'
-  | 'circle'
-  | 'ellipse'
-  | 'line'
-  | 'triangle'
-  | 'text'
-  | 'stamp'
-  | 'fill'
-  | 'hexagon'
-  | 'star'
-  | 'pentagon'
-  | 'diamond'
-  | 'heart';
-
-export type BrushType = 'paintbrush' | 'chalk' | 'spray' | 'crayon';
-
-export type EraserMode = 'pixel' | 'object';
-
-export interface ToolSettings {
-  // Drawing settings
-  strokeColor: string;
-  strokeWidth: number;
-  opacity: number;
-  brushType: BrushType;
-  
-  // Eraser settings
-  eraserMode: EraserMode;
-  eraserSize: number;
-  eraserOpacity: number;
-  
-  // Shape settings
-  shapeBorderWeight: number;
-  
-  // Text settings
-  fontSize: number;
-  fontFamily: string;
-  textBold: boolean;
-  textItalic: boolean;
-  textUnderline: boolean;
-  textAlign: 'left' | 'center' | 'right';
-  
-  // UI settings
-  showGrid: boolean;
-  showLinedPaper: boolean;
-  showDots: boolean;
-  
-  // Stamp settings
-  selectedSticker?: string;
-  
-  // Shape properties panel settings
-  shapeColorMode: 'fill' | 'stroke';
+interface ToolState {
+  activeTool: string;
+  toolSettings: any;
+  version: number;
+  history: Array<{ action: string; data: any; timestamp: number }>;
+  future: Array<{ action: string; data: any; timestamp: number }>;
+  undo: () => void;
+  redo: () => void;
+  setToolSettings: (settings: any) => void;
+  setActiveTool: (tool: string) => void;
+  resetToolSettings: () => void;
+  clearHistory: () => void;
 }
 
-interface ToolStore {
-  activeTool: Tool;
-  toolSettings: ToolSettings;
-  
-  // State tracking for multiplayer
-  stateVersion: number;
-  lastStateUpdate: number;
-  toolChangeHistory: Array<{
-    tool: Tool;
-    timestamp: number;
-    settings: ToolSettings;
-  }>;
-  
-  // Actions
-  setActiveTool: (tool: Tool) => void;
-  updateToolSettings: (settings: Partial<ToolSettings>) => void;
-  
-  // Color palette management
-  colorPalettes: {
-    basic: string[];
-    vibrant: string[];
-    pastel: string[];
-    professional: string[];
-  };
-  activeColorPalette: keyof ToolStore['colorPalettes'];
-  customColors: string[];
-  recentlyUsedColors: string[];
-  addCustomColor: (color: string) => void;
-  setActiveColorPalette: (palette: keyof ToolStore['colorPalettes']) => void;
-  getActiveColors: () => string[];
-  updateRecentlyUsedColor: (color: string) => void;
-  getMostRecentColors: (count: number) => string[];
-  
-  // Enhanced state tracking for multiplayer
-  getToolStateSnapshot: () => {
-    activeTool: Tool;
-    settings: ToolSettings;
-    version: number;
-    timestamp: number;
-  };
-  getToolChangesSince: (timestamp: number) => Array<{
-    tool: Tool;
-    timestamp: number;
-    settings: ToolSettings;
-  }>;
-  clearToolHistory: () => void;
-}
-
-/** Default settings for all tools */
-const defaultToolSettings: ToolSettings = {
-  strokeColor: '#000000',
-  strokeWidth: 8,
-  opacity: 1,
-  brushType: 'paintbrush',
-  eraserMode: 'pixel',
-  eraserSize: 20,
-  eraserOpacity: 1,
-  shapeBorderWeight: 2,
-  fontSize: 16,
-  fontFamily: 'Arial',
-  textBold: false,
-  textItalic: false,
-  textUnderline: false,
-  textAlign: 'left',
-  showGrid: false,
-  showLinedPaper: false,
-  showDots: false,
-  selectedSticker: undefined,
-  shapeColorMode: 'fill'
-};
-
-/** Predefined color palettes for the whiteboard */
-const colorPalettes = {
-  basic: [
-    '#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff',
-    '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080'
-  ],
-  vibrant: [
-    '#ff1744', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5',
-    '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50',
-    '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800'
-  ],
-  pastel: [
-    '#ffcdd2', '#f8bbd9', '#e1bee7', '#d1c4e9', '#c5cae9',
-    '#bbdefb', '#b3e5fc', '#b2ebf2', '#b2dfdb', '#c8e6c9',
-    '#dcedc8', '#f0f4c3', '#fff9c4', '#ffecb3', '#ffe0b2'
-  ],
-  professional: [
-    '#1e3a8a', '#dc2626', '#059669', '#d97706', '#7c2d12',
-    '#1f2937', '#374151', '#6b7280', '#0f172a', '#1e293b',
-    '#0c4a6e', '#991b1b', '#064e3b', '#92400e', '#451a03'
-  ]
-};
-
-/**
- * Limits the array to a maximum number of items, removing oldest items if necessary
- * @param array - The array to limit
- * @param maxItems - Maximum number of items to keep
- * @returns The limited array
- */
-const limitArraySize = <T>(array: T[], maxItems: number): T[] => {
-  if (array.length <= maxItems) return array;
-  return array.slice(-maxItems);
-};
-
-/**
- * Adds an item to the beginning of an array, removing duplicates and limiting size
- * @param array - The array to add to
- * @param item - The item to add
- * @param maxItems - Maximum number of items to keep
- * @returns The updated array
- */
-const addToRecentArray = <T>(array: T[], item: T, maxItems: number): T[] => {
-  const filtered = array.filter(existingItem => existingItem !== item);
-  const newArray = [item, ...filtered];
-  return limitArraySize(newArray, maxItems);
-};
-
-/**
- * Tool store managing the active tool, settings, and state for multiplayer sync
- */
-export const useToolStore = create<ToolStore>((set, get) => ({
+const initialState = {
   activeTool: 'select',
-  toolSettings: defaultToolSettings,
-  stateVersion: 0,
-  lastStateUpdate: Date.now(),
-  toolChangeHistory: [],
-  colorPalettes,
-  activeColorPalette: 'basic',
-  customColors: [],
-  recentlyUsedColors: [],
+  toolSettings: {
+    strokeColor: '#000000',
+    strokeWidth: 2,
+    opacity: 1,
+    fillColor: 'transparent',
+    fontFamily: 'Arial',
+    fontSize: 24,
+    textAlign: 'left',
+    fontWeight: 'normal',
+    isEraser: false,
+    brushType: 'pencil',
+    gridVisible: false,
+    showLinedPaper: false,
+    showDots: false
+  },
+  version: 0,
+  history: [],
+  future: []
+};
 
-  setActiveTool: (tool) => {
-    console.log('🔧 Setting active tool:', tool);
-    
+export const useToolStore = create<ToolState>((set, get) => ({
+  ...initialState,
+
+  undo: () => {
     set((state) => {
-      const timestamp = Date.now();
-      const newVersion = state.stateVersion + 1;
-      
-      // Add to history
-      const newHistory = limitArraySize([
-        ...state.toolChangeHistory,
-        { tool, timestamp, settings: state.toolSettings }
-      ], 50);
-      
-      console.log('🔧 Tool state updated:', {
-        tool,
-        version: newVersion,
-        historyLength: newHistory.length
-      });
-      
-      return {
-        activeTool: tool,
-        stateVersion: newVersion,
-        lastStateUpdate: timestamp,
-        toolChangeHistory: newHistory
-      };
+      if (state.history.length === 0) return state;
+
+      const previous = state.history[state.history.length - 1];
+      const newHistory = state.history.slice(0, state.history.length - 1);
+
+      // Revert the state based on the action type
+      switch (previous.action) {
+        case 'SET_TOOL_SETTINGS':
+          // Revert to the tool settings before the action
+          return {
+            ...state,
+            toolSettings: previous.data.previousSettings,
+            history: newHistory,
+            future: [previous, ...state.future],
+            version: state.version - 1
+          };
+        case 'SET_ACTIVE_TOOL':
+          return {
+            ...state,
+            activeTool: previous.data.previousTool,
+            history: newHistory,
+            future: [previous, ...state.future],
+            version: state.version - 1
+          };
+        default:
+          return {
+            ...state,
+            history: newHistory,
+            future: [previous, ...state.future],
+            version: state.version - 1
+          };
+      }
     });
   },
 
-  updateToolSettings: (settings) => {
-    console.log('🎨 Updating tool settings:', settings);
-    
+  redo: () => {
     set((state) => {
-      const newSettings = { ...state.toolSettings, ...settings };
-      const timestamp = Date.now();
-      const newVersion = state.stateVersion + 1;
-      
-      // If stroke color is being updated, add to recently used
-      if (settings.strokeColor) {
-        get().updateRecentlyUsedColor(settings.strokeColor);
+      if (state.future.length === 0) return state;
+
+      const next = state.future[0];
+      const newFuture = state.future.slice(1);
+
+      // Apply the state based on the action type
+      switch (next.action) {
+        case 'SET_TOOL_SETTINGS':
+          // Apply the tool settings from the action
+          return {
+            ...state,
+            toolSettings: next.data.settings,
+            history: [...state.history, next],
+            future: newFuture,
+            version: state.version + 1
+          };
+        case 'SET_ACTIVE_TOOL':
+          return {
+            ...state,
+            activeTool: next.data.tool,
+            history: [...state.history, next],
+            future: newFuture,
+            version: state.version + 1
+          };
+        default:
+          return {
+            ...state,
+            history: [...state.history, next],
+            future: newFuture,
+            version: state.version + 1
+          };
       }
-      
-      console.log('🎨 Tool settings updated:', {
-        changes: Object.keys(settings),
-        version: newVersion,
-        newSettings: settings
-      });
+    });
+  },
+
+  setToolSettings: (settings: any) => {
+    set((state) => {
+      const previousSettings = { ...state.toolSettings };
+      const newSettings = { ...state.toolSettings, ...settings };
       
       return {
         toolSettings: newSettings,
-        stateVersion: newVersion,
-        lastStateUpdate: timestamp
+        version: state.version + 1,
+        history: [...state.history, { 
+          action: 'SET_TOOL_SETTINGS', 
+          data: { settings: newSettings, previousSettings }, 
+          timestamp: Date.now() 
+        }],
+        future: []
       };
     });
   },
 
-  updateRecentlyUsedColor: (color) => {
-    console.log('🎨 Adding recent color:', color);
+  setActiveTool: (tool: string) => {
+    const currentTool = get().activeTool;
+    
+    // Preload stamp images when stamp tool is selected
+    if (tool === 'stamp' && currentTool !== 'stamp') {
+      console.log('🏷️ Stamp tool selected - preloading images');
+      preloadStampImages().catch(error => {
+        console.warn('Failed to preload stamp images:', error);
+      });
+    }
     
     set((state) => ({
-      recentlyUsedColors: addToRecentArray(state.recentlyUsedColors, color, 10)
+      activeTool: tool,
+      version: state.version + 1,
+      history: [...state.history, { 
+        action: 'SET_ACTIVE_TOOL', 
+        data: { tool, previousTool: currentTool }, 
+        timestamp: Date.now() 
+      }]
     }));
-  },
-
-  getMostRecentColors: (count) => {
-    const state = get();
-    const paletteColors = state.colorPalettes[state.activeColorPalette];
-    const recentColors = state.recentlyUsedColors.filter(color => 
-      paletteColors.includes(color)
-    );
     
-    // Fill remaining slots with palette colors that haven't been used recently
-    const remainingColors = paletteColors.filter(color => 
-      !recentColors.includes(color)
-    );
-    
-    return [...recentColors, ...remainingColors].slice(0, count);
-  },
-
-  addCustomColor: (color) => {
-    console.log('🎨 Adding custom color:', color);
-    
-    set((state) => {
-      const newCustomColors = [...state.customColors];
-      if (!newCustomColors.includes(color)) {
-        newCustomColors.push(color);
-        // Keep only last 10 custom colors
-        if (newCustomColors.length > 10) {
-          newCustomColors.shift();
-        }
-      }
-      return { 
-        customColors: newCustomColors,
-        stateVersion: state.stateVersion + 1,
-        lastStateUpdate: Date.now()
-      };
+    console.log('🔧 Setting active tool:', tool);
+    console.log('🔧 Tool state updated:', {
+      tool,
+      version: get().version,
+      historyLength: get().history.length
     });
   },
 
-  setActiveColorPalette: (palette) => {
-    console.log('🎨 Setting active color palette:', palette);
-    
+  resetToolSettings: () => {
     set((state) => ({
-      activeColorPalette: palette,
-      stateVersion: state.stateVersion + 1,
-      lastStateUpdate: Date.now()
+      toolSettings: initialState.toolSettings,
+      version: state.version + 1,
+      history: [...state.history, { action: 'RESET_TOOL_SETTINGS', data: {}, timestamp: Date.now() }],
+      future: []
     }));
   },
 
-  getActiveColors: () => {
-    const state = get();
-    return state.colorPalettes[state.activeColorPalette];
-  },
-
-  getToolStateSnapshot: () => {
-    const state = get();
-    return {
-      activeTool: state.activeTool,
-      settings: state.toolSettings,
-      version: state.stateVersion,
-      timestamp: state.lastStateUpdate
-    };
-  },
-
-  getToolChangesSince: (timestamp: number) => {
-    const state = get();
-    return state.toolChangeHistory.filter(change => change.timestamp > timestamp);
-  },
-
-  clearToolHistory: () => {
-    console.log('🧹 Clearing tool history');
+  clearHistory: () => {
     set((state) => ({
-      toolChangeHistory: [],
-      stateVersion: state.stateVersion + 1,
-      lastStateUpdate: Date.now()
+      history: [],
+      future: [],
+      version: state.version + 1
     }));
   }
 }));
