@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
+import { resolveAssetUrl } from '../utils/assetResolver';
 // Import optimized brush effects
 import { 
   renderPaintbrushOptimized, 
@@ -91,17 +92,20 @@ export const useCanvasRendering = (
    * Loads and caches an image for synchronous rendering
    */
   const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
+    // Resolve the asset URL first
+    const resolvedSrc = resolveAssetUrl(src);
+    
     // Return cached image if available
-    if (imageCache.current.has(src)) {
-      return imageCache.current.get(src)!;
+    if (imageCache.current.has(resolvedSrc)) {
+      return imageCache.current.get(resolvedSrc)!;
     }
     
     // Prevent duplicate loading requests
-    if (loadingImages.current.has(src)) {
+    if (loadingImages.current.has(resolvedSrc)) {
       return null;
     }
     
-    loadingImages.current.add(src);
+    loadingImages.current.add(resolvedSrc);
     
     try {
       const img = new Image();
@@ -109,45 +113,22 @@ export const useCanvasRendering = (
       return new Promise((resolve, reject) => {
         img.onload = () => {
           // Cache the loaded image
-          imageCache.current.set(src, img);
-          loadingImages.current.delete(src);
+          imageCache.current.set(resolvedSrc, img);
+          loadingImages.current.delete(resolvedSrc);
           resolve(img);
         };
         
         img.onerror = () => {
-          loadingImages.current.delete(src);
-          console.warn('Failed to load image:', src);
-          reject(new Error(`Failed to load image: ${src}`));
+          loadingImages.current.delete(resolvedSrc);
+          console.warn('Failed to load image:', resolvedSrc);
+          reject(new Error(`Failed to load image: ${resolvedSrc}`));
         };
         
-        // Handle SVG files by converting to blob URL
-        if (src.endsWith('.svg')) {
-          fetch(src)
-            .then(response => response.text())
-            .then(svgText => {
-              const blob = new Blob([svgText], { type: 'image/svg+xml' });
-              const url = URL.createObjectURL(blob);
-              img.src = url;
-              
-              // Clean up blob URL after image loads
-              img.onload = () => {
-                imageCache.current.set(src, img);
-                loadingImages.current.delete(src);
-                URL.revokeObjectURL(url);
-                resolve(img);
-              };
-            })
-            .catch(error => {
-              loadingImages.current.delete(src);
-              console.warn('Failed to fetch SVG:', error);
-              reject(error);
-            });
-        } else {
-          img.src = src;
-        }
+        // Set the resolved source
+        img.src = resolvedSrc;
       });
     } catch (error) {
-      loadingImages.current.delete(src);
+      loadingImages.current.delete(resolvedSrc);
       return null;
     }
   }, []);
