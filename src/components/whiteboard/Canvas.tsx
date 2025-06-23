@@ -261,24 +261,30 @@ export const Canvas: React.FC = () => {
     console.log('📝 Text changed:', newText);
     console.log('📝 Text length:', newText.length);
     console.log('📝 Current text box width:', textEditorPosition?.width);
+    
+    // Test wrapping immediately
+    if (editingTextId && objects[editingTextId] && textEditorPosition) {
+      const textObject = objects[editingTextId];
+      const metrics = measureText(
+        newText,
+        textObject.data.fontSize,
+        textObject.data.fontFamily,
+        textObject.data.bold,
+        textObject.data.italic,
+        textEditorPosition.width
+      );
+      console.log('📝 Real-time text metrics:', {
+        input: newText.slice(0, 30) + (newText.length > 30 ? '...' : ''),
+        wrappedLines: metrics.lines,
+        dimensions: { width: metrics.width, height: metrics.height }
+      });
+    }
+    
     setEditingText(newText);
     
     // Update the object in real-time for better visual feedback
     if (editingTextId && objects[editingTextId]) {
       const textObject = objects[editingTextId];
-      
-      // Log the text measurement for debugging
-      if (textObject.data && textEditorPosition) {
-        const metrics = measureText(
-          newText,
-          textObject.data.fontSize,
-          textObject.data.fontFamily,
-          textObject.data.bold,
-          textObject.data.italic,
-          textEditorPosition.width
-        );
-        console.log('📝 Measured text metrics:', metrics);
-      }
       
       updateObject(editingTextId, {
         data: {
@@ -424,17 +430,17 @@ export const Canvas: React.FC = () => {
             fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
             textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
             textAlign: objects[editingTextId]?.data?.textAlign || 'left',
-            color: 'transparent', // Make the text invisible
+            color: 'rgba(0, 0, 0, 0.3)', // Make text semi-transparent so you can see canvas behind
             caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
             zIndex: 1000,
             lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
             padding: '0', // Remove default textarea padding since we handle it with positioning
             margin: '0', // Remove default margins
-            border: 'none', // Remove borders
+            border: '1px dashed rgba(255, 0, 0, 0.3)', // Debug border to see textarea bounds
             wordWrap: 'break-word', // Enable word wrapping
             whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
             overflowWrap: 'break-word', // Break long words if necessary
-            wordBreak: 'break-all', // Force breaking of long words
+            wordBreak: 'break-all', // Force breaking of long words - THIS IS KEY!
             // Font rendering optimizations to match canvas
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
