@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
@@ -196,6 +197,28 @@ const ActionButtons: React.FC = () => {
         disabled={!canRedo(userId)}
       >
         <Redo className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        title="Clear Canvas"
+        onClick={() => {
+          const { clearCanvas } = useWhiteboardStore.getState();
+          clearCanvas();
+        }}
+        className="text-white hover:text-white"
+        style={{ 
+          backgroundColor: '#7b5d6d',
+          '--tw-bg-opacity': '1'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#9d7a8a';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = '#7b5d6d';
+        }}
+      >
+        Clear
       </Button>
     </div>
   );
