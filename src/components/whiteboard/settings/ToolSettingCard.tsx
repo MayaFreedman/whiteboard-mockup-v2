@@ -10,8 +10,8 @@ interface ToolSettingCardProps {
 export const ToolSettingCard: React.FC<ToolSettingCardProps> = ({ title, children }) => {
   return (
     <Card>
-      <CardHeader className="bg-muted/80 py-3">
-        <CardTitle className="text-lg">{title}</CardTitle>
+      <CardHeader className="bg-company-light-pink py-3">
+        <CardTitle className="text-lg text-company-light-pink-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
         {children}
