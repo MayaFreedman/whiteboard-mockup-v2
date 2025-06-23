@@ -1,4 +1,3 @@
-
 import { useEffect, useContext, useRef, useState } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
@@ -56,20 +55,49 @@ export const useMultiplayerSync = () => {
     return ready
   }
 
+  // Better client count detection using multiple Colyseus room properties
+  const getClientCount = () => {
+    if (!serverInstance?.server?.room) return 0
+    
+    const room = serverInstance.server.room
+    
+    // Try multiple ways to get client count
+    const clientsFromState = room.state?.clients ? Object.keys(room.state.clients).length : 0
+    const clientsFromRoom = room.clients ? Object.keys(room.clients).length : 0
+    const hasOtherClients = room.hasJoined && Object.keys(room.clients || {}).length > 1
+    
+    console.log('👥 Detailed client count analysis:', {
+      roomId: room.id,
+      sessionId: room.sessionId,
+      hasJoined: room.hasJoined,
+      clientsFromState,
+      clientsFromRoom,
+      hasOtherClients,
+      roomState: room.state,
+      roomClients: room.clients,
+      // Log the actual structure to understand what's available
+      stateKeys: room.state ? Object.keys(room.state) : [],
+      clientsKeys: room.clients ? Object.keys(room.clients) : []
+    })
+    
+    // Use the higher count between the two methods
+    return Math.max(clientsFromState, clientsFromRoom)
+  }
+
   // Check if user is alone in the room
   const isAloneInRoom = () => {
     if (!serverInstance?.server?.room) return true
     
-    const room = serverInstance.server.room
-    const clientCount = Object.keys(room.state.clients || {}).length
+    const clientCount = getClientCount()
+    const isAlone = clientCount <= 1
     
-    console.log('👥 Room client count check:', {
+    console.log('👤 Alone in room check:', {
       clientCount,
-      isAlone: clientCount <= 1,
-      roomId: room.id
+      isAlone,
+      roomId: serverInstance.server.room.id
     })
     
-    return clientCount <= 1
+    return isAlone
   }
 
   // Process queued actions when connection becomes ready
@@ -92,56 +120,58 @@ export const useMultiplayerSync = () => {
     }
   }
 
-  // Improved state request function with retry logic and alone-in-room detection
+  // Improved state request function with better alone detection
   const requestInitialState = () => {
     if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
       return
     }
 
-    // Check if user is alone in the room
-    if (isAloneInRoom()) {
-      console.log('👤 User is alone in room - skipping initial state request')
-      hasReceivedInitialStateRef.current = true
-      setIsWaitingForInitialState(false)
-      return
-    }
+    // Add a small delay to let the room state settle before checking if alone
+    setTimeout(() => {
+      if (isAloneInRoom()) {
+        console.log('👤 User is alone in room - skipping initial state request')
+        hasReceivedInitialStateRef.current = true
+        setIsWaitingForInitialState(false)
+        return
+      }
 
-    // Set loading state when we start requesting
-    if (stateRequestAttemptsRef.current === 0) {
-      setIsWaitingForInitialState(true)
-    }
+      // Set loading state when we start requesting
+      if (stateRequestAttemptsRef.current === 0) {
+        setIsWaitingForInitialState(true)
+      }
 
-    stateRequestAttemptsRef.current += 1
-    console.log(`🔄 Requesting initial state (attempt ${stateRequestAttemptsRef.current}/${maxStateRequestAttempts})`)
-    
-    try {
-      serverInstance.requestInitialState()
-      console.log('✅ Successfully sent state request')
+      stateRequestAttemptsRef.current += 1
+      console.log(`🔄 Requesting initial state (attempt ${stateRequestAttemptsRef.current}/${maxStateRequestAttempts})`)
       
-      // Set timeout for this attempt - longer timeout for later attempts
-      const timeoutDuration = 3000 + (stateRequestAttemptsRef.current * 2000) // 3s, 5s, 7s
-      stateRequestTimeoutRef.current = setTimeout(() => {
-        console.log(`⏰ State request attempt ${stateRequestAttemptsRef.current} timed out after ${timeoutDuration}ms`)
+      try {
+        serverInstance.requestInitialState()
+        console.log('✅ Successfully sent state request')
         
+        // Set timeout for this attempt - longer timeout for later attempts
+        const timeoutDuration = 3000 + (stateRequestAttemptsRef.current * 2000) // 3s, 5s, 7s
+        stateRequestTimeoutRef.current = setTimeout(() => {
+          console.log(`⏰ State request attempt ${stateRequestAttemptsRef.current} timed out after ${timeoutDuration}ms`)
+          
+          if (stateRequestAttemptsRef.current < maxStateRequestAttempts) {
+            console.log('🔄 Retrying state request...')
+            requestInitialState()
+          } else {
+            console.log('⏰ All state request attempts exhausted - proceeding without initial state')
+            hasReceivedInitialStateRef.current = true
+            setIsWaitingForInitialState(false)
+          }
+        }, timeoutDuration)
+        
+      } catch (error) {
+        console.error('❌ Failed to send state request:', error)
         if (stateRequestAttemptsRef.current < maxStateRequestAttempts) {
-          console.log('🔄 Retrying state request...')
-          requestInitialState()
+          setTimeout(() => requestInitialState(), 1000) // Retry after 1 second
         } else {
-          console.log('⏰ All state request attempts exhausted - proceeding without initial state')
           hasReceivedInitialStateRef.current = true
           setIsWaitingForInitialState(false)
         }
-      }, timeoutDuration)
-      
-    } catch (error) {
-      console.error('❌ Failed to send state request:', error)
-      if (stateRequestAttemptsRef.current < maxStateRequestAttempts) {
-        setTimeout(() => requestInitialState(), 1000) // Retry after 1 second
-      } else {
-        hasReceivedInitialStateRef.current = true
-        setIsWaitingForInitialState(false)
       }
-    }
+    }, 500) // 500ms delay to let room state settle
   }
 
   // Set up message-based sync when connection is ready
