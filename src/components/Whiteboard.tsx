@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Toolbar } from './whiteboard/Toolbar';
 import { Canvas } from './whiteboard/Canvas';
 import { WhiteboardSidebar } from './whiteboard/Sidebar';
 import { SidebarProvider, SidebarInset } from './ui/sidebar';
 import { ConnectionStatus } from './ConnectionStatus';
+import { InitialStateLoader } from './InitialStateLoader';
 import { useMultiplayerSync } from '../hooks/useMultiplayerSync';
 
 /**
@@ -12,8 +13,27 @@ import { useMultiplayerSync } from '../hooks/useMultiplayerSync';
  * Orchestrates the layout and provides the sidebar context
  */
 export const Whiteboard: React.FC = () => {
-  // Initialize multiplayer sync but don't wait for initial state
-  useMultiplayerSync();
+  // Initialize multiplayer sync and get loading state
+  const { isWaitingForInitialState } = useMultiplayerSync();
+  const [showLoader, setShowLoader] = useState(false);
+
+  // Show loader briefly when waiting for initial state, then proceed to blank state
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    
+    if (isWaitingForInitialState) {
+      setShowLoader(true);
+      timeout = setTimeout(() => {
+        setShowLoader(false);
+      }, 3000); // 3 seconds - much shorter
+    } else {
+      setShowLoader(false);
+    }
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [isWaitingForInitialState]);
 
   return (
     <SidebarProvider>
@@ -26,6 +46,11 @@ export const Whiteboard: React.FC = () => {
         
         {/* Main Content Area - Flexible layout with sidebar and canvas */}
         <div className="flex-1 flex overflow-hidden relative">
+          {/* Initial State Loading Overlay - shorter duration */}
+          {showLoader && (
+            <InitialStateLoader />
+          )}
+          
           {/* Left Sidebar - Positioned absolute to overlay content */}
           <div className="absolute top-0 left-0 z-10 h-full pt-0">
             <WhiteboardSidebar />
