@@ -163,7 +163,6 @@ export const useCanvasInteractions = () => {
       width: actualSize,
       height: actualSize,
       opacity: toolStore.toolSettings.opacity,
-      rotation: 0, // Start with no rotation - user can rotate with handle
       data: imageData
     };
   }, [toolStore.toolSettings]);

@@ -1,3 +1,4 @@
+
 export interface ToolSettingConfig {
   type: 'slider' | 'badges' | 'select' | 'toggleGroup' | 'grid' | 'text';
   label: string;
