@@ -2,7 +2,6 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
-import { resolveAssetUrl } from '../utils/assetResolver';
 // Import optimized brush effects
 import { 
   renderPaintbrushOptimized, 
@@ -92,52 +91,63 @@ export const useCanvasRendering = (
    * Loads and caches an image for synchronous rendering
    */
   const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
-    console.log('🖼️ Loading image:', src);
-    
-    // Resolve the asset URL first
-    const resolvedSrc = resolveAssetUrl(src);
-    console.log('🔗 Resolved URL:', resolvedSrc);
-    
     // Return cached image if available
-    if (imageCache.current.has(resolvedSrc)) {
-      console.log('✅ Image found in cache:', resolvedSrc);
-      return imageCache.current.get(resolvedSrc)!;
+    if (imageCache.current.has(src)) {
+      return imageCache.current.get(src)!;
     }
     
     // Prevent duplicate loading requests
-    if (loadingImages.current.has(resolvedSrc)) {
-      console.log('⏳ Image already loading:', resolvedSrc);
+    if (loadingImages.current.has(src)) {
       return null;
     }
     
-    loadingImages.current.add(resolvedSrc);
-    console.log('📥 Starting image load:', resolvedSrc);
+    loadingImages.current.add(src);
     
     try {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       
       return new Promise((resolve, reject) => {
         img.onload = () => {
-          console.log('✅ Image loaded successfully:', resolvedSrc);
           // Cache the loaded image
-          imageCache.current.set(resolvedSrc, img);
-          loadingImages.current.delete(resolvedSrc);
+          imageCache.current.set(src, img);
+          loadingImages.current.delete(src);
           resolve(img);
         };
         
-        img.onerror = (error) => {
-          console.error('❌ Image failed to load:', resolvedSrc, error);
-          loadingImages.current.delete(resolvedSrc);
-          reject(new Error(`Failed to load image: ${resolvedSrc}`));
+        img.onerror = () => {
+          loadingImages.current.delete(src);
+          console.warn('Failed to load image:', src);
+          reject(new Error(`Failed to load image: ${src}`));
         };
         
-        // Set the resolved source
-        img.src = resolvedSrc;
+        // Handle SVG files by converting to blob URL
+        if (src.endsWith('.svg')) {
+          fetch(src)
+            .then(response => response.text())
+            .then(svgText => {
+              const blob = new Blob([svgText], { type: 'image/svg+xml' });
+              const url = URL.createObjectURL(blob);
+              img.src = url;
+              
+              // Clean up blob URL after image loads
+              img.onload = () => {
+                imageCache.current.set(src, img);
+                loadingImages.current.delete(src);
+                URL.revokeObjectURL(url);
+                resolve(img);
+              };
+            })
+            .catch(error => {
+              loadingImages.current.delete(src);
+              console.warn('Failed to fetch SVG:', error);
+              reject(error);
+            });
+        } else {
+          img.src = src;
+        }
       });
     } catch (error) {
-      console.error('❌ Error in getOrLoadImage:', error);
-      loadingImages.current.delete(resolvedSrc);
+      loadingImages.current.delete(src);
       return null;
     }
   }, []);
@@ -364,7 +374,31 @@ export const useCanvasRendering = (
       }
 
       case 'image': {
-        renderImage(ctx, obj);
+        if (obj.data?.src && obj.width && obj.height) {
+          const imageData = obj.data as ImageData;
+          const cachedImage = imageCache.current.get(imageData.src);
+          
+          if (cachedImage) {
+            // Draw immediately from cache - no blinking!
+            ctx.drawImage(
+              cachedImage, 
+              Math.round(obj.x), 
+              Math.round(obj.y), 
+              Math.round(obj.width), 
+              Math.round(obj.height)
+            );
+          } else {
+            // Load image asynchronously and trigger redraw when ready
+            getOrLoadImage(imageData.src).then(() => {
+              // Only redraw if canvas still exists
+              if (canvas) {
+                redrawCanvas();
+              }
+            }).catch(error => {
+              console.warn('Failed to load image for rendering:', error);
+            });
+          }
+        }
         break;
       }
 
@@ -952,64 +986,3 @@ const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number):
     }
   }
 };
-
-/**
- * Renders an image object on the canvas
- */
-const renderImage = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject) => {
-  const imageData = obj.data as ImageData;
-  if (!imageData?.src) {
-    console.warn('⚠️ Image object missing src:', obj.id);
-    return;
-  }
-
-  console.log('🖼️ Rendering image object:', obj.id, 'src:', imageData.src);
-
-  // Try to get cached image
-  const resolvedSrc = resolveAssetUrl(imageData.src);
-  const cachedImage = imageCache.current.get(resolvedSrc);
-  
-  if (cachedImage) {
-    console.log('✅ Using cached image for rendering:', obj.id);
-    try {
-      ctx.drawImage(
-        cachedImage,
-        obj.x,
-        obj.y,
-        obj.width || cachedImage.naturalWidth || 80,
-        obj.height || cachedImage.naturalHeight || 80
-      );
-    } catch (error) {
-      console.error('❌ Error drawing cached image:', error);
-    }
-  } else {
-    console.log('⏳ Image not in cache, loading:', obj.id);
-    // Load image asynchronously and trigger redraw when ready
-    getOrLoadImage(imageData.src).then((img) => {
-      if (img) {
-        console.log('✅ Image loaded, triggering redraw:', obj.id);
-        // Trigger a redraw when image is loaded
-        requestAnimationFrame(() => {
-          redrawCanvas();
-        });
-      }
-    }).catch((error) => {
-      console.error('❌ Failed to load image for rendering:', error);
-    });
-
-    // Draw placeholder while loading
-    ctx.save();
-    ctx.fillStyle = '#f0f0f0';
-    ctx.strokeStyle = '#ccc';
-    ctx.lineWidth = 2;
-    ctx.fillRect(obj.x, obj.y, obj.width || 80, obj.height || 80);
-    ctx.strokeRect(obj.x, obj.y, obj.width || 80, obj.height || 80);
-    
-    // Draw loading text
-    ctx.fillStyle = '#666';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Loading...', obj.x + (obj.width || 80) / 2, obj.y + (obj.height || 80) / 2);
-    ctx.restore();
-  }
-}, [getOrLoadImage]);
