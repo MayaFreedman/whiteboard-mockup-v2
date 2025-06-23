@@ -79,7 +79,7 @@ export interface WhiteboardStore {
   getState: () => any;
   getStateSnapshot: () => any;
   getActionsSince: (timestamp: number) => WhiteboardAction[];
-  applyRemoteAction: (action: WhiteboardAction) => void;
+  applyRemoteAction: (action: any) => void;
   batchUpdate: (actions: WhiteboardAction[]) => void;
   updateLocalUserHistoryIndex: (userId: string, index: number) => void;
   applyStateChange: (stateChange: any) => void;
@@ -582,37 +582,9 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     return get().actionHistory.filter(action => action.timestamp > timestamp);
   },
   
-  applyRemoteAction: (action) => {
-    console.log('🔄 Applying remote action:', action.type, action.id);
+  applyRemoteAction: (action: any) => {
+    console.log('🌐 Applying remote action:', action.type, action);
     
-    // Handle SYNC actions specially - they only apply state changes, don't get recorded in history
-    if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
-      console.log('🔄 Applying SYNC action state change:', action.type);
-      if (action.payload.stateChange) {
-        set((state) => ({
-          ...state,
-          ...action.payload.stateChange
-        }));
-      }
-      
-      // IMPORTANT: Update the history index for the ORIGINAL user, not the action sender
-      const originalUserId = action.payload.originalUserId || action.userId;
-      const currentState = get();
-      const currentIndex = currentState.userHistoryIndices.get(originalUserId) ?? -1;
-      
-      if (action.type === 'SYNC_UNDO') {
-        console.log('🔄 Updating history index for SYNC_UNDO - user:', originalUserId, 'index:', currentIndex - 1);
-        get().updateLocalUserHistoryIndex(originalUserId, currentIndex - 1);
-      } else if (action.type === 'SYNC_REDO') {
-        console.log('🔄 Updating history index for SYNC_REDO - user:', originalUserId, 'index:', currentIndex + 1);
-        get().updateLocalUserHistoryIndex(originalUserId, currentIndex + 1);
-      }
-      
-      // CRITICAL: Don't add SYNC actions to any user's history or global history
-      return;
-    }
-    
-    // Execute the action logic based on action type for non-SYNC actions
     switch (action.type) {
       case 'ADD_OBJECT':
         if (action.payload.object) {
@@ -673,104 +645,100 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         set({ objects: {}, selectedObjectIds: [] });
         break;
         
-      case 'ERASE_PATH':
-        if (action.payload.originalObjectId && action.payload.resultingSegments) {
-          const { originalObjectId, resultingSegments } = action.payload;
-          const originalObject = get().objects[originalObjectId];
+      case 'ERASE_PATH': {
+        const { originalObjectId, resultingSegments, originalObjectMetadata, brushEffectData } = action.payload;
+        
+        set((state) => {
+          const newObjects = { ...state.objects };
           
-          if (originalObject) {
-            // Extract brush metadata from the action payload if available
-            const originalObjectMetadata = (action as any).payload.originalObjectMetadata || {
-              brushType: originalObject.data?.brushType,
-              stroke: originalObject.stroke,
-              strokeWidth: originalObject.strokeWidth,
-              opacity: originalObject.opacity,
-              fill: originalObject.fill
-            };
-            
-            console.log('🎨 Processing remote ERASE_PATH with brush metadata:', {
-              originalId: originalObjectId.slice(0, 8),
-              brushType: originalObjectMetadata.brushType,
-              segmentCount: resultingSegments.length,
-              hasMetadata: !!originalObjectMetadata
-            });
-            
-            set((state) => {
-              const newObjects = { ...state.objects };
-              const newRelationships = new Map(state.objectRelationships);
+          // Remove the original object
+          delete newObjects[originalObjectId];
+          
+          // Add resulting segments as new objects
+          if (resultingSegments && resultingSegments.length > 0) {
+            resultingSegments.forEach((segment: any) => {
+              const segmentPath = segment.points.reduce((path: string, point: any, index: number) => {
+                const command = index === 0 ? 'M' : 'L';
+                return `${path} ${command} ${point.x} ${point.y}`;
+              }, '').trim();
               
-              // PRESERVE brush effects before removing original object
-              const brushType = originalObjectMetadata?.brushType;
-              if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
-                console.log('🎨 Preserving brush effects for remote eraser action:', {
-                  originalId: originalObjectId.slice(0, 8),
-                  brushType,
-                  segmentCount: resultingSegments.length
+              const segmentObject: WhiteboardObject = {
+                id: segment.id,
+                type: 'path',
+                x: segment.bounds.minX,
+                y: segment.bounds.minY,
+                width: segment.bounds.maxX - segment.bounds.minX,
+                height: segment.bounds.maxY - segment.bounds.minY,
+                stroke: originalObjectMetadata?.stroke || '#000000',
+                strokeWidth: originalObjectMetadata?.strokeWidth || 2,
+                opacity: originalObjectMetadata?.opacity || 1,
+                fill: originalObjectMetadata?.fill || 'none',
+                data: {
+                  path: segmentPath,
+                  brushType: originalObjectMetadata?.brushType
+                },
+                createdAt: Date.now()
+              };
+              
+              newObjects[segment.id] = segmentObject;
+              
+              // Apply brush effect data for remote clients
+              if (brushEffectData && originalObjectMetadata?.brushType) {
+                console.log('🎨 Applying brush effects to remote segment:', {
+                  segmentId: segment.id.slice(0, 8),
+                  brushType: originalObjectMetadata.brushType
                 });
                 
-                // Transfer brush effects to segments BEFORE clearing the original
-                brushEffectCache.transferToSegments(originalObjectId, brushType, resultingSegments);
-                
-                // Now it's safe to remove the original cache entry
-                brushEffectCache.remove(originalObjectId, brushType);
-              }
-              
-              // Remove the original object
-              delete newObjects[originalObjectId];
-              
-              // Track relationships
-              const segmentIds = resultingSegments.map(s => s.id);
-              segmentIds.forEach(segmentId => {
-                newRelationships.set(segmentId, { originalId: originalObjectId });
-              });
-              
-              // Add resulting segments as new objects with preserved metadata
-              resultingSegments.forEach((segment) => {
-                if (segment.points.length >= 2) {
-                  const pathString = segment.points.reduce((path, point, index) => {
-                    const command = index === 0 ? 'M' : 'L';
-                    return `${path} ${command} ${point.x} ${point.y}`;
-                  }, '');
+                // Transfer brush effects using the provided data
+                if (originalObjectMetadata.brushType === 'spray' && brushEffectData.effectData?.dots) {
+                  const segmentSprayData = brushEffectCache.mapSprayDataToSegment(
+                    brushEffectData.effectData,
+                    brushEffectData.originalPoints,
+                    segment.points
+                  );
                   
-                  // Create new object with preserved metadata - use the metadata from the action
-                  newObjects[segment.id] = {
-                    id: segment.id,
-                    type: 'path',
-                    x: originalObject.x,
-                    y: originalObject.y,
-                    stroke: originalObjectMetadata?.stroke || originalObject.stroke || '#000000',
-                    strokeWidth: originalObjectMetadata?.strokeWidth || originalObject.strokeWidth || 2,
-                    opacity: originalObjectMetadata?.opacity || originalObject.opacity || 1,
-                    fill: originalObjectMetadata?.fill || originalObject.fill,
-                    createdAt: Date.now(),
-                    updatedAt: Date.now(),
-                    data: {
-                      path: pathString,
-                      // Only preserve the essential brush metadata from the action
-                      brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
-                      isEraser: false // Ensure segments are not marked as eraser
-                    }
-                  };
+                  brushEffectCache.store(segment.id, 'spray', {
+                    type: 'spray',
+                    points: segment.points,
+                    strokeWidth: originalObjectMetadata.strokeWidth || 2,
+                    strokeColor: originalObjectMetadata.stroke || '#000000',
+                    opacity: originalObjectMetadata.opacity || 1,
+                    effectData: segmentSprayData
+                  });
+                } else if (originalObjectMetadata.brushType === 'chalk' && brushEffectData.effectData?.dustParticles) {
+                  const segmentChalkData = brushEffectCache.mapChalkDataToSegment(
+                    brushEffectData.effectData,
+                    brushEffectData.originalPoints,
+                    segment.points
+                  );
+                  
+                  brushEffectCache.store(segment.id, 'chalk', {
+                    type: 'chalk',
+                    points: segment.points,
+                    strokeWidth: originalObjectMetadata.strokeWidth || 2,
+                    strokeColor: originalObjectMetadata.stroke || '#000000',
+                    opacity: originalObjectMetadata.opacity || 1,
+                    effectData: segmentChalkData
+                  });
                 }
-              });
-              
-              return {
-                objects: newObjects,
-                objectRelationships: newRelationships,
-                selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
-              };
-            });
-            
-            console.log('✅ Remote ERASE_PATH applied with preserved brush effects:', {
-              originalId: originalObjectId.slice(0, 8),
-              segments: resultingSegments.length,
-              brushType: originalObjectMetadata?.brushType,
-              preservedEffects: !!(originalObjectMetadata?.brushType && (originalObjectMetadata.brushType === 'spray' || originalObjectMetadata.brushType === 'chalk'))
+              }
             });
           }
-        }
+          
+          console.log('🧹 Applied remote erase action:', {
+            originalId: originalObjectId.slice(0, 8),
+            segmentCount: resultingSegments?.length || 0,
+            brushEffectsApplied: !!brushEffectData
+          });
+          
+          return {
+            ...state,
+            objects: newObjects
+          };
+        });
         break;
-        
+      }
+      
       default:
         console.log('🔄 Unknown action type for remote application:', action.type);
         break;

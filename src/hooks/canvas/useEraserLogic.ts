@@ -98,8 +98,22 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
-          // PRESERVE brush effects before clearing cache
+          // Get brush effect data for multiplayer sync
           const brushType = obj.data?.brushType;
+          let brushEffectData = null;
+          
+          if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
+            const cachedData = brushEffectCache.get(id, brushType);
+            if (cachedData && cachedData.effectData) {
+              brushEffectData = {
+                type: brushType,
+                originalPoints: cachedData.points,
+                effectData: cachedData.effectData
+              };
+            }
+          }
+          
+          // PRESERVE brush effects before clearing cache
           if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
             console.log('🎨 Preserving brush effects for segments:', {
               originalId: id.slice(0, 8),
@@ -137,7 +151,9 @@ export const useEraserLogic = () => {
               strokeWidth: obj.strokeWidth,
               opacity: obj.opacity,
               fill: obj.fill
-            }
+            },
+            // Include brush effect data for proper multiplayer sync
+            brushEffectData
           };
           
           whiteboardStore.erasePath(enhancedAction, userId);
@@ -149,7 +165,7 @@ export const useEraserLogic = () => {
             userId: userId.slice(0, 8),
             brushType: obj.data?.brushType,
             preservedEffects: !!(brushType && (brushType === 'spray' || brushType === 'chalk')),
-            metadataIncluded: true
+            includedBrushData: !!brushEffectData
           });
         }
       }
