@@ -17,11 +17,8 @@ export const InitialStateLoader: React.FC<InitialStateLoaderProps> = ({
       <div className="bg-card border rounded-lg p-6 shadow-lg max-w-sm mx-4 text-center">
         {!showReloadButton ? (
           <>
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-            <h3 className="text-lg font-semibold mb-2">Loading whiteboard...</h3>
-            <p className="text-sm text-muted-foreground">
-              Fetching the current state from other users
-            </p>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-company-light-pink" />
+            <h3 className="text-lg font-semibold mb-2 text-company-dark-blue">Loading whiteboard</h3>
           </>
         ) : (
           <>
