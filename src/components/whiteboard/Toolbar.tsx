@@ -117,7 +117,7 @@ const ToolButton: React.FC<{
     variant={isActive ? "default" : "ghost"}
     size="sm"
     onClick={onClick}
-    className="p-2"
+    className={`p-2 ${isActive ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
     title={tool.label}
   >
     <tool.icon className="w-4 h-4" />

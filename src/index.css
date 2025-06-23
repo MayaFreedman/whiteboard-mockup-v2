@@ -51,6 +51,10 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Company colors */
+    --company-dark-blue: 206 58% 17%;
+    --company-dark-blue-foreground: 0 0% 98%;
   }
 
   .dark {
@@ -89,6 +93,10 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Company colors for dark mode */
+    --company-dark-blue: 206 58% 17%;
+    --company-dark-blue-foreground: 0 0% 98%;
   }
 }
 
