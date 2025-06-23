@@ -86,13 +86,6 @@ export const useCanvasRendering = (
   // Image cache to prevent blinking/glitching
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
   const loadingImages = useRef<Set<string>>(new Set());
-  
-  // Performance tracking
-  const renderStats = useRef({
-    lastFrameTime: 0,
-    frameCount: 0,
-    avgFrameTime: 16
-  });
 
   /**
    * Loads and caches an image for synchronous rendering
@@ -195,14 +188,12 @@ export const useCanvasRendering = (
   }, []);
 
   /**
-   * Renders a single whiteboard object on the canvas with performance optimizations
+   * Renders a single whiteboard object on the canvas
    * @param ctx - Canvas rendering context
    * @param obj - Whiteboard object to render
    * @param isSelected - Whether the object is currently selected
    */
   const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, isSelected: boolean = false) => {
-    const startTime = performance.now();
-    
     ctx.save();
     
     // Apply object transformations
@@ -575,17 +566,6 @@ export const useCanvasRendering = (
     }
 
     ctx.restore();
-    
-    // Track performance
-    const renderTime = performance.now() - startTime;
-    if (renderTime > 5) { // Log slow renders
-      console.warn('🐌 Slow object render:', {
-        type: obj.type,
-        renderTime: renderTime.toFixed(2) + 'ms',
-        brushType: obj.data?.brushType,
-        pathLength: obj.data?.path?.length || 0
-      });
-    }
   }, [editingTextId, editingText, objects, getOrLoadImage, canvas]);
 
   /**
@@ -807,80 +787,40 @@ export const useCanvasRendering = (
   }, []);
 
   /**
-   * Renders all whiteboard objects on the canvas with performance monitoring
+   * Renders all whiteboard objects on the canvas
+   * @param ctx - Canvas rendering context
    */
   const renderAllObjects = useCallback((ctx: CanvasRenderingContext2D) => {
-    const startTime = performance.now();
-    
     const objectEntries = Object.entries(objects);
     
     // Sort by creation time to maintain z-order
     objectEntries.sort(([, a], [, b]) => a.createdAt - b.createdAt);
     
-    // Render in batches to prevent blocking
-    const BATCH_SIZE = 20;
-    let currentBatch = 0;
-    
-    const renderBatch = () => {
-      const start = currentBatch * BATCH_SIZE;
-      const end = Math.min(start + BATCH_SIZE, objectEntries.length);
-      
-      for (let i = start; i < end; i++) {
-        const [id, obj] = objectEntries[i];
-        const isSelected = selectedObjectIds.includes(id);
-        renderObject(ctx, obj, isSelected);
-      }
-      
-      currentBatch++;
-      
-      if (end < objectEntries.length) {
-        // Use requestAnimationFrame for non-blocking rendering
-        requestAnimationFrame(renderBatch);
-      } else {
-        const totalTime = performance.now() - startTime;
-        renderStats.current.lastFrameTime = totalTime;
-        renderStats.current.frameCount++;
-        renderStats.current.avgFrameTime = 
-          (renderStats.current.avgFrameTime * 0.9) + (totalTime * 0.1);
-        
-        if (totalTime > 50) { // Log slow frames
-          console.warn('🐌 Slow frame render:', {
-            objectCount: objectEntries.length,
-            renderTime: totalTime.toFixed(2) + 'ms',
-            avgFrameTime: renderStats.current.avgFrameTime.toFixed(2) + 'ms'
-          });
-        }
-      }
-    };
-    
-    renderBatch();
+    objectEntries.forEach(([id, obj]) => {
+      const isSelected = selectedObjectIds.includes(id);
+      renderObject(ctx, obj, isSelected);
+    });
   }, [objects, selectedObjectIds, renderObject]);
 
-  // Throttle canvas redraws more aggressively for better performance
+  // Throttle canvas redraws to improve performance during drawing
   const lastRedrawTime = useRef<number>(0);
   const redrawTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const REDRAW_THROTTLE_MS = 33; // ~30fps instead of 60fps for better performance
+  const REDRAW_THROTTLE_MS = 16; // 60fps throttling
 
   const redrawCanvas = useCallback((immediate = false) => {
     if (!canvas) return;
 
     const now = Date.now();
     
-    // Check if we're rendering too frequently
-    if (renderStats.current.avgFrameTime > 30 && !immediate) {
-      // Increase throttling if frames are slow
-      const dynamicThrottle = Math.min(100, REDRAW_THROTTLE_MS * 2);
-      if (now - lastRedrawTime.current < dynamicThrottle) {
-        return; // Skip this frame
-      }
-    }
-    
+    // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
     const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
     const shouldRedrawImmediately = immediate || !hasDrawingPreview;
     
+    // If immediate redraw is requested, no drawing preview (drawing ended), or enough time has passed, redraw now
     if (shouldRedrawImmediately || now - lastRedrawTime.current >= REDRAW_THROTTLE_MS) {
       lastRedrawTime.current = now;
       
+      // Clear any pending timeout
       if (redrawTimeoutRef.current) {
         clearTimeout(redrawTimeoutRef.current);
         redrawTimeoutRef.current = null;
@@ -888,6 +828,7 @@ export const useCanvasRendering = (
       
       performRedraw();
     } else {
+      // Throttle the redraw only during active drawing - schedule it for later if not already scheduled
       if (!redrawTimeoutRef.current) {
         const timeUntilNextRedraw = REDRAW_THROTTLE_MS - (now - lastRedrawTime.current);
         
@@ -981,9 +922,7 @@ export const useCanvasRendering = (
   return {
     redrawCanvas,
     renderObject,
-    renderAllObjects,
-    // Add performance stats getter
-    getPerformanceStats: () => renderStats.current
+    renderAllObjects
   };
 };
 

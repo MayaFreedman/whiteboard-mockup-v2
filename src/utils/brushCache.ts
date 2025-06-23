@@ -13,9 +13,6 @@ export interface BrushEffectData {
   opacity: number;
   // Cached effect-specific data
   effectData?: any;
-  // Performance tracking
-  lastUsed?: number;
-  renderCount?: number;
 }
 
 export interface SprayEffectData {
@@ -45,19 +42,10 @@ export interface ChalkEffectData {
 }
 
 /**
- * Cache for storing pre-calculated brush effects with performance optimizations
+ * Cache for storing pre-calculated brush effects
  */
 class BrushEffectCache {
   private cache = new Map<string, BrushEffectData>();
-  private maxCacheSize = 500; // Limit cache size to prevent memory bloat
-  private cleanupInterval: NodeJS.Timeout | null = null;
-  
-  constructor() {
-    // Set up periodic cleanup every 30 seconds
-    this.cleanupInterval = setInterval(() => {
-      this.performCleanup();
-    }, 30000);
-  }
   
   generateCacheKey(pathId: string, brushType: string): string {
     return `${pathId}_${brushType}`;
@@ -65,73 +53,12 @@ class BrushEffectCache {
   
   store(pathId: string, brushType: string, effectData: BrushEffectData): void {
     const key = this.generateCacheKey(pathId, brushType);
-    
-    // Add performance tracking
-    effectData.lastUsed = Date.now();
-    effectData.renderCount = 0;
-    
     this.cache.set(key, effectData);
-    
-    // Trigger cleanup if cache is getting too large
-    if (this.cache.size > this.maxCacheSize) {
-      this.performCleanup();
-    }
   }
   
   get(pathId: string, brushType: string): BrushEffectData | null {
     const key = this.generateCacheKey(pathId, brushType);
-    const data = this.cache.get(key);
-    
-    if (data) {
-      // Update usage tracking
-      data.lastUsed = Date.now();
-      data.renderCount = (data.renderCount || 0) + 1;
-    }
-    
-    return data || null;
-  }
-  
-  /**
-   * Performs intelligent cleanup to remove old/unused cache entries
-   */
-  private performCleanup(): void {
-    const now = Date.now();
-    const maxAge = 5 * 60 * 1000; // 5 minutes
-    const entriesToRemove: string[] = [];
-    
-    // Find entries to remove based on age and usage
-    for (const [key, data] of this.cache.entries()) {
-      const age = now - (data.lastUsed || 0);
-      const isOld = age > maxAge;
-      const isRarelyUsed = (data.renderCount || 0) < 2 && age > 60000; // Less than 2 renders in 1 minute
-      
-      if (isOld || isRarelyUsed) {
-        entriesToRemove.push(key);
-      }
-    }
-    
-    // Remove oldest entries if we're still over the limit
-    if (this.cache.size - entriesToRemove.length > this.maxCacheSize * 0.8) {
-      const sortedEntries = Array.from(this.cache.entries())
-        .filter(([key]) => !entriesToRemove.includes(key))
-        .sort(([, a], [, b]) => (a.lastUsed || 0) - (b.lastUsed || 0));
-      
-      const additionalRemovalCount = Math.floor(this.maxCacheSize * 0.2);
-      for (let i = 0; i < additionalRemovalCount && i < sortedEntries.length; i++) {
-        entriesToRemove.push(sortedEntries[i][0]);
-      }
-    }
-    
-    // Actually remove the entries
-    entriesToRemove.forEach(key => this.cache.delete(key));
-    
-    if (entriesToRemove.length > 0) {
-      console.log('🧹 Brush cache cleanup:', {
-        removed: entriesToRemove.length,
-        remaining: this.cache.size,
-        maxSize: this.maxCacheSize
-      });
-    }
+    return this.cache.get(key) || null;
   }
   
   clear(): void {
@@ -141,28 +68,6 @@ class BrushEffectCache {
   remove(pathId: string, brushType: string): void {
     const key = this.generateCacheKey(pathId, brushType);
     this.cache.delete(key);
-  }
-
-  /**
-   * Get cache statistics for debugging
-   */
-  getStats(): { size: number; maxSize: number; oldestEntry: number; newestEntry: number } {
-    const now = Date.now();
-    let oldest = now;
-    let newest = 0;
-    
-    for (const data of this.cache.values()) {
-      const lastUsed = data.lastUsed || 0;
-      oldest = Math.min(oldest, lastUsed);
-      newest = Math.max(newest, lastUsed);
-    }
-    
-    return {
-      size: this.cache.size,
-      maxSize: this.maxCacheSize,
-      oldestEntry: oldest === now ? 0 : now - oldest,
-      newestEntry: newest === 0 ? 0 : now - newest
-    };
   }
 
   /**
@@ -302,14 +207,6 @@ class BrushEffectCache {
       dustParticles: segmentParticles,
       roughnessLayers: originalChalkData.roughnessLayers // Keep the same roughness layers
     };
-  }
-
-  destroy(): void {
-    if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
-      this.cleanupInterval = null;
-    }
-    this.clear();
   }
 }
 
