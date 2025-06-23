@@ -22,7 +22,7 @@ const getCursorStyle = (activeTool: string): string => {
     case 'hand':
       return 'grab';
     case 'fill':
-      return 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m9 7 5 5v7a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1-2-2V9Z\'/%3E%3Cpath d=\'m8 11 2-2a2 2 0 0 1 2 2 2 2 0 0 1 2 2l6 6\'/%3E%3Cpath d=\'m9 7-6-6\'/%3E%3C/svg%3E") 12 12, auto';
+      return 'none'; // Hide default cursor for fill tool (uses custom cursor)
     case 'pencil':
     case 'brush':
     case 'eraser':
