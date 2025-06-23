@@ -3,6 +3,8 @@
  * Stores pre-calculated brush patterns to maintain visual consistency
  */
 
+import { pathPointsCache } from './pathPointsCache';
+
 export interface BrushEffectData {
   type: 'paintbrush' | 'chalk' | 'spray' | 'crayon';
   points: Array<{ x: number; y: number }>;

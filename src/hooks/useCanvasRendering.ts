@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
@@ -849,6 +850,7 @@ export const useCanvasRendering = (
     canvas.style.width = rect.width + 'px';
     canvas.style.height = rect.height + 'px';
     
+    const ctx = canvas.getContext('2d')!; // Fix: Define ctx variable
     ctx.scale(devicePixelRatio, devicePixelRatio);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
