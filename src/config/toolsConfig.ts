@@ -140,28 +140,38 @@ export const toolsConfig: Record<string, ToolConfig> = {
       },
       {
         type: 'grid',
-        label: 'Stickers',
+        label: 'Stamp Categories',
         key: 'selectedSticker',
         gridItems: [
           {
-            name: 'Fruit Bowl',
-            url: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=100&h=100&fit=crop&auto=format',
-            preview: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=60&h=60&fit=crop&auto=format'
+            name: 'Animals',
+            url: '/src/assets/Animals.svg',
+            preview: '/src/assets/Animals.svg'
           },
           {
-            name: 'Orange Cat',
-            url: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=100&h=100&fit=crop&auto=format',
-            preview: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=60&h=60&fit=crop&auto=format'
+            name: 'Plants',
+            url: '/src/assets/Plants.svg',
+            preview: '/src/assets/Plants.svg'
           },
           {
-            name: 'Deer',
-            url: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=100&h=100&fit=crop&auto=format',
-            preview: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=60&h=60&fit=crop&auto=format'
+            name: 'Vehicles',
+            url: '/src/assets/Vehicles.svg',
+            preview: '/src/assets/Vehicles.svg'
           },
           {
-            name: 'Kitten',
-            url: 'https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=100&h=100&fit=crop&auto=format',
-            preview: 'https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=60&h=60&fit=crop&auto=format'
+            name: 'Fantasy',
+            url: '/src/assets/fantasy.svg',
+            preview: '/src/assets/fantasy.svg'
+          },
+          {
+            name: 'Religious',
+            url: '/src/assets/religious.svg',
+            preview: '/src/assets/religious.svg'
+          },
+          {
+            name: 'Sports',
+            url: '/src/assets/sports.svg',
+            preview: '/src/assets/sports.svg'
           }
         ]
       }

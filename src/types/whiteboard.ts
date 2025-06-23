@@ -1,9 +1,8 @@
-
 import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
   id: string;
-  type: 'path' | 'rectangle' | 'circle' | 'text' | 'triangle' | 'diamond' | 'pentagon' | 'hexagon' | 'star' | 'heart';
+  type: 'path' | 'rectangle' | 'circle' | 'text' | 'triangle' | 'diamond' | 'pentagon' | 'hexagon' | 'star' | 'heart' | 'image';
   x: number;
   y: number;
   width?: number;
@@ -217,4 +216,17 @@ export interface TextObject extends WhiteboardObject {
   width: number;
   height: number;
   data: TextData;
+}
+
+// Image-specific interfaces for stamps
+export interface ImageData {
+  src: string;
+  alt?: string;
+}
+
+export interface ImageObject extends WhiteboardObject {
+  type: 'image';
+  width: number;
+  height: number;
+  data: ImageData;
 }

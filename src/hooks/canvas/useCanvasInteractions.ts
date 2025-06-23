@@ -2,7 +2,7 @@ import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
-import { WhiteboardObject, TextData } from '../../types/whiteboard';
+import { WhiteboardObject, TextData, ImageData } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
@@ -137,6 +137,33 @@ export const useCanvasInteractions = () => {
       strokeWidth: 1,
       opacity: 1,
       data: textData
+    };
+  }, [toolStore.toolSettings]);
+
+  /**
+   * Creates image objects for stamps
+   */
+  const createStampObject = useCallback((
+    x: number,
+    y: number,
+    size: number
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
+    const selectedSticker = toolStore.toolSettings.selectedSticker || '/src/assets/Animals.svg';
+    const actualSize = size * 10; // Convert slider value to actual pixel size
+    
+    const imageData: ImageData = {
+      src: selectedSticker,
+      alt: 'Stamp'
+    };
+
+    return {
+      type: 'image',
+      x: x - actualSize / 2, // Center the stamp on the click point
+      y: y - actualSize / 2,
+      width: actualSize,
+      height: actualSize,
+      opacity: toolStore.toolSettings.opacity,
+      data: imageData
     };
   }, [toolStore.toolSettings]);
 
@@ -468,6 +495,24 @@ export const useCanvasInteractions = () => {
         return;
       }
 
+      case 'stamp': {
+        const stampSize = toolStore.toolSettings.strokeWidth || 5;
+        const stampObject = createStampObject(coords.x, coords.y, stampSize);
+        
+        const objectId = whiteboardStore.addObject(stampObject, userId);
+        console.log('🖼️ Created stamp object:', objectId.slice(0, 8), {
+          size: stampSize * 10,
+          sticker: toolStore.toolSettings.selectedSticker,
+          coords,
+          userId: userId.slice(0, 8)
+        });
+        
+        if (redrawCanvasRef.current) {
+          redrawCanvasRef.current();
+        }
+        return;
+      }
+
       case 'select': {
         const objectId = findObjectAt(coords.x, coords.y);
         if (objectId) {
@@ -581,7 +626,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, userId, startBatch]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, createStampObject, userId, startBatch]);
 
   /**
    * Handles pointer movement during interaction
