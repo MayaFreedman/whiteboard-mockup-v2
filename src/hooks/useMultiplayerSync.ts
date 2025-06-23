@@ -1,3 +1,4 @@
+
 import { useEffect, useContext, useRef, useState } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
@@ -55,6 +56,22 @@ export const useMultiplayerSync = () => {
     return ready
   }
 
+  // Check if user is alone in the room
+  const isAloneInRoom = () => {
+    if (!serverInstance?.server?.room) return true
+    
+    const room = serverInstance.server.room
+    const clientCount = Object.keys(room.state.clients || {}).length
+    
+    console.log('👥 Room client count check:', {
+      clientCount,
+      isAlone: clientCount <= 1,
+      roomId: room.id
+    })
+    
+    return clientCount <= 1
+  }
+
   // Process queued actions when connection becomes ready
   const processActionQueue = () => {
     if (actionQueueRef.current.length > 0 && isReadyToSend()) {
@@ -75,9 +92,17 @@ export const useMultiplayerSync = () => {
     }
   }
 
-  // Improved state request function with retry logic
+  // Improved state request function with retry logic and alone-in-room detection
   const requestInitialState = () => {
     if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
+      return
+    }
+
+    // Check if user is alone in the room
+    if (isAloneInRoom()) {
+      console.log('👤 User is alone in room - skipping initial state request')
+      hasReceivedInitialStateRef.current = true
+      setIsWaitingForInitialState(false)
       return
     }
 
