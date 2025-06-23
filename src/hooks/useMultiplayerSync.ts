@@ -20,6 +20,8 @@ export const useMultiplayerSync = () => {
   const { userId } = useUser()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const actionQueueRef = useRef<WhiteboardAction[]>([])
+  const stateRequestTimeoutRef = useRef<NodeJS.Timeout>()
+  const hasReceivedInitialStateRef = useRef(false)
 
   // If no multiplayer context, return null values (graceful degradation)
   if (!multiplayerContext) {
@@ -89,6 +91,77 @@ export const useMultiplayerSync = () => {
         actionUserId: message.action?.userId
       })
       
+      // Handle state request messages
+      if (message.type === 'request_state') {
+        console.log('🔄 Received state request from:', message.requesterId)
+        
+        // Only respond if we have objects and we're not the requester
+        if (message.requesterId !== room.sessionId && !hasReceivedInitialStateRef.current) {
+          const currentState = whiteboardStore.getStateSnapshot()
+          if (Object.keys(currentState.objects).length > 0) {
+            console.log('📤 Responding to state request with', Object.keys(currentState.objects).length, 'objects')
+            
+            // Small delay to avoid multiple responses at the same time
+            setTimeout(() => {
+              serverInstance.sendStateResponse(message.requesterId, currentState)
+            }, Math.random() * 100 + 50) // 50-150ms random delay
+          } else {
+            console.log('🔄 Not responding to state request - no objects to share')
+          }
+        }
+        return
+      }
+      
+      // Handle state response messages
+      if (message.type === 'state_response') {
+        console.log('📥 Received state response from another user')
+        
+        // Only apply if this response is for us and we haven't received initial state yet
+        if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
+          console.log('📥 Applying initial state from another user:', {
+            objectCount: message.state?.objects ? Object.keys(message.state.objects).length : 0,
+            hasViewport: !!message.state?.viewport,
+            hasSettings: !!message.state?.settings
+          })
+          
+          hasReceivedInitialStateRef.current = true
+          
+          // Clear any existing timeout
+          if (stateRequestTimeoutRef.current) {
+            clearTimeout(stateRequestTimeoutRef.current)
+            stateRequestTimeoutRef.current = undefined
+          }
+          
+          // Apply the received state
+          if (message.state?.objects) {
+            // Convert objects to actions and apply them
+            const actions: WhiteboardAction[] = Object.values(message.state.objects).map((obj: any) => ({
+              type: 'ADD_OBJECT',
+              payload: { object: obj },
+              timestamp: obj.createdAt || Date.now(),
+              id: `sync-${obj.id}`,
+              userId: 'sync'
+            }))
+            
+            if (actions.length > 0) {
+              whiteboardStore.batchUpdate(actions)
+              console.log('✅ Successfully applied initial state with', actions.length, 'objects')
+            }
+          }
+          
+          // Apply viewport if provided
+          if (message.state?.viewport) {
+            whiteboardStore.setViewport(message.state.viewport)
+          }
+          
+          // Apply settings if provided
+          if (message.state?.settings) {
+            whiteboardStore.setSettings(message.state.settings)
+          }
+        }
+        return
+      }
+      
       // Handle whiteboard actions
       if (message.type === 'whiteboard_action' && message.action) {
         const action: WhiteboardAction = message.action
@@ -122,12 +195,25 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
     console.log('✅ Message handlers set up for room:', room.id)
 
+    // Set up timeout for state request (if we haven't received initial state yet)
+    if (!hasReceivedInitialStateRef.current) {
+      stateRequestTimeoutRef.current = setTimeout(() => {
+        console.log('⏰ State request timeout - proceeding without initial state')
+        hasReceivedInitialStateRef.current = true
+      }, 5000) // 5 second timeout
+    }
+
     // Process any queued actions now that we're connected
     processActionQueue()
 
     return () => {
       console.log('🧹 Cleaning up message-based sync for room:', room.id)
       room.removeAllListeners('broadcast')
+      
+      if (stateRequestTimeoutRef.current) {
+        clearTimeout(stateRequestTimeoutRef.current)
+        stateRequestTimeoutRef.current = undefined
+      }
     }
   }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId])
 
@@ -208,6 +294,17 @@ export const useMultiplayerSync = () => {
     console.log('🔄 Connection state changed, processing queue')
     processActionQueue()
   }, [serverInstance, isConnected])
+
+  // Reset state sync flag when disconnecting
+  useEffect(() => {
+    if (!isConnected) {
+      hasReceivedInitialStateRef.current = false
+      if (stateRequestTimeoutRef.current) {
+        clearTimeout(stateRequestTimeoutRef.current)
+        stateRequestTimeoutRef.current = undefined
+      }
+    }
+  }, [isConnected])
 
   return {
     isConnected,

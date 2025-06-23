@@ -158,6 +158,11 @@ export class ServerClass {
 
       this.server.room = tempRoom;
       console.log("🎯 All setup complete, connection established");
+      
+      // Request initial state after successful connection
+      console.log("🔄 Requesting initial state from existing users...");
+      this.requestInitialState();
+      
     } catch (error) {
       console.error("💥 Failed to connect to Colyseus server:", error);
 
@@ -192,6 +197,45 @@ export class ServerClass {
       }
 
       throw error;
+    }
+  }
+
+  requestInitialState() {
+    console.log("🔄 Requesting initial whiteboard state from existing users");
+    if (!this.server.room) {
+      console.error("❌ Cannot request state: room not connected");
+      return;
+    }
+
+    try {
+      this.server.room.send("broadcast", {
+        type: "request_state",
+        timestamp: Date.now(),
+        requesterId: this.server.room.sessionId
+      });
+      console.log("✅ Successfully sent state request");
+    } catch (error) {
+      console.error("❌ Failed to send state request:", error);
+    }
+  }
+
+  sendStateResponse(requesterId: string, whiteboardState: any) {
+    console.log("📤 Sending state response to requester:", requesterId);
+    if (!this.server.room) {
+      console.error("❌ Cannot send state response: room not connected");
+      return;
+    }
+
+    try {
+      this.server.room.send("broadcast", {
+        type: "state_response",
+        timestamp: Date.now(),
+        requesterId,
+        state: whiteboardState
+      });
+      console.log("✅ Successfully sent state response");
+    } catch (error) {
+      console.error("❌ Failed to send state response:", error);
     }
   }
 
