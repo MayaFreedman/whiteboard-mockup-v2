@@ -121,9 +121,9 @@ class BrushEffectCache {
   }
 
   /**
-   * Maps spray dots from original path to a segment - exposed for external use
+   * Maps spray dots from original path to a segment
    */
-  mapSprayDataToSegment(
+  private mapSprayDataToSegment(
     originalSprayData: SprayEffectData,
     originalPoints: Array<{ x: number; y: number }>,
     segmentPoints: Array<{ x: number; y: number }>
@@ -164,9 +164,9 @@ class BrushEffectCache {
   }
 
   /**
-   * Maps chalk particles from original path to a segment - exposed for external use
+   * Maps chalk particles from original path to a segment
    */
-  mapChalkDataToSegment(
+  private mapChalkDataToSegment(
     originalChalkData: ChalkEffectData,
     originalPoints: Array<{ x: number; y: number }>,
     segmentPoints: Array<{ x: number; y: number }>
