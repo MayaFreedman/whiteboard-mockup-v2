@@ -9,6 +9,7 @@ import {
   getHexagonVertices, 
   getStarVertices 
 } from '../../utils/shapeRendering';
+import { isPointInTextBounds } from '../../utils/textMeasurement';
 
 /**
  * Hook for detecting objects at coordinates with improved accuracy
@@ -89,19 +90,27 @@ export const useObjectDetection = () => {
   }, []);
 
   /**
-   * Checks if a point is near text with improved hit area
+   * Checks if a point is near text with improved hit area using accurate measurement
    */
   const isPointInText = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
-    const fontSize = obj.data?.fontSize || 16;
-    const textContent = obj.data?.content || '';
+    if (!obj.data?.content && obj.data?.content !== '') return false;
     
-    // Improved text width estimation and generous hit area
-    const textWidth = Math.max(textContent.length * fontSize * 0.7, 20); // More accurate estimation
-    const textHeight = fontSize * 1.5; // Account for line height
-    const padding = 8; // Generous padding for text selection
+    const textData = obj.data;
+    const content = textData.content || 'Double-click to edit';
     
-    return x >= obj.x - padding && x <= obj.x + textWidth + padding &&
-           y >= obj.y - fontSize - padding && y <= obj.y + textHeight - fontSize + padding;
+    return isPointInTextBounds(
+      x, y,
+      obj.x + 4, // Account for canvas padding
+      obj.y + 4, // Account for canvas padding
+      content,
+      textData.fontSize || 16,
+      textData.fontFamily || 'Arial',
+      textData.bold || false,
+      textData.italic || false,
+      textData.textAlign || 'left',
+      obj.width ? obj.width - 8 : undefined, // Available width minus padding
+      8 // Padding for easier selection
+    );
   }, []);
 
   /**
@@ -224,7 +233,7 @@ export const useObjectDetection = () => {
         
         case 'text': {
           isHit = isPointInText(obj, x, y);
-          console.log('📝 Text hit test:', {
+          console.log('📝 Text hit test (improved):', {
             id: id.slice(0, 8),
             position: { x: obj.x, y: obj.y },
             content: obj.data?.content,

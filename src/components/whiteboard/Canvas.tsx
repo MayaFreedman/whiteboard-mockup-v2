@@ -6,6 +6,7 @@ import { useCanvasRendering } from '../../hooks/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
+import { measureText } from '../../utils/textMeasurement';
 
 /**
  * Gets the appropriate cursor style based on the active tool
@@ -46,7 +47,7 @@ export const Canvas: React.FC = () => {
   const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number, lineHeight: number } | null>(null);
   const [editingText, setEditingText] = useState('');
   
-  // Double-click protection flag - increased timeout
+  // Double-click protection flag - reduced timeout to 200ms
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -74,6 +75,32 @@ export const Canvas: React.FC = () => {
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
     updateObject(objectId, newBounds);
     redrawCanvas();
+  };
+
+  // Auto-resize text object to fit content
+  const updateTextBounds = (textObject: any, content: string) => {
+    if (!textObject.data) return;
+    
+    const textData = textObject.data;
+    const metrics = measureText(
+      content || 'Double-click to edit',
+      textData.fontSize,
+      textData.fontFamily,
+      textData.bold,
+      textData.italic
+    );
+    
+    // Add padding to the measured dimensions
+    const padding = 8;
+    const newWidth = Math.max(metrics.width + padding, 100); // Minimum 100px width
+    const newHeight = Math.max(metrics.height + padding, textData.fontSize + padding);
+    
+    if (newWidth !== textObject.width || newHeight !== textObject.height) {
+      updateObject(textObject.id, {
+        width: newWidth,
+        height: newHeight
+      });
+    }
   };
 
   // Utility function to calculate exact text positioning using canvas metrics
@@ -119,17 +146,38 @@ export const Canvas: React.FC = () => {
     
     console.log('🖱️ Double-click coordinates:', { x, y });
     
-    // Find text object at click position with small tolerance for better detection
-    const tolerance = 2;
+    // Find text object at click position using improved hit detection
     const textObject = Object.entries(objects).find(([id, obj]) => {
-      if (obj.type !== 'text' || !obj.width || !obj.height) return false;
+      if (obj.type !== 'text' || !obj.width || !obj.height || !obj.data) return false;
       
-      const isInBounds = x >= (obj.x - tolerance) && x <= (obj.x + obj.width + tolerance) &&
-                        y >= (obj.y - tolerance) && y <= (obj.y + obj.height + tolerance);
+      const textData = obj.data;
+      const currentContent = textData.content || 'Double-click to edit';
       
-      console.log('🖱️ Checking text object:', {
+      // Use accurate text measurement for hit detection
+      const metrics = measureText(
+        currentContent,
+        textData.fontSize,
+        textData.fontFamily,
+        textData.bold,
+        textData.italic,
+        obj.width - 8 // Available width minus padding
+      );
+      
+      // Check if click is within the actual text bounds
+      const textStartX = obj.x + 4; // Account for padding
+      const textStartY = obj.y + 4; // Account for padding
+      
+      let textEndX = textStartX + metrics.width;
+      let textEndY = textStartY + metrics.height;
+      
+      // Add some tolerance for easier clicking
+      const tolerance = 8;
+      const isInBounds = x >= (textStartX - tolerance) && x <= (textEndX + tolerance) &&
+                        y >= (textStartY - tolerance) && y <= (textEndY + tolerance);
+      
+      console.log('🖱️ Checking text object with accurate bounds:', {
         id: id.slice(0, 8),
-        objBounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+        textBounds: { x: textStartX, y: textStartY, width: metrics.width, height: metrics.height },
         clickPos: { x, y },
         tolerance,
         isInBounds
@@ -169,23 +217,35 @@ export const Canvas: React.FC = () => {
       console.log('🖱️ No text object found at double-click position');
     }
     
-    // Reset protection flag after a longer delay - increased from 300ms to 500ms
+    // Reset protection flag after a shorter delay - reduced to 200ms
     doubleClickTimeoutRef.current = setTimeout(() => {
       console.log('🖱️ Clearing double-click protection flag');
       setIsHandlingDoubleClick(false);
-    }, 500);
+    }, 200);
   };
 
   // Handle text editing completion
   const handleTextEditComplete = () => {
-    if (editingTextId) {
+    if (editingTextId && objects[editingTextId]) {
       const finalText = editingText?.trim() || '';
+      const textObject = objects[editingTextId];
+      
+      // Update the text content
       updateObject(editingTextId, {
         data: {
-          ...objects[editingTextId]?.data,
-          content: finalText // Store empty string if no content
+          ...textObject.data,
+          content: finalText
         }
       });
+      
+      // Auto-resize text bounds to fit content
+      setTimeout(() => {
+        const updatedObject = objects[editingTextId];
+        if (updatedObject) {
+          updateTextBounds(updatedObject, finalText);
+        }
+      }, 0);
+      
       redrawCanvas();
     }
     
@@ -252,9 +312,10 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    // Block ALL interactions if we're editing text or handling double-click
-    if (editingTextId || isHandlingDoubleClick) {
-      console.log('🖱️ Mouse down blocked - editing text or double-click protection active');
+    // Only block interactions if we're editing the specific text that was clicked
+    // This allows creating new text objects while editing existing ones
+    if (isHandlingDoubleClick) {
+      console.log('🖱️ Mouse down blocked - double-click protection active');
       return;
     }
 

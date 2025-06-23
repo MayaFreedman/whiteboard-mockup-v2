@@ -10,6 +10,7 @@ import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { TextData } from '../../types/whiteboard';
+import { measureText } from '../../utils/textMeasurement';
 
 interface TextPropertiesPanelProps {
   selectedObjectId: string;
@@ -25,9 +26,35 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
 
   const textData = obj.data as TextData;
 
+  // Auto-resize text object to fit content
+  const updateTextBounds = (textObject: any, updatedData: TextData) => {
+    const content = updatedData.content || 'Double-click to edit';
+    const metrics = measureText(
+      content,
+      updatedData.fontSize,
+      updatedData.fontFamily,
+      updatedData.bold,
+      updatedData.italic
+    );
+    
+    // Add padding to the measured dimensions
+    const padding = 8;
+    const newWidth = Math.max(metrics.width + padding, 100); // Minimum 100px width
+    const newHeight = Math.max(metrics.height + padding, updatedData.fontSize + padding);
+    
+    return { width: newWidth, height: newHeight };
+  };
+
   const handleTextPropertyChange = (property: keyof TextData, value: any) => {
     const updatedData = { ...textData, [property]: value };
-    updateObject(selectedObjectId, { data: updatedData }, userId);
+    
+    // Calculate new bounds based on updated text properties
+    const newBounds = updateTextBounds(obj, updatedData);
+    
+    updateObject(selectedObjectId, { 
+      data: updatedData,
+      ...newBounds
+    }, userId);
     
     // Also update tool settings for future text objects
     if (property === 'fontSize') updateToolSettings({ fontSize: value });
