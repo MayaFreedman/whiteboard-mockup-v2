@@ -54,7 +54,6 @@ export interface ToolSettings {
   
   // Stamp settings
   selectedSticker?: string;
-  stampRotation: number;
   
   // Shape properties panel settings
   shapeColorMode: 'fill' | 'stroke';
@@ -128,7 +127,6 @@ const defaultToolSettings: ToolSettings = {
   showLinedPaper: false,
   showDots: false,
   selectedSticker: undefined,
-  stampRotation: 0,
   shapeColorMode: 'fill'
 };
 

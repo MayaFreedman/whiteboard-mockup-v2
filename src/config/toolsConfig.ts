@@ -1,4 +1,3 @@
-
 export interface ToolSettingConfig {
   type: 'slider' | 'badges' | 'select' | 'toggleGroup' | 'grid' | 'text';
   label: string;
@@ -137,16 +136,6 @@ export const toolsConfig: Record<string, ToolConfig> = {
         step: 1,
         showValue: true,
         valueFormatter: (value) => `${value * 10}px`
-      },
-      {
-        type: 'slider',
-        label: 'Rotation',
-        key: 'stampRotation',
-        min: 0,
-        max: 360,
-        step: 15,
-        showValue: true,
-        valueFormatter: (value) => `${value}°`
       },
       {
         type: 'grid',

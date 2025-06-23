@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
+import { RotationHandle } from './RotationHandle';
 
 interface ResizeHandlesProps {
   objectId: string;
@@ -8,7 +9,7 @@ interface ResizeHandlesProps {
 }
 
 export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize }) => {
-  const { objects } = useWhiteboardStore();
+  const { objects, updateObject } = useWhiteboardStore();
   const obj = objects[objectId];
   
   if (!obj || !obj.width || !obj.height) return null;
@@ -102,6 +103,10 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
     document.addEventListener('mouseup', handleMouseUp);
   };
 
+  const handleRotate = (objectId: string, rotation: number) => {
+    updateObject(objectId, { rotation });
+  };
+
   return (
     <>
       {/* Selection outline */}
@@ -136,6 +141,14 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
           onMouseDown={(e) => handleMouseDown(e, handle.id)}
         />
       ))}
+      
+      {/* Rotation handle for image objects (stamps) */}
+      {obj.type === 'image' && (
+        <RotationHandle
+          objectId={objectId}
+          onRotate={handleRotate}
+        />
+      )}
     </>
   );
 };
