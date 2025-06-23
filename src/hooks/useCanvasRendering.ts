@@ -19,6 +19,7 @@ import {
 } from '../utils/shapeRendering';
 import { measureText } from '../utils/textMeasurement';
 import { pathPointsCache } from '../utils/pathPointsCache';
+import { imageCache } from '../utils/imageCache';
 
 /**
  * Wraps text to fit within the specified width
@@ -82,75 +83,6 @@ export const useCanvasRendering = (
 ) => {
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
-  
-  // Image cache to prevent blinking/glitching
-  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
-  const loadingImages = useRef<Set<string>>(new Set());
-
-  /**
-   * Loads and caches an image for synchronous rendering
-   */
-  const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
-    // Return cached image if available
-    if (imageCache.current.has(src)) {
-      return imageCache.current.get(src)!;
-    }
-    
-    // Prevent duplicate loading requests
-    if (loadingImages.current.has(src)) {
-      return null;
-    }
-    
-    loadingImages.current.add(src);
-    
-    try {
-      const img = new Image();
-      
-      return new Promise((resolve, reject) => {
-        img.onload = () => {
-          // Cache the loaded image
-          imageCache.current.set(src, img);
-          loadingImages.current.delete(src);
-          resolve(img);
-        };
-        
-        img.onerror = () => {
-          loadingImages.current.delete(src);
-          console.warn('Failed to load image:', src);
-          reject(new Error(`Failed to load image: ${src}`));
-        };
-        
-        // Handle SVG files by converting to blob URL
-        if (src.endsWith('.svg')) {
-          fetch(src)
-            .then(response => response.text())
-            .then(svgText => {
-              const blob = new Blob([svgText], { type: 'image/svg+xml' });
-              const url = URL.createObjectURL(blob);
-              img.src = url;
-              
-              // Clean up blob URL after image loads
-              img.onload = () => {
-                imageCache.current.set(src, img);
-                loadingImages.current.delete(src);
-                URL.revokeObjectURL(url);
-                resolve(img);
-              };
-            })
-            .catch(error => {
-              loadingImages.current.delete(src);
-              console.warn('Failed to fetch SVG:', error);
-              reject(error);
-            });
-        } else {
-          img.src = src;
-        }
-      });
-    } catch (error) {
-      loadingImages.current.delete(src);
-      return null;
-    }
-  }, []);
 
   /**
    * Sets up canvas for crisp rendering with proper pixel alignment
@@ -376,7 +308,7 @@ export const useCanvasRendering = (
       case 'image': {
         if (obj.data?.src && obj.width && obj.height) {
           const imageData = obj.data as ImageData;
-          const cachedImage = imageCache.current.get(imageData.src);
+          const cachedImage = imageCache.getCachedImage(imageData.src);
           
           if (cachedImage) {
             // Draw immediately from cache - no blinking!
@@ -387,9 +319,9 @@ export const useCanvasRendering = (
               Math.round(obj.width), 
               Math.round(obj.height)
             );
-          } else {
+          } else if (!imageCache.isLoading(imageData.src)) {
             // Load image asynchronously and trigger redraw when ready
-            getOrLoadImage(imageData.src).then(() => {
+            imageCache.getImage(imageData.src).then(() => {
               // Only redraw if canvas still exists
               if (canvas) {
                 redrawCanvas();
@@ -398,6 +330,7 @@ export const useCanvasRendering = (
               console.warn('Failed to load image for rendering:', error);
             });
           }
+          // If image is loading, we just don't render it yet (no flickering)
         }
         break;
       }
@@ -566,7 +499,7 @@ export const useCanvasRendering = (
     }
 
     ctx.restore();
-  }, [editingTextId, editingText, objects, getOrLoadImage, canvas]);
+  }, [editingTextId, editingText, objects, canvas]);
 
   /**
    * Renders the current drawing preview (work-in-progress path)
@@ -901,7 +834,7 @@ export const useCanvasRendering = (
       hasDrawingPreview: !!getCurrentDrawingPreview?.(),
       hasShapePreview: !!getCurrentShapePreview?.(),
       editingTextId: editingTextId || 'none',
-      cachedImages: imageCache.current.size
+      cachedImages: imageCache.getCachedImages().length
     });
   }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
 
