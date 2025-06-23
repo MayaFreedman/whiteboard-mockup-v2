@@ -5,7 +5,7 @@ import { Bold, Italic, Underline } from 'lucide-react';
 
 interface ToggleButtonGroupProps {
   label: string;
-  items: Array<{ value: string; label: string; icon: string }>;
+  items: Array<{ value: string; label: string; icon?: string }>;
   values: Record<string, boolean>;
   onChange: (key: string, value: boolean) => void;
 }
@@ -27,7 +27,7 @@ export const ToggleButtonGroup: React.FC<ToggleButtonGroupProps> = ({
       <label className="text-sm font-medium mb-2 block">{label}</label>
       <div className="flex gap-1">
         {items.map((item) => {
-          const IconComponent = iconMap[item.icon as keyof typeof iconMap];
+          const IconComponent = item.icon ? iconMap[item.icon as keyof typeof iconMap] : null;
           return (
             <Button
               key={item.value}
@@ -37,7 +37,7 @@ export const ToggleButtonGroup: React.FC<ToggleButtonGroupProps> = ({
               className="p-2"
               title={item.label}
             >
-              {IconComponent && <IconComponent className="w-4 h-4" />}
+              {IconComponent ? <IconComponent className="w-4 h-4" /> : <span>{item.label}</span>}
             </Button>
           );
         })}
