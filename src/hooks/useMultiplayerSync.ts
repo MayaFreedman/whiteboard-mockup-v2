@@ -1,5 +1,4 @@
-
-import { useEffect, useContext, useRef } from 'react'
+import { useEffect, useContext, useRef, useState } from 'react'
 import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
 import { WhiteboardAction } from '../types/whiteboard'
@@ -24,6 +23,7 @@ export const useMultiplayerSync = () => {
   const hasReceivedInitialStateRef = useRef(false)
   const stateRequestAttemptsRef = useRef(0)
   const maxStateRequestAttempts = 3
+  const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
 
   // If no multiplayer context, return null values (graceful degradation)
   if (!multiplayerContext) {
@@ -32,6 +32,7 @@ export const useMultiplayerSync = () => {
       isConnected: false,
       serverInstance: null,
       sendWhiteboardAction: () => {},
+      isWaitingForInitialState: false,
     }
   }
 
@@ -80,6 +81,11 @@ export const useMultiplayerSync = () => {
       return
     }
 
+    // Set loading state when we start requesting
+    if (stateRequestAttemptsRef.current === 0) {
+      setIsWaitingForInitialState(true)
+    }
+
     stateRequestAttemptsRef.current += 1
     console.log(`🔄 Requesting initial state (attempt ${stateRequestAttemptsRef.current}/${maxStateRequestAttempts})`)
     
@@ -98,6 +104,7 @@ export const useMultiplayerSync = () => {
         } else {
           console.log('⏰ All state request attempts exhausted - proceeding without initial state')
           hasReceivedInitialStateRef.current = true
+          setIsWaitingForInitialState(false)
         }
       }, timeoutDuration)
       
@@ -107,6 +114,7 @@ export const useMultiplayerSync = () => {
         setTimeout(() => requestInitialState(), 1000) // Retry after 1 second
       } else {
         hasReceivedInitialStateRef.current = true
+        setIsWaitingForInitialState(false)
       }
     }
   }
@@ -175,6 +183,7 @@ export const useMultiplayerSync = () => {
           })
           
           hasReceivedInitialStateRef.current = true
+          setIsWaitingForInitialState(false)
           
           // Clear any existing timeout
           if (stateRequestTimeoutRef.current) {
@@ -363,6 +372,7 @@ export const useMultiplayerSync = () => {
   useEffect(() => {
     if (!isConnected) {
       hasReceivedInitialStateRef.current = false
+      setIsWaitingForInitialState(false)
       if (stateRequestTimeoutRef.current) {
         clearTimeout(stateRequestTimeoutRef.current)
         stateRequestTimeoutRef.current = undefined
@@ -374,5 +384,6 @@ export const useMultiplayerSync = () => {
     isConnected,
     serverInstance,
     sendWhiteboardAction,
+    isWaitingForInitialState,
   }
 }
