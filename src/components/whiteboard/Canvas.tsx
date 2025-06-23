@@ -259,11 +259,27 @@ export const Canvas: React.FC = () => {
   // Handle text input changes to update wrapped content in real-time
   const handleTextChange = (newText: string) => {
     console.log('📝 Text changed:', newText);
+    console.log('📝 Text length:', newText.length);
+    console.log('📝 Current text box width:', textEditorPosition?.width);
     setEditingText(newText);
     
     // Update the object in real-time for better visual feedback
     if (editingTextId && objects[editingTextId]) {
       const textObject = objects[editingTextId];
+      
+      // Log the text measurement for debugging
+      if (textObject.data && textEditorPosition) {
+        const metrics = measureText(
+          newText,
+          textObject.data.fontSize,
+          textObject.data.fontFamily,
+          textObject.data.bold,
+          textObject.data.italic,
+          textEditorPosition.width
+        );
+        console.log('📝 Measured text metrics:', metrics);
+      }
+      
       updateObject(editingTextId, {
         data: {
           ...textObject.data,
