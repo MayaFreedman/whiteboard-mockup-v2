@@ -11,6 +11,7 @@ import {
   renderStar, 
   renderHeart 
 } from '../utils/shapeRendering';
+import { measureText } from '../utils/textMeasurement';
 
 /**
  * Wraps text to fit within the specified width
@@ -391,44 +392,33 @@ export const useCanvasRendering = (
         break;
       }
 
-      case 'triangle': {
-        if (obj.width && obj.height) {
-          renderTriangle(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-        }
-        break;
-      }
-
-      case 'diamond': {
-        if (obj.width && obj.height) {
-          renderDiamond(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-        }
-        break;
-      }
-
-      case 'pentagon': {
-        if (obj.width && obj.height) {
-          renderPentagon(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-        }
-        break;
-      }
-
-      case 'hexagon': {
-        if (obj.width && obj.height) {
-          renderHexagon(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-        }
-        break;
-      }
-
-      case 'star': {
-        if (obj.width && obj.height) {
-          renderStar(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-        }
-        break;
-      }
-
+      case 'triangle':
+      case 'diamond':
+      case 'pentagon':
+      case 'hexagon':
+      case 'star':
       case 'heart': {
         if (obj.width && obj.height) {
-          renderHeart(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+          switch (obj.type) {
+            case 'triangle':
+              renderTriangle(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+              break;
+            case 'diamond':
+              renderDiamond(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+              break;
+            case 'pentagon':
+              renderPentagon(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+              break;
+            case 'hexagon':
+              renderHexagon(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+              break;
+            case 'star':
+              renderStar(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+              break;
+            case 'heart':
+              renderHeart(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
+              break;
+          }
         }
         break;
       }
@@ -477,16 +467,27 @@ export const useCanvasRendering = (
           // Calculate available width for text wrapping (subtract padding)
           const availableWidth = Math.max(obj.width - 8, 50); // Subtract left and right padding, minimum 50px
           
-          // Wrap text to fit within the text box
-          const wrappedLines = wrapText(ctx, contentToRender, availableWidth);
+          // Use the same measureText function as the measurement system for consistent wrapping
+          const textMetrics = measureText(
+            contentToRender,
+            textData.fontSize,
+            textData.fontFamily,
+            textData.bold,
+            textData.italic,
+            availableWidth
+          );
           
-          // Calculate line positions
-          const lineHeight = Math.round(textData.fontSize * 1.2);
+          console.log('🎨 Canvas text rendering:', {
+            content: contentToRender.slice(0, 50) + (contentToRender.length > 50 ? '...' : ''),
+            availableWidth,
+            measuredLines: textMetrics.lines.length,
+            lines: textMetrics.lines
+          });
           
           // Render each line with proper alignment
-          for (let i = 0; i < wrappedLines.length; i++) {
-            const line = wrappedLines[i];
-            const lineY = Math.round(textYBase + (i * lineHeight));
+          for (let i = 0; i < textMetrics.lines.length; i++) {
+            const line = textMetrics.lines[i];
+            const lineY = Math.round(textYBase + (i * textMetrics.lineHeight));
             
             let textX = textXBase;
             if (textData.textAlign === 'center') {
@@ -505,13 +506,13 @@ export const useCanvasRendering = (
             ctx.lineWidth = 1;
             
             // Draw underline for each line individually
-            for (let i = 0; i < wrappedLines.length; i++) {
-              const lineText = wrappedLines[i];
+            for (let i = 0; i < textMetrics.lines.length; i++) {
+              const lineText = textMetrics.lines[i];
               if (lineText.length === 0) continue; // Skip empty lines
               
               // Measure the actual text width
-              const textMetrics = ctx.measureText(lineText);
-              const textWidth = textMetrics.width;
+              const textMeasurement = ctx.measureText(lineText);
+              const textWidth = textMeasurement.width;
               
               // Calculate underline position based on text alignment
               let underlineStartX = textXBase;
@@ -523,7 +524,7 @@ export const useCanvasRendering = (
               
               const underlineEndX = Math.round(underlineStartX + textWidth);
               // Move underline much closer to text - only 2px below baseline instead of fontSize + 2
-              const underlineY = Math.round(textYBase + (i * lineHeight) + textData.fontSize - 2);
+              const underlineY = Math.round(textYBase + (i * textMetrics.lineHeight) + textData.fontSize - 2);
               
               ctx.beginPath();
               ctx.moveTo(underlineStartX, underlineY);

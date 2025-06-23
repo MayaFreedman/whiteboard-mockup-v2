@@ -77,7 +77,7 @@ export const Canvas: React.FC = () => {
     redrawCanvas();
   };
 
-  // Auto-resize text object to fit content
+  // Auto-resize text object to fit content using the same measureText function
   const updateTextBounds = (textObject: any, content: string) => {
     if (!textObject.data) return;
     
@@ -87,8 +87,16 @@ export const Canvas: React.FC = () => {
       textData.fontSize,
       textData.fontFamily,
       textData.bold,
-      textData.italic
+      textData.italic,
+      textObject.width - 8 // Use available width minus padding for wrapping
     );
+    
+    console.log('📏 Text bounds update:', {
+      content: content?.slice(0, 50) + (content && content.length > 50 ? '...' : ''),
+      availableWidth: textObject.width - 8,
+      measuredDimensions: { width: metrics.width, height: metrics.height },
+      lineCount: metrics.lines.length
+    });
     
     // Add padding to the measured dimensions
     const padding = 8;
@@ -153,14 +161,15 @@ export const Canvas: React.FC = () => {
       const textData = obj.data;
       const currentContent = textData.content || 'Double-click to edit';
       
-      // Use accurate text measurement for hit detection
+      // Use accurate text measurement for hit detection with same available width as canvas
+      const availableWidth = obj.width - 8; // Same calculation as canvas rendering
       const metrics = measureText(
         currentContent,
         textData.fontSize,
         textData.fontFamily,
         textData.bold,
         textData.italic,
-        obj.width - 8 // Available width minus padding
+        availableWidth
       );
       
       // Check if click is within the actual text bounds
@@ -252,6 +261,19 @@ export const Canvas: React.FC = () => {
     setEditingTextId(null);
     setTextEditorPosition(null);
     setEditingText('');
+  };
+
+  // Handle text input changes with logging
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setEditingText(newText);
+    
+    console.log('✏️ Text changed:', {
+      length: newText.length,
+      content: newText.slice(0, 50) + (newText.length > 50 ? '...' : ''),
+      lines: newText.split('\n').length,
+      hasLongWords: newText.split(' ').some(word => word.length > 20)
+    });
   };
 
   // Handle text input key events
@@ -394,7 +416,7 @@ export const Canvas: React.FC = () => {
             border: 'none', // Remove borders
             wordWrap: 'break-word', // Enable word wrapping
             whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
-            overflowWrap: 'break-word', // Break long words if necessary
+            overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior
             // Font rendering optimizations to match canvas
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
@@ -406,7 +428,7 @@ export const Canvas: React.FC = () => {
             boxSizing: 'border-box'
           }}
           value={editingText}
-          onChange={(e) => setEditingText(e.target.value)}
+          onChange={handleTextChange}
           onBlur={handleTextEditComplete}
           onKeyDown={handleTextKeyDown}
           autoFocus
