@@ -141,38 +141,33 @@ export const useCanvasInteractions = () => {
   }, [toolStore.toolSettings]);
 
   /**
-   * Creates emoji stamp objects
+   * Creates image stamp objects with proper data structure
    */
   const createStampObject = useCallback((
     x: number,
     y: number,
     size: number
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
-    const selectedSticker = toolStore.toolSettings.selectedSticker || '😊';
+    const selectedSticker = toolStore.toolSettings.selectedSticker || '⭐';
     const actualSize = size * 10; // Convert slider value to actual pixel size
     
-    // Create a text object for emoji stamps
-    const stampData = {
-      content: selectedSticker,
-      fontSize: actualSize,
-      fontFamily: 'Arial',
-      bold: false,
-      italic: false,
-      underline: false,
-      textAlign: 'center' as const
+    // Create an image object for emoji stamps
+    const imageData: ImageData = {
+      src: selectedSticker, // Use emoji as the image source
+      alt: `Stamp: ${selectedSticker}`
     };
 
     return {
-      type: 'text',
+      type: 'image',
       x: x - actualSize / 2, // Center the stamp on the click point
       y: y - actualSize / 2,
       width: actualSize,
       height: actualSize,
-      stroke: '#000000',
+      stroke: 'none',
       fill: 'transparent',
       strokeWidth: 0,
       opacity: toolStore.toolSettings.opacity,
-      data: stampData
+      data: imageData
     };
   }, [toolStore.toolSettings]);
 
@@ -509,11 +504,12 @@ export const useCanvasInteractions = () => {
         const stampObject = createStampObject(coords.x, coords.y, stampSize);
         
         const objectId = whiteboardStore.addObject(stampObject, userId);
-        console.log('🖼️ Created stamp object:', objectId.slice(0, 8), {
+        console.log('🖼️ Created stamp image object:', objectId.slice(0, 8), {
           size: stampSize * 10,
           sticker: toolStore.toolSettings.selectedSticker,
           coords,
-          userId: userId.slice(0, 8)
+          userId: userId.slice(0, 8),
+          type: 'image'
         });
         
         if (redrawCanvasRef.current) {
