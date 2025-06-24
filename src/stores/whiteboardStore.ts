@@ -284,7 +284,28 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     });
   },
 
-  setViewport: (viewport) => set({ viewport }),
+  setViewport: (viewport) => {
+    const currentViewport = get().viewport;
+    
+    // Only update if viewport actually changed
+    if (currentViewport.x !== viewport.x || 
+        currentViewport.y !== viewport.y || 
+        currentViewport.zoom !== viewport.zoom) {
+      
+      const action: WhiteboardAction = {
+        type: 'UPDATE_VIEWPORT',
+        payload: { viewport },
+        timestamp: Date.now(),
+        id: nanoid(),
+        userId: 'local',
+        previousState: { viewport: currentViewport },
+      };
+
+      set({ viewport });
+      get().recordAction(action);
+    }
+  },
+
   resetViewport: () => set({ viewport: { x: 0, y: 0, zoom: 1 } }),
 
   setSettings: (settings) => set({ settings }),
@@ -614,6 +635,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     
     // Execute the action logic based on action type for non-SYNC actions
     switch (action.type) {
+      case 'UPDATE_VIEWPORT':
+        if (action.payload.viewport) {
+          console.log('📥 Applying remote viewport update:', action.payload.viewport);
+          set({ viewport: action.payload.viewport });
+        }
+        break;
+        
       case 'ADD_OBJECT':
         if (action.payload.object) {
           set((state) => ({
@@ -776,23 +804,25 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         break;
     }
     
-    // Record the action for the remote user's history (but NOT for SYNC actions)
-    const state = get();
-    const newUserHistories = new Map(state.userActionHistories);
-    const newUserIndices = new Map(state.userHistoryIndices);
-    
-    const userHistory = newUserHistories.get(action.userId) || [];
-    const newUserHistory = [...userHistory, action];
-    newUserHistories.set(action.userId, newUserHistory);
-    newUserIndices.set(action.userId, newUserHistory.length - 1);
-    
-    set({
-      actionHistory: [...state.actionHistory, action],
-      currentHistoryIndex: state.actionHistory.length,
-      lastAction: action,
-      userActionHistories: newUserHistories,
-      userHistoryIndices: newUserIndices,
-    });
+    // Record the action for the remote user's history (but NOT for SYNC actions or UPDATE_VIEWPORT)
+    if (action.type !== 'UPDATE_VIEWPORT') {
+      const state = get();
+      const newUserHistories = new Map(state.userActionHistories);
+      const newUserIndices = new Map(state.userHistoryIndices);
+      
+      const userHistory = newUserHistories.get(action.userId) || [];
+      const newUserHistory = [...userHistory, action];
+      newUserHistories.set(action.userId, newUserHistory);
+      newUserIndices.set(action.userId, newUserHistory.length - 1);
+      
+      set({
+        actionHistory: [...state.actionHistory, action],
+        currentHistoryIndex: state.actionHistory.length,
+        lastAction: action,
+        userActionHistories: newUserHistories,
+        userHistoryIndices: newUserIndices,
+      });
+    }
   },
   
   batchUpdate: (actions) => {
