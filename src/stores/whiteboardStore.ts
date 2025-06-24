@@ -294,7 +294,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       
       const action: WhiteboardAction = {
         type: 'UPDATE_VIEWPORT',
-        payload: { viewport },
+        payload: { viewport }, // Now matches the corrected type
         timestamp: Date.now(),
         id: nanoid(),
         userId: 'local',
@@ -636,7 +636,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     // Execute the action logic based on action type for non-SYNC actions
     switch (action.type) {
       case 'UPDATE_VIEWPORT':
-        if (action.payload.viewport) {
+        if (action.payload.viewport) { // Now correctly accessing viewport property
           console.log('📥 Applying remote viewport update:', action.payload.viewport);
           set({ viewport: action.payload.viewport });
         }

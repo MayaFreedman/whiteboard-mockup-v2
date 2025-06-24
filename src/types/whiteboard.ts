@@ -89,7 +89,9 @@ export interface ClearSelectionAction extends BaseAction {
 
 export interface UpdateViewportAction extends BaseAction {
   type: 'UPDATE_VIEWPORT';
-  payload: Partial<WhiteboardState['viewport']>;
+  payload: {
+    viewport: Viewport; // Changed from Partial<WhiteboardState['viewport']> to { viewport: Viewport }
+  };
   previousState?: {
     viewport: WhiteboardState['viewport'];
   };
@@ -97,7 +99,9 @@ export interface UpdateViewportAction extends BaseAction {
 
 export interface UpdateSettingsAction extends BaseAction {
   type: 'UPDATE_SETTINGS';
-  payload: Partial<WhiteboardState['settings']>;
+  payload: {
+    updates: Partial<WhiteboardState['settings']>; // Made sure 'updates' property exists
+  };
   previousState?: {
     settings: WhiteboardState['settings'];
   };

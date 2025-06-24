@@ -266,7 +266,7 @@ export const useMultiplayerSync = () => {
         if (action.type === 'UPDATE_VIEWPORT') {
           if (!sentActionIdsRef.current.has(action.id)) {
             console.log('📥 Applying remote viewport update')
-            applyRemoteViewport(action.payload.viewport)
+            applyRemoteViewport(action.payload.viewport) // Now correctly accessing viewport property
           } else {
             console.log('🔄 Ignoring echo of our own viewport action')
           }

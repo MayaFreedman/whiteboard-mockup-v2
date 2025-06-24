@@ -3,6 +3,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useMultiplayer } from './useMultiplayer';
 import { Viewport } from '../types/viewport';
+import { WhiteboardAction } from '../types/whiteboard';
 import { nanoid } from 'nanoid';
 
 export const useViewportSync = () => {
@@ -34,9 +35,9 @@ export const useViewportSync = () => {
     // Debounce the viewport update
     debounceTimeoutRef.current = setTimeout(() => {
       try {
-        const action = {
-          type: 'UPDATE_VIEWPORT' as const,
-          payload: { viewport },
+        const action: WhiteboardAction = {
+          type: 'UPDATE_VIEWPORT',
+          payload: { viewport }, // Now matches the corrected type
           timestamp: Date.now(),
           id: nanoid(),
           userId: 'local'
