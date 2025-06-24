@@ -3,25 +3,13 @@ import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
 import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
-import { useViewportSync } from './useViewportSync'
 
 /**
  * Determines if an action should be synchronized across multiplayer clients
- * Selection-related actions and UI-only settings are kept local to each user
+ * Selection-related actions are kept local to each user
  */
 const shouldSyncAction = (action: WhiteboardAction): boolean => {
   const localOnlyActions = ['SELECT_OBJECTS', 'CLEAR_SELECTION']
-  
-  // Filter out UI-only settings but allow viewport updates
-  if (action.type === 'UPDATE_SETTINGS') {
-    const settingsKeys = Object.keys(action.payload.updates || {});
-    const uiOnlySettings = ['showGrid', 'showLinedPaper', 'showDots'];
-    const hasOnlyUISettings = settingsKeys.every(key => uiOnlySettings.includes(key));
-    if (hasOnlyUISettings) {
-      return false; // Don't sync UI-only settings
-    }
-  }
-  
   return !localOnlyActions.includes(action.type)
 }
 
@@ -36,9 +24,6 @@ export const useMultiplayerSync = () => {
   const stateRequestAttemptsRef = useRef(0)
   const maxStateRequestAttempts = 3
   const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
-  
-  // Initialize viewport sync
-  const { applyRemoteViewport } = useViewportSync()
 
   // If no multiplayer context, return null values (graceful degradation)
   if (!multiplayerContext) {
@@ -236,7 +221,7 @@ export const useMultiplayerSync = () => {
           
           // Apply viewport if provided
           if (message.state?.viewport) {
-            applyRemoteViewport(message.state.viewport)
+            whiteboardStore.setViewport(message.state.viewport)
             console.log('✅ Applied viewport state')
           }
           
@@ -261,17 +246,6 @@ export const useMultiplayerSync = () => {
           fromOwnAction: sentActionIdsRef.current.has(action.id),
           isOwnUser: action.userId === userId
         })
-        
-        // Handle viewport updates specially
-        if (action.type === 'UPDATE_VIEWPORT') {
-          if (!sentActionIdsRef.current.has(action.id)) {
-            console.log('📥 Applying remote viewport update')
-            applyRemoteViewport(action.payload.viewport) // Now correctly accessing viewport property
-          } else {
-            console.log('🔄 Ignoring echo of our own viewport action')
-          }
-          return
-        }
         
         // Prevent echoing our own actions back
         if (!sentActionIdsRef.current.has(action.id)) {
@@ -314,7 +288,7 @@ export const useMultiplayerSync = () => {
         stateRequestTimeoutRef.current = undefined
       }
     }
-  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId, applyRemoteViewport])
+  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId])
 
   // Send local actions to other clients (with filtering)
   useEffect(() => {
