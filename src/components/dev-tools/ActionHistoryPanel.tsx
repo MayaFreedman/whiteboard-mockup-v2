@@ -3,19 +3,14 @@ import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useUser } from '../../contexts/UserContext';
 import { useUndoRedo } from '../../hooks/useUndoRedo';
-import { historyManager } from '../../services/HistoryManager';
 import { Badge } from '../ui/badge';
 
 export const ActionHistoryPanel: React.FC = () => {
+  const { actionHistory, currentHistoryIndex } = useWhiteboardStore();
   const { userId } = useUser();
   const { canUndo, canRedo } = useUndoRedo();
-  
-  // Get history data from HistoryManager instead of store
-  const userHistory = historyManager.getUserHistory(userId);
-  const currentHistoryIndex = historyManager.getUserHistoryIndex(userId);
-  const globalHistory = historyManager.getHistorySnapshot().globalActionHistory;
 
-  const recentActions = globalHistory.slice(-10);
+  const recentActions = actionHistory.slice(-10);
   const canUndoValue = canUndo(userId);
   const canRedoValue = canRedo(userId);
 
@@ -39,11 +34,10 @@ export const ActionHistoryPanel: React.FC = () => {
 
       {/* History Stats */}
       <div className="bg-muted/30 p-2 rounded space-y-1">
-        <div>Total Actions: {globalHistory.length}</div>
+        <div>Total Actions: {actionHistory.length}</div>
         <div>Current Index: {currentHistoryIndex}</div>
-        <div>User History: {userHistory.length}</div>
         <div>Available Undos: {currentHistoryIndex + 1}</div>
-        <div>Available Redos: {userHistory.length - currentHistoryIndex - 1}</div>
+        <div>Available Redos: {actionHistory.length - currentHistoryIndex - 1}</div>
       </div>
 
       {/* Recent Actions */}
@@ -51,7 +45,7 @@ export const ActionHistoryPanel: React.FC = () => {
         <div className="font-medium">Recent Actions ({recentActions.length})</div>
         <div className="max-h-80 overflow-auto space-y-1">
           {recentActions.reverse().map((action, index) => {
-            const isCurrentAction = globalHistory.length - 1 - index === currentHistoryIndex;
+            const isCurrentAction = actionHistory.length - 1 - index === currentHistoryIndex;
             const actionTime = new Date(action.timestamp).toLocaleTimeString();
             
             return (
@@ -111,7 +105,7 @@ export const ActionHistoryPanel: React.FC = () => {
         </div>
       </div>
 
-      {globalHistory.length === 0 && (
+      {actionHistory.length === 0 && (
         <div className="text-center text-muted-foreground py-8">
           No actions yet. Start drawing to see action history!
         </div>
