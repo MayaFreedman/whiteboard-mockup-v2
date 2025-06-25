@@ -205,7 +205,7 @@ export const useCanvasRendering = (
     
     ctx.save();
     ctx.globalAlpha = obj.opacity || 1;
-    ctx.fillStyle = overrideColor !== '#000000' ? overrideColor : obj.stroke || '#000000'; // Use override color if provided
+    ctx.fillStyle = overrideColor !== '#000000' ? overrideColor : obj.stroke || '#000000';
     
     // Font settings
     let fontStyle = '';
@@ -213,7 +213,7 @@ export const useCanvasRendering = (
     if (textData.bold) fontStyle += 'bold ';
     ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
     ctx.textAlign = textData.textAlign;
-    ctx.textBaseline = 'top'; // Align text to the top
+    ctx.textBaseline = 'top';
 
     // Word wrapping logic
     const lineHeight = Math.round(textData.fontSize * 1.2);
@@ -231,7 +231,7 @@ export const useCanvasRendering = (
       
       if (testWidth > obj.width! && n > 0) {
         // Render the line
-        ctx.fillText(currentLine, x + 4, y + 4); // Add padding
+        ctx.fillText(currentLine, x + 4, y + 4);
         
         // Move to the next line
         currentLine = words[n] + ' ';
@@ -243,7 +243,7 @@ export const useCanvasRendering = (
     }
     
     // Render the last line
-    ctx.fillText(currentLine, x + 4, y + 4); // Add padding
+    ctx.fillText(currentLine, x + 4, y + 4);
     
     ctx.restore();
   }, []);
@@ -256,6 +256,14 @@ export const useCanvasRendering = (
     
     const imageData = obj.data as ImageData;
     
+    console.log('🎨 Rendering image object:', {
+      id: obj.id.slice(0, 8),
+      src: imageData.src,
+      position: { x: obj.x, y: obj.y },
+      dimensions: { width: obj.width, height: obj.height },
+      opacity: obj.opacity
+    });
+    
     // Check if this is an emoji (single character or emoji sequence)
     const isEmoji = imageData.src.length <= 4 || /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(imageData.src);
     
@@ -266,7 +274,7 @@ export const useCanvasRendering = (
       
       // Set font size to 80% of the object dimensions for better fit
       const fontSize = Math.min(obj.width, obj.height) * 0.8;
-      ctx.font = `${fontSize}px Arial`;
+      ctx.font = `${fontSize}px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       
@@ -274,6 +282,7 @@ export const useCanvasRendering = (
       const centerX = obj.x + obj.width / 2;
       const centerY = obj.y + obj.height / 2;
       
+      // Use fillText to render the emoji
       ctx.fillText(imageData.src, centerX, centerY);
       ctx.restore();
       
@@ -302,6 +311,8 @@ export const useCanvasRendering = (
   const renderObjects = useCallback((ctx: CanvasRenderingContext2D, objects: Record<string, WhiteboardObject>) => {
     if (!canvasRef.current) return;
     
+    console.log('🎨 Starting render with objects:', Object.keys(objects).length);
+    
     // Clear the canvas
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
@@ -311,8 +322,8 @@ export const useCanvasRendering = (
 
     // Render grid lines if enabled
     if (toolStore.toolSettings.showGrid) {
-      const gridSize = 50; // Define grid size
-      ctx.strokeStyle = '#e0e0e0'; // Light gray color for grid
+      const gridSize = 50;
+      ctx.strokeStyle = '#e0e0e0';
       ctx.lineWidth = 0.5;
 
       for (let x = 0; x < canvasRef.current.width; x += gridSize) {
@@ -332,8 +343,8 @@ export const useCanvasRendering = (
 
     // Render lined paper if enabled
     if (toolStore.toolSettings.showLinedPaper) {
-      const lineHeight = 24; // Define line height
-      ctx.strokeStyle = '#f0f0f0'; // Light gray color for lines
+      const lineHeight = 24;
+      ctx.strokeStyle = '#f0f0f0';
       ctx.lineWidth = 0.5;
 
       for (let y = lineHeight; y < canvasRef.current.height; y += lineHeight) {
@@ -347,6 +358,13 @@ export const useCanvasRendering = (
     // Render all objects
     Object.values(objects).forEach((obj) => {
       if (!obj) return;
+      
+      console.log('🎨 Rendering object:', {
+        id: obj.id.slice(0, 8),
+        type: obj.type,
+        position: { x: obj.x, y: obj.y },
+        dimensions: obj.width ? { width: obj.width, height: obj.height } : 'no dimensions'
+      });
       
       switch (obj.type) {
         case 'path':
@@ -429,7 +447,6 @@ export const useCanvasRendering = (
         case 'hexagon':
         case 'star':
         case 'heart': {
-          // All shapes are now rendered as native types
           const shapeX = Math.min(shapePreview.startX, shapePreview.endX);
           const shapeY = Math.min(shapePreview.startY, shapePreview.endY);
           const shapeWidth = Math.abs(shapePreview.endX - shapePreview.startX);
@@ -440,7 +457,6 @@ export const useCanvasRendering = (
         }
           
         case 'text':
-          // Render a rectangle for the text box
           ctx.strokeRect(
             Math.min(shapePreview.startX, shapePreview.endX),
             Math.min(shapePreview.startY, shapePreview.endY),
@@ -457,19 +473,29 @@ export const useCanvasRendering = (
     if (editingTextIdRef.current && editingTextRef.current) {
       const obj = objects[editingTextIdRef.current];
       if (obj && obj.type === 'text') {
-        renderTextObject(ctx, obj, editingTextRef.current, 'rgba(0, 0, 0, 0.5)'); // Render with a transparent black color
+        renderTextObject(ctx, obj, editingTextRef.current, 'rgba(0, 0, 0, 0.5)');
       }
     }
+    
+    console.log('🎨 Render complete');
   }, [renderPathObject, renderTextObject, renderImageObject, renderShapeObject, getCurrentDrawingPreview, getCurrentShapePreview, generateShapePath, toolStore.toolSettings.showGrid, toolStore.toolSettings.showLinedPaper, toolStore.toolSettings.backgroundColor]);
 
   /**
    * Redraws the canvas
    */
   const redrawCanvas = useCallback(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current) {
+      console.log('🎨 No canvas ref available for redraw');
+      return;
+    }
 
     const ctx = canvasRef.current.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.log('🎨 No canvas context available');
+      return;
+    }
+
+    console.log('🎨 Redrawing canvas with viewport:', viewport);
 
     // Save the current transformation matrix
     ctx.save();
