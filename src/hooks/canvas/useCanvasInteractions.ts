@@ -547,23 +547,25 @@ export const useCanvasInteractions = () => {
           return;
         }
 
-        isDrawingRef.current = true;
-        lastPointRef.current = coords;
-        pathStartRef.current = coords;
+        // Create a small text box immediately on single click
+        const defaultWidth = 120;
+        const defaultHeight = 40;
         
-        currentShapePreviewRef.current = {
-          type: 'text',
-          startX: coords.x,
-          startY: coords.y,
-          endX: coords.x,
-          endY: coords.y,
-          strokeColor: toolStore.toolSettings.strokeColor,
-          strokeWidth: 1,
-          opacity: 1
-        };
+        const textObject = createTextObject(
+          coords.x,
+          coords.y,
+          defaultWidth,
+          defaultHeight,
+          toolStore.toolSettings.strokeColor
+        );
+
+        const objectId = whiteboardStore.addObject(textObject, userId);
+        console.log('📝 Created text object on single click:', objectId.slice(0, 8), { coords, userId: userId.slice(0, 8) });
         
-        console.log('📝 Started text box creation:', coords, 'for user:', userId.slice(0, 8));
-        break;
+        if (redrawCanvasRef.current) {
+          redrawCanvasRef.current();
+        }
+        return;
       }
 
       case 'pencil':
