@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
@@ -54,25 +53,20 @@ export const useCanvasRendering = (
     const brushType = obj.data?.brushType;
     if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
       const brushEffects = brushEffectCache.get(obj.id, brushType);
-      if (brushEffects && brushEffects.length > 0) {
-        brushEffects.forEach(effect => {
-          ctx.globalAlpha = effect.opacity;
-          ctx.strokeStyle = effect.color;
-          ctx.lineWidth = effect.size;
+      if (brushEffects && brushEffects.points && brushEffects.points.length > 0) {
+        brushEffects.points.forEach((point, index) => {
+          ctx.globalAlpha = brushEffects.opacity;
+          ctx.strokeStyle = brushEffects.strokeColor;
+          ctx.lineWidth = brushEffects.strokeWidth;
           
-          const points = effect.points;
-          if (points && points.length > 0) {
-            points.forEach((point, index) => {
-              if (index === 0) {
-                ctx.beginPath();
-                ctx.moveTo(obj.x + point.x, obj.y + point.y);
-              } else {
-                ctx.lineTo(obj.x + point.x, obj.y + point.y);
-              }
-            });
-            ctx.stroke();
+          if (index === 0) {
+            ctx.beginPath();
+            ctx.moveTo(obj.x + point.x, obj.y + point.y);
+          } else {
+            ctx.lineTo(obj.x + point.x, obj.y + point.y);
           }
         });
+        ctx.stroke();
         ctx.restore();
         return;
       }
@@ -311,11 +305,11 @@ export const useCanvasRendering = (
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
     // Apply background color
-    ctx.fillStyle = toolStore.settings.backgroundColor;
+    ctx.fillStyle = toolStore.toolSettings.backgroundColor || '#ffffff';
     ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
     // Render grid lines if enabled
-    if (toolStore.settings.gridVisible) {
+    if (toolStore.toolSettings.showGrid) {
       const gridSize = 50; // Define grid size
       ctx.strokeStyle = '#e0e0e0'; // Light gray color for grid
       ctx.lineWidth = 0.5;
@@ -336,7 +330,7 @@ export const useCanvasRendering = (
     }
 
     // Render lined paper if enabled
-    if (toolStore.settings.linedPaperVisible) {
+    if (toolStore.toolSettings.showLinedPaper) {
       const lineHeight = 24; // Define line height
       ctx.strokeStyle = '#f0f0f0'; // Light gray color for lines
       ctx.lineWidth = 0.5;
@@ -465,7 +459,7 @@ export const useCanvasRendering = (
         renderTextObject(ctx, obj, editingTextRef.current, 'rgba(0, 0, 0, 0.5)'); // Render with a transparent black color
       }
     }
-  }, [renderPathObject, renderTextObject, renderImageObject, renderShapeObject, getCurrentDrawingPreview, getCurrentShapePreview, generateShapePath, toolStore.settings.gridVisible, toolStore.settings.linedPaperVisible, toolStore.settings.backgroundColor]);
+  }, [renderPathObject, renderTextObject, renderImageObject, renderShapeObject, getCurrentDrawingPreview, getCurrentShapePreview, generateShapePath, toolStore.toolSettings.showGrid, toolStore.toolSettings.showLinedPaper, toolStore.toolSettings.backgroundColor]);
 
   /**
    * Redraws the canvas
