@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 
 export type Tool = 
@@ -51,6 +52,7 @@ export interface ToolSettings {
   showGrid: boolean;
   showLinedPaper: boolean;
   showDots: boolean;
+  backgroundColor: string;
   
   // Stamp settings
   selectedSticker?: string;
@@ -126,6 +128,7 @@ const defaultToolSettings: ToolSettings = {
   showGrid: false,
   showLinedPaper: false,
   showDots: false,
+  backgroundColor: '#ffffff',
   selectedSticker: '⭐', // Default to star emoji since it works
   shapeColorMode: 'fill'
 };
