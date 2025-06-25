@@ -38,8 +38,9 @@ export const useCanvasInteractions = () => {
   const doubleClickProtectionRef = useRef(false);
   const isEditingTextRef = useRef(false);
   
-  // Text tool interaction tracking
+  // Text tool interaction tracking - improved for better click detection
   const textToolStartPosRef = useRef<{ x: number; y: number } | null>(null);
+  const textToolHasMovedRef = useRef(false);
   const immediateTextCallbackRef = useRef<((objectId: string, position: { x: number; y: number }) => void) | null>(null);
   
   // Batching state refs
@@ -467,6 +468,7 @@ export const useCanvasInteractions = () => {
     currentDrawingPreviewRef.current = null;
     currentShapePreviewRef.current = null;
     textToolStartPosRef.current = null;
+    textToolHasMovedRef.current = false;
     
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
@@ -574,6 +576,7 @@ export const useCanvasInteractions = () => {
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         textToolStartPosRef.current = coords; // Track starting position for click/drag detection
+        textToolHasMovedRef.current = false; // Reset movement tracking
         
         currentShapePreviewRef.current = {
           type: 'text',
@@ -699,7 +702,28 @@ export const useCanvasInteractions = () => {
         break;
       }
 
-      case 'text':
+      case 'text': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current && textToolStartPosRef.current) {
+          // Track movement to determine if this is a click or drag
+          const dragDistance = getDistance(textToolStartPosRef.current, coords);
+          if (dragDistance > 3) { // More sensitive threshold
+            textToolHasMovedRef.current = true;
+          }
+          
+          currentShapePreviewRef.current.endX = coords.x;
+          currentShapePreviewRef.current.endY = coords.y;
+          
+          if (redrawCanvasRef.current) {
+            requestAnimationFrame(() => {
+              if (redrawCanvasRef.current && isDrawingRef.current) {
+                redrawCanvasRef.current();
+              }
+            });
+          }
+        }
+        break;
+      }
+
       case 'rectangle':
       case 'circle':
       case 'triangle':
@@ -761,7 +785,7 @@ export const useCanvasInteractions = () => {
         break;
       }
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt, userId, checkBatchSize]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, getCanvasCoordinates, handleEraserMove, findObjectAt, userId, checkBatchSize, getDistance]);
 
   /**
    * Handles the end of a drawing/interaction session
@@ -794,26 +818,21 @@ export const useCanvasInteractions = () => {
           isDrawingRef.current = false;
           currentShapePreviewRef.current = null;
           textToolStartPosRef.current = null;
+          textToolHasMovedRef.current = false;
           return;
         }
 
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current && textToolStartPosRef.current) {
           const preview = currentShapePreviewRef.current;
-          const width = Math.abs(preview.endX - preview.startX);
-          const height = Math.abs(preview.endY - preview.startY);
-          
-          // Determine if this was a click or drag based on distance moved
-          const dragDistance = getDistance(textToolStartPosRef.current, { x: preview.endX, y: preview.endY });
-          const isClick = dragDistance < 5; // Less than 5 pixels = click
           
           console.log('📝 Text tool interaction completed:', {
-            dragDistance,
-            isClick,
-            dimensions: { width, height },
+            hasMoved: textToolHasMovedRef.current,
+            startPos: textToolStartPosRef.current,
+            endPos: { x: preview.endX, y: preview.endY },
             userId: userId.slice(0, 8)
           });
           
-          if (isClick) {
+          if (!textToolHasMovedRef.current) {
             // SINGLE CLICK: Create minimal text object and start immediate editing
             console.log('📝 Single click detected - creating immediate text object');
             
@@ -833,25 +852,31 @@ export const useCanvasInteractions = () => {
             if (immediateTextCallbackRef.current) {
               immediateTextCallbackRef.current(objectId, textToolStartPosRef.current);
             }
-          } else if (width > 10 && height > 10) {
+          } else {
             // DRAG: Create traditional text box with placeholder (existing behavior)
-            console.log('📝 Drag detected - creating traditional text box');
+            const width = Math.abs(preview.endX - preview.startX);
+            const height = Math.abs(preview.endY - preview.startY);
             
-            const textObject = createTextObject(
-              Math.min(preview.startX, preview.endX),
-              Math.min(preview.startY, preview.endY),
-              width,
-              height,
-              preview.strokeColor,
-              false // Traditional mode
-            );
+            if (width > 10 && height > 10) {
+              console.log('📝 Drag detected - creating traditional text box');
+              
+              const textObject = createTextObject(
+                Math.min(preview.startX, preview.endX),
+                Math.min(preview.startY, preview.endY),
+                width,
+                height,
+                preview.strokeColor,
+                false // Traditional mode
+              );
 
-            const objectId = whiteboardStore.addObject(textObject, userId);
-            console.log('📝 Created traditional text object:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
+              const objectId = whiteboardStore.addObject(textObject, userId);
+              console.log('📝 Created traditional text object:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
+            }
           }
           
           currentShapePreviewRef.current = null;
           textToolStartPosRef.current = null;
+          textToolHasMovedRef.current = false;
           
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
@@ -957,7 +982,7 @@ export const useCanvasInteractions = () => {
     lastPointRef.current = null;
     pathStartRef.current = null;
     pathBuilderRef.current = null;
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId, endBatch, getDistance]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId, endBatch]);
 
   /**
    * Gets the current drawing preview for rendering
