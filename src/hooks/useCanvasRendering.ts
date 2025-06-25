@@ -260,12 +260,12 @@ export const useCanvasRendering = (
     const isEmoji = imageData.src.length <= 4 || /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(imageData.src);
     
     if (isEmoji) {
-      // Render emoji as text
+      // Render emoji as text with proper sizing
       ctx.save();
       ctx.globalAlpha = obj.opacity || 1;
       
-      // Set font size to match the object dimensions
-      const fontSize = Math.min(obj.width, obj.height);
+      // Set font size to 80% of the object dimensions for better fit
+      const fontSize = Math.min(obj.width, obj.height) * 0.8;
       ctx.font = `${fontSize}px Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -280,7 +280,8 @@ export const useCanvasRendering = (
       console.log('🎨 Rendered emoji stamp:', {
         emoji: imageData.src,
         position: { x: centerX, y: centerY },
-        size: fontSize
+        size: fontSize,
+        dimensions: { width: obj.width, height: obj.height }
       });
     } else {
       // Handle regular images (if needed in the future)
