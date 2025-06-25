@@ -46,6 +46,7 @@ export const Canvas: React.FC = () => {
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number, lineHeight: number } | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [isInlineTextMode, setIsInlineTextMode] = useState(false); // New state for inline vs box mode
   
   // Double-click protection flag - but exclude text tool from protection
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
@@ -72,14 +73,15 @@ export const Canvas: React.FC = () => {
   interactions.setEditingState(editingTextId !== null);
 
   // Handle immediate text editing when text is created
-  const handleTextCreated = (textId: string) => {
-    console.log('📝 Text created, starting immediate editing:', textId.slice(0, 8));
+  const handleTextCreated = (textId: string, isInline: boolean = false) => {
+    console.log('📝 Text created, starting immediate editing:', textId.slice(0, 8), 'inline:', isInline);
     
     // Small delay to ensure the object is fully added to the store
     setTimeout(() => {
       const textObject = objects[textId];
       if (textObject && canvasRef.current) {
         setEditingTextId(textId);
+        setIsInlineTextMode(isInline);
         
         // Calculate exact text position using canvas metrics
         const position = calculateTextPosition(textObject, canvasRef.current);
@@ -87,8 +89,10 @@ export const Canvas: React.FC = () => {
           setTextEditorPosition(position);
         }
         
-        // Start with empty text for immediate editing
-        setEditingText('');
+        // For inline mode, start with empty text. For box mode, start with existing content
+        const currentContent = textObject.data?.content || '';
+        const isPlaceholderText = currentContent === 'Double-click to edit' || currentContent.trim() === '';
+        setEditingText(isInline ? '' : (isPlaceholderText ? '' : currentContent));
         
         // Focus the textarea after a short delay
         setTimeout(() => {
@@ -235,6 +239,7 @@ export const Canvas: React.FC = () => {
       console.log('🖱️ Found text object to edit:', objectId.slice(0, 8));
       
       setEditingTextId(objectId);
+      setIsInlineTextMode(false); // Double-click editing is always box mode
       
       // Calculate exact text position using canvas metrics
       const position = calculateTextPosition(obj, canvasRef.current);
@@ -276,19 +281,33 @@ export const Canvas: React.FC = () => {
       const finalText = editingText?.trim() || '';
       const textObject = objects[editingTextId];
       
-      // Update the text content
-      updateObject(editingTextId, {
-        data: {
-          ...textObject.data,
-          content: finalText
-        }
-      });
+      // For inline mode, if text is empty, remove the object
+      if (isInlineTextMode && finalText === '') {
+        // Remove empty inline text objects
+        console.log('📝 Removing empty inline text object:', editingTextId.slice(0, 8));
+        // Note: We would need a removeObject method in the store for this
+        // For now, just set it to a minimal placeholder
+        updateObject(editingTextId, {
+          data: {
+            ...textObject.data,
+            content: 'Double-click to edit'
+          }
+        });
+      } else {
+        // Update the text content
+        updateObject(editingTextId, {
+          data: {
+            ...textObject.data,
+            content: finalText || 'Double-click to edit'
+          }
+        });
+      }
       
       // Auto-resize text bounds to fit content
       setTimeout(() => {
         const updatedObject = objects[editingTextId];
         if (updatedObject) {
-          updateTextBounds(updatedObject, finalText);
+          updateTextBounds(updatedObject, finalText || 'Double-click to edit');
         }
       }, 0);
       
@@ -298,6 +317,7 @@ export const Canvas: React.FC = () => {
     setEditingTextId(null);
     setTextEditorPosition(null);
     setEditingText('');
+    setIsInlineTextMode(false);
   };
 
   // Handle text input changes with logging
@@ -322,6 +342,7 @@ export const Canvas: React.FC = () => {
       setEditingTextId(null);
       setTextEditorPosition(null);
       setEditingText('');
+      setIsInlineTextMode(false);
     }
   };
 
@@ -431,7 +452,11 @@ export const Canvas: React.FC = () => {
       {editingTextId && textEditorPosition && (
         <textarea
           ref={textareaRef}
-          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
+          className={`absolute resize-none outline-none overflow-hidden ${
+            isInlineTextMode 
+              ? 'bg-transparent border-none' 
+              : 'bg-white/90 border border-gray-300 rounded'
+          }`}
           style={{
             left: textEditorPosition.x,
             top: textEditorPosition.y,
@@ -447,9 +472,8 @@ export const Canvas: React.FC = () => {
             caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
             zIndex: 1000,
             lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
-            padding: '0', // Remove default textarea padding since we handle it with positioning
+            padding: isInlineTextMode ? '0' : '4px', // No padding for inline, small padding for box
             margin: '0', // Remove default margins
-            border: 'none', // Remove borders
             wordWrap: 'break-word', // Enable word wrapping
             whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
             overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior
@@ -489,7 +513,7 @@ export const Canvas: React.FC = () => {
         Tool: {activeTool} |
         {interactions.isDragging && ' Dragging'}
         {isHandlingDoubleClick && ' | Double-click Protection Active'}
-        {editingTextId && ' | Editing Text'}
+        {editingTextId && ` | Editing Text (${isInlineTextMode ? 'Inline' : 'Box'})`}
       </div>
     </div>
   );

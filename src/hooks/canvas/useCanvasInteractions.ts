@@ -41,7 +41,7 @@ export const useCanvasInteractions = () => {
   // Text tool specific refs for click vs drag detection
   const textClickStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const textIsDraggingRef = useRef(false);
-  const onTextCreatedRef = useRef<((textId: string) => void) | null>(null);
+  const onTextCreatedRef = useRef<((textId: string, isInline?: boolean) => void) | null>(null);
   
   // Batching state refs
   const currentBatchIdRef = useRef<string | null>(null);
@@ -114,7 +114,7 @@ export const useCanvasInteractions = () => {
   /**
    * Sets the text creation callback (called by Canvas component)
    */
-  const setTextCreatedCallback = useCallback((callback: (textId: string) => void) => {
+  const setTextCreatedCallback = useCallback((callback: (textId: string, isInline?: boolean) => void) => {
     onTextCreatedRef.current = callback;
   }, []);
 
@@ -567,22 +567,8 @@ export const useCanvasInteractions = () => {
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
-        // Start with shape preview for potential drag - show text box outline immediately
-        currentShapePreviewRef.current = {
-          type: 'text',
-          startX: coords.x,
-          startY: coords.y,
-          endX: coords.x + 120, // Show default size preview
-          endY: coords.y + 40,
-          strokeColor: toolStore.toolSettings.strokeColor,
-          strokeWidth: 1,
-          opacity: 0.5 // Semi-transparent preview
-        };
-        
-        // Trigger immediate redraw to show the preview
-        if (redrawCanvasRef.current) {
-          redrawCanvasRef.current();
-        }
+        // Don't show preview for single click mode - keep preview as null initially
+        currentShapePreviewRef.current = null;
         
         console.log('📝 Started text interaction:', coords, 'for user:', userId.slice(0, 8));
         break;
@@ -698,18 +684,32 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current && textClickStartRef.current) {
+        if (isDrawingRef.current && pathStartRef.current && textClickStartRef.current) {
           const dragDistance = Math.sqrt(
             Math.pow(coords.x - textClickStartRef.current.x, 2) + 
             Math.pow(coords.y - textClickStartRef.current.y, 2)
           );
           
-          // If dragging distance is significant, switch to drag mode and show actual drag preview
+          // If dragging distance is significant, switch to drag mode and show drag preview
           if (dragDistance > 5) {
             textIsDraggingRef.current = true;
-            currentShapePreviewRef.current.endX = coords.x;
-            currentShapePreviewRef.current.endY = coords.y;
-            currentShapePreviewRef.current.opacity = 0.7; // Make more visible when dragging
+            
+            // Now show the preview for drag mode
+            if (!currentShapePreviewRef.current) {
+              currentShapePreviewRef.current = {
+                type: 'text',
+                startX: textClickStartRef.current.x,
+                startY: textClickStartRef.current.y,
+                endX: coords.x,
+                endY: coords.y,
+                strokeColor: toolStore.toolSettings.strokeColor,
+                strokeWidth: 1,
+                opacity: 0.7
+              };
+            } else {
+              currentShapePreviewRef.current.endX = coords.x;
+              currentShapePreviewRef.current.endY = coords.y;
+            }
             
             if (redrawCanvasRef.current) {
               requestAnimationFrame(() => {
@@ -815,7 +815,7 @@ export const useCanvasInteractions = () => {
           const timeDiff = Date.now() - textClickStartRef.current.time;
           
           if (textIsDraggingRef.current && currentShapePreviewRef.current) {
-            // Drag mode: create text box with dragged dimensions
+            // Drag mode: create text box with dragged dimensions - show sample text
             const preview = currentShapePreviewRef.current;
             const width = Math.abs(preview.endX - preview.startX);
             const height = Math.abs(preview.endY - preview.startY);
@@ -827,37 +827,34 @@ export const useCanvasInteractions = () => {
                 width,
                 height,
                 preview.strokeColor,
-                true // Immediate editing for dragged text boxes too
+                false // NOT immediate editing for dragged text boxes - show sample text
               );
 
               const objectId = whiteboardStore.addObject(textObject, userId);
-              console.log('📝 Created dragged text object:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
+              console.log('📝 Created dragged text object with sample text:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
               
-              // Trigger immediate editing
-              if (onTextCreatedRef.current) {
-                onTextCreatedRef.current(objectId);
-              }
+              // Do NOT trigger immediate editing for drag-created text boxes
             }
           } else {
-            // Single click mode: create small text box and start immediate editing
+            // Single click mode: create small text box for inline editing
             const textObject = createTextObject(
               textClickStartRef.current.x,
               textClickStartRef.current.y,
               120, // Default width for single click
               40,  // Default height for single click
               toolStore.toolSettings.strokeColor,
-              true // Immediate editing
+              true // Immediate editing for single click
             );
 
             const objectId = whiteboardStore.addObject(textObject, userId);
-            console.log('📝 Created single-click text object:', objectId.slice(0, 8), { 
+            console.log('📝 Created single-click text object for inline editing:', objectId.slice(0, 8), { 
               coords: textClickStartRef.current, 
               userId: userId.slice(0, 8) 
             });
             
-            // Trigger immediate editing
+            // Trigger immediate inline editing
             if (onTextCreatedRef.current) {
-              onTextCreatedRef.current(objectId);
+              onTextCreatedRef.current(objectId, true); // Pass true for inline mode
             }
           }
           
