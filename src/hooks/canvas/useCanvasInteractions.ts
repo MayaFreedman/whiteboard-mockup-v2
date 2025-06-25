@@ -38,11 +38,6 @@ export const useCanvasInteractions = () => {
   const doubleClickProtectionRef = useRef(false);
   const isEditingTextRef = useRef(false);
   
-  // Text tool specific refs for click vs drag detection
-  const textClickStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
-  const textIsDraggingRef = useRef(false);
-  const onTextCreatedRef = useRef<((textId: string, isInline?: boolean) => void) | null>(null);
-  
   // Batching state refs
   const currentBatchIdRef = useRef<string | null>(null);
   const draggedObjectIdRef = useRef<string | null>(null);
@@ -112,25 +107,17 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Sets the text creation callback (called by Canvas component)
-   */
-  const setTextCreatedCallback = useCallback((callback: (textId: string, isInline?: boolean) => void) => {
-    onTextCreatedRef.current = callback;
-  }, []);
-
-  /**
-   * Creates text objects with proper data structure for immediate editing
+   * Creates text objects with proper data structure
    */
   const createTextObject = useCallback((
     x: number,
     y: number,
     width: number,
     height: number,
-    strokeColor: string,
-    isImmediate: boolean = false
+    strokeColor: string
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
     const textData: TextData = {
-      content: isImmediate ? '' : 'Double-click to edit', // Empty for immediate editing
+      content: 'Double-click to edit', // Keep the placeholder text for created objects
       fontSize: toolStore.toolSettings.fontSize,
       fontFamily: toolStore.toolSettings.fontFamily,
       bold: toolStore.toolSettings.textBold,
@@ -143,8 +130,8 @@ export const useCanvasInteractions = () => {
       type: 'text',
       x,
       y,
-      width: Math.max(width, isImmediate ? 120 : 100), // Smaller default for immediate editing
-      height: Math.max(height, isImmediate ? 40 : 30), // Smaller default for immediate editing
+      width: Math.max(width, 100), // Minimum width for readability
+      height: Math.max(height, 30), // Minimum height for text
       stroke: strokeColor,
       fill: 'transparent',
       strokeWidth: 1,
@@ -424,11 +411,10 @@ export const useCanvasInteractions = () => {
       }
     }
 
-    // Handle text completion - but only for drag-created text boxes
+    // Handle text completion
     if (activeTool === 'text' && 
         isDrawingRef.current && 
-        currentShapePreviewRef.current &&
-        textIsDraggingRef.current) {
+        currentShapePreviewRef.current) {
       
       const preview = currentShapePreviewRef.current;
       const width = Math.abs(preview.endX - preview.startX);
@@ -440,8 +426,7 @@ export const useCanvasInteractions = () => {
           Math.min(preview.startY, preview.endY),
           width,
           height,
-          preview.strokeColor,
-          false // Not immediate editing for dragged text boxes
+          preview.strokeColor
         );
 
         const objectId = whiteboardStore.addObject(textObject, userId);
@@ -459,8 +444,6 @@ export const useCanvasInteractions = () => {
     dragStartRef.current = null;
     currentDrawingPreviewRef.current = null;
     currentShapePreviewRef.current = null;
-    textClickStartRef.current = null;
-    textIsDraggingRef.current = false;
     
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
@@ -498,19 +481,22 @@ export const useCanvasInteractions = () => {
   const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     event.preventDefault();
     
-    // For text tool, don't check double-click protection or editing state - allow single click creation
-    if (toolStore.activeTool !== 'text') {
-      // Check double-click protection OR text editing state for other tools
-      if (doubleClickProtectionRef.current || isEditingTextRef.current) {
-        console.log('🛡️ Pointer down blocked - protection:', doubleClickProtectionRef.current, 'editing:', isEditingTextRef.current);
-        return;
-      }
+    // Check double-click protection OR text editing state
+    if (doubleClickProtectionRef.current || isEditingTextRef.current) {
+      console.log('🛡️ Pointer down blocked - protection:', doubleClickProtectionRef.current, 'editing:', isEditingTextRef.current);
+      return;
     }
     
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
 
     console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8), protection: doubleClickProtectionRef.current, editing: isEditingTextRef.current });
+
+    // BLOCK TEXT TOOL if currently editing any text
+    if (activeTool === 'text' && isEditingTextRef.current) {
+      console.log('📝 Text tool blocked - already editing text');
+      return;
+    }
 
     switch (activeTool) {
       case 'fill': {
@@ -555,22 +541,28 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        // Store click start info for drag detection
-        textClickStartRef.current = {
-          x: coords.x,
-          y: coords.y,
-          time: Date.now()
-        };
-        textIsDraggingRef.current = false;
-        
+        // Additional check to prevent text creation while editing
+        if (isEditingTextRef.current) {
+          console.log('📝 Text creation blocked - currently editing text');
+          return;
+        }
+
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
-        // Don't show preview for single click mode - keep preview as null initially
-        currentShapePreviewRef.current = null;
+        currentShapePreviewRef.current = {
+          type: 'text',
+          startX: coords.x,
+          startY: coords.y,
+          endX: coords.x,
+          endY: coords.y,
+          strokeColor: toolStore.toolSettings.strokeColor,
+          strokeWidth: 1,
+          opacity: 1
+        };
         
-        console.log('📝 Started text interaction:', coords, 'for user:', userId.slice(0, 8));
+        console.log('📝 Started text box creation:', coords, 'for user:', userId.slice(0, 8));
         break;
       }
 
@@ -683,46 +675,7 @@ export const useCanvasInteractions = () => {
         break;
       }
 
-      case 'text': {
-        if (isDrawingRef.current && pathStartRef.current && textClickStartRef.current) {
-          const dragDistance = Math.sqrt(
-            Math.pow(coords.x - textClickStartRef.current.x, 2) + 
-            Math.pow(coords.y - textClickStartRef.current.y, 2)
-          );
-          
-          // If dragging distance is significant, switch to drag mode and show drag preview
-          if (dragDistance > 5) {
-            textIsDraggingRef.current = true;
-            
-            // Now show the preview for drag mode
-            if (!currentShapePreviewRef.current) {
-              currentShapePreviewRef.current = {
-                type: 'text',
-                startX: textClickStartRef.current.x,
-                startY: textClickStartRef.current.y,
-                endX: coords.x,
-                endY: coords.y,
-                strokeColor: toolStore.toolSettings.strokeColor,
-                strokeWidth: 1,
-                opacity: 0.7
-              };
-            } else {
-              currentShapePreviewRef.current.endX = coords.x;
-              currentShapePreviewRef.current.endY = coords.y;
-            }
-            
-            if (redrawCanvasRef.current) {
-              requestAnimationFrame(() => {
-                if (redrawCanvasRef.current && isDrawingRef.current) {
-                  redrawCanvasRef.current();
-                }
-              });
-            }
-          }
-        }
-        break;
-      }
-
+      case 'text':
       case 'rectangle':
       case 'circle':
       case 'triangle':
@@ -811,56 +764,33 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        if (isDrawingRef.current && pathStartRef.current && textClickStartRef.current) {
-          const timeDiff = Date.now() - textClickStartRef.current.time;
-          
-          if (textIsDraggingRef.current && currentShapePreviewRef.current) {
-            // Drag mode: create text box with dragged dimensions - show sample text
-            const preview = currentShapePreviewRef.current;
-            const width = Math.abs(preview.endX - preview.startX);
-            const height = Math.abs(preview.endY - preview.startY);
-            
-            if (width > 10 && height > 10) {
-              const textObject = createTextObject(
-                Math.min(preview.startX, preview.endX),
-                Math.min(preview.startY, preview.endY),
-                width,
-                height,
-                preview.strokeColor,
-                false // NOT immediate editing for dragged text boxes - show sample text
-              );
+        // Additional check to prevent text creation while editing
+        if (isEditingTextRef.current) {
+          console.log('📝 Text creation blocked in pointer up - currently editing text');
+          isDrawingRef.current = false;
+          currentShapePreviewRef.current = null;
+          return;
+        }
 
-              const objectId = whiteboardStore.addObject(textObject, userId);
-              console.log('📝 Created dragged text object with sample text:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
-              
-              // Do NOT trigger immediate editing for drag-created text boxes
-            }
-          } else {
-            // Single click mode: create small text box for inline editing
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          const preview = currentShapePreviewRef.current;
+          const width = Math.abs(preview.endX - preview.startX);
+          const height = Math.abs(preview.endY - preview.startY);
+          
+          if (width > 10 && height > 10) {
             const textObject = createTextObject(
-              textClickStartRef.current.x,
-              textClickStartRef.current.y,
-              120, // Default width for single click
-              40,  // Default height for single click
-              toolStore.toolSettings.strokeColor,
-              true // Immediate editing for single click
+              Math.min(preview.startX, preview.endX),
+              Math.min(preview.startY, preview.endY),
+              width,
+              height,
+              preview.strokeColor
             );
 
             const objectId = whiteboardStore.addObject(textObject, userId);
-            console.log('📝 Created single-click text object for inline editing:', objectId.slice(0, 8), { 
-              coords: textClickStartRef.current, 
-              userId: userId.slice(0, 8) 
-            });
-            
-            // Trigger immediate inline editing
-            if (onTextCreatedRef.current) {
-              onTextCreatedRef.current(objectId, true); // Pass true for inline mode
-            }
+            console.log('📝 Created text object:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
           }
           
           currentShapePreviewRef.current = null;
-          textClickStartRef.current = null;
-          textIsDraggingRef.current = false;
           
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
@@ -993,7 +923,6 @@ export const useCanvasInteractions = () => {
     getCurrentShapePreview,
     setRedrawCanvas,
     setDoubleClickProtection,
-    setEditingState,
-    setTextCreatedCallback
+    setEditingState
   };
 };
