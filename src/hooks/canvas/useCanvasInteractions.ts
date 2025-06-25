@@ -498,22 +498,19 @@ export const useCanvasInteractions = () => {
   const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     event.preventDefault();
     
-    // Check double-click protection OR text editing state
-    if (doubleClickProtectionRef.current || isEditingTextRef.current) {
-      console.log('🛡️ Pointer down blocked - protection:', doubleClickProtectionRef.current, 'editing:', isEditingTextRef.current);
-      return;
+    // For text tool, don't check double-click protection or editing state - allow single click creation
+    if (toolStore.activeTool !== 'text') {
+      // Check double-click protection OR text editing state for other tools
+      if (doubleClickProtectionRef.current || isEditingTextRef.current) {
+        console.log('🛡️ Pointer down blocked - protection:', doubleClickProtectionRef.current, 'editing:', isEditingTextRef.current);
+        return;
+      }
     }
     
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
 
     console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8), protection: doubleClickProtectionRef.current, editing: isEditingTextRef.current });
-
-    // BLOCK TEXT TOOL if currently editing any text
-    if (activeTool === 'text' && isEditingTextRef.current) {
-      console.log('📝 Text tool blocked - already editing text');
-      return;
-    }
 
     switch (activeTool) {
       case 'fill': {
@@ -558,12 +555,6 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        // Additional check to prevent text creation while editing
-        if (isEditingTextRef.current) {
-          console.log('📝 Text creation blocked - currently editing text');
-          return;
-        }
-
         // Store click start info for drag detection
         textClickStartRef.current = {
           x: coords.x,
@@ -576,17 +567,22 @@ export const useCanvasInteractions = () => {
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
-        // Start with shape preview for potential drag
+        // Start with shape preview for potential drag - show text box outline immediately
         currentShapePreviewRef.current = {
           type: 'text',
           startX: coords.x,
           startY: coords.y,
-          endX: coords.x,
-          endY: coords.y,
+          endX: coords.x + 120, // Show default size preview
+          endY: coords.y + 40,
           strokeColor: toolStore.toolSettings.strokeColor,
           strokeWidth: 1,
-          opacity: 1
+          opacity: 0.5 // Semi-transparent preview
         };
+        
+        // Trigger immediate redraw to show the preview
+        if (redrawCanvasRef.current) {
+          redrawCanvasRef.current();
+        }
         
         console.log('📝 Started text interaction:', coords, 'for user:', userId.slice(0, 8));
         break;
@@ -708,11 +704,12 @@ export const useCanvasInteractions = () => {
             Math.pow(coords.y - textClickStartRef.current.y, 2)
           );
           
-          // If dragging distance is significant, switch to drag mode
+          // If dragging distance is significant, switch to drag mode and show actual drag preview
           if (dragDistance > 5) {
             textIsDraggingRef.current = true;
             currentShapePreviewRef.current.endX = coords.x;
             currentShapePreviewRef.current.endY = coords.y;
+            currentShapePreviewRef.current.opacity = 0.7; // Make more visible when dragging
             
             if (redrawCanvasRef.current) {
               requestAnimationFrame(() => {
@@ -814,16 +811,6 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        // Additional check to prevent text creation while editing
-        if (isEditingTextRef.current) {
-          console.log('📝 Text creation blocked in pointer up - currently editing text');
-          isDrawingRef.current = false;
-          currentShapePreviewRef.current = null;
-          textClickStartRef.current = null;
-          textIsDraggingRef.current = false;
-          return;
-        }
-
         if (isDrawingRef.current && pathStartRef.current && textClickStartRef.current) {
           const timeDiff = Date.now() - textClickStartRef.current.time;
           
@@ -851,7 +838,7 @@ export const useCanvasInteractions = () => {
                 onTextCreatedRef.current(objectId);
               }
             }
-          } else if (timeDiff < 300) {
+          } else {
             // Single click mode: create small text box and start immediate editing
             const textObject = createTextObject(
               textClickStartRef.current.x,

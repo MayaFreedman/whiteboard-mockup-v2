@@ -47,7 +47,7 @@ export const Canvas: React.FC = () => {
   const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number, lineHeight: number } | null>(null);
   const [editingText, setEditingText] = useState('');
   
-  // Double-click protection flag - reduced timeout to 200ms
+  // Double-click protection flag - but exclude text tool from protection
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -168,16 +168,19 @@ export const Canvas: React.FC = () => {
     };
   };
 
-  // Handle double-click on text objects
+  // Handle double-click on text objects - but only for existing text objects, not new creation
   const handleDoubleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     
-    console.log('🖱️ Double-click detected - setting protection flag');
-    setIsHandlingDoubleClick(true);
-    
-    // Clear any existing timeout
-    if (doubleClickTimeoutRef.current) {
-      clearTimeout(doubleClickTimeoutRef.current);
+    // Only set protection for double-click editing of existing text, not for text tool creation
+    if (activeTool !== 'text') {
+      console.log('🖱️ Double-click detected - setting protection flag');
+      setIsHandlingDoubleClick(true);
+      
+      // Clear any existing timeout
+      if (doubleClickTimeoutRef.current) {
+        clearTimeout(doubleClickTimeoutRef.current);
+      }
     }
     
     const rect = canvasRef.current.getBoundingClientRect();
@@ -258,11 +261,13 @@ export const Canvas: React.FC = () => {
       console.log('🖱️ No text object found at double-click position');
     }
     
-    // Reset protection flag after a shorter delay - reduced to 200ms
-    doubleClickTimeoutRef.current = setTimeout(() => {
-      console.log('🖱️ Clearing double-click protection flag');
-      setIsHandlingDoubleClick(false);
-    }, 200);
+    // Reset protection flag after a shorter delay - but only if not text tool
+    if (activeTool !== 'text') {
+      doubleClickTimeoutRef.current = setTimeout(() => {
+        console.log('🖱️ Clearing double-click protection flag');
+        setIsHandlingDoubleClick(false);
+      }, 200);
+    }
   };
 
   // Handle text editing completion
@@ -366,15 +371,14 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    // Only block interactions if we're editing the specific text that was clicked
-    // This allows creating new text objects while editing existing ones
-    if (isHandlingDoubleClick) {
+    // For text tool, don't block on double-click protection
+    if (isHandlingDoubleClick && activeTool !== 'text') {
       console.log('🖱️ Mouse down blocked - double-click protection active');
       return;
     }
 
     if (canvasRef.current) {
-      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick, 'editing:', !!editingTextId);
+      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick, 'editing:', !!editingTextId, 'tool:', activeTool);
       interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
