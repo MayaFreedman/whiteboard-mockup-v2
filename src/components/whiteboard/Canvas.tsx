@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -77,7 +78,12 @@ export const Canvas: React.FC = () => {
     console.log('🚀 Starting immediate text editing for object:', objectId.slice(0, 8));
     
     const textObject = objects[objectId];
-    if (!textObject) return;
+    if (!textObject) {
+      console.log('❌ Text object not found for immediate editing:', objectId.slice(0, 8));
+      return;
+    }
+    
+    console.log('📝 Setting up immediate editing state for:', objectId.slice(0, 8));
     
     setEditingTextId(objectId);
     setIsImmediateEditing(true);
@@ -94,12 +100,21 @@ export const Canvas: React.FC = () => {
     setTextEditorPosition(editorPosition);
     setEditingText(''); // Start with empty text for immediate editing
     
-    // Focus the textarea after a short delay
+    console.log('📝 Immediate editing setup complete:', {
+      objectId: objectId.slice(0, 8),
+      position: editorPosition,
+      isImmediate: true
+    });
+    
+    // Focus the textarea after state updates
     setTimeout(() => {
       if (textareaRef.current) {
+        console.log('🔍 Focusing textarea for immediate editing');
         textareaRef.current.focus();
+      } else {
+        console.log('❌ Textarea ref not available for focusing');
       }
-    }, 0);
+    }, 10); // Small delay to ensure state updates
   });
 
   // Handle resize for selected objects
@@ -279,6 +294,12 @@ export const Canvas: React.FC = () => {
 
   // Handle text editing completion
   const handleTextEditComplete = () => {
+    console.log('📝 Completing text edit:', {
+      editingTextId: editingTextId?.slice(0, 8),
+      editingText: editingText?.slice(0, 50),
+      isImmediate: isImmediateEditing
+    });
+    
     if (editingTextId && objects[editingTextId]) {
       const finalText = editingText?.trim() || '';
       const textObject = objects[editingTextId];
@@ -315,6 +336,7 @@ export const Canvas: React.FC = () => {
       redrawCanvas();
     }
     
+    console.log('📝 Clearing editing state');
     setEditingTextId(null);
     setTextEditorPosition(null);
     setEditingText('');
@@ -346,6 +368,7 @@ export const Canvas: React.FC = () => {
       event.preventDefault();
       handleTextEditComplete();
     } else if (event.key === 'Escape') {
+      console.log('📝 Escape pressed - canceling text edit');
       setEditingTextId(null);
       setTextEditorPosition(null);
       setEditingText('');
@@ -436,9 +459,16 @@ export const Canvas: React.FC = () => {
    * Handles mouse leaving the canvas area
    * @param event - Mouse event
    */
-  const onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  const onMouseLeave = (event: React.MouseEvent<HTMLCanvasCanvas>) => {
     interactions.handleMouseLeave();
   };
+
+  console.log('🎨 Canvas render state:', {
+    editingTextId: editingTextId?.slice(0, 8) || 'none',
+    hasTextEditorPosition: !!textEditorPosition,
+    isImmediateEditing,
+    editingTextLength: editingText?.length || 0
+  });
 
   return (
     <div className="w-full h-full relative bg-background overflow-hidden">
@@ -460,7 +490,7 @@ export const Canvas: React.FC = () => {
       {editingTextId && textEditorPosition && (
         <textarea
           ref={textareaRef}
-          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
+          className="absolute border-2 border-blue-500 resize-none outline-none overflow-hidden bg-white"
           style={{
             left: textEditorPosition.x,
             top: textEditorPosition.y,
@@ -473,24 +503,19 @@ export const Canvas: React.FC = () => {
             fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
             textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
             textAlign: objects[editingTextId]?.data?.textAlign || 'left',
-            color: 'transparent', // Make the text invisible
-            caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
+            color: objects[editingTextId]?.stroke || '#000000',
             zIndex: 1000,
-            lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
-            padding: '0', // Remove default textarea padding since we handle it with positioning
-            margin: '0', // Remove default margins
-            border: 'none', // Remove borders
-            wordWrap: 'break-word', // Enable word wrapping
-            whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
-            overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior
-            // Font rendering optimizations to match canvas
+            lineHeight: textEditorPosition.lineHeight + 'px',
+            padding: '4px',
+            margin: '0',
+            wordWrap: 'break-word',
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'break-word',
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
-            // Disable browser text selection styling
             WebkitTextSizeAdjust: '100%',
-            // Ensure consistent box model
             boxSizing: 'border-box'
           }}
           value={editingText}
@@ -498,6 +523,7 @@ export const Canvas: React.FC = () => {
           onBlur={handleTextEditComplete}
           onKeyDown={handleTextKeyDown}
           autoFocus
+          placeholder={isImmediateEditing ? "Type here..." : ""}
         />
       )}
       
