@@ -1,4 +1,3 @@
-
 export interface ToolSettingConfig {
   type: 'slider' | 'badges' | 'select' | 'toggleGroup' | 'grid' | 'text';
   label: string;
@@ -143,85 +142,36 @@ export const toolsConfig: Record<string, ToolConfig> = {
         label: 'Emoji Stamps',
         key: 'selectedSticker',
         gridItems: [
-          // Faces & Emotions
-          { name: 'Happy Face', url: '😊', preview: '😊' },
-          { name: 'Laughing', url: '😂', preview: '😂' },
-          { name: 'Heart Eyes', url: '😍', preview: '😍' },
-          { name: 'Cool', url: '😎', preview: '😎' },
-          { name: 'Wink', url: '😉', preview: '😉' },
-          { name: 'Thinking', url: '🤔', preview: '🤔' },
-          { name: 'Shocked', url: '😱', preview: '😱' },
-          { name: 'Crying', url: '😭', preview: '😭' },
-          { name: 'Angry', url: '😡', preview: '😡' },
-          { name: 'Sleepy', url: '😴', preview: '😴' },
-          
-          // Hearts & Symbols
-          { name: 'Red Heart', url: '❤️', preview: '❤️' },
-          { name: 'Star', url: '⭐', preview: '⭐' },
-          { name: 'Lightning', url: '⚡', preview: '⚡' },
-          { name: 'Fire', url: '🔥', preview: '🔥' },
-          { name: 'Sparkles', url: '✨', preview: '✨' },
-          { name: 'Check Mark', url: '✅', preview: '✅' },
-          { name: 'Cross Mark', url: '❌', preview: '❌' },
-          { name: 'Question Mark', url: '❓', preview: '❓' },
-          { name: 'Exclamation', url: '❗', preview: '❗' },
-          { name: 'Warning', url: '⚠️', preview: '⚠️' },
-          
-          // Animals
-          { name: 'Cat', url: '🐱', preview: '🐱' },
-          { name: 'Dog', url: '🐶', preview: '🐶' },
-          { name: 'Bear', url: '🐻', preview: '🐻' },
-          { name: 'Tiger', url: '🐯', preview: '🐯' },
-          { name: 'Lion', url: '🦁', preview: '🦁' },
-          { name: 'Monkey', url: '🐵', preview: '🐵' },
-          { name: 'Panda', url: '🐼', preview: '🐼' },
-          { name: 'Unicorn', url: '🦄', preview: '🦄' },
-          { name: 'Elephant', url: '🐘', preview: '🐘' },
-          { name: 'Penguin', url: '🐧', preview: '🐧' },
-          
-          // Food & Drinks
-          { name: 'Pizza', url: '🍕', preview: '🍕' },
-          { name: 'Burger', url: '🍔', preview: '🍔' },
-          { name: 'Coffee', url: '☕', preview: '☕' },
-          { name: 'Ice Cream', url: '🍦', preview: '🍦' },
-          { name: 'Cake', url: '🎂', preview: '🎂' },
-          { name: 'Apple', url: '🍎', preview: '🍎' },
-          { name: 'Banana', url: '🍌', preview: '🍌' },
-          { name: 'Strawberry', url: '🍓', preview: '🍓' },
-          { name: 'Avocado', url: '🥑', preview: '🥑' },
-          { name: 'Taco', url: '🌮', preview: '🌮' },
-          
-          // Activities & Objects
-          { name: 'Soccer Ball', url: '⚽', preview: '⚽' },
-          { name: 'Basketball', url: '🏀', preview: '🏀' },
-          { name: 'Guitar', url: '🎸', preview: '🎸' },
-          { name: 'Camera', url: '📷', preview: '📷' },
-          { name: 'Phone', url: '📱', preview: '📱' },
-          { name: 'Computer', url: '💻', preview: '💻' },
-          { name: 'Book', url: '📚', preview: '📚' },
-          { name: 'Pencil', url: '✏️', preview: '✏️' },
-          { name: 'Lightbulb', url: '💡', preview: '💡' },
-          { name: 'Gift', url: '🎁', preview: '🎁' },
-          
-          // Nature & Weather
-          { name: 'Sun', url: '☀️', preview: '☀️' },
-          { name: 'Moon', url: '🌙', preview: '🌙' },
-          { name: 'Cloud', url: '☁️', preview: '☁️' },
-          { name: 'Rainbow', url: '🌈', preview: '🌈' },
-          { name: 'Tree', url: '🌳', preview: '🌳' },
-          { name: 'Flower', url: '🌸', preview: '🌸' },
-          { name: 'Rose', url: '🌹', preview: '🌹' },
-          { name: 'Cactus', url: '🌵', preview: '🌵' },
-          { name: 'Ocean Wave', url: '🌊', preview: '🌊' },
-          { name: 'Mountain', url: '⛰️', preview: '⛰️' },
-          
-          // Transportation
-          { name: 'Car', url: '🚗', preview: '🚗' },
-          { name: 'Bicycle', url: '🚲', preview: '🚲' },
-          { name: 'Airplane', url: '✈️', preview: '✈️' },
-          { name: 'Rocket', url: '🚀', preview: '🚀' },
-          { name: 'Train', url: '🚂', preview: '🚂' },
-          { name: 'Ship', url: '🚢', preview: '🚢' }
+          {
+            name: 'Star',
+            url: '⭐',
+            preview: '⭐'
+          },
+          {
+            name: 'Lightning',
+            url: '⚡',
+            preview: '⚡'
+          },
+          {
+            name: 'Circle',
+            url: '⭕',
+            preview: '⭕'
+          },
+          {
+            name: 'Check Mark',
+            url: '✅',
+            preview: '✅'
+          },
+          {
+            name: 'Cross Mark',
+            url: '❌',
+            preview: '❌'
+          },
+          {
+            name: 'Question Mark',
+            url: '❓',
+            preview: '❓'
+          }
         ]
       }
     ]
