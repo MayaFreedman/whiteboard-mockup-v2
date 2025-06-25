@@ -437,115 +437,29 @@ export const useCanvasRendering = (
         if (obj.data?.content && obj.width && obj.height) {
           const textData = obj.data as TextData;
           
-          // Get the text content to render - use live editing text if this object is being edited
-          const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
-          let contentToRender = isBeingEdited && editingText !== undefined ? editingText : textData.content;
+          // Check if this text object is currently being edited
+          const objectId = Object.keys(objects).find(id => objects[id] === obj);
+          const isBeingEdited = editingTextId === objectId;
           
-          // Always show placeholder for empty content
-          if (!contentToRender || contentToRender.trim() === '') {
-            contentToRender = 'Double-click to edit';
-          }
-          
-          // Set font properties
-          let fontStyle = '';
-          if (textData.italic) fontStyle += 'italic ';
-          if (textData.bold) fontStyle += 'bold ';
-          
-          ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
-          ctx.fillStyle = obj.stroke || '#000000';
-          ctx.textBaseline = 'top';
-          
-          // Handle text alignment
-          switch (textData.textAlign) {
-            case 'left':
-              ctx.textAlign = 'left';  
-              break;
-            case 'center':
-              ctx.textAlign = 'center';
-              break;
-            case 'right':
-              ctx.textAlign = 'right';
-              break;
-            default:
-              ctx.textAlign = 'left';
-          }
-          
-          // Calculate pixel-aligned text positions - use consistent 4px top padding
-          const textXBase = Math.round(obj.x + 4); // Add 4px left padding to match textarea
-          const textYBase = Math.round(obj.y + 4); // 4px padding from top
-          
-          // Calculate available width for text wrapping (subtract padding)
-          const availableWidth = Math.max(obj.width - 8, 50); // Subtract left and right padding, minimum 50px
-          
-          // Use the same measureText function as the measurement system for consistent wrapping
-          const textMetrics = measureText(
-            contentToRender,
-            textData.fontSize,
-            textData.fontFamily,
-            textData.bold,
-            textData.italic,
-            availableWidth
-          );
-          
-          console.log('🎨 Canvas text rendering:', {
-            content: contentToRender.slice(0, 50) + (contentToRender.length > 50 ? '...' : ''),
-            availableWidth,
-            measuredLines: textMetrics.lines.length,
-            lines: textMetrics.lines
-          });
-          
-          // Render each line with proper alignment
-          for (let i = 0; i < textMetrics.lines.length; i++) {
-            const line = textMetrics.lines[i];
-            const lineY = Math.round(textYBase + (i * textMetrics.lineHeight));
+          // Get the text content to render - skip content rendering if being edited
+          let contentToRender = '';
+          if (isBeingEdited) {
+            // Don't render text content for objects being edited to avoid double-rendering
+            // The textarea overlay will show the text instead
+            contentToRender = '';
+          } else {
+            // Use live editing text if this object is being edited by someone else, otherwise use stored content
+            contentToRender = editingTextId === objectId && editingText !== undefined ? editingText : textData.content;
             
-            let textX = textXBase;
-            if (textData.textAlign === 'center') {
-              textX = Math.round(obj.x + obj.width / 2);
-            } else if (textData.textAlign === 'right') {
-              textX = Math.round(obj.x + obj.width - 4); // Subtract right padding
+            // Always show placeholder for empty content when not being edited
+            if (!contentToRender || contentToRender.trim() === '') {
+              contentToRender = 'Double-click to edit';
             }
-            
-            ctx.fillText(line, textX, lineY);
           }
           
-          // Draw underline if enabled - using accurate text measurements and closer positioning
-          if (textData.underline && contentToRender !== 'Double-click to edit') {
-            ctx.save();
-            ctx.strokeStyle = obj.stroke || '#000000';
-            ctx.lineWidth = 1;
-            
-            // Draw underline for each line individually
-            for (let i = 0; i < textMetrics.lines.length; i++) {
-              const lineText = textMetrics.lines[i];
-              if (lineText.length === 0) continue; // Skip empty lines
-              
-              // Measure the actual text width
-              const textMeasurement = ctx.measureText(lineText);
-              const textWidth = textMeasurement.width;
-              
-              // Calculate underline position based on text alignment
-              let underlineStartX = textXBase;
-              if (textData.textAlign === 'center') {
-                underlineStartX = Math.round((obj.x + obj.width / 2) - textWidth / 2);
-              } else if (textData.textAlign === 'right') {
-                underlineStartX = Math.round((obj.x + obj.width - 4) - textWidth);
-              }
-              
-              const underlineEndX = Math.round(underlineStartX + textWidth);
-              // Move underline much closer to text - only 2px below baseline instead of fontSize + 2
-              const underlineY = Math.round(textYBase + (i * textMetrics.lineHeight) + textData.fontSize - 2);
-              
-              ctx.beginPath();
-              ctx.moveTo(underlineStartX, underlineY);
-              ctx.lineTo(underlineEndX, underlineY);
-              ctx.stroke();
-            }
-            ctx.restore();
-          }
-          
-          // Draw text box border - only show dashed border when selected (not being edited) or for placeholder
-          if ((isSelected && !isBeingEdited) || contentToRender === 'Double-click to edit') {
+          // Always render the text box border and background, even when editing
+          // Draw text box border - show dashed border when selected (not being edited) or for placeholder
+          if ((isSelected && !isBeingEdited) || (!isBeingEdited && (textData.content === 'Double-click to edit' || !textData.content || textData.content.trim() === ''))) {
             ctx.save();
             // Use blue color if selected, otherwise use gray for placeholder
             ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc';
@@ -553,6 +467,108 @@ export const useCanvasRendering = (
             ctx.setLineDash([2, 2]);
             ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
             ctx.restore();
+          }
+          
+          // Only render text content if not being edited
+          if (contentToRender && !isBeingEdited) {
+            // Set font properties
+            let fontStyle = '';
+            if (textData.italic) fontStyle += 'italic ';
+            if (textData.bold) fontStyle += 'bold ';
+            
+            ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
+            ctx.fillStyle = obj.stroke || '#000000';
+            ctx.textBaseline = 'top';
+            
+            // Handle text alignment
+            switch (textData.textAlign) {
+              case 'left':
+                ctx.textAlign = 'left';  
+                break;
+              case 'center':
+                ctx.textAlign = 'center';
+                break;
+              case 'right':
+                ctx.textAlign = 'right';
+                break;
+              default:
+                ctx.textAlign = 'left';
+            }
+            
+            // Calculate pixel-aligned text positions - use consistent 4px top padding
+            const textXBase = Math.round(obj.x + 4); // Add 4px left padding to match textarea
+            const textYBase = Math.round(obj.y + 4); // 4px padding from top
+            
+            // Calculate available width for text wrapping (subtract padding)
+            const availableWidth = Math.max(obj.width - 8, 50); // Subtract left and right padding, minimum 50px
+            
+            // Use the same measureText function as the measurement system for consistent wrapping
+            const textMetrics = measureText(
+              contentToRender,
+              textData.fontSize,
+              textData.fontFamily,
+              textData.bold,
+              textData.italic,
+              availableWidth
+            );
+            
+            console.log('🎨 Canvas text rendering:', {
+              content: contentToRender.slice(0, 50) + (contentToRender.length > 50 ? '...' : ''),
+              availableWidth,
+              measuredLines: textMetrics.lines.length,
+              lines: textMetrics.lines,
+              isBeingEdited
+            });
+            
+            // Render each line with proper alignment
+            for (let i = 0; i < textMetrics.lines.length; i++) {
+              const line = textMetrics.lines[i];
+              const lineY = Math.round(textYBase + (i * textMetrics.lineHeight));
+              
+              let textX = textXBase;
+              if (textData.textAlign === 'center') {
+                textX = Math.round(obj.x + obj.width / 2);
+              } else if (textData.textAlign === 'right') {
+                textX = Math.round(obj.x + obj.width - 4); // Subtract right padding
+              }
+              
+              ctx.fillText(line, textX, lineY);
+            }
+            
+            // Draw underline if enabled - using accurate text measurements and closer positioning
+            if (textData.underline && contentToRender !== 'Double-click to edit') {
+              ctx.save();
+              ctx.strokeStyle = obj.stroke || '#000000';
+              ctx.lineWidth = 1;
+              
+              // Draw underline for each line individually
+              for (let i = 0; i < textMetrics.lines.length; i++) {
+                const lineText = textMetrics.lines[i];
+                if (lineText.length === 0) continue; // Skip empty lines
+                
+                // Measure the actual text width
+                const textMeasurement = ctx.measureText(lineText);
+                const textWidth = textMeasurement.width;
+                
+                // Calculate underline position based on text alignment
+                let underlineStartX = textXBase;
+                if (textData.textAlign === 'center') {
+                  underlineStartX = Math.round((obj.x + obj.width / 2) - textWidth / 2);
+                } else if (textData.textAlign === 'right') {
+                  underlineStartX = Math.round((obj.x + obj.width - 4) - textWidth);
+                }
+                
+                const underlineEndX = Math.round(underlineStartX + textWidth);
+                // Move underline much closer to text - only 2px below baseline instead of fontSize + 2
+                const underlineY = Math.round(textYBase + (i * textMetrics.lineHeight) + textData.fontSize - 2);
+                
+                ctx.beginPath();
+                ctx.moveTo(underlineStartX, underlineY);
+                ctx.lineTo(underlineEndX, underlineY);
+                ctx.stroke();
+              }
+              ctx.restore();
+            }
           }
         }
         break;
