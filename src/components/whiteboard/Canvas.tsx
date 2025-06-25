@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
@@ -106,7 +105,7 @@ export const Canvas: React.FC = () => {
       isImmediate: true
     });
     
-    // Focus the textarea after state updates
+    // Focus the textarea after state updates with delay to avoid race conditions
     setTimeout(() => {
       if (textareaRef.current) {
         console.log('🔍 Focusing textarea for immediate editing');
@@ -114,7 +113,7 @@ export const Canvas: React.FC = () => {
       } else {
         console.log('❌ Textarea ref not available for focusing');
       }
-    }, 10); // Small delay to ensure state updates
+    }, 100); // Increased delay to ensure DOM updates complete
   });
 
   // Handle resize for selected objects
@@ -459,7 +458,7 @@ export const Canvas: React.FC = () => {
    * Handles mouse leaving the canvas area
    * @param event - Mouse event
    */
-  const onMouseLeave = (event: React.MouseEvent<HTMLCanvasCanvas>) => {
+  const onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
     interactions.handleMouseLeave();
   };
 
