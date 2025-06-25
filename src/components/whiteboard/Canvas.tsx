@@ -39,26 +39,37 @@ const getCursorStyle = (activeTool: string): string => {
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { viewport, selectedObjectIds, updateObject, objects } = useWhiteboardStore();
-  const { activeTool } = useToolStore();
+  
+  // Safe store access with fallback
+  const whiteboardStore = useWhiteboardStore();
+  const toolStore = useToolStore();
+  
+  // Guard against null stores
+  if (!whiteboardStore || !toolStore) {
+    console.error('Store not initialized');
+    return <div className="w-full h-full bg-background">Loading...</div>;
+  }
+  
+  const { viewport, selectedObjectIds, updateObject, objects } = whiteboardStore;
+  const { activeTool } = toolStore;
   
   // Text editing state
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number, lineHeight: number } | null>(null);
   const [editingText, setEditingText] = useState('');
-  const [isImmediateEditing, setIsImmediateEditing] = useState(false); // Track if in immediate editing mode
+  const [isImmediateEditing, setIsImmediateEditing] = useState(false);
   
-  // Double-click protection flag - reduced timeout to 200ms
+  // Double-click protection flag
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Handle tool selection logic (clearing selection when switching tools)
+  // Handle tool selection logic
   useToolSelection();
   
-  // Initialize interactions hook first to get the preview functions
+  // Initialize interactions hook
   const interactions = useCanvasInteractions();
   
-  // Initialize rendering hook with both preview functions AND editing state
+  // Initialize rendering hook
   const { redrawCanvas } = useCanvasRendering(
     canvasRef.current, 
     interactions.getCurrentDrawingPreview,
@@ -67,12 +78,12 @@ export const Canvas: React.FC = () => {
     editingText
   );
   
-  // Update interactions hook with redraw function and double-click protection AND editing state
+  // Update interactions hook
   interactions.setRedrawCanvas(redrawCanvas);
   interactions.setDoubleClickProtection(isHandlingDoubleClick);
   interactions.setEditingState(editingTextId !== null);
   
-  // Set immediate text editing callback
+  // Set immediate text editing callback - FIXED to actually start editing
   interactions.setImmediateTextEditingCallback((objectId: string, position: { x: number; y: number }) => {
     console.log('🚀 Starting immediate text editing for object:', objectId.slice(0, 8));
     
@@ -82,24 +93,25 @@ export const Canvas: React.FC = () => {
     setEditingTextId(objectId);
     setIsImmediateEditing(true);
     
-    // Calculate position for immediate editing (minimal initial size)
+    // Calculate position for immediate editing
     const editorPosition = {
       x: position.x,
       y: position.y,
-      width: 200, // Start with reasonable width that can grow
-      height: 30, // Minimal height
+      width: 200,
+      height: 30,
       lineHeight: textObject.data?.fontSize || 16
     };
     
     setTextEditorPosition(editorPosition);
-    setEditingText(''); // Start with empty text for immediate editing
+    setEditingText(''); // Start with empty text
     
-    // Focus the textarea after a short delay
+    // Focus the textarea immediately
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
+        console.log('📝 Textarea focused for immediate editing');
       }
-    }, 0);
+    }, 10);
   });
 
   // Handle resize for selected objects
@@ -108,12 +120,12 @@ export const Canvas: React.FC = () => {
     redrawCanvas();
   };
 
-  // Auto-resize text object to fit content using the same measureText function
+  // Auto-resize text object to fit content
   const updateTextBounds = (textObject: any, content: string) => {
     if (!textObject.data) return;
     
     const textData = textObject.data;
-    const availableWidth = isImmediateEditing ? 400 : (textObject.width - 8); // Larger width for immediate editing
+    const availableWidth = isImmediateEditing ? 400 : (textObject.width - 8);
     
     const metrics = measureText(
       content || (isImmediateEditing ? '' : 'Double-click to edit'),
@@ -124,17 +136,8 @@ export const Canvas: React.FC = () => {
       availableWidth
     );
     
-    console.log('📏 Text bounds update:', {
-      content: content?.slice(0, 50) + (content && content.length > 50 ? '...' : ''),
-      availableWidth,
-      measuredDimensions: { width: metrics.width, height: metrics.height },
-      lineCount: metrics.lines.length,
-      isImmediateEditing
-    });
-    
-    // Add padding to the measured dimensions
     const padding = 8;
-    const newWidth = Math.max(metrics.width + padding, isImmediateEditing ? 100 : 100); // Minimum width
+    const newWidth = Math.max(metrics.width + padding, isImmediateEditing ? 100 : 100);
     const newHeight = Math.max(metrics.height + padding, textData.fontSize + padding);
     
     if (newWidth !== textObject.width || newHeight !== textObject.height) {
@@ -143,7 +146,6 @@ export const Canvas: React.FC = () => {
         height: newHeight
       });
       
-      // Update text editor position if currently editing
       if (editingTextId === textObject.id && textEditorPosition) {
         setTextEditorPosition({
           ...textEditorPosition,
@@ -154,27 +156,25 @@ export const Canvas: React.FC = () => {
     }
   };
 
-  // Utility function to calculate exact text positioning using canvas metrics
+  // Calculate text position
   const calculateTextPosition = (textObject: any, canvas: HTMLCanvasElement) => {
     const ctx = canvas.getContext('2d');
     if (!ctx || !textObject.data) return null;
 
     const textData = textObject.data;
     
-    // Set the exact same font properties as canvas rendering
     let fontStyle = '';
     if (textData.italic) fontStyle += 'italic ';
     if (textData.bold) fontStyle += 'bold ';
     ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
     
-    // Use the exact same line height calculation as canvas
     const lineHeight = Math.round(textData.fontSize * 1.2);
     
     return {
-      x: Math.round(textObject.x + 4), // Same 4px padding as canvas
-      y: Math.round(textObject.y + 4), // Same 4px padding as canvas  
-      width: Math.round(textObject.width - 8), // Account for left/right padding
-      height: Math.round(textObject.height - 8), // Account for top/bottom padding
+      x: Math.round(textObject.x + 4),
+      y: Math.round(textObject.y + 4),
+      width: Math.round(textObject.width - 8),
+      height: Math.round(textObject.height - 8),
       lineHeight: lineHeight
     };
   };
@@ -183,10 +183,9 @@ export const Canvas: React.FC = () => {
   const handleDoubleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     
-    console.log('🖱️ Double-click detected - setting protection flag');
+    console.log('🖱️ Double-click detected');
     setIsHandlingDoubleClick(true);
     
-    // Clear any existing timeout
     if (doubleClickTimeoutRef.current) {
       clearTimeout(doubleClickTimeoutRef.current);
     }
@@ -195,17 +194,14 @@ export const Canvas: React.FC = () => {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     
-    console.log('🖱️ Double-click coordinates:', { x, y });
-    
-    // Find text object at click position using improved hit detection
+    // Find text object at click position
     const textObject = Object.entries(objects).find(([id, obj]) => {
       if (obj.type !== 'text' || !obj.width || !obj.height || !obj.data) return false;
       
       const textData = obj.data;
       const currentContent = textData.content || 'Double-click to edit';
       
-      // Use accurate text measurement for hit detection with same available width as canvas
-      const availableWidth = obj.width - 8; // Same calculation as canvas rendering
+      const availableWidth = obj.width - 8;
       const metrics = measureText(
         currentContent,
         textData.fontSize,
@@ -215,27 +211,14 @@ export const Canvas: React.FC = () => {
         availableWidth
       );
       
-      // Check if click is within the actual text bounds
-      const textStartX = obj.x + 4; // Account for padding
-      const textStartY = obj.y + 4; // Account for padding
+      const textStartX = obj.x + 4;
+      const textStartY = obj.y + 4;
+      const textEndX = textStartX + metrics.width;
+      const textEndY = textStartY + metrics.height;
       
-      let textEndX = textStartX + metrics.width;
-      let textEndY = textStartY + metrics.height;
-      
-      // Add some tolerance for easier clicking
       const tolerance = 8;
-      const isInBounds = x >= (textStartX - tolerance) && x <= (textEndX + tolerance) &&
-                        y >= (textStartY - tolerance) && y <= (textEndY + tolerance);
-      
-      console.log('🖱️ Checking text object with accurate bounds:', {
-        id: id.slice(0, 8),
-        textBounds: { x: textStartX, y: textStartY, width: metrics.width, height: metrics.height },
-        clickPos: { x, y },
-        tolerance,
-        isInBounds
-      });
-      
-      return isInBounds;
+      return x >= (textStartX - tolerance) && x <= (textEndX + tolerance) &&
+             y >= (textStartY - tolerance) && y <= (textEndY + tolerance);
     });
     
     if (textObject) {
@@ -243,20 +226,17 @@ export const Canvas: React.FC = () => {
       console.log('🖱️ Found text object to edit:', objectId.slice(0, 8));
       
       setEditingTextId(objectId);
-      setIsImmediateEditing(false); // This is traditional double-click editing
+      setIsImmediateEditing(false);
       
-      // Calculate exact text position using canvas metrics
       const position = calculateTextPosition(obj, canvasRef.current);
       if (position) {
         setTextEditorPosition(position);
       }
       
-      // Only clear text if it's the placeholder text, otherwise keep the existing text
       const currentContent = obj.data?.content || '';
       const isPlaceholderText = currentContent === 'Double-click to edit' || currentContent.trim() === '';
       setEditingText(isPlaceholderText ? '' : currentContent);
       
-      // Set cursor to end of text after a short delay to ensure textarea is rendered
       if (!isPlaceholderText) {
         setTimeout(() => {
           if (textareaRef.current) {
@@ -264,15 +244,11 @@ export const Canvas: React.FC = () => {
             textareaRef.current.setSelectionRange(textLength, textLength);
             textareaRef.current.focus();
           }
-        }, 0);
+        }, 10);
       }
-    } else {
-      console.log('🖱️ No text object found at double-click position');
     }
     
-    // Reset protection flag after a shorter delay - reduced to 200ms
     doubleClickTimeoutRef.current = setTimeout(() => {
-      console.log('🖱️ Clearing double-click protection flag');
       setIsHandlingDoubleClick(false);
     }, 200);
   };
@@ -283,11 +259,10 @@ export const Canvas: React.FC = () => {
       const finalText = editingText?.trim() || '';
       const textObject = objects[editingTextId];
       
-      // For immediate editing, delete empty text objects
+      console.log('📝 Completing text edit:', { finalText, isImmediate: isImmediateEditing });
+      
       if (isImmediateEditing && finalText === '') {
         console.log('🗑️ Deleting empty immediate text object');
-        // This would need to be implemented in the store
-        // For now, just set placeholder text
         updateObject(editingTextId, {
           data: {
             ...textObject.data,
@@ -295,7 +270,6 @@ export const Canvas: React.FC = () => {
           }
         });
       } else {
-        // Update the text content
         updateObject(editingTextId, {
           data: {
             ...textObject.data,
@@ -304,7 +278,6 @@ export const Canvas: React.FC = () => {
         });
       }
       
-      // Auto-resize text bounds to fit content
       setTimeout(() => {
         const updatedObject = objects[editingTextId];
         if (updatedObject) {
@@ -321,23 +294,17 @@ export const Canvas: React.FC = () => {
     setIsImmediateEditing(false);
   };
 
-  // Handle text input changes with logging and dynamic resizing
+  // Handle text input changes
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
     setEditingText(newText);
     
-    // Dynamic resizing for immediate editing
     if (isImmediateEditing && editingTextId && objects[editingTextId]) {
       const textObject = objects[editingTextId];
       updateTextBounds(textObject, newText);
     }
     
-    console.log('✏️ Text changed:', {
-      length: newText.length,
-      content: newText.slice(0, 50) + (newText.length > 50 ? '...' : ''),
-      lines: newText.split('\n').length,
-      isImmediate: isImmediateEditing
-    });
+    console.log('✏️ Text changed:', { length: newText.length, isImmediate: isImmediateEditing });
   };
 
   // Handle text input key events
@@ -394,48 +361,30 @@ export const Canvas: React.FC = () => {
     };
   }, []);
 
-  /**
-   * Handles mouse down events on the canvas
-   * @param event - Mouse event
-   */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    // Only block interactions if we're editing the specific text that was clicked
-    // This allows creating new text objects while editing existing ones
     if (isHandlingDoubleClick) {
       console.log('🖱️ Mouse down blocked - double-click protection active');
       return;
     }
 
     if (canvasRef.current) {
-      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick, 'editing:', !!editingTextId);
+      console.log('🖱️ Mouse down - protection:', isHandlingDoubleClick, 'editing:', !!editingTextId);
       interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
 
-  /**
-   * Handles mouse move events on the canvas
-   * @param event - Mouse event
-   */
   const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
       interactions.handlePointerMove(event.nativeEvent, canvasRef.current);
     }
   };
 
-  /**
-   * Handles mouse up events on the canvas
-   * @param event - Mouse event
-   */
   const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
       interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
     }
   };
 
-  /**
-   * Handles mouse leaving the canvas area
-   * @param event - Mouse event
-   */
   const onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
     interactions.handleMouseLeave();
   };
@@ -447,7 +396,7 @@ export const Canvas: React.FC = () => {
         className="absolute inset-0 w-full h-full"
         style={{
           cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
-          touchAction: 'none' // Prevent default touch behaviors
+          touchAction: 'none'
         }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
@@ -456,11 +405,11 @@ export const Canvas: React.FC = () => {
         onDoubleClick={handleDoubleClick}
       />
       
-      {/* Text Editor Overlay - Positioned to match canvas text exactly */}
+      {/* Text Editor Overlay - FIXED transparency issue */}
       {editingTextId && textEditorPosition && (
         <textarea
           ref={textareaRef}
-          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
+          className="absolute bg-white/90 border border-gray-300 resize-none outline-none overflow-hidden rounded"
           style={{
             left: textEditorPosition.x,
             top: textEditorPosition.y,
@@ -473,24 +422,20 @@ export const Canvas: React.FC = () => {
             fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
             textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
             textAlign: objects[editingTextId]?.data?.textAlign || 'left',
-            color: 'transparent', // Make the text invisible
-            caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
+            color: objects[editingTextId]?.stroke || '#000000', // FIXED: Made text visible
+            caretColor: objects[editingTextId]?.stroke || '#000000',
             zIndex: 1000,
-            lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
-            padding: '0', // Remove default textarea padding since we handle it with positioning
-            margin: '0', // Remove default margins
-            border: 'none', // Remove borders
-            wordWrap: 'break-word', // Enable word wrapping
-            whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
-            overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior
-            // Font rendering optimizations to match canvas
+            lineHeight: textEditorPosition.lineHeight + 'px',
+            padding: '4px',
+            margin: '0',
+            wordWrap: 'break-word',
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'break-word',
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
-            // Disable browser text selection styling
             WebkitTextSizeAdjust: '100%',
-            // Ensure consistent box model
             boxSizing: 'border-box'
           }}
           value={editingText}
@@ -498,13 +443,12 @@ export const Canvas: React.FC = () => {
           onBlur={handleTextEditComplete}
           onKeyDown={handleTextKeyDown}
           autoFocus
+          placeholder={isImmediateEditing ? "Type here..." : ""}
         />
       )}
       
-      {/* Custom Cursor */}
       <CustomCursor canvas={canvasRef.current} />
       
-      {/* Resize Handles for Selected Objects */}
       {activeTool === 'select' && selectedObjectIds.map(objectId => (
         <ResizeHandles
           key={objectId}
@@ -513,7 +457,6 @@ export const Canvas: React.FC = () => {
         />
       ))}
       
-      {/* Canvas Info Overlay */}
       <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
         Zoom: {Math.round(viewport.zoom * 100)}% | 
         Tool: {activeTool} |
