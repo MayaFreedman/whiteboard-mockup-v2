@@ -46,6 +46,7 @@ export const Canvas: React.FC = () => {
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number, lineHeight: number } | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [isImmediateEditing, setIsImmediateEditing] = useState(false); // Track if in immediate editing mode
   
   // Double-click protection flag - reduced timeout to 200ms
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
@@ -70,6 +71,36 @@ export const Canvas: React.FC = () => {
   interactions.setRedrawCanvas(redrawCanvas);
   interactions.setDoubleClickProtection(isHandlingDoubleClick);
   interactions.setEditingState(editingTextId !== null);
+  
+  // Set immediate text editing callback
+  interactions.setImmediateTextEditingCallback((objectId: string, position: { x: number; y: number }) => {
+    console.log('🚀 Starting immediate text editing for object:', objectId.slice(0, 8));
+    
+    const textObject = objects[objectId];
+    if (!textObject) return;
+    
+    setEditingTextId(objectId);
+    setIsImmediateEditing(true);
+    
+    // Calculate position for immediate editing (minimal initial size)
+    const editorPosition = {
+      x: position.x,
+      y: position.y,
+      width: 200, // Start with reasonable width that can grow
+      height: 30, // Minimal height
+      lineHeight: textObject.data?.fontSize || 16
+    };
+    
+    setTextEditorPosition(editorPosition);
+    setEditingText(''); // Start with empty text for immediate editing
+    
+    // Focus the textarea after a short delay
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, 0);
+  });
 
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
@@ -82,25 +113,28 @@ export const Canvas: React.FC = () => {
     if (!textObject.data) return;
     
     const textData = textObject.data;
+    const availableWidth = isImmediateEditing ? 400 : (textObject.width - 8); // Larger width for immediate editing
+    
     const metrics = measureText(
-      content || 'Double-click to edit',
+      content || (isImmediateEditing ? '' : 'Double-click to edit'),
       textData.fontSize,
       textData.fontFamily,
       textData.bold,
       textData.italic,
-      textObject.width - 8 // Use available width minus padding for wrapping
+      availableWidth
     );
     
     console.log('📏 Text bounds update:', {
       content: content?.slice(0, 50) + (content && content.length > 50 ? '...' : ''),
-      availableWidth: textObject.width - 8,
+      availableWidth,
       measuredDimensions: { width: metrics.width, height: metrics.height },
-      lineCount: metrics.lines.length
+      lineCount: metrics.lines.length,
+      isImmediateEditing
     });
     
     // Add padding to the measured dimensions
     const padding = 8;
-    const newWidth = Math.max(metrics.width + padding, 100); // Minimum 100px width
+    const newWidth = Math.max(metrics.width + padding, isImmediateEditing ? 100 : 100); // Minimum width
     const newHeight = Math.max(metrics.height + padding, textData.fontSize + padding);
     
     if (newWidth !== textObject.width || newHeight !== textObject.height) {
@@ -108,6 +142,15 @@ export const Canvas: React.FC = () => {
         width: newWidth,
         height: newHeight
       });
+      
+      // Update text editor position if currently editing
+      if (editingTextId === textObject.id && textEditorPosition) {
+        setTextEditorPosition({
+          ...textEditorPosition,
+          width: newWidth - 8,
+          height: newHeight - 8
+        });
+      }
     }
   };
 
@@ -200,6 +243,7 @@ export const Canvas: React.FC = () => {
       console.log('🖱️ Found text object to edit:', objectId.slice(0, 8));
       
       setEditingTextId(objectId);
+      setIsImmediateEditing(false); // This is traditional double-click editing
       
       // Calculate exact text position using canvas metrics
       const position = calculateTextPosition(obj, canvasRef.current);
@@ -239,13 +283,26 @@ export const Canvas: React.FC = () => {
       const finalText = editingText?.trim() || '';
       const textObject = objects[editingTextId];
       
-      // Update the text content
-      updateObject(editingTextId, {
-        data: {
-          ...textObject.data,
-          content: finalText
-        }
-      });
+      // For immediate editing, delete empty text objects
+      if (isImmediateEditing && finalText === '') {
+        console.log('🗑️ Deleting empty immediate text object');
+        // This would need to be implemented in the store
+        // For now, just set placeholder text
+        updateObject(editingTextId, {
+          data: {
+            ...textObject.data,
+            content: 'Double-click to edit'
+          }
+        });
+      } else {
+        // Update the text content
+        updateObject(editingTextId, {
+          data: {
+            ...textObject.data,
+            content: finalText || (isImmediateEditing ? '' : 'Double-click to edit')
+          }
+        });
+      }
       
       // Auto-resize text bounds to fit content
       setTimeout(() => {
@@ -261,18 +318,25 @@ export const Canvas: React.FC = () => {
     setEditingTextId(null);
     setTextEditorPosition(null);
     setEditingText('');
+    setIsImmediateEditing(false);
   };
 
-  // Handle text input changes with logging
+  // Handle text input changes with logging and dynamic resizing
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
     setEditingText(newText);
+    
+    // Dynamic resizing for immediate editing
+    if (isImmediateEditing && editingTextId && objects[editingTextId]) {
+      const textObject = objects[editingTextId];
+      updateTextBounds(textObject, newText);
+    }
     
     console.log('✏️ Text changed:', {
       length: newText.length,
       content: newText.slice(0, 50) + (newText.length > 50 ? '...' : ''),
       lines: newText.split('\n').length,
-      hasLongWords: newText.split(' ').some(word => word.length > 20)
+      isImmediate: isImmediateEditing
     });
   };
 
@@ -285,6 +349,7 @@ export const Canvas: React.FC = () => {
       setEditingTextId(null);
       setTextEditorPosition(null);
       setEditingText('');
+      setIsImmediateEditing(false);
     }
   };
 
@@ -401,6 +466,7 @@ export const Canvas: React.FC = () => {
             top: textEditorPosition.y,
             width: textEditorPosition.width,
             height: textEditorPosition.height,
+            minWidth: isImmediateEditing ? '100px' : textEditorPosition.width,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
             fontFamily: objects[editingTextId]?.data?.fontFamily || 'Arial',
             fontWeight: objects[editingTextId]?.data?.bold ? 'bold' : 'normal',
@@ -454,6 +520,7 @@ export const Canvas: React.FC = () => {
         {interactions.isDragging && ' Dragging'}
         {isHandlingDoubleClick && ' | Double-click Protection Active'}
         {editingTextId && ' | Editing Text'}
+        {isImmediateEditing && ' | Immediate Mode'}
       </div>
     </div>
   );
