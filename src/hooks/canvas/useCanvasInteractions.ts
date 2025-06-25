@@ -38,6 +38,11 @@ export const useCanvasInteractions = () => {
   const doubleClickProtectionRef = useRef(false);
   const isEditingTextRef = useRef(false);
   
+  // Text tool specific refs for click vs drag detection
+  const textClickStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const textIsDraggingRef = useRef(false);
+  const onTextCreatedRef = useRef<((textId: string) => void) | null>(null);
+  
   // Batching state refs
   const currentBatchIdRef = useRef<string | null>(null);
   const draggedObjectIdRef = useRef<string | null>(null);
@@ -107,17 +112,25 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
-   * Creates text objects with proper data structure
+   * Sets the text creation callback (called by Canvas component)
+   */
+  const setTextCreatedCallback = useCallback((callback: (textId: string) => void) => {
+    onTextCreatedRef.current = callback;
+  }, []);
+
+  /**
+   * Creates text objects with proper data structure for immediate editing
    */
   const createTextObject = useCallback((
     x: number,
     y: number,
     width: number,
     height: number,
-    strokeColor: string
+    strokeColor: string,
+    isImmediate: boolean = false
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
     const textData: TextData = {
-      content: 'Double-click to edit', // Keep the placeholder text for created objects
+      content: isImmediate ? '' : 'Double-click to edit', // Empty for immediate editing
       fontSize: toolStore.toolSettings.fontSize,
       fontFamily: toolStore.toolSettings.fontFamily,
       bold: toolStore.toolSettings.textBold,
@@ -130,8 +143,8 @@ export const useCanvasInteractions = () => {
       type: 'text',
       x,
       y,
-      width: Math.max(width, 100), // Minimum width for readability
-      height: Math.max(height, 30), // Minimum height for text
+      width: Math.max(width, isImmediate ? 120 : 100), // Smaller default for immediate editing
+      height: Math.max(height, isImmediate ? 40 : 30), // Smaller default for immediate editing
       stroke: strokeColor,
       fill: 'transparent',
       strokeWidth: 1,
@@ -411,10 +424,11 @@ export const useCanvasInteractions = () => {
       }
     }
 
-    // Handle text completion
+    // Handle text completion - but only for drag-created text boxes
     if (activeTool === 'text' && 
         isDrawingRef.current && 
-        currentShapePreviewRef.current) {
+        currentShapePreviewRef.current &&
+        textIsDraggingRef.current) {
       
       const preview = currentShapePreviewRef.current;
       const width = Math.abs(preview.endX - preview.startX);
@@ -426,7 +440,8 @@ export const useCanvasInteractions = () => {
           Math.min(preview.startY, preview.endY),
           width,
           height,
-          preview.strokeColor
+          preview.strokeColor,
+          false // Not immediate editing for dragged text boxes
         );
 
         const objectId = whiteboardStore.addObject(textObject, userId);
@@ -444,6 +459,8 @@ export const useCanvasInteractions = () => {
     dragStartRef.current = null;
     currentDrawingPreviewRef.current = null;
     currentShapePreviewRef.current = null;
+    textClickStartRef.current = null;
+    textIsDraggingRef.current = false;
     
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
@@ -547,10 +564,19 @@ export const useCanvasInteractions = () => {
           return;
         }
 
+        // Store click start info for drag detection
+        textClickStartRef.current = {
+          x: coords.x,
+          y: coords.y,
+          time: Date.now()
+        };
+        textIsDraggingRef.current = false;
+        
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
+        // Start with shape preview for potential drag
         currentShapePreviewRef.current = {
           type: 'text',
           startX: coords.x,
@@ -562,7 +588,7 @@ export const useCanvasInteractions = () => {
           opacity: 1
         };
         
-        console.log('📝 Started text box creation:', coords, 'for user:', userId.slice(0, 8));
+        console.log('📝 Started text interaction:', coords, 'for user:', userId.slice(0, 8));
         break;
       }
 
@@ -675,7 +701,31 @@ export const useCanvasInteractions = () => {
         break;
       }
 
-      case 'text':
+      case 'text': {
+        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current && textClickStartRef.current) {
+          const dragDistance = Math.sqrt(
+            Math.pow(coords.x - textClickStartRef.current.x, 2) + 
+            Math.pow(coords.y - textClickStartRef.current.y, 2)
+          );
+          
+          // If dragging distance is significant, switch to drag mode
+          if (dragDistance > 5) {
+            textIsDraggingRef.current = true;
+            currentShapePreviewRef.current.endX = coords.x;
+            currentShapePreviewRef.current.endY = coords.y;
+            
+            if (redrawCanvasRef.current) {
+              requestAnimationFrame(() => {
+                if (redrawCanvasRef.current && isDrawingRef.current) {
+                  redrawCanvasRef.current();
+                }
+              });
+            }
+          }
+        }
+        break;
+      }
+
       case 'rectangle':
       case 'circle':
       case 'triangle':
@@ -769,28 +819,64 @@ export const useCanvasInteractions = () => {
           console.log('📝 Text creation blocked in pointer up - currently editing text');
           isDrawingRef.current = false;
           currentShapePreviewRef.current = null;
+          textClickStartRef.current = null;
+          textIsDraggingRef.current = false;
           return;
         }
 
-        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
-          const preview = currentShapePreviewRef.current;
-          const width = Math.abs(preview.endX - preview.startX);
-          const height = Math.abs(preview.endY - preview.startY);
+        if (isDrawingRef.current && pathStartRef.current && textClickStartRef.current) {
+          const timeDiff = Date.now() - textClickStartRef.current.time;
           
-          if (width > 10 && height > 10) {
+          if (textIsDraggingRef.current && currentShapePreviewRef.current) {
+            // Drag mode: create text box with dragged dimensions
+            const preview = currentShapePreviewRef.current;
+            const width = Math.abs(preview.endX - preview.startX);
+            const height = Math.abs(preview.endY - preview.startY);
+            
+            if (width > 10 && height > 10) {
+              const textObject = createTextObject(
+                Math.min(preview.startX, preview.endX),
+                Math.min(preview.startY, preview.endY),
+                width,
+                height,
+                preview.strokeColor,
+                true // Immediate editing for dragged text boxes too
+              );
+
+              const objectId = whiteboardStore.addObject(textObject, userId);
+              console.log('📝 Created dragged text object:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
+              
+              // Trigger immediate editing
+              if (onTextCreatedRef.current) {
+                onTextCreatedRef.current(objectId);
+              }
+            }
+          } else if (timeDiff < 300) {
+            // Single click mode: create small text box and start immediate editing
             const textObject = createTextObject(
-              Math.min(preview.startX, preview.endX),
-              Math.min(preview.startY, preview.endY),
-              width,
-              height,
-              preview.strokeColor
+              textClickStartRef.current.x,
+              textClickStartRef.current.y,
+              120, // Default width for single click
+              40,  // Default height for single click
+              toolStore.toolSettings.strokeColor,
+              true // Immediate editing
             );
 
             const objectId = whiteboardStore.addObject(textObject, userId);
-            console.log('📝 Created text object:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
+            console.log('📝 Created single-click text object:', objectId.slice(0, 8), { 
+              coords: textClickStartRef.current, 
+              userId: userId.slice(0, 8) 
+            });
+            
+            // Trigger immediate editing
+            if (onTextCreatedRef.current) {
+              onTextCreatedRef.current(objectId);
+            }
           }
           
           currentShapePreviewRef.current = null;
+          textClickStartRef.current = null;
+          textIsDraggingRef.current = false;
           
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
@@ -923,6 +1009,7 @@ export const useCanvasInteractions = () => {
     getCurrentShapePreview,
     setRedrawCanvas,
     setDoubleClickProtection,
-    setEditingState
+    setEditingState,
+    setTextCreatedCallback
   };
 };

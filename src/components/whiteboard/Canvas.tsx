@@ -71,6 +71,38 @@ export const Canvas: React.FC = () => {
   interactions.setDoubleClickProtection(isHandlingDoubleClick);
   interactions.setEditingState(editingTextId !== null);
 
+  // Handle immediate text editing when text is created
+  const handleTextCreated = (textId: string) => {
+    console.log('📝 Text created, starting immediate editing:', textId.slice(0, 8));
+    
+    // Small delay to ensure the object is fully added to the store
+    setTimeout(() => {
+      const textObject = objects[textId];
+      if (textObject && canvasRef.current) {
+        setEditingTextId(textId);
+        
+        // Calculate exact text position using canvas metrics
+        const position = calculateTextPosition(textObject, canvasRef.current);
+        if (position) {
+          setTextEditorPosition(position);
+        }
+        
+        // Start with empty text for immediate editing
+        setEditingText('');
+        
+        // Focus the textarea after a short delay
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+          }
+        }, 0);
+      }
+    }, 0);
+  };
+
+  // Set the text creation callback
+  interactions.setTextCreatedCallback(handleTextCreated);
+
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
     updateObject(objectId, newBounds);
