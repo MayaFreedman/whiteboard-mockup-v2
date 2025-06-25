@@ -1,8 +1,9 @@
+
 import { useCallback, useEffect, useRef } from 'react';
-import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { WhiteboardObject, TextData, ImageData } from '../../types/whiteboard';
-import { useToolStore } from '../../stores/toolStore';
-import { brushEffectCache } from '../../utils/brushCache';
+import { useWhiteboardStore } from '../stores/whiteboardStore';
+import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
+import { useToolStore } from '../stores/toolStore';
+import { brushEffectCache } from '../utils/brushCache';
 
 /**
  * Custom hook for handling canvas rendering logic
@@ -16,7 +17,8 @@ export const useCanvasRendering = (
   editingText: string
 ) => {
   const toolStore = useToolStore();
-  const { viewport } = useWhiteboardStore();
+  const whiteboardStore = useWhiteboardStore();
+  const { viewport } = whiteboardStore;
   
   // Store the previous values in refs
   const canvasRef = useRef(canvas);
@@ -409,36 +411,38 @@ export const useCanvasRendering = (
             Math.abs(shapePreview.endY - shapePreview.startY)
           );
           break;
-        case 'circle':
-          const width = Math.abs(shapePreview.endX - shapePreview.startX);
-          const height = Math.abs(shapePreview.endY - shapePreview.startY);
+        case 'circle': {
+          const circleWidth = Math.abs(shapePreview.endX - shapePreview.startX);
+          const circleHeight = Math.abs(shapePreview.endY - shapePreview.startY);
           ctx.beginPath();
           ctx.ellipse(
-            Math.min(shapePreview.startX, shapePreview.endX) + width / 2,
-            Math.min(shapePreview.startY, shapePreview.endY) + height / 2,
-            width / 2,
-            height / 2,
+            Math.min(shapePreview.startX, shapePreview.endX) + circleWidth / 2,
+            Math.min(shapePreview.startY, shapePreview.endY) + circleHeight / 2,
+            circleWidth / 2,
+            circleHeight / 2,
             0,
             0,
             2 * Math.PI
           );
           ctx.stroke();
           break;
+        }
           
         case 'triangle':
         case 'diamond':
         case 'pentagon':
         case 'hexagon':
         case 'star':
-        case 'heart':
+        case 'heart': {
           // All shapes are now rendered as native types
-          const x = Math.min(shapePreview.startX, shapePreview.endX);
-          const y = Math.min(shapePreview.startY, shapePreview.endY);
-          const width = Math.abs(shapePreview.endX - shapePreview.startX);
-          const height = Math.abs(shapePreview.endY - shapePreview.startY);
-          const path = new Path2D(generateShapePath(shapePreview.type, x, y, width, height));
+          const shapeX = Math.min(shapePreview.startX, shapePreview.endX);
+          const shapeY = Math.min(shapePreview.startY, shapePreview.endY);
+          const shapeWidth = Math.abs(shapePreview.endX - shapePreview.startX);
+          const shapeHeight = Math.abs(shapePreview.endY - shapePreview.startY);
+          const path = new Path2D(generateShapePath(shapePreview.type, shapeX, shapeY, shapeWidth, shapeHeight));
           ctx.stroke(path);
           break;
+        }
           
         case 'text':
           // Render a rectangle for the text box
