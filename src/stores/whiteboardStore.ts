@@ -3,9 +3,6 @@ import { nanoid } from 'nanoid';
 import { Viewport } from '../types/viewport';
 import { WhiteboardAction, WhiteboardObject } from '../types/whiteboard';
 import { brushEffectCache } from '../utils/brushCache';
-import { actionManager } from '../services/ActionManager';
-import { historyManager } from '../services/HistoryManager';
-import { batchManager } from '../services/BatchManager';
 
 export interface WhiteboardSettings {
   gridVisible: boolean;
@@ -18,7 +15,13 @@ export interface WhiteboardStore {
   selectedObjectIds: string[];
   viewport: Viewport;
   settings: WhiteboardSettings;
+  actionHistory: WhiteboardAction[];
+  currentHistoryIndex: number;
   lastAction?: WhiteboardAction;
+  
+  // User-specific action histories for undo/redo
+  userActionHistories: Map<string, WhiteboardAction[]>;
+  userHistoryIndices: Map<string, number>;
   
   // Track object relationships for conflict resolution
   objectRelationships: Map<string, { originalId?: string; segmentIds?: string[] }>;
@@ -85,17 +88,20 @@ export interface WhiteboardStore {
   checkObjectExists: (objectId: string) => boolean;
   getObjectRelationship: (objectId: string) => { originalId?: string; segmentIds?: string[] } | undefined;
   
-  // History management (delegated to HistoryManager)
-  canUndo: (userId: string) => boolean;
-  canRedo: (userId: string) => boolean;
-  getUserHistory: (userId: string) => WhiteboardAction[];
-  getUserHistoryIndex: (userId: string) => number;
+  // Action batching for undo/redo grouping
+  currentBatch: {
+    id: string | null;
+    userId: string | null;
+    actionType: string | null;
+    objectId: string | null;
+    startTime: number | null;
+    actions: WhiteboardAction[];
+  };
   
-  // Batch management (delegated to BatchManager)
+  // Batch management
   startActionBatch: (actionType: string, objectId: string, userId?: string) => string;
   endActionBatch: () => void;
   addToBatch: (action: WhiteboardAction) => void;
-  getCurrentBatch: () => any;
 }
 
 export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
@@ -111,69 +117,172 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     linedPaperVisible: false,
     backgroundColor: '#ffffff',
   },
+  actionHistory: [],
+  currentHistoryIndex: -1,
   lastAction: undefined,
+  
+  // Initialize user-specific histories
+  userActionHistories: new Map(),
+  userHistoryIndices: new Map(),
   objectRelationships: new Map(),
 
+  // Initialize currentBatch
+  currentBatch: {
+    id: null,
+    userId: null,
+    actionType: null,
+    objectId: null,
+    startTime: null,
+    actions: [],
+  },
+
   recordAction: (action) => {
-    // Use ActionManager to validate if action should be recorded
-    if (!actionManager.shouldRecordAction(action)) {
-      console.log('🔒 Action filtered from recording:', action.type);
+    const state = get();
+    
+    // Enhanced batching logic for eraser strokes
+    const canAddToBatch = state.currentBatch.id && 
+                         state.currentBatch.actionType === action.type &&
+                         state.currentBatch.userId === action.userId &&
+                         (
+                           // Same object ID OR eraser stroke (which can affect multiple objects)
+                           state.currentBatch.objectId === getActionObjectId(action) ||
+                           (state.currentBatch.actionType === 'ERASE_PATH' && action.type === 'ERASE_PATH')
+                         ) &&
+                         (Date.now() - (state.currentBatch.startTime || 0)) < 10000; // 10 second timeout for eraser
+    
+    if (canAddToBatch) {
+      get().addToBatch(action);
       return;
     }
-
-    // Check if we can add to current batch
-    if (batchManager.hasActiveBatch() && batchManager.addToBatch(action)) {
-      return; // Action was added to batch, don't record individually
-    }
-
-    // End any existing batch if it couldn't accommodate this action
-    if (batchManager.hasActiveBatch()) {
-      const completedBatch = batchManager.endBatch();
-      if (completedBatch) {
-        // Record the completed batch
-        historyManager.addToUserHistory(completedBatch, completedBatch.userId);
-        historyManager.addToGlobalHistory(completedBatch);
-        
-        set((state) => ({
-          lastAction: completedBatch
-        }));
-      }
+    
+    // End current batch if exists and record it
+    if (state.currentBatch.id && state.currentBatch.actions.length > 0) {
+      get().endActionBatch();
     }
     
     // Record individual action normally
-    historyManager.addToUserHistory(action, action.userId);
-    historyManager.addToGlobalHistory(action);
+    set((state) => {
+      const newUserHistories = new Map(state.userActionHistories);
+      const newUserIndices = new Map(state.userHistoryIndices);
+      
+      // Get or create user history
+      const userHistory = newUserHistories.get(action.userId) || [];
+      const currentIndex = newUserIndices.get(action.userId) ?? -1;
+      
+      // Add action to user's history (truncate future actions if we're not at the end)
+      const newUserHistory = [...userHistory.slice(0, currentIndex + 1), action];
+      newUserHistories.set(action.userId, newUserHistory);
+      newUserIndices.set(action.userId, newUserHistory.length - 1);
+      
+      return {
+        ...state,
+        actionHistory: [...state.actionHistory, action],
+        currentHistoryIndex: state.actionHistory.length,
+        lastAction: action,
+        userActionHistories: newUserHistories,
+        userHistoryIndices: newUserIndices,
+      };
+    });
+  },
+
+  startActionBatch: (actionType, objectId, userId = 'local') => {
+    const batchId = nanoid();
+    console.log('🎯 Starting action batch:', { batchId, actionType, objectId, userId });
     
     set((state) => ({
-      lastAction: action
+      currentBatch: {
+        id: batchId,
+        userId,
+        actionType,
+        objectId,
+        startTime: Date.now(),
+        actions: [],
+      }
     }));
+    
+    return batchId;
   },
 
-  // Delegate history management to HistoryManager
-  canUndo: (userId: string) => historyManager.canUndo(userId),
-  canRedo: (userId: string) => historyManager.canRedo(userId),
-  getUserHistory: (userId: string) => historyManager.getUserHistory(userId),
-  getUserHistoryIndex: (userId: string) => historyManager.getUserHistoryIndex(userId),
-
-  // Delegate batch management to BatchManager
-  startActionBatch: (actionType, objectId, userId = 'local') => {
-    return batchManager.startBatch(actionType, objectId, userId);
-  },
   endActionBatch: () => {
-    const completedBatch = batchManager.endBatch();
-    if (completedBatch) {
-      historyManager.addToUserHistory(completedBatch, completedBatch.userId);
-      historyManager.addToGlobalHistory(completedBatch);
-      
+    const state = get();
+    const batch = state.currentBatch;
+    
+    if (!batch.id || batch.actions.length === 0) {
+      // Clear empty batch
       set((state) => ({
-        lastAction: completedBatch
+        currentBatch: {
+          id: null,
+          userId: null,
+          actionType: null,
+          objectId: null,
+          startTime: null,
+          actions: [],
+        }
       }));
+      return;
     }
+    
+    console.log('🎯 Ending action batch:', { 
+      batchId: batch.id, 
+      actionCount: batch.actions.length,
+      actionType: batch.actionType,
+      objectId: batch.objectId
+    });
+    
+    // Create a batch action that contains all the individual actions
+    const batchAction: WhiteboardAction = {
+      type: 'BATCH_UPDATE',
+      payload: { actions: batch.actions },
+      timestamp: batch.startTime || Date.now(),
+      id: batch.id,
+      userId: batch.userId || 'local',
+      previousState: batch.actions[0]?.previousState, // Use first action's previous state
+    };
+    
+    // Record the batch as a single action in history
+    set((state) => {
+      const newUserHistories = new Map(state.userActionHistories);
+      const newUserIndices = new Map(state.userHistoryIndices);
+      
+      const userHistory = newUserHistories.get(batchAction.userId) || [];
+      const currentIndex = newUserIndices.get(batchAction.userId) ?? -1;
+      
+      const newUserHistory = [...userHistory.slice(0, currentIndex + 1), batchAction];
+      newUserHistories.set(batchAction.userId, newUserHistory);
+      newUserIndices.set(batchAction.userId, newUserHistory.length - 1);
+      
+      return {
+        ...state,
+        actionHistory: [...state.actionHistory, batchAction],
+        currentHistoryIndex: state.actionHistory.length,
+        lastAction: batchAction,
+        userActionHistories: newUserHistories,
+        userHistoryIndices: newUserIndices,
+        currentBatch: {
+          id: null,
+          userId: null,
+          actionType: null,
+          objectId: null,
+          startTime: null,
+          actions: [],
+        }
+      };
+    });
   },
+
   addToBatch: (action) => {
-    batchManager.addToBatch(action);
+    set((state) => ({
+      currentBatch: {
+        ...state.currentBatch,
+        actions: [...state.currentBatch.actions, action]
+      }
+    }));
+    
+    console.log('🎯 Added action to batch:', { 
+      actionType: action.type, 
+      batchSize: get().currentBatch.actions.length 
+    });
   },
-  getCurrentBatch: () => batchManager.getCurrentBatch(),
 
   setViewport: (viewport) => set({ viewport }),
   resetViewport: () => set({ viewport: { x: 0, y: 0, zoom: 1 } }),
@@ -193,11 +302,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       updatedAt: now,
     };
 
-    const action = actionManager.createAction<WhiteboardAction>(
-      'ADD_OBJECT',
-      { object: newObject },
-      userId
-    );
+    const action: WhiteboardAction = {
+      type: 'ADD_OBJECT',
+      payload: { object: newObject },
+      timestamp: now,
+      id: nanoid(),
+      userId,
+    };
 
     set((state) => ({
       objects: {
@@ -215,12 +326,14 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     const existingObject = state.objects[id];
     if (!existingObject) return;
 
-    const action = actionManager.createAction<WhiteboardAction>(
-      'UPDATE_OBJECT',
-      { id, updates },
+    const action: WhiteboardAction = {
+      type: 'UPDATE_OBJECT',
+      payload: { id, updates },
+      timestamp: Date.now(),
+      id: nanoid(),
       userId,
-      { object: existingObject }
-    );
+      previousState: { object: existingObject },
+    };
 
     set((state) => ({
       objects: {
@@ -241,12 +354,14 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     const objectToDelete = state.objects[id];
     if (!objectToDelete) return;
 
-    const action = actionManager.createAction<WhiteboardAction>(
-      'DELETE_OBJECT',
-      { id },
+    const action: WhiteboardAction = {
+      type: 'DELETE_OBJECT',
+      payload: { id },
+      timestamp: Date.now(),
+      id: nanoid(),
       userId,
-      { object: objectToDelete }
-    );
+      previousState: { object: objectToDelete },
+    };
 
     set((state) => {
       const newObjects = { ...state.objects };
@@ -268,15 +383,17 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   clearCanvas: (userId = 'local') => {
     const state = get();
     
-    const action = actionManager.createAction<WhiteboardAction>(
-      'CLEAR_CANVAS',
-      {},
+    const action: WhiteboardAction = {
+      type: 'CLEAR_CANVAS',
+      payload: {},
+      timestamp: Date.now(),
+      id: nanoid(),
       userId,
-      {
+      previousState: {
         objects: state.objects,
         selectedObjectIds: state.selectedObjectIds,
-      }
-    );
+      },
+    };
 
     set({ objects: {}, selectedObjectIds: [] });
     get().recordAction(action);
@@ -285,12 +402,14 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   selectObjects: (ids, userId = 'local') => {
     const state = get();
     
-    const action = actionManager.createAction<WhiteboardAction>(
-      'SELECT_OBJECTS',
-      { objectIds: ids },
+    const action: WhiteboardAction = {
+      type: 'SELECT_OBJECTS',
+      payload: { objectIds: ids },
+      timestamp: Date.now(),
+      id: nanoid(),
       userId,
-      { selectedObjectIds: state.selectedObjectIds }
-    );
+      previousState: { selectedObjectIds: state.selectedObjectIds },
+    };
 
     set({ selectedObjectIds: ids });
     get().recordAction(action);
@@ -299,12 +418,14 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   clearSelection: (userId = 'local') => {
     const state = get();
     
-    const action = actionManager.createAction<WhiteboardAction>(
-      'CLEAR_SELECTION',
-      {},
+    const action: WhiteboardAction = {
+      type: 'CLEAR_SELECTION',
+      payload: {},
+      timestamp: Date.now(),
+      id: nanoid(),
       userId,
-      { selectedObjectIds: state.selectedObjectIds }
-    );
+      previousState: { selectedObjectIds: state.selectedObjectIds },
+    };
 
     set({ selectedObjectIds: [] });
     get().recordAction(action);
@@ -344,16 +465,18 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     
     if (!originalObject) return;
 
-    const whiteboardAction = actionManager.createAction<WhiteboardAction>(
-      'ERASE_PATH',
-      {
+    const whiteboardAction: WhiteboardAction = {
+      type: 'ERASE_PATH',
+      payload: {
         originalObjectId,
         eraserPath,
         resultingSegments,
       },
+      timestamp: Date.now(),
+      id: nanoid(),
       userId,
-      { object: originalObject }
-    );
+      previousState: { object: originalObject },
+    };
     
     set((state) => {
       const newObjects = { ...state.objects };
@@ -377,7 +500,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             return `${path} ${command} ${point.x} ${point.y}`;
           }, '');
           
-          // Create new object with preserved metadata
+          // Create new object with preserved metadata - fix the metadata override bug
           newObjects[segment.id] = {
             id: segment.id,
             type: 'path',
@@ -391,14 +514,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             updatedAt: Date.now(),
             data: {
               path: pathString,
+              // Only preserve the essential brush metadata - no spreading of original data
               brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
-              isEraser: false
+              isEraser: false // Ensure segments are not marked as eraser
             }
           };
         }
       });
       
       return {
+        ...state,
         objects: newObjects,
         objectRelationships: newRelationships,
         selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
@@ -406,6 +531,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     });
 
     get().recordAction(whiteboardAction);
+    
+    console.log('✂️ Erased path with preserved brush metadata:', {
+      originalId: originalObjectId.slice(0, 8),
+      segments: resultingSegments.length,
+      brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
+      preservedMetadata: originalObjectMetadata
+    });
   },
   
   zoomIn: () => {
@@ -439,21 +571,21 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   getStateSnapshot: () => {
     const state = get()
     return {
-      objects: { ...state.objects },
+      objects: { ...state.objects }, // Create a clean copy
       viewport: { ...state.viewport },
       settings: { ...state.settings },
-      actionCount: historyManager.getHistorySnapshot().globalActionHistory.length,
+      actionCount: state.actionHistory.length,
       timestamp: Date.now()
     }
   },
   getActionsSince: (timestamp) => {
-    return historyManager.getActionsSince(timestamp);
+    return get().actionHistory.filter(action => action.timestamp > timestamp);
   },
   
   applyRemoteAction: (action) => {
     console.log('🔄 Applying remote action:', action.type, action.id);
     
-    // Handle SYNC actions specially
+    // Handle SYNC actions specially - they only apply state changes, don't get recorded in history
     if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
       console.log('🔄 Applying SYNC action state change:', action.type);
       if (action.payload.stateChange) {
@@ -463,15 +595,20 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         }));
       }
       
+      // IMPORTANT: Update the history index for the ORIGINAL user, not the action sender
       const originalUserId = action.payload.originalUserId || action.userId;
-      const currentIndex = historyManager.getUserHistoryIndex(originalUserId);
+      const currentState = get();
+      const currentIndex = currentState.userHistoryIndices.get(originalUserId) ?? -1;
       
       if (action.type === 'SYNC_UNDO') {
-        historyManager.updateUserHistoryIndex(originalUserId, currentIndex - 1);
+        console.log('🔄 Updating history index for SYNC_UNDO - user:', originalUserId, 'index:', currentIndex - 1);
+        get().updateLocalUserHistoryIndex(originalUserId, currentIndex - 1);
       } else if (action.type === 'SYNC_REDO') {
-        historyManager.updateUserHistoryIndex(originalUserId, currentIndex + 1);
+        console.log('🔄 Updating history index for SYNC_REDO - user:', originalUserId, 'index:', currentIndex + 1);
+        get().updateLocalUserHistoryIndex(originalUserId, currentIndex + 1);
       }
       
+      // CRITICAL: Don't add SYNC actions to any user's history or global history
       return;
     }
     
@@ -523,8 +660,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         break;
         
       case 'SELECT_OBJECTS':
+        // Skip applying remote selection actions - selections should remain local
+        console.log('🔄 Skipping remote SELECT_OBJECTS action - selections are local');
+        return;
+        
       case 'CLEAR_SELECTION':
-        console.log('🔄 Skipping remote selection action - selections are local');
+        // Skip applying remote clear selection actions - selections should remain local
+        console.log('🔄 Skipping remote CLEAR_SELECTION action - selections are local');
         return;
         
       case 'CLEAR_CANVAS':
@@ -537,6 +679,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           const originalObject = get().objects[originalObjectId];
           
           if (originalObject) {
+            // Extract brush metadata from the action payload if available
             const originalObjectMetadata = (action as any).payload.originalObjectMetadata || {
               brushType: originalObject.data?.brushType,
               stroke: originalObject.stroke,
@@ -545,23 +688,43 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
               fill: originalObject.fill
             };
             
+            console.log('🎨 Processing remote ERASE_PATH with brush metadata:', {
+              originalId: originalObjectId.slice(0, 8),
+              brushType: originalObjectMetadata.brushType,
+              segmentCount: resultingSegments.length,
+              hasMetadata: !!originalObjectMetadata
+            });
+            
             set((state) => {
               const newObjects = { ...state.objects };
               const newRelationships = new Map(state.objectRelationships);
               
+              // PRESERVE brush effects before removing original object
               const brushType = originalObjectMetadata?.brushType;
               if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
+                console.log('🎨 Preserving brush effects for remote eraser action:', {
+                  originalId: originalObjectId.slice(0, 8),
+                  brushType,
+                  segmentCount: resultingSegments.length
+                });
+                
+                // Transfer brush effects to segments BEFORE clearing the original
                 brushEffectCache.transferToSegments(originalObjectId, brushType, resultingSegments);
+                
+                // Now it's safe to remove the original cache entry
                 brushEffectCache.remove(originalObjectId, brushType);
               }
               
+              // Remove the original object
               delete newObjects[originalObjectId];
               
+              // Track relationships
               const segmentIds = resultingSegments.map(s => s.id);
               segmentIds.forEach(segmentId => {
                 newRelationships.set(segmentId, { originalId: originalObjectId });
               });
               
+              // Add resulting segments as new objects with preserved metadata
               resultingSegments.forEach((segment) => {
                 if (segment.points.length >= 2) {
                   const pathString = segment.points.reduce((path, point, index) => {
@@ -569,6 +732,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                     return `${path} ${command} ${point.x} ${point.y}`;
                   }, '');
                   
+                  // Create new object with preserved metadata - use the metadata from the action
                   newObjects[segment.id] = {
                     id: segment.id,
                     type: 'path',
@@ -582,8 +746,9 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                     updatedAt: Date.now(),
                     data: {
                       path: pathString,
+                      // Only preserve the essential brush metadata from the action
                       brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
-                      isEraser: false
+                      isEraser: false // Ensure segments are not marked as eraser
                     }
                   };
                 }
@@ -595,6 +760,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
               };
             });
+            
+            console.log('✅ Remote ERASE_PATH applied with preserved brush effects:', {
+              originalId: originalObjectId.slice(0, 8),
+              segments: resultingSegments.length,
+              brushType: originalObjectMetadata?.brushType,
+              preservedEffects: !!(originalObjectMetadata?.brushType && (originalObjectMetadata.brushType === 'spray' || originalObjectMetadata.brushType === 'chalk'))
+            });
           }
         }
         break;
@@ -604,24 +776,37 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         break;
     }
     
-    // Record the action for the remote user's history
-    historyManager.addToUserHistory(action, action.userId);
-    historyManager.addToGlobalHistory(action);
+    // Record the action for the remote user's history (but NOT for SYNC actions)
+    const state = get();
+    const newUserHistories = new Map(state.userActionHistories);
+    const newUserIndices = new Map(state.userHistoryIndices);
+    
+    const userHistory = newUserHistories.get(action.userId) || [];
+    const newUserHistory = [...userHistory, action];
+    newUserHistories.set(action.userId, newUserHistory);
+    newUserIndices.set(action.userId, newUserHistory.length - 1);
     
     set({
-      lastAction: action
+      actionHistory: [...state.actionHistory, action],
+      currentHistoryIndex: state.actionHistory.length,
+      lastAction: action,
+      userActionHistories: newUserHistories,
+      userHistoryIndices: newUserIndices,
     });
   },
   
   batchUpdate: (actions) => {
+    // Apply batch of actions
     console.log('Applying batch update:', actions.length, 'actions');
     actions.forEach(action => get().applyRemoteAction(action));
   },
-
   updateLocalUserHistoryIndex: (userId, index) => {
-    historyManager.updateUserHistoryIndex(userId, index);
+    set((state) => {
+      const newIndices = new Map(state.userHistoryIndices);
+      newIndices.set(userId, index);
+      return { userHistoryIndices: newIndices };
+    });
   },
-
   applyStateChange: (stateChange) => {
     set((state) => ({ ...state, ...stateChange }));
   },
@@ -634,3 +819,18 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     return get().objectRelationships.get(objectId);
   },
 }));
+
+// Helper function to extract object ID from various action types
+function getActionObjectId(action: WhiteboardAction): string | null {
+  switch (action.type) {
+    case 'UPDATE_OBJECT':
+    case 'DELETE_OBJECT':
+      return action.payload.id;
+    case 'ADD_OBJECT':
+      return action.payload.object.id;
+    case 'ERASE_PATH':
+      return action.payload.originalObjectId;
+    default:
+      return null;
+  }
+}

@@ -1,19 +1,15 @@
 
 import React, { useMemo } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { historyManager } from '../../services/HistoryManager';
 import { Badge } from '../ui/badge';
 
 export const StrokeTrackingPanel: React.FC = () => {
-  const { objects } = useWhiteboardStore();
-  
-  // Get action history from HistoryManager instead of store
-  const globalHistory = historyManager.getHistorySnapshot().globalActionHistory;
+  const { objects, actionHistory } = useWhiteboardStore();
 
   // Calculate stroke statistics
   const strokeStats = useMemo(() => {
     const pathObjects = Object.values(objects).filter(obj => obj.type === 'path');
-    const drawingActions = globalHistory.filter(action => 
+    const drawingActions = actionHistory.filter(action => 
       action.type === 'ADD_OBJECT' && action.payload.object?.type === 'path'
     );
 
@@ -46,7 +42,7 @@ export const StrokeTrackingPanel: React.FC = () => {
         ? pathObjects.reduce((sum, obj) => sum + (obj.strokeWidth || 0), 0) / pathObjects.length 
         : 0
     };
-  }, [objects, globalHistory]);
+  }, [objects, actionHistory]);
 
   const strokesByType = useMemo(() => {
     const pathObjects = Object.values(objects).filter(obj => obj.type === 'path');
@@ -158,9 +154,9 @@ export const StrokeTrackingPanel: React.FC = () => {
       <div className="space-y-2">
         <div className="font-medium">Performance</div>
         <div className="bg-muted/30 p-2 rounded space-y-1">
-          <div>Actions in History: {globalHistory.length}</div>
+          <div>Actions in History: {actionHistory.length}</div>
           <div>Objects in Memory: {Object.keys(objects).length}</div>
-          <div>Memory Usage: ~{((JSON.stringify(objects).length + JSON.stringify(globalHistory).length) / 1024).toFixed(1)}KB</div>
+          <div>Memory Usage: ~{((JSON.stringify(objects).length + JSON.stringify(actionHistory).length) / 1024).toFixed(1)}KB</div>
         </div>
       </div>
 
