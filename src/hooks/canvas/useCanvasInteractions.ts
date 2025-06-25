@@ -141,7 +141,7 @@ export const useCanvasInteractions = () => {
   }, [toolStore.toolSettings]);
 
   /**
-   * Creates emoji stamp objects
+   * Creates emoji stamp objects as image type
    */
   const createStampObject = useCallback((
     x: number,
@@ -151,19 +151,14 @@ export const useCanvasInteractions = () => {
     const selectedSticker = toolStore.toolSettings.selectedSticker || '😊';
     const actualSize = size * 10; // Convert slider value to actual pixel size
     
-    // Create a text object for emoji stamps
-    const stampData = {
-      content: selectedSticker,
-      fontSize: actualSize,
-      fontFamily: 'Arial',
-      bold: false,
-      italic: false,
-      underline: false,
-      textAlign: 'center' as const
+    // Create an image object for emoji stamps
+    const stampData: ImageData = {
+      src: selectedSticker, // Store the emoji as the src
+      alt: `Emoji stamp: ${selectedSticker}`
     };
 
     return {
-      type: 'text',
+      type: 'image',
       x: x - actualSize / 2, // Center the stamp on the click point
       y: y - actualSize / 2,
       width: actualSize,
