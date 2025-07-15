@@ -934,13 +934,11 @@ export const useCanvasRendering = (
  */
 const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
   const GRID_SIZE = 20;
-  const GRID_COLOR = '#000000'; // Make it black for now to ensure visibility
-  
-  console.log('🎨 Drawing grid with dimensions:', width, 'x', height);
+  const GRID_COLOR = '#e5e7eb'; // Subtle light grey like grid paper
   
   ctx.save();
   ctx.strokeStyle = GRID_COLOR;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 0.5; // Thinner lines for subtlety
 
   // Draw vertical lines
   for (let x = 0; x <= width; x += GRID_SIZE) {
@@ -958,18 +956,15 @@ const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number):
     ctx.stroke();
   }
   ctx.restore();
-  console.log('🎨 Grid drawing completed');
 };
 
 const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
   const LINE_SPACING = 24;
-  const LINE_COLOR = '#ff0000'; // Make it red for now to ensure visibility
-  
-  console.log('🎨 Drawing lined paper with dimensions:', width, 'x', height);
+  const LINE_COLOR = '#d1d5db'; // Subtle light grey like notebook paper
   
   ctx.save();
   ctx.strokeStyle = LINE_COLOR;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 0.5; // Thin lines like real paper
 
   for (let y = LINE_SPACING; y <= height; y += LINE_SPACING) {
     ctx.beginPath();
@@ -978,15 +973,12 @@ const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: nu
     ctx.stroke();
   }
   ctx.restore();
-  console.log('🎨 Lined paper drawing completed');
 };
 
 const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
   const DOT_SPACING = 20;
-  const DOT_COLOR = '#0000ff'; // Make it blue for now to ensure visibility
-  const DOT_RADIUS = 3; // Make dots bigger for visibility
-  
-  console.log('🎨 Drawing dots with dimensions:', width, 'x', height);
+  const DOT_COLOR = '#d1d5db'; // Subtle light grey like graph paper
+  const DOT_RADIUS = 1; // Small dots like real graph paper
   
   ctx.save();
   ctx.fillStyle = DOT_COLOR;
@@ -999,5 +991,4 @@ const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number):
     }
   }
   ctx.restore();
-  console.log('🎨 Dots drawing completed');
 };
