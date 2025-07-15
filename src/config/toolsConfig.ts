@@ -1,3 +1,5 @@
+import { iconRegistry } from '../utils/iconRegistry';
+
 export interface ToolSettingConfig {
   type: 'slider' | 'badges' | 'select' | 'toggleGroup' | 'grid' | 'text';
   label: string;
@@ -139,40 +141,13 @@ export const toolsConfig: Record<string, ToolConfig> = {
       },
       {
         type: 'grid',
-        label: 'Emoji Stamps',
+        label: 'Icon Stamps',
         key: 'selectedSticker',
-        gridItems: [
-          {
-            name: 'Star',
-            url: '⭐',
-            preview: '⭐'
-          },
-          {
-            name: 'Lightning',
-            url: '⚡',
-            preview: '⚡'
-          },
-          {
-            name: 'Circle',
-            url: '⭕',
-            preview: '⭕'
-          },
-          {
-            name: 'Check Mark',
-            url: '✅',
-            preview: '✅'
-          },
-          {
-            name: 'Cross Mark',
-            url: '❌',
-            preview: '❌'
-          },
-          {
-            name: 'Question Mark',
-            url: '❓',
-            preview: '❓'
-          }
-        ]
+        gridItems: iconRegistry.map(icon => ({
+          name: icon.name,
+          url: icon.path,
+          preview: icon.preview
+        }))
       }
     ]
   },
