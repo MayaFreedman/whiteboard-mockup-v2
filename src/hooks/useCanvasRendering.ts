@@ -839,7 +839,7 @@ export const useCanvasRendering = (
         }, timeUntilNextRedraw);
       }
     }
-  }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText]);
+  }, [canvas, viewport, objects, selectedObjectIds, settings, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText]);
 
   const performRedraw = useCallback(() => {
     if (!canvas) return;
