@@ -31,11 +31,13 @@ export const WhiteboardSidebar: React.FC = () => {
 
   // Handle exclusive background options
   const handleBackgroundToggle = (option: 'grid' | 'lines' | 'dots', enabled: boolean) => {
+    console.log('🎛️ Background toggle clicked:', { option, enabled, currentSettings: settings });
     if (enabled) {
       updateBackgroundSettings(option);
     } else {
       updateBackgroundSettings('none');
     }
+    console.log('🎛️ Background settings after update:', settings);
   };
 
   // ... keep existing code (backgroundImages array)

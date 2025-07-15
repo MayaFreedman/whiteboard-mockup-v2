@@ -934,7 +934,9 @@ export const useCanvasRendering = (
  */
 const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
   const GRID_SIZE = 20;
-  const GRID_COLOR = '#e5e7eb';
+  const GRID_COLOR = '#000000'; // Make it black for now to ensure visibility
+  
+  console.log('🎨 Drawing grid with dimensions:', width, 'x', height);
   
   ctx.save();
   ctx.strokeStyle = GRID_COLOR;
@@ -943,7 +945,7 @@ const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number):
   // Draw vertical lines
   for (let x = 0; x <= width; x += GRID_SIZE) {
     ctx.beginPath();
-    ctx.moveTo(x + 0.5, 0); // Add 0.5 for crisp lines
+    ctx.moveTo(x + 0.5, 0);
     ctx.lineTo(x + 0.5, height);
     ctx.stroke();
   }
@@ -951,16 +953,19 @@ const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number):
   // Draw horizontal lines
   for (let y = 0; y <= height; y += GRID_SIZE) {
     ctx.beginPath();
-    ctx.moveTo(0, y + 0.5); // Add 0.5 for crisp lines
+    ctx.moveTo(0, y + 0.5);
     ctx.lineTo(width, y + 0.5);
     ctx.stroke();
   }
   ctx.restore();
+  console.log('🎨 Grid drawing completed');
 };
 
 const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
   const LINE_SPACING = 24;
-  const LINE_COLOR = '#ddd6fe';
+  const LINE_COLOR = '#ff0000'; // Make it red for now to ensure visibility
+  
+  console.log('🎨 Drawing lined paper with dimensions:', width, 'x', height);
   
   ctx.save();
   ctx.strokeStyle = LINE_COLOR;
@@ -968,17 +973,20 @@ const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: nu
 
   for (let y = LINE_SPACING; y <= height; y += LINE_SPACING) {
     ctx.beginPath();
-    ctx.moveTo(0, y + 0.5); // Add 0.5 for crisp lines
+    ctx.moveTo(0, y + 0.5);
     ctx.lineTo(width, y + 0.5);
     ctx.stroke();
   }
   ctx.restore();
+  console.log('🎨 Lined paper drawing completed');
 };
 
 const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
   const DOT_SPACING = 20;
-  const DOT_COLOR = '#d1d5db';
-  const DOT_RADIUS = 1;
+  const DOT_COLOR = '#0000ff'; // Make it blue for now to ensure visibility
+  const DOT_RADIUS = 3; // Make dots bigger for visibility
+  
+  console.log('🎨 Drawing dots with dimensions:', width, 'x', height);
   
   ctx.save();
   ctx.fillStyle = DOT_COLOR;
@@ -991,4 +999,5 @@ const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number):
     }
   }
   ctx.restore();
+  console.log('🎨 Dots drawing completed');
 };
