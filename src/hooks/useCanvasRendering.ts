@@ -866,11 +866,11 @@ export const useCanvasRendering = (
       drawGrid(ctx, canvas.width, canvas.height);
     }
 
-    if (toolSettings.showLinedPaper) {
+    if (settings.linedPaperVisible) {
       drawLinedPaper(ctx, canvas.width, canvas.height);
     }
 
-    if (toolSettings.showDots) {
+    if (settings.showDots) {
       drawDots(ctx, canvas.width, canvas.height);
     }
 
@@ -936,39 +936,43 @@ const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number):
   const GRID_SIZE = 20;
   const GRID_COLOR = '#e5e7eb';
   
+  ctx.save();
   ctx.strokeStyle = GRID_COLOR;
   ctx.lineWidth = 1;
 
   // Draw vertical lines
   for (let x = 0; x <= width; x += GRID_SIZE) {
     ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
+    ctx.moveTo(x + 0.5, 0); // Add 0.5 for crisp lines
+    ctx.lineTo(x + 0.5, height);
     ctx.stroke();
   }
 
   // Draw horizontal lines
   for (let y = 0; y <= height; y += GRID_SIZE) {
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
+    ctx.moveTo(0, y + 0.5); // Add 0.5 for crisp lines
+    ctx.lineTo(width, y + 0.5);
     ctx.stroke();
   }
+  ctx.restore();
 };
 
 const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
   const LINE_SPACING = 24;
   const LINE_COLOR = '#ddd6fe';
   
+  ctx.save();
   ctx.strokeStyle = LINE_COLOR;
   ctx.lineWidth = 1;
 
   for (let y = LINE_SPACING; y <= height; y += LINE_SPACING) {
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
+    ctx.moveTo(0, y + 0.5); // Add 0.5 for crisp lines
+    ctx.lineTo(width, y + 0.5);
     ctx.stroke();
   }
+  ctx.restore();
 };
 
 const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
@@ -976,6 +980,7 @@ const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number):
   const DOT_COLOR = '#d1d5db';
   const DOT_RADIUS = 1;
   
+  ctx.save();
   ctx.fillStyle = DOT_COLOR;
   
   for (let x = DOT_SPACING; x <= width; x += DOT_SPACING) {
@@ -985,4 +990,5 @@ const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number):
       ctx.fill();
     }
   }
+  ctx.restore();
 };

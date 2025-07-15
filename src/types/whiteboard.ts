@@ -27,6 +27,7 @@ export interface WhiteboardState {
   settings: {
     gridVisible: boolean;
     linedPaperVisible: boolean;
+    showDots: boolean;
     backgroundColor: string;
   };
   lastAction?: WhiteboardAction;
@@ -100,6 +101,16 @@ export interface UpdateSettingsAction extends BaseAction {
   payload: Partial<WhiteboardState['settings']>;
   previousState?: {
     settings: WhiteboardState['settings'];
+  };
+}
+
+export interface UpdateBackgroundSettingsAction extends BaseAction {
+  type: 'UPDATE_BACKGROUND_SETTINGS';
+  payload: {
+    backgroundType: 'grid' | 'lines' | 'dots' | 'none';
+  };
+  previousState?: {
+    settings: Pick<WhiteboardState['settings'], 'gridVisible' | 'linedPaperVisible' | 'showDots'>;
   };
 }
 
@@ -192,6 +203,7 @@ export type WhiteboardAction =
   | ClearSelectionAction
   | UpdateViewportAction
   | UpdateSettingsAction
+  | UpdateBackgroundSettingsAction
   | ClearCanvasAction
   | BatchUpdateAction
   | ErasePixelsAction

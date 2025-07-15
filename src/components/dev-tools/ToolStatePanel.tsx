@@ -55,15 +55,8 @@ export const ToolStatePanel: React.FC = () => {
       <div className="space-y-2">
         <div className="font-medium">UI Settings</div>
         <div className="bg-muted/30 p-2 rounded space-y-1">
-          <div className="flex items-center gap-2">
-            Show Grid: <Badge variant={toolSettings.showGrid ? "default" : "secondary"}>
-              {toolSettings.showGrid ? "ON" : "OFF"}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            Show Lined Paper: <Badge variant={toolSettings.showLinedPaper ? "default" : "secondary"}>
-              {toolSettings.showLinedPaper ? "ON" : "OFF"}
-            </Badge>
+          <div className="text-sm text-muted-foreground">
+            Background settings moved to WhiteboardStore
           </div>
         </div>
       </div>

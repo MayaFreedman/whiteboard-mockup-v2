@@ -47,10 +47,7 @@ export interface ToolSettings {
   textUnderline: boolean;
   textAlign: 'left' | 'center' | 'right';
   
-  // UI settings
-  showGrid: boolean;
-  showLinedPaper: boolean;
-  showDots: boolean;
+  // UI settings (removed background settings - now in whiteboardStore)
   
   // Stamp settings
   selectedSticker?: string;
@@ -123,9 +120,6 @@ const defaultToolSettings: ToolSettings = {
   textItalic: false,
   textUnderline: false,
   textAlign: 'left',
-  showGrid: false,
-  showLinedPaper: false,
-  showDots: false,
   selectedSticker: '⭐', // Default to star emoji since it works
   shapeColorMode: 'fill'
 };

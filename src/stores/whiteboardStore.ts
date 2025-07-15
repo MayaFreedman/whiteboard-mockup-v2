@@ -7,6 +7,7 @@ import { brushEffectCache } from '../utils/brushCache';
 export interface WhiteboardSettings {
   gridVisible: boolean;
   linedPaperVisible: boolean;
+  showDots: boolean;
   backgroundColor: string;
 }
 
@@ -47,6 +48,7 @@ export interface WhiteboardStore {
   clearSelection: (userId?: string) => void;
   updateObjectPosition: (id: string, x: number, y: number) => void;
   updateObjectSize: (id: string, width: number, height: number) => void;
+  updateBackgroundSettings: (backgroundType: 'grid' | 'lines' | 'dots' | 'none', userId?: string) => void;
   
   // Enhanced eraser action with metadata preservation
   erasePath: (action: {
@@ -115,6 +117,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   settings: {
     gridVisible: false,
     linedPaperVisible: false,
+    showDots: false,
     backgroundColor: '#ffffff',
   },
   actionHistory: [],
@@ -458,6 +461,36 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       },
     }));
   },
+
+  updateBackgroundSettings: (backgroundType, userId = 'local') => {
+    const state = get();
+    const newSettings = {
+      gridVisible: backgroundType === 'grid',
+      linedPaperVisible: backgroundType === 'lines',
+      showDots: backgroundType === 'dots',
+    };
+
+    const action: WhiteboardAction = {
+      type: 'UPDATE_BACKGROUND_SETTINGS',
+      payload: { backgroundType },
+      timestamp: Date.now(),
+      id: nanoid(),
+      userId,
+      previousState: {
+        settings: {
+          gridVisible: state.settings.gridVisible,
+          linedPaperVisible: state.settings.linedPaperVisible,
+          showDots: state.settings.showDots,
+        },
+      },
+    };
+
+    set((state) => ({
+      settings: { ...state.settings, ...newSettings },
+    }));
+
+    get().recordAction(action);
+  },
   
   erasePath: (action, userId = 'local') => {
     const { originalObjectId, eraserPath, resultingSegments, originalObjectMetadata } = action;
@@ -671,6 +704,20 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         
       case 'CLEAR_CANVAS':
         set({ objects: {}, selectedObjectIds: [] });
+        break;
+        
+      case 'UPDATE_BACKGROUND_SETTINGS':
+        if (action.payload.backgroundType) {
+          const { backgroundType } = action.payload;
+          const newSettings = {
+            gridVisible: backgroundType === 'grid',
+            linedPaperVisible: backgroundType === 'lines',
+            showDots: backgroundType === 'dots',
+          };
+          set((state) => ({
+            settings: { ...state.settings, ...newSettings },
+          }));
+        }
         break;
         
       case 'ERASE_PATH':

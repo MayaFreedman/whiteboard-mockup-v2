@@ -18,7 +18,7 @@ import { DynamicToolSettings } from './settings/DynamicToolSettings';
 
 export const WhiteboardSidebar: React.FC = () => {
   const { toolSettings, updateToolSettings, colorPalettes, activeColorPalette, setActiveColorPalette, activeTool } = useToolStore();
-  const { settings, updateSettings } = useWhiteboardStore();
+  const { settings, updateBackgroundSettings, updateSettings } = useWhiteboardStore();
   const { open, toggleSidebar } = useSidebar();
   const [activeTab, setActiveTab] = useState('tools');
 
@@ -32,21 +32,9 @@ export const WhiteboardSidebar: React.FC = () => {
   // Handle exclusive background options
   const handleBackgroundToggle = (option: 'grid' | 'lines' | 'dots', enabled: boolean) => {
     if (enabled) {
-      // Turn off all other background options
-      updateSettings({ gridVisible: option === 'grid' });
-      updateToolSettings({ 
-        showLinedPaper: option === 'lines',
-        showDots: option === 'dots'
-      });
+      updateBackgroundSettings(option);
     } else {
-      // Turn off the current option
-      if (option === 'grid') {
-        updateSettings({ gridVisible: false });
-      } else if (option === 'lines') {
-        updateToolSettings({ showLinedPaper: false });
-      } else if (option === 'dots') {
-        updateToolSettings({ showDots: false });
-      }
+      updateBackgroundSettings('none');
     }
   };
 
@@ -176,7 +164,7 @@ export const WhiteboardSidebar: React.FC = () => {
                         <div className="flex items-center justify-between">
                           <label className="text-sm font-medium text-company-dark-blue">Show Lined Paper</label>
                           <Switch
-                            checked={toolSettings.showLinedPaper}
+                            checked={settings.linedPaperVisible}
                             onCheckedChange={(checked) => handleBackgroundToggle('lines', checked)}
                           />
                         </div>
@@ -184,7 +172,7 @@ export const WhiteboardSidebar: React.FC = () => {
                         <div className="flex items-center justify-between">
                           <label className="text-sm font-medium text-company-dark-blue">Show Dots</label>
                           <Switch
-                            checked={toolSettings.showDots || false}
+                            checked={settings.showDots}
                             onCheckedChange={(checked) => handleBackgroundToggle('dots', checked)}
                           />
                         </div>
