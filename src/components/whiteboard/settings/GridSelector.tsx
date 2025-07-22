@@ -113,18 +113,18 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
                   onError={() => handleImageError(item.url)}
                   loading="lazy"
                 />
+                
+                {/* Delete button for custom stamps - positioned inside the button */}
+                {isCustomStamp && (
+                  <button
+                    onClick={(e) => handleDeleteCustomStamp(e, item.url)}
+                    className="absolute top-1 left-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-20 hover:bg-destructive/90 hover:scale-110 shadow-lg border border-destructive-foreground/20"
+                    title="Delete custom stamp"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
               </button>
-              
-              {/* Delete button for custom stamps */}
-              {isCustomStamp && (
-                <button
-                  onClick={(e) => handleDeleteCustomStamp(e, item.url)}
-                  className="absolute top-1 left-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-destructive/90 shadow-lg border border-destructive-foreground/20"
-                  title="Delete custom stamp"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
             </div>
           );
         })}
