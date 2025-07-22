@@ -992,7 +992,7 @@ export const iconRegistry: IconInfo[] = [
     name: "Recycling Symbol",
     category: "symbols",
     path: "/emojis/openmoji-svg-color (1)/267E.svg",
-    preview: "♾️",
+    preview: "♻️",
   },
   {
     name: "Heavy Plus Sign",
