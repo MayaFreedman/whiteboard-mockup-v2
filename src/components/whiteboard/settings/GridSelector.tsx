@@ -84,15 +84,15 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
   return (
     <div>
       <label className="text-sm font-medium mb-3 block">{label}</label>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1 p-2">
         {memoizedItems.map((item) => {
           const isLoading = imageLoading[item.url] === true;
           const isCustomStamp = item.url.startsWith('data:'); // Custom stamps use dataURL
           
           return (
-            <div key={item.url} className="relative">
+            <div key={item.url} className="relative group">
               <button
-                className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden group flex items-center justify-center ${
+                className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden flex items-center justify-center ${
                   selectedValue === item.url
                     ? 'border-primary ring-2 ring-primary/20'
                     : 'border-border hover:border-primary'
@@ -119,7 +119,7 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
               {isCustomStamp && (
                 <button
                   onClick={(e) => handleDeleteCustomStamp(e, item.url)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10 hover:bg-destructive/90 shadow-md"
+                  className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-destructive/90 shadow-lg border border-destructive-foreground/20"
                   title="Delete custom stamp"
                 >
                   <X className="w-3 h-3" />
