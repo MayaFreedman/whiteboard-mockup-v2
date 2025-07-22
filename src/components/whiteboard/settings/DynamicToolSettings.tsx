@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useToolStore } from '../../../stores/toolStore';
 import { useWhiteboardStore } from '../../../stores/whiteboardStore';
 import { toolsConfig, simpleToolsConfig, ToolConfig, ToolSettingConfig } from '../../../config/toolsConfig';
@@ -19,24 +19,11 @@ export const DynamicToolSettings: React.FC = () => {
   
   // For stamp tool, we'll add category filtering
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [refreshKey, setRefreshKey] = useState(0);
-  
-  // Listen for custom stamp updates
-  useEffect(() => {
-    const handleCustomStampsUpdate = () => {
-      setRefreshKey(prev => prev + 1);
-    };
-    
-    window.addEventListener('customStampsUpdated', handleCustomStampsUpdate);
-    return () => {
-      window.removeEventListener('customStampsUpdated', handleCustomStampsUpdate);
-    };
-  }, []);
   
   // Memoize categories to prevent recalculation
   const categories = useMemo(() => 
     activeTool === 'stamp' ? ['all', ...getCategories()] : [], 
-    [activeTool, refreshKey]
+    [activeTool]
   );
   
   // Memoize stamp items with stable reference to prevent GridSelector re-renders
@@ -44,23 +31,23 @@ export const DynamicToolSettings: React.FC = () => {
     if (activeTool !== 'stamp') return [];
     
     if (selectedCategory === 'all') {
-      // Get all icons from iconRegistry including custom stamps
+      // Get all OpenMoji icons from iconRegistry
       return getCategories().flatMap(category => 
         getIconsByCategory(category).map(icon => ({
           name: icon.name,
           url: icon.path,
-          preview: icon.preview // Use the preview (emoji, SVG path, or thumbnail)
+          preview: icon.path // Use the SVG path as preview
         }))
       );
     }
     
-    // Filter icons by category including custom stamps
+    // Filter OpenMoji icons by category
     return getIconsByCategory(selectedCategory).map(icon => ({
       name: icon.name,
       url: icon.path,
-      preview: icon.preview
+      preview: icon.path // Use the SVG path as preview
     }));
-  }, [activeTool, selectedCategory, refreshKey]);
+  }, [activeTool, selectedCategory]);
   
   // Memoize category change handler to prevent re-renders
   const handleCategoryChange = useCallback((category: string) => {
