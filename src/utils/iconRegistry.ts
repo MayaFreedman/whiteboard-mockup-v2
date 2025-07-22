@@ -922,12 +922,6 @@ export const iconRegistry: IconInfo[] = [
 
   // Symbols - fun shapes and signs kids recognize
   {
-    name: "Star",
-    category: "symbols",
-    path: "/emojis/openmoji-svg-color (1)/2B50.svg",
-    preview: "⭐",
-  },
-  {
     name: "Sparkles",
     category: "symbols",
     path: "/emojis/openmoji-svg-color (1)/2728.svg",
@@ -970,12 +964,6 @@ export const iconRegistry: IconInfo[] = [
     preview: "🎵",
   },
   // More symbols kids love
-  {
-    name: "Lightning Bolt",
-    category: "symbols",
-    path: "/emojis/openmoji-svg-color (1)/26A1.svg",
-    preview: "⚡",
-  },
   {
     name: "Peace Symbol",
     category: "symbols",
