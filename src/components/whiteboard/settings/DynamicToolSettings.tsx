@@ -137,6 +137,7 @@ export const DynamicToolSettings: React.FC = () => {
             selectedValue={toolSettings.selectedSticker || ''}
             onChange={handleStampChange}
             showUpload={false}
+            onCustomStampDeleted={handleCustomStampAdded} // Reuse the refresh callback
           />
           
           {/* Custom stamp upload */}

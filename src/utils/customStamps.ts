@@ -194,12 +194,12 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
 };
 
 /**
- * Remove a custom stamp
+ * Remove a custom stamp by dataURL (since that's what we have in the UI)
  */
-export const removeCustomStamp = (stampId: string): void => {
+export const removeCustomStamp = (stampDataUrl: string): void => {
   try {
     const stamps = getCustomStamps();
-    const updatedStamps = stamps.filter(stamp => stamp.id !== stampId);
+    const updatedStamps = stamps.filter(stamp => stamp.dataUrl !== stampDataUrl);
     saveCustomStamps(updatedStamps);
   } catch (error) {
     console.error('Failed to remove custom stamp:', error);

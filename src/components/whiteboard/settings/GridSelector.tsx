@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '../../ui/button';
-import { Upload } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { Skeleton } from '../../ui/skeleton';
+import { removeCustomStamp } from '../../../utils/customStamps';
+import { toast } from 'sonner';
 
 interface GridSelectorProps {
   label: string;
@@ -10,6 +12,7 @@ interface GridSelectorProps {
   selectedValue: string;
   onChange: (value: string) => void;
   showUpload?: boolean;
+  onCustomStampDeleted?: () => void; // Callback when custom stamp is deleted
 }
 
 export const GridSelector: React.FC<GridSelectorProps> = ({
@@ -17,7 +20,8 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
   items,
   selectedValue,
   onChange,
-  showUpload = false
+  showUpload = false,
+  onCustomStampDeleted
 }) => {
   const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
@@ -52,6 +56,22 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
     setLoadedImages(prev => new Set(prev).add(url));
   }, []);
   
+  // Handle custom stamp deletion
+  const handleDeleteCustomStamp = useCallback(async (e: React.MouseEvent, stampUrl: string) => {
+    e.stopPropagation(); // Prevent selecting the stamp
+    
+    if (!stampUrl.startsWith('data:')) return; // Only allow deleting custom stamps
+    
+    try {
+      // Remove custom stamp by dataURL
+      await removeCustomStamp(stampUrl);
+      toast.success('Custom stamp deleted');
+      onCustomStampDeleted?.();
+    } catch (error) {
+      toast.error('Failed to delete stamp');
+    }
+  }, [onCustomStampDeleted]);
+  
   // Handle image load error
   const handleImageError = useCallback((url: string) => {
     console.warn('Failed to load image:', url);
@@ -70,30 +90,42 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
           const isCustomStamp = item.url.startsWith('data:'); // Custom stamps use dataURL
           
           return (
-            <button
-              key={item.url}
-              className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden group flex items-center justify-center ${
-                selectedValue === item.url
-                  ? 'border-primary ring-2 ring-primary/20'
-                  : 'border-border hover:border-primary'
-              }`}
-              onClick={() => onChange(item.url)}
-              title={item.name}
-            >
-              {isLoading && (
-                <Skeleton className="w-full h-full absolute inset-0" />
-              )}
-              <img 
-                src={item.preview} 
-                alt={item.name}
-                className={`w-full h-full object-contain p-2 transition-opacity duration-200 ${
-                  isLoading ? 'opacity-0' : 'opacity-100'
+            <div key={item.url} className="relative">
+              <button
+                className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden group flex items-center justify-center ${
+                  selectedValue === item.url
+                    ? 'border-primary ring-2 ring-primary/20'
+                    : 'border-border hover:border-primary'
                 }`}
-                onLoad={() => handleImageLoaded(item.url)}
-                onError={() => handleImageError(item.url)}
-                loading="lazy"
-              />
-            </button>
+                onClick={() => onChange(item.url)}
+                title={item.name}
+              >
+                {isLoading && (
+                  <Skeleton className="w-full h-full absolute inset-0" />
+                )}
+                <img 
+                  src={item.preview} 
+                  alt={item.name}
+                  className={`w-full h-full object-contain p-2 transition-opacity duration-200 ${
+                    isLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
+                  onLoad={() => handleImageLoaded(item.url)}
+                  onError={() => handleImageError(item.url)}
+                  loading="lazy"
+                />
+              </button>
+              
+              {/* Delete button for custom stamps */}
+              {isCustomStamp && (
+                <button
+                  onClick={(e) => handleDeleteCustomStamp(e, item.url)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10 hover:bg-destructive/90 shadow-md"
+                  title="Delete custom stamp"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           );
         })}
       </div>
