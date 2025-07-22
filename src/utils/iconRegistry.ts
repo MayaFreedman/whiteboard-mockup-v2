@@ -11,7 +11,7 @@ export interface IconInfo {
 }
 
 // Helper function to get emoji path
-const emojiPath = (code: string) => `/assets/emojis/openmoji-svg-color/${code}.svg`;
+const emojiPath = (code: string) => `/src/assets/emojis/openmoji-svg-color/${code}.svg`;
 
 export const iconRegistry: IconInfo[] = [
   // Emotions & Faces
