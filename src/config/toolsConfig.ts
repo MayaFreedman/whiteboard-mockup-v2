@@ -1,4 +1,5 @@
-import { iconRegistry } from '../utils/iconRegistry';
+
+import { iconRegistry, getIconsByCategory } from '../utils/iconRegistry';
 
 export interface ToolSettingConfig {
   type: 'slider' | 'badges' | 'select' | 'toggleGroup' | 'grid' | 'text';
@@ -139,6 +140,8 @@ export const toolsConfig: Record<string, ToolConfig> = {
         showValue: true,
         valueFormatter: (value) => `${value * 10}px`
       },
+      // Note: The grid item is now handled directly in DynamicToolSettings.tsx
+      // to support category filtering
       {
         type: 'grid',
         label: 'Icon Stamps',

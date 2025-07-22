@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState, useMemo } from 'react';
 import { useToolStore } from '../../../stores/toolStore';
 import { useWhiteboardStore } from '../../../stores/whiteboardStore';
 import { toolsConfig, simpleToolsConfig, ToolConfig, ToolSettingConfig } from '../../../config/toolsConfig';
@@ -11,11 +12,15 @@ import { ToggleButtonGroup } from './ToggleButtonGroup';
 import { EraserSettings } from '../EraserSettings';
 import { ShapePropertiesPanel } from '../ShapePropertiesPanel';
 import { TextPropertiesPanel } from '../TextPropertiesPanel';
+import { getCategories, getIconsByCategory, getCategoryDisplayName } from '../../../utils/iconRegistry';
 
 export const DynamicToolSettings: React.FC = () => {
   const { activeTool, toolSettings, updateToolSettings } = useToolStore();
   const { selectedObjectIds, objects } = useWhiteboardStore();
-
+  
+  // For stamp tool, we'll add category filtering
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  
   // Show properties panel for selected objects (exact same logic as before)
   if (selectedObjectIds.length > 0) {
     const obj = objects[selectedObjectIds[0]];
@@ -39,6 +44,78 @@ export const DynamicToolSettings: React.FC = () => {
     return (
       <ToolSettingCard title="Eraser Settings">
         <EraserSettings />
+      </ToolSettingCard>
+    );
+  }
+
+  // Handle stamp tool with category filtering
+  if (activeTool === 'stamp') {
+    const categories = useMemo(() => ['all', ...getCategories()], []);
+    const toolConfig = toolsConfig[activeTool];
+    
+    // Get stamp items based on selected category
+    const getStampItems = () => {
+      const stampSetting = toolConfig.settings.find(setting => setting.key === 'selectedSticker');
+      if (!stampSetting || !stampSetting.gridItems) return [];
+      
+      if (selectedCategory === 'all') {
+        return stampSetting.gridItems;
+      }
+      
+      // Filter gridItems by category
+      const categoryItems = getIconsByCategory(selectedCategory).map(icon => ({
+        name: icon.name,
+        url: icon.path,
+        preview: icon.preview
+      }));
+      
+      return categoryItems;
+    };
+    
+    return (
+      <ToolSettingCard title="Stamp Settings">
+        <div className="space-y-4">
+          {/* Size slider */}
+          <SliderSetting
+            label="Stamp Size"
+            value={toolSettings.strokeWidth || 5}
+            min={5}
+            max={20}
+            step={1}
+            onChange={(value) => updateToolSettings({ strokeWidth: value })}
+            valueFormatter={(value) => `${value * 10}px`}
+            showValue={true}
+          />
+          
+          {/* Category selector */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Category</label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                    selectedCategory === category 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category === 'all' ? 'All Icons' : getCategoryDisplayName(category)}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Stamp grid */}
+          <GridSelector
+            label="Select Stamp"
+            items={getStampItems()}
+            selectedValue={toolSettings.selectedSticker || ''}
+            onChange={(value) => updateToolSettings({ selectedSticker: value })}
+            showUpload={true}
+          />
+        </div>
       </ToolSettingCard>
     );
   }
@@ -138,6 +215,11 @@ const ToolSettingRenderer: React.FC<ToolSettingRendererProps> = ({
       );
 
     case 'grid':
+      // We handle stamp tool separately now
+      if (setting.key === 'selectedSticker') {
+        return null;
+      }
+      
       return (
         <GridSelector
           label={setting.label}

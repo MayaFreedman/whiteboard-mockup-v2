@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../../ui/button';
 import { Upload } from 'lucide-react';
+import { Skeleton } from '../../ui/skeleton';
 
 interface GridSelectorProps {
   label: string;
@@ -18,10 +19,29 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
   onChange,
   showUpload = false
 }) => {
+  const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
+  
+  // Initialize loading state for all items
+  useEffect(() => {
+    const initialLoadingState: Record<string, boolean> = {};
+    items.forEach(item => {
+      initialLoadingState[item.url] = true;
+    });
+    setImageLoading(initialLoadingState);
+  }, [items]);
+  
+  // Handle image load complete
+  const handleImageLoaded = (url: string) => {
+    setImageLoading(prev => ({
+      ...prev,
+      [url]: false
+    }));
+  };
+
   return (
     <div>
       <label className="text-sm font-medium mb-3 block">{label}</label>
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1">
         {items.map((item) => (
           <button
             key={item.name}
@@ -33,15 +53,22 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
             onClick={() => onChange(item.url)}
             title={item.name}
           >
-            {/* Check if it's an emoji or SVG */}
-            {item.preview.length <= 4 ? (
+            {/* Check if it's an emoji character or an image path */}
+            {item.preview.length <= 4 && !item.preview.endsWith('.svg') ? (
               <span className="text-3xl">{item.preview}</span>
             ) : (
-              <img 
-                src={item.preview} 
-                alt={item.name}
-                className="w-full h-full object-contain"
-              />
+              <>
+                {imageLoading[item.url] && (
+                  <Skeleton className="w-full h-full absolute inset-0" />
+                )}
+                <img 
+                  src={item.preview} 
+                  alt={item.name}
+                  className={`w-full h-full object-contain p-2 ${imageLoading[item.url] ? 'opacity-0' : 'opacity-100'}`}
+                  onLoad={() => handleImageLoaded(item.url)}
+                  onError={() => handleImageLoaded(item.url)}
+                />
+              </>
             )}
           </button>
         ))}
