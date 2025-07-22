@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor">
-  <circle cx="50" cy="50" r="45" fill="#FFB6C1" stroke="currentColor" stroke-width="2"/>
-  <path d="M25 30 C25 25, 30 20, 35 25 C40 20, 45 25, 45 30 C45 35, 35 45, 35 45 C35 45, 25 35, 25 30 Z" fill="currentColor"/>
-  <path d="M55 30 C55 25, 60 20, 65 25 C70 20, 75 25, 75 30 C75 35, 65 45, 65 45 C65 45, 55 35, 55 30 Z" fill="currentColor"/>
-  <path d="M30 60 Q50 80 70 60" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
-</svg>

@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor">
-  <ellipse cx="45" cy="50" rx="25" ry="15" fill="#40E0D0" stroke="currentColor" stroke-width="2"/>
-  <path d="M70 50 L85 35 L85 65 Z" fill="#40E0D0" stroke="currentColor" stroke-width="2"/>
-  <circle cx="35" cy="45" r="2" fill="currentColor"/>
-  <path d="M40 50 Q45 45 50 50 Q45 55 40 50" fill="#20B2AA" stroke="currentColor" stroke-width="1"/>
-</svg>
