@@ -5,6 +5,8 @@
  * Uses authentic OpenMoji SVG files
  */
 
+import { getCustomStamps, CustomStamp } from './customStamps';
+
 export interface IconInfo {
   name: string;
   category: string;
@@ -1381,10 +1383,56 @@ export const getCategoryDisplayName = (category: string): string => {
     weather: "Weather",
     hands: "Hands & People",
     fantasy: "Fantasy & Religion",
+    custom: "Custom Stamps",
   };
 
   return (
     categoryMap[category] ||
     category.charAt(0).toUpperCase() + category.slice(1)
   );
+};
+
+/**
+ * Get custom stamps as IconInfo format
+ */
+export const getCustomStampsAsIcons = (): IconInfo[] => {
+  const customStamps = getCustomStamps();
+  return customStamps.map(stamp => ({
+    name: stamp.name,
+    category: 'custom',
+    path: stamp.dataUrl, // Use dataURL as path for custom stamps
+    preview: stamp.preview
+  }));
+};
+
+/**
+ * Get all categories including custom if available
+ */
+export const getAllCategories = (): string[] => {
+  const baseCategories = getCategories();
+  const customStamps = getCustomStamps();
+  
+  if (customStamps.length > 0) {
+    return [...baseCategories, 'custom'];
+  }
+  
+  return baseCategories;
+};
+
+/**
+ * Get icons by category including custom stamps
+ */
+export const getIconsByCategoryWithCustom = (category: string): IconInfo[] => {
+  if (category === 'custom') {
+    return getCustomStampsAsIcons();
+  }
+  
+  return getIconsByCategory(category);
+};
+
+/**
+ * Get all icons including custom stamps
+ */
+export const getAllIcons = (): IconInfo[] => {
+  return [...iconRegistry, ...getCustomStampsAsIcons()];
 };

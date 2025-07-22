@@ -11,7 +11,8 @@ import { ToggleButtonGroup } from './ToggleButtonGroup';
 import { EraserSettings } from '../EraserSettings';
 import { ShapePropertiesPanel } from '../ShapePropertiesPanel';
 import { TextPropertiesPanel } from '../TextPropertiesPanel';
-import { getCategories, getIconsByCategory, getCategoryDisplayName } from '../../../utils/iconRegistry';
+import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName } from '../../../utils/iconRegistry';
+import { CustomStampUpload } from './CustomStampUpload';
 
 export const DynamicToolSettings: React.FC = () => {
   const { activeTool, toolSettings, updateToolSettings } = useToolStore();
@@ -19,11 +20,12 @@ export const DynamicToolSettings: React.FC = () => {
   
   // For stamp tool, we'll add category filtering
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [refreshKey, setRefreshKey] = useState(0); // Force refresh when custom stamps change
   
   // Memoize categories to prevent recalculation
   const categories = useMemo(() => 
-    activeTool === 'stamp' ? ['all', ...getCategories()] : [], 
-    [activeTool]
+    activeTool === 'stamp' ? ['all', ...getAllCategories()] : [], 
+    [activeTool, refreshKey]
   );
   
   // Memoize stamp items with stable reference to prevent GridSelector re-renders
@@ -31,23 +33,23 @@ export const DynamicToolSettings: React.FC = () => {
     if (activeTool !== 'stamp') return [];
     
     if (selectedCategory === 'all') {
-      // Get all OpenMoji icons from iconRegistry
-      return getCategories().flatMap(category => 
-        getIconsByCategory(category).map(icon => ({
+      // Get all icons including custom stamps
+      return getAllCategories().flatMap(category => 
+        getIconsByCategoryWithCustom(category).map(icon => ({
           name: icon.name,
           url: icon.path,
-          preview: icon.path // Use the SVG path as preview
+          preview: icon.preview // Use the preview (emoji or dataURL)
         }))
       );
     }
     
-    // Filter OpenMoji icons by category
-    return getIconsByCategory(selectedCategory).map(icon => ({
+    // Filter icons by category (including custom)
+    return getIconsByCategoryWithCustom(selectedCategory).map(icon => ({
       name: icon.name,
       url: icon.path,
-      preview: icon.path // Use the SVG path as preview
+      preview: icon.preview // Use the preview (emoji or dataURL)
     }));
-  }, [activeTool, selectedCategory]);
+  }, [activeTool, selectedCategory, refreshKey]);
   
   // Memoize category change handler to prevent re-renders
   const handleCategoryChange = useCallback((category: string) => {
@@ -58,6 +60,11 @@ export const DynamicToolSettings: React.FC = () => {
   const handleStampChange = useCallback((value: string) => {
     updateToolSettings({ selectedSticker: value });
   }, [updateToolSettings]);
+  
+  // Handle custom stamp added
+  const handleCustomStampAdded = useCallback(() => {
+    setRefreshKey(prev => prev + 1); // Force refresh of categories and stamp items
+  }, []);
   
   // Show properties panel for selected objects (exact same logic as before)
   if (selectedObjectIds.length > 0) {
@@ -129,8 +136,11 @@ export const DynamicToolSettings: React.FC = () => {
             items={stampItems}
             selectedValue={toolSettings.selectedSticker || ''}
             onChange={handleStampChange}
-            showUpload={true}
+            showUpload={false}
           />
+          
+          {/* Custom stamp upload */}
+          <CustomStampUpload onStampAdded={handleCustomStampAdded} />
         </div>
       </ToolSettingCard>
     );

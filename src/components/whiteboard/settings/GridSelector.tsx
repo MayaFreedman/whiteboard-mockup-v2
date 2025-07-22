@@ -104,10 +104,9 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
         })}
       </div>
       {showUpload && (
-        <Button variant="outline" size="sm" className="w-full gap-2">
-          <Upload className="w-4 h-4" />
-          Upload Custom Sticker
-        </Button>
+        <div className="mt-3">
+          {/* Custom upload component will be added here */}
+        </div>
       )}
     </div>
   );
