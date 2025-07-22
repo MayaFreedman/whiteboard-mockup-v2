@@ -92,7 +92,7 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
           return (
             <div key={item.url} className="relative">
               <button
-                className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden flex items-center justify-center group ${
+                className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden flex items-center justify-center ${
                   selectedValue === item.url
                     ? 'border-primary ring-2 ring-primary/20'
                     : 'border-border hover:border-primary'
@@ -103,27 +103,29 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
                 {isLoading && (
                   <Skeleton className="w-full h-full absolute inset-0" />
                 )}
-                <img 
-                  src={item.preview} 
-                  alt={item.name}
-                  className={`w-full h-full object-contain p-2 transition-opacity duration-200 ${
-                    isLoading ? 'opacity-0' : 'opacity-100'
-                  }`}
-                  onLoad={() => handleImageLoaded(item.url)}
-                  onError={() => handleImageError(item.url)}
-                  loading="lazy"
-                />
-                
-                {/* Delete button for custom stamps - positioned inside the button */}
-                {isCustomStamp && (
-                  <button
-                    onClick={(e) => handleDeleteCustomStamp(e, item.url)}
-                    className="absolute top-1 left-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-20 hover:bg-destructive/90 hover:scale-110 shadow-lg border border-destructive-foreground/20"
-                    title="Delete custom stamp"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
+                <div className="relative w-full h-full group">
+                  <img 
+                    src={item.preview} 
+                    alt={item.name}
+                    className={`w-full h-full object-contain p-2 transition-opacity duration-200 ${
+                      isLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
+                    onLoad={() => handleImageLoaded(item.url)}
+                    onError={() => handleImageError(item.url)}
+                    loading="lazy"
+                  />
+                  
+                  {/* Delete button for custom stamps - only shows on image hover */}
+                  {isCustomStamp && (
+                    <button
+                      onClick={(e) => handleDeleteCustomStamp(e, item.url)}
+                      className="absolute top-1 left-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-20 hover:bg-destructive/90 hover:scale-110 shadow-lg border border-destructive-foreground/20"
+                      title="Delete custom stamp"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
               </button>
             </div>
           );
