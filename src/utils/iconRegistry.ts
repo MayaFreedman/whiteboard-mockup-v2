@@ -13,6 +13,7 @@ export interface IconInfo {
 }
 
 // Use only authentic OpenMoji files from the user's collection
+// Use only authentic OpenMoji files from the user's collection
 export const iconRegistry: IconInfo[] = [
   // Emotions - using correct Unicode codepoints
   {
@@ -1200,12 +1201,6 @@ export const iconRegistry: IconInfo[] = [
     category: "travel",
     path: "/emojis/openmoji-svg-color (1)/1F3DB.svg",
     preview: "🏛️",
-  },
-  {
-    name: "Park",
-    category: "travel",
-    path: "/emojis/openmoji-svg-color (1)/1F3DE.svg",
-    preview: "🏞️",
   },
   {
     name: "Stadium",
