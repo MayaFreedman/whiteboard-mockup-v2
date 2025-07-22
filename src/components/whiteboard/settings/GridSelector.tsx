@@ -115,17 +115,15 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
                 />
               </button>
               
-              {/* Hover zone specifically for the stamp image area */}
+              {/* Simple X in top-right corner for custom stamps */}
               {isCustomStamp && (
-                <div className="absolute inset-2 group pointer-events-none">
-                  <button
-                    onClick={(e) => handleDeleteCustomStamp(e, item.url)}
-                    className="absolute top-0 left-0 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-20 hover:bg-destructive/90 hover:scale-110 shadow-lg border border-destructive-foreground/20 pointer-events-auto"
-                    title="Delete custom stamp"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
+                <button
+                  onClick={(e) => handleDeleteCustomStamp(e, item.url)}
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-gray-500 text-white rounded-full flex items-center justify-center z-20 hover:bg-gray-600 shadow-md"
+                  title="Delete custom stamp"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               )}
             </div>
           );
