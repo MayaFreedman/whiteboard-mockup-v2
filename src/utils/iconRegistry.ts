@@ -1,6 +1,8 @@
+
 /**
  * Icon registry for stamp icons
  * Maps icon names to their file paths for dynamic loading
+ * Uses authentic OpenMoji SVG files
  */
 
 export interface IconInfo {
@@ -10,224 +12,136 @@ export interface IconInfo {
   preview: string; // Path to preview image or emoji character
 }
 
-// Use the existing icon assets that are known to work
+// Use only authentic OpenMoji files from the user's collection
 export const iconRegistry: IconInfo[] = [
-  // Emotions - use original icons and emoji characters
+  // Emotions - using correct Unicode codepoints
   {
-    name: "Happy",
+    name: "Grinning Face",
     category: "emotions",
-    path: "./assets/emojis/openmoji-svg-color/E09C.svg",
-    preview: "😊",
+    path: "/emojis/openmoji-svg-color (1)/1F600.svg",
+    preview: "😀",
   },
   {
-    name: "Sad",
-    category: "emotions",
-    path: "/src/assets/icons/emotions/sad.svg",
-    preview: "😢",
+    name: "Beaming Face",
+    category: "emotions", 
+    path: "/emojis/openmoji-svg-color (1)/1F601.svg",
+    preview: "😁",
   },
   {
-    name: "Love",
+    name: "Face with Tears of Joy",
     category: "emotions",
-    path: "./assets/icons/emotions/love.svg",
+    path: "/emojis/openmoji-svg-color (1)/1F602.svg",
+    preview: "😂",
+  },
+  {
+    name: "Grinning Face with Big Eyes",
+    category: "emotions",
+    path: "/emojis/openmoji-svg-color (1)/1F603.svg",
+    preview: "😃",
+  },
+  {
+    name: "Winking Face",
+    category: "emotions",
+    path: "/emojis/openmoji-svg-color (1)/1F609.svg",
+    preview: "😉",
+  },
+  {
+    name: "Smiling Face with Heart-Eyes",
+    category: "emotions",
+    path: "/emojis/openmoji-svg-color (1)/1F60D.svg",
     preview: "😍",
   },
   {
-    name: "Angry",
+    name: "Smiling Face with Sunglasses",
     category: "emotions",
-    path: "/src/assets/icons/emotions/angry.svg",
-    preview: "😠",
+    path: "/emojis/openmoji-svg-color (1)/1F60E.svg",
+    preview: "😎",
   },
   {
-    name: "Surprised",
+    name: "Face Blowing a Kiss",
     category: "emotions",
-    path: "/src/assets/icons/emotions/surprised.svg",
-    preview: "😮",
+    path: "/emojis/openmoji-svg-color (1)/1F617.svg",
+    preview: "😗",
+  },
+  {
+    name: "Thinking Face",
+    category: "emotions",
+    path: "/emojis/openmoji-svg-color (1)/1F914.svg",
+    preview: "🤔",
+  },
+  {
+    name: "Crying Face",
+    category: "emotions",
+    path: "/emojis/openmoji-svg-color (1)/1F622.svg",
+    preview: "😢",
   },
 
   // Animals
   {
-    name: "Dog",
+    name: "Dog Face",
     category: "animals",
-    path: "/src/assets/icons/animals/dog.svg",
+    path: "/emojis/openmoji-svg-color (1)/1F436.svg",
     preview: "🐶",
   },
   {
-    name: "Cat",
+    name: "Cat Face",
     category: "animals",
-    path: "/src/assets/icons/animals/cat.svg",
+    path: "/emojis/openmoji-svg-color (1)/1F431.svg",
     preview: "🐱",
-  },
-  {
-    name: "Bird",
-    category: "animals",
-    path: "/src/assets/icons/animals/bird.svg",
-    preview: "🐦",
-  },
-  {
-    name: "Fish",
-    category: "animals",
-    path: "/src/assets/icons/animals/fish.svg",
-    preview: "🐟",
   },
 
   // Nature
   {
     name: "Sun",
     category: "nature",
-    path: "/src/assets/icons/nature/sun.svg",
+    path: "/emojis/openmoji-svg-color (1)/2600.svg",
     preview: "☀️",
   },
   {
-    name: "Moon",
+    name: "Crescent Moon",
     category: "nature",
-    path: "/src/assets/icons/nature/moon.svg",
+    path: "/emojis/openmoji-svg-color (1)/1F319.svg",
     preview: "🌙",
   },
   {
-    name: "Tree",
+    name: "Deciduous Tree",
     category: "nature",
-    path: "/src/assets/icons/nature/tree.svg",
+    path: "/emojis/openmoji-svg-color (1)/1F333.svg",
     preview: "🌳",
   },
   {
-    name: "Flower",
+    name: "Tulip",
     category: "nature",
-    path: "/src/assets/icons/nature/flower.svg",
-    preview: "🌸",
+    path: "/emojis/openmoji-svg-color (1)/1F337.svg",
+    preview: "🌷",
   },
 
-  // Objects
+  // Objects & Symbols
   {
-    name: "Heart",
+    name: "Red Heart",
     category: "objects",
-    path: "/src/assets/icons/objects/heart.svg",
+    path: "/emojis/openmoji-svg-color (1)/2764.svg",
     preview: "❤️",
   },
   {
     name: "Star",
-    category: "objects",
-    path: "/src/assets/icons/objects/star.svg",
+    category: "symbols",
+    path: "/emojis/openmoji-svg-color (1)/2B50.svg",
     preview: "⭐",
   },
-  {
-    name: "Lightning",
-    category: "objects",
-    path: "/src/assets/icons/objects/lightning.svg",
-    preview: "⚡",
-  },
-  {
-    name: "Check Mark",
-    category: "objects",
-    path: "/src/assets/icons/objects/checkmark.svg",
-    preview: "✅",
-  },
-  {
-    name: "X Mark",
-    category: "objects",
-    path: "/src/assets/icons/objects/x-mark.svg",
-    preview: "❌",
-  },
-  {
-    name: "Question",
-    category: "objects",
-    path: "/src/assets/icons/objects/question.svg",
-    preview: "❓",
-  },
-  {
-    name: "Exclamation",
-    category: "objects",
-    path: "/src/assets/icons/objects/exclamation.svg",
-    preview: "❗",
-  },
-  {
-    name: "Thumbs Up",
-    category: "objects",
-    path: "/src/assets/icons/objects/thumbs-up.svg",
-    preview: "👍",
-  },
-  {
-    name: "Thumbs Down",
-    category: "objects",
-    path: "/src/assets/icons/objects/thumbs-down.svg",
-    preview: "👎",
-  },
 
-  // Symbols
+  // Travel & Places
   {
-    name: "Plus",
-    category: "symbols",
-    path: "/src/assets/icons/symbols/plus.svg",
-    preview: "➕",
-  },
-  {
-    name: "Minus",
-    category: "symbols",
-    path: "/src/assets/icons/symbols/minus.svg",
-    preview: "➖",
-  },
-  {
-    name: "Up Arrow",
-    category: "symbols",
-    path: "/src/assets/icons/arrows/up.svg",
-    preview: "⬆️",
-  },
-  {
-    name: "Down Arrow",
-    category: "symbols",
-    path: "/src/assets/icons/arrows/down.svg",
-    preview: "⬇️",
-  },
-  {
-    name: "Left Arrow",
-    category: "symbols",
-    path: "/src/assets/icons/arrows/left.svg",
-    preview: "⬅️",
-  },
-  {
-    name: "Right Arrow",
-    category: "symbols",
-    path: "/src/assets/icons/arrows/right.svg",
-    preview: "➡️",
-  },
-
-  // Fantasy SVGs
-  {
-    name: "Fantasy Collection",
-    category: "fantasy",
-    path: "./assets/.svg",
-    preview: "",
-  },
-
-  ///src/assets/fantasy.svg', preview: '🧙' },
-  {
-    name: "Religious Collection",
-    category: "fantasy",
-    path: "/src/assets/religious.svg",
-    preview: "⛪",
-  },
-  {
-    name: "Sports Collection",
-    category: "activities",
-    path: "/src/assets/sports.svg",
-    preview: "⚽",
-  },
-  {
-    name: "Animals Collection",
-    category: "animals",
-    path: "/src/assets/Animals.svg",
-    preview: "🦁",
-  },
-  {
-    name: "Plants Collection",
-    category: "nature",
-    path: "/src/assets/Plants.svg",
-    preview: "🌿",
-  },
-  {
-    name: "Vehicles Collection",
+    name: "Airplane",
     category: "travel",
-    path: "/src/assets/Vehicles.svg",
-    preview: "🚗",
+    path: "/emojis/openmoji-svg-color (1)/2708.svg",
+    preview: "✈️",
+  },
+  {
+    name: "Castle",
+    category: "travel",
+    path: "/emojis/openmoji-svg-color (1)/1F3F0.svg",
+    preview: "🏰",
   },
 ];
 
