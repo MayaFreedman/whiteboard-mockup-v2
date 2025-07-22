@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useToolStore } from '../../../stores/toolStore';
 import { useWhiteboardStore } from '../../../stores/whiteboardStore';
 import { toolsConfig, simpleToolsConfig, ToolConfig, ToolSettingConfig } from '../../../config/toolsConfig';
@@ -21,8 +20,44 @@ export const DynamicToolSettings: React.FC = () => {
   // For stamp tool, we'll add category filtering
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   
-  // Move useMemo to top level to avoid conditional hook calls
-  const categories = useMemo(() => activeTool === 'stamp' ? ['all', ...getCategories()] : [], [activeTool]);
+  // Memoize categories to prevent recalculation
+  const categories = useMemo(() => 
+    activeTool === 'stamp' ? ['all', ...getCategories()] : [], 
+    [activeTool]
+  );
+  
+  // Memoize stamp items with stable reference to prevent GridSelector re-renders
+  const stampItems = useMemo(() => {
+    if (activeTool !== 'stamp') return [];
+    
+    if (selectedCategory === 'all') {
+      // Get all OpenMoji icons from iconRegistry
+      return getCategories().flatMap(category => 
+        getIconsByCategory(category).map(icon => ({
+          name: icon.name,
+          url: icon.path,
+          preview: icon.path // Use the SVG path as preview
+        }))
+      );
+    }
+    
+    // Filter OpenMoji icons by category
+    return getIconsByCategory(selectedCategory).map(icon => ({
+      name: icon.name,
+      url: icon.path,
+      preview: icon.path // Use the SVG path as preview
+    }));
+  }, [activeTool, selectedCategory]);
+  
+  // Memoize category change handler to prevent re-renders
+  const handleCategoryChange = useCallback((category: string) => {
+    setSelectedCategory(category);
+  }, []);
+  
+  // Memoize stamp selection handler
+  const handleStampChange = useCallback((value: string) => {
+    updateToolSettings({ selectedSticker: value });
+  }, [updateToolSettings]);
   
   // Show properties panel for selected objects (exact same logic as before)
   if (selectedObjectIds.length > 0) {
@@ -51,31 +86,8 @@ export const DynamicToolSettings: React.FC = () => {
     );
   }
 
-  // Handle stamp tool with category filtering
+  // Handle stamp tool with optimized rendering
   if (activeTool === 'stamp') {
-    const toolConfig = toolsConfig[activeTool];
-    
-    // Get stamp items based on selected category
-    const getStampItems = () => {
-      if (selectedCategory === 'all') {
-        // Get all OpenMoji icons from iconRegistry
-        return getCategories().flatMap(category => 
-          getIconsByCategory(category).map(icon => ({
-            name: icon.name,
-            url: icon.path,
-            preview: icon.path // Use the SVG path as preview
-          }))
-        );
-      }
-      
-      // Filter OpenMoji icons by category
-      return getIconsByCategory(selectedCategory).map(icon => ({
-        name: icon.name,
-        url: icon.path,
-        preview: icon.path // Use the SVG path as preview
-      }));
-    };
-    
     return (
       <ToolSettingCard title="Stamp Settings">
         <div className="space-y-4">
@@ -103,7 +115,7 @@ export const DynamicToolSettings: React.FC = () => {
                       ? 'bg-primary text-primary-foreground' 
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => handleCategoryChange(category)}
                 >
                   {category === 'all' ? 'All Icons' : getCategoryDisplayName(category)}
                 </button>
@@ -111,12 +123,12 @@ export const DynamicToolSettings: React.FC = () => {
             </div>
           </div>
           
-          {/* Stamp grid */}
+          {/* Stamp grid with memoized items */}
           <GridSelector
             label="Select Stamp"
-            items={getStampItems()}
+            items={stampItems}
             selectedValue={toolSettings.selectedSticker || ''}
-            onChange={(value) => updateToolSettings({ selectedSticker: value })}
+            onChange={handleStampChange}
             showUpload={true}
           />
         </div>
