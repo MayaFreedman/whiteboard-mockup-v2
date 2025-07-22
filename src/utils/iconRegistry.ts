@@ -1025,12 +1025,6 @@ export const iconRegistry: IconInfo[] = [
     preview: "🟰",
   },
   {
-    name: "Infinity",
-    category: "symbols",
-    path: "/emojis/openmoji-svg-color (1)/267E.svg",
-    preview: "♾️",
-  },
-  {
     name: "Copyright",
     category: "symbols",
     path: "/emojis/openmoji-svg-color (1)/00A9.svg",
