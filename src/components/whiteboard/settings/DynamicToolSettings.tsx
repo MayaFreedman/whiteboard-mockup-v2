@@ -38,7 +38,7 @@ export const DynamicToolSettings: React.FC = () => {
         getIconsByCategoryWithCustom(category).map(icon => ({
           name: icon.name,
           url: icon.path,
-          preview: icon.preview // Use the preview (emoji or dataURL)
+          preview: icon.path // Use the actual SVG/image path as preview for OpenMoji, dataURL for custom
         }))
       );
     }
@@ -47,7 +47,7 @@ export const DynamicToolSettings: React.FC = () => {
     return getIconsByCategoryWithCustom(selectedCategory).map(icon => ({
       name: icon.name,
       url: icon.path,
-      preview: icon.preview // Use the preview (emoji or dataURL)
+      preview: icon.path // Use the actual SVG/image path as preview for OpenMoji, dataURL for custom
     }));
   }, [activeTool, selectedCategory, refreshKey]);
   

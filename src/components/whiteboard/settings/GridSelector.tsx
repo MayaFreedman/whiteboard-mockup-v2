@@ -67,7 +67,7 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1">
         {memoizedItems.map((item) => {
           const isLoading = imageLoading[item.url] === true;
-          const isEmoji = item.preview.length <= 4 && !item.preview.endsWith('.svg');
+          const isCustomStamp = item.url.startsWith('data:'); // Custom stamps use dataURL
           
           return (
             <button
@@ -80,25 +80,19 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
               onClick={() => onChange(item.url)}
               title={item.name}
             >
-              {isEmoji ? (
-                <span className="text-3xl">{item.preview}</span>
-              ) : (
-                <>
-                  {isLoading && (
-                    <Skeleton className="w-full h-full absolute inset-0" />
-                  )}
-                  <img 
-                    src={item.preview} 
-                    alt={item.name}
-                    className={`w-full h-full object-contain p-2 transition-opacity duration-200 ${
-                      isLoading ? 'opacity-0' : 'opacity-100'
-                    }`}
-                    onLoad={() => handleImageLoaded(item.url)}
-                    onError={() => handleImageError(item.url)}
-                    loading="lazy"
-                  />
-                </>
+              {isLoading && (
+                <Skeleton className="w-full h-full absolute inset-0" />
               )}
+              <img 
+                src={item.preview} 
+                alt={item.name}
+                className={`w-full h-full object-contain p-2 transition-opacity duration-200 ${
+                  isLoading ? 'opacity-0' : 'opacity-100'
+                }`}
+                onLoad={() => handleImageLoaded(item.url)}
+                onError={() => handleImageError(item.url)}
+                loading="lazy"
+              />
             </button>
           );
         })}
