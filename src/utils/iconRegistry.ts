@@ -13,7 +13,6 @@ export interface IconInfo {
 }
 
 // Use only authentic OpenMoji files from the user's collection
-// Use only authentic OpenMoji files from the user's collection
 export const iconRegistry: IconInfo[] = [
   // Emotions - using correct Unicode codepoints
   {
