@@ -90,9 +90,9 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
           const isCustomStamp = item.url.startsWith('data:'); // Custom stamps use dataURL
           
           return (
-            <div key={item.url} className="relative group">
+            <div key={item.url} className="relative">
               <button
-                className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden flex items-center justify-center ${
+                className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden flex items-center justify-center group ${
                   selectedValue === item.url
                     ? 'border-primary ring-2 ring-primary/20'
                     : 'border-border hover:border-primary'
