@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '../../ui/button';
 import { Upload } from 'lucide-react';
 import { Skeleton } from '../../ui/skeleton';
+import { CustomStampUpload } from './CustomStampUpload';
 
 interface GridSelectorProps {
   label: string;
@@ -21,6 +21,7 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
 }) => {
   const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+  const [showUploadModal, setShowUploadModal] = useState(false);
   
   // Memoize items to prevent unnecessary re-initialization
   const memoizedItems = useMemo(() => items, [JSON.stringify(items.map(item => item.url))]);
@@ -61,13 +62,19 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
     }));
   }, []);
 
+  const handleUploadSuccess = useCallback(() => {
+    setShowUploadModal(false);
+    // Force parent to refresh custom stamps
+    window.dispatchEvent(new CustomEvent('customStampsUpdated'));
+  }, []);
+
   return (
     <div>
       <label className="text-sm font-medium mb-3 block">{label}</label>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1">
         {memoizedItems.map((item) => {
           const isLoading = imageLoading[item.url] === true;
-          const isEmoji = item.preview.length <= 4 && !item.preview.endsWith('.svg');
+          const isEmoji = item.preview.length <= 4 && !item.preview.endsWith('.svg') && !item.preview.startsWith('data:');
           
           return (
             <button
@@ -104,10 +111,31 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
         })}
       </div>
       {showUpload && (
-        <Button variant="outline" size="sm" className="w-full gap-2">
-          <Upload className="w-4 h-4" />
-          Upload Custom Sticker
-        </Button>
+        <>
+          {showUploadModal ? (
+            <div className="space-y-3">
+              <CustomStampUpload onUploadSuccess={handleUploadSuccess} />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setShowUploadModal(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full gap-2"
+              onClick={() => setShowUploadModal(true)}
+            >
+              <Upload className="w-4 h-4" />
+              Upload Custom Stamp
+            </Button>
+          )}
+        </>
       )}
     </div>
   );
