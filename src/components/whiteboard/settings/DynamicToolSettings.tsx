@@ -21,6 +21,9 @@ export const DynamicToolSettings: React.FC = () => {
   // For stamp tool, we'll add category filtering
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   
+  // Move useMemo to top level to avoid conditional hook calls
+  const categories = useMemo(() => activeTool === 'stamp' ? ['all', ...getCategories()] : [], [activeTool]);
+  
   // Show properties panel for selected objects (exact same logic as before)
   if (selectedObjectIds.length > 0) {
     const obj = objects[selectedObjectIds[0]];
@@ -50,7 +53,6 @@ export const DynamicToolSettings: React.FC = () => {
 
   // Handle stamp tool with category filtering
   if (activeTool === 'stamp') {
-    const categories = useMemo(() => ['all', ...getCategories()], []);
     const toolConfig = toolsConfig[activeTool];
     
     // Get stamp items based on selected category
