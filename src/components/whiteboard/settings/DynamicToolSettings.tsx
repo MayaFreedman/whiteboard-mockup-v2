@@ -55,21 +55,23 @@ export const DynamicToolSettings: React.FC = () => {
     
     // Get stamp items based on selected category
     const getStampItems = () => {
-      const stampSetting = toolConfig.settings.find(setting => setting.key === 'selectedSticker');
-      if (!stampSetting || !stampSetting.gridItems) return [];
-      
       if (selectedCategory === 'all') {
-        return stampSetting.gridItems;
+        // Get all OpenMoji icons from iconRegistry
+        return getCategories().flatMap(category => 
+          getIconsByCategory(category).map(icon => ({
+            name: icon.name,
+            url: icon.path,
+            preview: icon.path // Use the SVG path as preview
+          }))
+        );
       }
       
-      // Filter gridItems by category
-      const categoryItems = getIconsByCategory(selectedCategory).map(icon => ({
+      // Filter OpenMoji icons by category
+      return getIconsByCategory(selectedCategory).map(icon => ({
         name: icon.name,
         url: icon.path,
-        preview: icon.preview
+        preview: icon.path // Use the SVG path as preview
       }));
-      
-      return categoryItems;
     };
     
     return (
