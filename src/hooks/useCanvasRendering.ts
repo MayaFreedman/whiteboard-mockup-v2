@@ -447,13 +447,19 @@ export const useCanvasRendering = (
             contentToRender = 'Double-click to edit';
           }
           
-          // Set font properties
+          // Set font properties - make placeholder text lighter
           let fontStyle = '';
           if (textData.italic) fontStyle += 'italic ';
-          if (textData.bold) fontStyle += 'bold ';
+          if (textData.bold && contentToRender !== 'Double-click to edit') fontStyle += 'bold '; // Don't bold placeholder text
           
           ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
-          ctx.fillStyle = obj.stroke || '#000000';
+          
+          // Make placeholder text lighter
+          if (contentToRender === 'Double-click to edit') {
+            ctx.fillStyle = obj.stroke ? `${obj.stroke}80` : '#00000080'; // 50% opacity for placeholder
+          } else {
+            ctx.fillStyle = obj.stroke || '#000000';
+          }
           ctx.textBaseline = 'top';
           
           // Handle text alignment

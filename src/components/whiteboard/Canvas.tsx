@@ -329,8 +329,8 @@ export const Canvas: React.FC = () => {
 
       const textObject = {
         type: 'text' as const,
-        x: immediateTextPosition.x, // Use exact textarea position 
-        y: immediateTextPosition.y, // Use exact textarea position
+        x: immediateTextPosition.x - 4, // Account for canvas text 4px left padding
+        y: immediateTextPosition.y - 4, // Account for canvas text 4px top padding
         width,
         height,
         stroke: toolStore.toolSettings.strokeColor,
