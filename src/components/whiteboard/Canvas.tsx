@@ -362,6 +362,7 @@ export const Canvas: React.FC = () => {
         textarea.style.whiteSpace = 'pre-wrap';
         textarea.style.overflowWrap = 'break-word';
         textarea.style.wordBreak = 'break-word';
+        textarea.style.wordWrap = 'break-word';
         textarea.style.width = Math.max(availableWidth, minWidth) + 'px';
         textarea.style.height = 'auto';
         
