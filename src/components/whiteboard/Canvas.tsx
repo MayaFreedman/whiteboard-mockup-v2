@@ -332,7 +332,7 @@ export const Canvas: React.FC = () => {
         height,
         stroke: toolStore.toolSettings.strokeColor,
         fill: 'transparent',
-        strokeWidth: 1,
+        strokeWidth: toolStore.toolSettings.strokeWidth || 1, // Use tool settings, not hardcoded
         opacity: 1,
         data: textData
       };
@@ -491,6 +491,13 @@ export const Canvas: React.FC = () => {
       handleImmediateTextComplete();
       // Don't return here - allow the tool interaction to continue
       // This ensures we can start a new text editing session immediately
+    }
+
+    // Handle click outside regular text editing area - complete the text editing
+    if (editingTextId) {
+      console.log('🖱️ Click outside regular text editing - completing text edit');
+      handleTextEditComplete();
+      // Don't return here - allow the tool interaction to continue
     }
 
     if (canvasRef.current) {
