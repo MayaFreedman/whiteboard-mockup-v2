@@ -61,7 +61,7 @@ export const StampPropertiesPanel: React.FC<StampPropertiesPanelProps> = ({
       {/* Opacity Control */}
       <SliderSetting
         label="Opacity"
-        value={(selectedObject.opacity || 1) * 100}
+        value={Math.round((selectedObject.opacity || 1) * 100)}
         min={10}
         max={100}
         step={5}
