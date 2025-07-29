@@ -4,6 +4,7 @@ import { useToolStore } from '../../stores/toolStore';
 import { useCanvasInteractions } from '../../hooks/canvas/useCanvasInteractions';
 import { useCanvasRendering } from '../../hooks/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
+import { useUser } from '../../contexts/UserContext';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
 import { measureText } from '../../utils/textMeasurement';
@@ -39,8 +40,10 @@ const getCursorStyle = (activeTool: string): string => {
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { viewport, selectedObjectIds, updateObject, objects } = useWhiteboardStore();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { viewport, selectedObjectIds, updateObject, objects, deleteObject, clearSelection } = useWhiteboardStore();
   const { activeTool } = useToolStore();
+  const { userId } = useUser();
   
   // Text editing state
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
@@ -320,6 +323,41 @@ export const Canvas: React.FC = () => {
     };
   }, [interactions]);
 
+  // Handle keyboard events for object deletion
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle delete when:
+      // 1. Not editing text
+      // 2. Objects are selected
+      // 3. Focus is on the canvas container or its children
+      if (editingTextId || selectedObjectIds.length === 0) {
+        return;
+      }
+
+      // Check if the delete key or backspace was pressed
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault();
+        
+        // Delete all selected objects
+        selectedObjectIds.forEach(objectId => {
+          deleteObject(objectId, userId);
+        });
+        
+        // Clear selection after deletion
+        clearSelection(userId);
+        
+        console.log('🗑️ Deleted selected objects:', selectedObjectIds);
+      }
+    };
+
+    // Add event listener to document to capture keyboard events
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [editingTextId, selectedObjectIds, deleteObject, clearSelection, userId]);
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -376,7 +414,12 @@ export const Canvas: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full relative bg-background overflow-hidden">
+    <div 
+      ref={containerRef}
+      className="w-full h-full relative bg-background overflow-hidden"
+      tabIndex={0}
+      style={{ outline: 'none' }}
+    >
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
