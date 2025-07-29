@@ -352,11 +352,12 @@ export const Canvas: React.FC = () => {
     if (canvasRect && immediateTextPosition) {
       const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
       
-      // Set maxWidth to prevent textarea from going off screen
-      textarea.style.maxWidth = availableWidth + 'px';
+      // Set maxWidth to prevent textarea from going off screen, accounting for text padding
+      const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
+      textarea.style.maxWidth = (availableWidth - textPadding) + 'px';
       
       // Measure text with the same width for consistent wrapping
-      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, availableWidth);
+      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, availableWidth - textPadding);
       
       // Update canvas object - use same width as textarea for consistent wrapping
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
@@ -366,7 +367,7 @@ export const Canvas: React.FC = () => {
             ...textObject.data,
             content: newText || ''
           },
-          width: availableWidth, // Use same width as textarea
+          width: availableWidth, // Canvas object width (includes padding)
           height: Math.max(wrappedMetrics.height, fontSize * 1.2)
         });
       }
