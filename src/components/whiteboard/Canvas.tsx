@@ -387,6 +387,8 @@ export const Canvas: React.FC = () => {
       } else {
         // Keep single line mode
         textarea.style.whiteSpace = 'nowrap';
+        textarea.style.overflowWrap = 'normal';
+        textarea.style.wordBreak = 'normal';
         textarea.style.width = Math.max(textWidth, minWidth) + 'px';
         textarea.style.height = (fontSize * 1.2) + 'px';
         
@@ -739,8 +741,6 @@ export const Canvas: React.FC = () => {
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
             caretColor: toolStore.toolSettings.strokeColor || '#000000', // Ensure cursor is visible and matches text color
-            wordBreak: 'break-word', // Allow cursor to wrap with text
-            overflowWrap: 'break-word', // Ensure proper text wrapping behavior
             WebkitTextSizeAdjust: '100%',
             boxSizing: 'border-box',
             background: 'transparent', // Match canvas text - no background
