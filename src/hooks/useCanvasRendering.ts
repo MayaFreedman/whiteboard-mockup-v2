@@ -379,25 +379,6 @@ export const useCanvasRendering = (
           const cachedImage = imageCache.current.get(imageData.src);
           
           if (cachedImage) {
-            // Apply color filter if specified
-            if (obj.colorFilter && obj.colorFilter !== 'none') {
-              ctx.save();
-              
-              // Apply CSS filter using filter property
-              const filterMap: { [key: string]: string } = {
-                'red': 'hue-rotate(0deg) saturate(2)',
-                'blue': 'hue-rotate(240deg) saturate(1.5)',
-                'green': 'hue-rotate(120deg) saturate(1.5)',
-                'yellow': 'hue-rotate(60deg) saturate(1.5)',
-                'purple': 'hue-rotate(270deg) saturate(1.5)',
-                'orange': 'hue-rotate(30deg) saturate(1.5)',
-                'sepia': 'sepia(1)',
-                'grayscale': 'grayscale(1)'
-              };
-              
-              ctx.filter = filterMap[obj.colorFilter] || 'none';
-            }
-            
             // Draw immediately from cache - no blinking!
             ctx.drawImage(
               cachedImage, 
@@ -406,11 +387,6 @@ export const useCanvasRendering = (
               Math.round(obj.width), 
               Math.round(obj.height)
             );
-            
-            // Restore context if filter was applied
-            if (obj.colorFilter && obj.colorFilter !== 'none') {
-              ctx.restore();
-            }
           } else {
             // Load image asynchronously and trigger redraw when ready
             getOrLoadImage(imageData.src).then(() => {

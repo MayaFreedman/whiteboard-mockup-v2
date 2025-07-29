@@ -11,7 +11,6 @@ export interface WhiteboardObject {
   stroke?: string;
   strokeWidth?: number;
   opacity?: number;
-  colorFilter?: string;
   data?: any;
   createdAt: number;
   updatedAt: number;
