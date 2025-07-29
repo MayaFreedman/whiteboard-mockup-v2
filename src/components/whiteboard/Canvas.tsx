@@ -359,7 +359,10 @@ export const Canvas: React.FC = () => {
       textarea.style.maxWidth = effectiveWidth + 'px';
       
       // Measure text with the same width for consistent wrapping
-      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, availableWidth - textPadding);
+      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, effectiveWidth);
+      
+      // Update textarea height to match wrapped text height so cursor moves correctly
+      textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + 'px';
       
       // Update canvas object - use same width as textarea for consistent wrapping
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
