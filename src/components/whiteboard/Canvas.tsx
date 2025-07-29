@@ -58,6 +58,7 @@ export const Canvas: React.FC = () => {
   const [isImmediateTextEditing, setIsImmediateTextEditing] = useState(false);
   const [immediateTextPosition, setImmediateTextPosition] = useState<{ x: number, y: number } | null>(null);
   const [immediateTextContent, setImmediateTextContent] = useState('');
+  const [immediateTextObjectId, setImmediateTextObjectId] = useState<string | null>(null);
   
   // Double-click protection flag - reduced timeout to 200ms
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
@@ -87,9 +88,46 @@ export const Canvas: React.FC = () => {
   // Set callback for immediate text editing
   interactions.setImmediateTextTrigger((coords) => {
     console.log('📝 Immediate text editing triggered by interactions hook at:', coords);
+    
+    // Create canvas text object immediately with empty content
+    const fontSize = toolStore.toolSettings.fontSize || 16;
+    const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
+    const bold = toolStore.toolSettings.textBold || false;
+    const italic = toolStore.toolSettings.textItalic || false;
+    
+    // Create initial text object with placeholder content
+    const textData = {
+      content: '',
+      fontSize,
+      fontFamily,
+      bold,
+      italic,
+      underline: toolStore.toolSettings.textUnderline || false,
+      textAlign: toolStore.toolSettings.textAlign || 'left'
+    };
+
+    const textObject = {
+      type: 'text' as const,
+      x: coords.x - 4, // Account for canvas text 4px left padding
+      y: coords.y,
+      width: 200, // Initial width
+      height: fontSize + 8, // Initial height with padding
+      stroke: toolStore.toolSettings.strokeColor,
+      fill: 'transparent',
+      strokeWidth: toolStore.toolSettings.strokeWidth || 1,
+      opacity: 1,
+      data: textData
+    };
+
+    const objectId = addObject(textObject, userId);
+    console.log('📝 Created immediate text object:', objectId.slice(0, 8));
+    
     setIsImmediateTextEditing(true);
     setImmediateTextPosition(coords);
     setImmediateTextContent('');
+    setImmediateTextObjectId(objectId);
+    
+    redrawCanvas();
     
     // Focus the textarea after a short delay
     setTimeout(() => {
@@ -296,57 +334,58 @@ export const Canvas: React.FC = () => {
     setEditingText('');
   };
 
+  // Handle immediate text input changes - update canvas text in real-time
+  const handleImmediateTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setImmediateTextContent(newText);
+    
+    // Update the canvas text object in real-time if it exists
+    if (immediateTextObjectId && objects[immediateTextObjectId]) {
+      const textObject = objects[immediateTextObjectId];
+      updateObject(immediateTextObjectId, {
+        data: {
+          ...textObject.data,
+          content: newText || ''
+        }
+      });
+      
+      // Auto-resize text bounds to fit content
+      setTimeout(() => {
+        const updatedObject = objects[immediateTextObjectId];
+        if (updatedObject) {
+          updateTextBounds(updatedObject, newText || '');
+        }
+      }, 0);
+      
+      redrawCanvas();
+    }
+  };
+
   // Handle immediate text editing completion
   const handleImmediateTextComplete = () => {
     const finalText = immediateTextContent?.trim() || '';
     
-    if (finalText && immediateTextPosition) {
-      // Use the exact same font settings as the textarea for consistency
-      const fontSize = toolStore.toolSettings.fontSize || 16;
-      const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
-      const bold = toolStore.toolSettings.textBold || false;
-      const italic = toolStore.toolSettings.textItalic || false;
-      
-      // Measure text using the same approach as canvas rendering
-      const metrics = measureText(finalText, fontSize, fontFamily, bold, italic);
-      
-      // Add padding and ensure minimum dimensions (match canvas text rendering)
-      const padding = 8;
-      const width = Math.max(metrics.width + padding, 100);
-      const height = Math.max(metrics.height + padding, fontSize + padding);
-      
-      // Create the text object with the typed content
-      // Use the exact same positioning as the textarea to prevent movement
-      const textData = {
-        content: finalText,
-        fontSize,
-        fontFamily,
-        bold,
-        italic,
-        underline: toolStore.toolSettings.textUnderline || false,
-        textAlign: toolStore.toolSettings.textAlign || 'left'
-      };
-
-      const textObject = {
-        type: 'text' as const,
-        x: immediateTextPosition.x - 4, // Account for canvas text 4px left padding
-        y: immediateTextPosition.y, // No y adjustment needed - keep exact textarea position
-        width,
-        height,
-        stroke: toolStore.toolSettings.strokeColor,
-        fill: 'transparent',
-        strokeWidth: toolStore.toolSettings.strokeWidth || 1, // Use tool settings, not hardcoded
-        opacity: 1,
-        data: textData
-      };
-
-      const objectId = addObject(textObject, userId);
-      console.log('📝 Created immediate text object:', objectId.slice(0, 8), {
-        content: finalText,
-        dimensions: { width, height },
-        position: immediateTextPosition,
-        textareaPos: { x: immediateTextPosition.x, y: immediateTextPosition.y }
-      });
+    if (immediateTextObjectId && objects[immediateTextObjectId]) {
+      if (finalText) {
+        // Keep the existing object with final content
+        updateObject(immediateTextObjectId, {
+          data: {
+            ...objects[immediateTextObjectId].data,
+            content: finalText
+          }
+        });
+        
+        // Final resize to fit content
+        setTimeout(() => {
+          const updatedObject = objects[immediateTextObjectId];
+          if (updatedObject) {
+            updateTextBounds(updatedObject, finalText);
+          }
+        }, 0);
+      } else {
+        // Delete the object if no text was entered
+        deleteObject(immediateTextObjectId, userId);
+      }
       
       redrawCanvas();
     }
@@ -355,6 +394,7 @@ export const Canvas: React.FC = () => {
     setIsImmediateTextEditing(false);
     setImmediateTextPosition(null);
     setImmediateTextContent('');
+    setImmediateTextObjectId(null);
   };
 
   // Handle text input changes with logging
@@ -388,9 +428,15 @@ export const Canvas: React.FC = () => {
       event.preventDefault();
       handleImmediateTextComplete();
     } else if (event.key === 'Escape') {
+      // Cancel immediate text editing and clean up the canvas object
+      if (immediateTextObjectId && objects[immediateTextObjectId]) {
+        deleteObject(immediateTextObjectId, userId);
+        redrawCanvas();
+      }
       setIsImmediateTextEditing(false);
       setImmediateTextPosition(null);
       setImmediateTextContent('');
+      setImmediateTextObjectId(null);
     }
   };
 
@@ -618,7 +664,7 @@ export const Canvas: React.FC = () => {
             fontStyle: toolStore.toolSettings.textItalic ? 'italic' : 'normal',
             textDecoration: toolStore.toolSettings.textUnderline ? 'underline' : 'none',
             textAlign: toolStore.toolSettings.textAlign || 'left',
-            color: toolStore.toolSettings.strokeColor || '#000000',
+            color: 'transparent', // Make text invisible like double-click editing
             caretColor: toolStore.toolSettings.strokeColor || '#000000',
             zIndex: 1001, // Higher than regular text editing
             lineHeight: (toolStore.toolSettings.fontSize * 1.2 || 20) + 'px',
@@ -638,7 +684,7 @@ export const Canvas: React.FC = () => {
             minHeight: (toolStore.toolSettings.fontSize || 16) * 1.2 + 'px'
           }}
           value={immediateTextContent}
-          onChange={(e) => setImmediateTextContent(e.target.value)}
+          onChange={handleImmediateTextChange}
           onBlur={handleImmediateTextComplete}
           onKeyDown={handleImmediateTextKeyDown}
           placeholder="Type here..."
