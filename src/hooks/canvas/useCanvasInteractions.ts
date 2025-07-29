@@ -626,7 +626,19 @@ export const useCanvasInteractions = () => {
           return;
         }
 
-        // Store click position for drag detection
+        // Check if we're clicking on an existing text object
+        const clickedObjectId = findObjectAt(coords.x, coords.y);
+        const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
+        const isClickingOnExistingText = clickedObject && clickedObject.type === 'text';
+        
+        if (isClickingOnExistingText) {
+          console.log('📝 Clicked on existing text object - preventing immediate text editing, waiting for potential double-click');
+          // Don't set up immediate text editing when clicking on existing text
+          // This allows double-click editing to work properly
+          return;
+        }
+
+        // Store click position for drag detection (only for new text creation)
         textClickStartPosRef.current = coords;
         
         // Don't set timer or drawing state - wait to see if it's a click or drag
@@ -645,7 +657,7 @@ export const useCanvasInteractions = () => {
           opacity: 1
         };
         
-        console.log('📝 Started text interaction (waiting for click/drag decision):', coords, 'for user:', userId.slice(0, 8));
+        console.log('📝 Started text interaction on empty space (waiting for click/drag decision):', coords, 'for user:', userId.slice(0, 8));
         break;
       }
 
