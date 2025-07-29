@@ -329,8 +329,8 @@ export const Canvas: React.FC = () => {
 
       const textObject = {
         type: 'text' as const,
-        x: immediateTextPosition.x - 4, // Subtract textarea padding to align with canvas text
-        y: immediateTextPosition.y - 4, // Subtract textarea padding to align with canvas text
+        x: immediateTextPosition.x, // Use exact textarea position 
+        y: immediateTextPosition.y, // Use exact textarea position
         width,
         height,
         stroke: toolStore.toolSettings.strokeColor,
@@ -622,7 +622,7 @@ export const Canvas: React.FC = () => {
             caretColor: toolStore.toolSettings.strokeColor || '#000000',
             zIndex: 1001, // Higher than regular text editing
             lineHeight: (toolStore.toolSettings.fontSize * 1.2 || 20) + 'px',
-            padding: '4px', // Match canvas text padding
+            padding: '0', // Remove padding to match canvas text positioning exactly
             margin: '0',
             border: 'none',
             wordWrap: 'break-word',
