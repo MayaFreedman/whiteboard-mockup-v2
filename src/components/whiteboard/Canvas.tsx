@@ -5,6 +5,7 @@ import { useCanvasInteractions } from '../../hooks/canvas/useCanvasInteractions'
 import { useCanvasRendering } from '../../hooks/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
 import { useUser } from '../../contexts/UserContext';
+import { useActionBatching } from '../../hooks/useActionBatching';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
 import { measureText } from '../../utils/textMeasurement';
@@ -44,6 +45,7 @@ export const Canvas: React.FC = () => {
   const { viewport, selectedObjectIds, updateObject, objects, deleteObject, clearSelection } = useWhiteboardStore();
   const { activeTool } = useToolStore();
   const { userId } = useUser();
+  const { startBatch, endBatch } = useActionBatching({ batchTimeout: 100, maxBatchSize: 50 });
   
   // Text editing state
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
@@ -339,6 +341,9 @@ export const Canvas: React.FC = () => {
       if (event.key === 'Delete' || event.key === 'Backspace') {
         event.preventDefault();
         
+        // Start a batch for multi-delete
+        const batchId = startBatch('DELETE_OBJECT', 'multi-delete', userId);
+        
         // Delete all selected objects
         selectedObjectIds.forEach(objectId => {
           deleteObject(objectId, userId);
@@ -347,7 +352,10 @@ export const Canvas: React.FC = () => {
         // Clear selection after deletion
         clearSelection(userId);
         
-        console.log('🗑️ Deleted selected objects:', selectedObjectIds);
+        // End the batch
+        endBatch();
+        
+        console.log('🗑️ Deleted selected objects in batch:', selectedObjectIds.length, 'objects');
       }
     };
 
@@ -357,7 +365,7 @@ export const Canvas: React.FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [editingTextId, selectedObjectIds, deleteObject, clearSelection, userId]);
+  }, [editingTextId, selectedObjectIds, deleteObject, clearSelection, userId, startBatch, endBatch]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

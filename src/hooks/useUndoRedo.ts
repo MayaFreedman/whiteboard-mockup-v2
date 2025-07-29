@@ -176,6 +176,16 @@ export const useUndoRedo = (): UndoRedoManager => {
         };
       }
       
+      case 'CLEAR_SELECTION': {
+        // Undo clear selection: restore previous selection
+        const previousSelection = action.previousState?.selectedObjectIds || [];
+        return {
+          stateChange: {
+            selectedObjectIds: previousSelection
+          }
+        };
+      }
+      
       case 'UPDATE_VIEWPORT': {
         // Undo viewport: restore previous viewport
         const previousViewport = action.previousState?.viewport;
@@ -355,6 +365,14 @@ export const useUndoRedo = (): UndoRedoManager => {
         return {
           stateChange: {
             selectedObjectIds: action.payload.objectIds
+          }
+        };
+      }
+      
+      case 'CLEAR_SELECTION': {
+        return {
+          stateChange: {
+            selectedObjectIds: []
           }
         };
       }
