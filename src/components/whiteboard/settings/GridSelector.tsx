@@ -84,7 +84,7 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
   return (
     <div>
       <label className="text-sm font-medium mb-3 block">{label}</label>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1 p-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1 pt-2 pb-2 pr-2 pl-0">
         {memoizedItems.map((item) => {
           const isLoading = imageLoading[item.url] === true;
           const isCustomStamp = item.url.startsWith('data:'); // Custom stamps use dataURL
@@ -119,10 +119,10 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
               {isCustomStamp && (
                 <button
                   onClick={(e) => handleDeleteCustomStamp(e, item.url)}
-                  className="absolute -top-2 -right-2 w-5 h-5 bg-gray-500 text-white rounded-full flex items-center justify-center z-20 hover:bg-gray-600 shadow-md"
+                  className="absolute -top-1 -right-1 w-4 h-4 bg-gray-500 text-white rounded-full flex items-center justify-center z-20 hover:bg-gray-600 shadow-md"
                   title="Delete custom stamp"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-2.5 h-2.5" />
                 </button>
               )}
             </div>
