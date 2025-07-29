@@ -909,6 +909,15 @@ export const useCanvasInteractions = () => {
       case 'select': {
         if (isDraggingRef.current) {
           console.log('🔄 Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), ending batch:', currentBatchIdRef.current?.slice(0, 8), 'for user:', userId.slice(0, 8));
+          
+          // Debug: Check batch state before ending
+          const currentBatch = whiteboardStore.getState().currentBatch;
+          console.log('🔍 Batch state before ending:', {
+            batchId: currentBatch.id,
+            actionCount: currentBatch.actions.length,
+            actionTypes: currentBatch.actions.map(a => a.type)
+          });
+          
           // END BATCH for object dragging
           if (currentBatchIdRef.current) {
             endBatch();
