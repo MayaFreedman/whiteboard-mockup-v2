@@ -142,16 +142,19 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   recordAction: (action) => {
     const state = get();
     
-    // Enhanced batching logic for eraser strokes
+    // Enhanced batching logic for eraser strokes and multi-operations
     const canAddToBatch = state.currentBatch.id && 
                          state.currentBatch.actionType === action.type &&
                          state.currentBatch.userId === action.userId &&
                          (
                            // Same object ID OR eraser stroke (which can affect multiple objects)
                            state.currentBatch.objectId === getActionObjectId(action) ||
-                           (state.currentBatch.actionType === 'ERASE_PATH' && action.type === 'ERASE_PATH')
+                           (state.currentBatch.actionType === 'ERASE_PATH' && action.type === 'ERASE_PATH') ||
+                           // Multi-delete batch: allow any DELETE_OBJECT or CLEAR_SELECTION to be added
+                           (state.currentBatch.objectId === 'multi-delete' && 
+                            (action.type === 'DELETE_OBJECT' || action.type === 'CLEAR_SELECTION'))
                          ) &&
-                         (Date.now() - (state.currentBatch.startTime || 0)) < 10000; // 10 second timeout for eraser
+                         (Date.now() - (state.currentBatch.startTime || 0)) < 10000; // 10 second timeout
     
     if (canAddToBatch) {
       get().addToBatch(action);
