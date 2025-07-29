@@ -11,6 +11,7 @@ import { ToggleButtonGroup } from './ToggleButtonGroup';
 import { EraserSettings } from '../EraserSettings';
 import { ShapePropertiesPanel } from '../ShapePropertiesPanel';
 import { TextPropertiesPanel } from '../TextPropertiesPanel';
+import { StampPropertiesPanel } from '../StampPropertiesPanel';
 import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName } from '../../../utils/iconRegistry';
 import { CustomStampUpload } from './CustomStampUpload';
 
@@ -73,6 +74,12 @@ export const DynamicToolSettings: React.FC = () => {
       return (
         <ToolSettingCard title="Text Properties">
           <TextPropertiesPanel selectedObjectId={selectedObjectIds[0]} />
+        </ToolSettingCard>
+      );
+    } else if (obj?.type === 'image') {
+      return (
+        <ToolSettingCard title="Stamp Properties">
+          <StampPropertiesPanel selectedObjectId={selectedObjectIds[0]} />
         </ToolSettingCard>
       );
     } else if (obj && ['rectangle', 'circle', 'triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart'].includes(obj.type)) {
