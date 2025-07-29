@@ -298,20 +298,22 @@ export const Canvas: React.FC = () => {
     const finalText = immediateTextContent?.trim() || '';
     
     if (finalText && immediateTextPosition) {
-      // Measure the text to get optimal dimensions
+      // Use the exact same font settings as the textarea for consistency
       const fontSize = toolStore.toolSettings.fontSize || 16;
       const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
       const bold = toolStore.toolSettings.textBold || false;
       const italic = toolStore.toolSettings.textItalic || false;
       
+      // Measure text using the same approach as canvas rendering
       const metrics = measureText(finalText, fontSize, fontFamily, bold, italic);
       
-      // Add padding and ensure minimum dimensions
+      // Add padding and ensure minimum dimensions (match canvas text rendering)
       const padding = 8;
       const width = Math.max(metrics.width + padding, 100);
       const height = Math.max(metrics.height + padding, fontSize + padding);
       
       // Create the text object with the typed content
+      // Use the exact same positioning as the textarea to prevent movement
       const textData = {
         content: finalText,
         fontSize,
@@ -324,8 +326,8 @@ export const Canvas: React.FC = () => {
 
       const textObject = {
         type: 'text' as const,
-        x: immediateTextPosition.x,
-        y: immediateTextPosition.y,
+        x: immediateTextPosition.x, // Use exact textarea position
+        y: immediateTextPosition.y, // Use exact textarea position
         width,
         height,
         stroke: toolStore.toolSettings.strokeColor,
@@ -339,7 +341,8 @@ export const Canvas: React.FC = () => {
       console.log('📝 Created immediate text object:', objectId.slice(0, 8), {
         content: finalText,
         dimensions: { width, height },
-        position: immediateTextPosition
+        position: immediateTextPosition,
+        textareaPos: { x: immediateTextPosition.x, y: immediateTextPosition.y }
       });
       
       redrawCanvas();
@@ -475,17 +478,19 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    // Block interactions during double-click protection or when editing text
+    // Block interactions during double-click protection
     if (isHandlingDoubleClick) {
       console.log('🖱️ Mouse down blocked - double-click protection active');
       return;
     }
     
     // Handle click outside immediate text editing area - complete the text
+    // This should work regardless of which tool is active
     if (isImmediateTextEditing) {
       console.log('🖱️ Click outside immediate text editing - completing text');
       handleImmediateTextComplete();
-      return;
+      // Don't return here - allow the tool interaction to continue
+      // This ensures we can start a new text editing session immediately
     }
 
     if (canvasRef.current) {
@@ -595,7 +600,7 @@ export const Canvas: React.FC = () => {
           style={{
             left: immediateTextPosition.x,
             top: immediateTextPosition.y,
-            width: 200, // Start with reasonable default width
+            width: 300, // Wider default width to prevent early wrapping
             height: toolStore.toolSettings.fontSize * 1.2 || 20, // Height based on font size
             fontSize: toolStore.toolSettings.fontSize || 16,
             fontFamily: toolStore.toolSettings.fontFamily || 'Arial',
@@ -607,7 +612,7 @@ export const Canvas: React.FC = () => {
             caretColor: toolStore.toolSettings.strokeColor || '#000000',
             zIndex: 1001, // Higher than regular text editing
             lineHeight: (toolStore.toolSettings.fontSize * 1.2 || 20) + 'px',
-            padding: '0',
+            padding: '4px', // Match canvas text padding
             margin: '0',
             border: 'none',
             wordWrap: 'break-word',
@@ -620,7 +625,8 @@ export const Canvas: React.FC = () => {
             WebkitTextSizeAdjust: '100%',
             boxSizing: 'border-box',
             background: 'rgba(255, 255, 255, 0.9)', // Semi-transparent background for visibility
-            borderRadius: '2px'
+            borderRadius: '2px',
+            minHeight: (toolStore.toolSettings.fontSize || 16) * 1.2 + 'px'
           }}
           value={immediateTextContent}
           onChange={(e) => setImmediateTextContent(e.target.value)}
