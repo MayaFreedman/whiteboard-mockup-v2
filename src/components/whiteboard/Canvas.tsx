@@ -352,9 +352,11 @@ export const Canvas: React.FC = () => {
     if (canvasRect && immediateTextPosition) {
       const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
       
-      // Set maxWidth to prevent textarea from going off screen, accounting for text padding
+      // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
       const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
-      textarea.style.maxWidth = (availableWidth - textPadding) + 'px';
+      const effectiveWidth = availableWidth - textPadding;
+      textarea.style.width = effectiveWidth + 'px';
+      textarea.style.maxWidth = effectiveWidth + 'px';
       
       // Measure text with the same width for consistent wrapping
       const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, availableWidth - textPadding);
