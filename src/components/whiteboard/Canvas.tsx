@@ -351,11 +351,11 @@ export const Canvas: React.FC = () => {
     // Calculate available space from text position to screen edge
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
-      const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 40; // 40px padding from edge
+      const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
       const textWidth = metrics.width + 20; // Add padding
       
-      // Check if we need to wrap (when text would exceed 90% of available space)
-      const shouldWrap = textWidth > availableWidth * 0.9;
+      // Check if we need to wrap (when text would exceed 98% of available space)
+      const shouldWrap = textWidth > availableWidth * 0.98;
       
       if (shouldWrap) {
         // Switch to wrapping mode
