@@ -344,7 +344,6 @@ export const Canvas: React.FC = () => {
     const bold = toolStore.toolSettings.textBold || false;
     const italic = toolStore.toolSettings.textItalic || false;
     
-    const metrics = measureText(newText || '', fontSize, fontFamily, bold, italic);
     const minWidth = 100;
     const textarea = e.target;
     
@@ -352,64 +351,35 @@ export const Canvas: React.FC = () => {
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
       const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
-      const textWidth = metrics.width + 20; // Add padding
+      const maxWidth = Math.max(availableWidth, minWidth);
       
-      // Check if we need to wrap (when text would exceed 98% of available space)
-      const shouldWrap = textWidth > availableWidth * 0.98;
+      // Always use wrapping mode with dynamic width
+      textarea.style.maxWidth = maxWidth + 'px';
+      textarea.style.width = 'auto';
+      textarea.style.height = 'auto';
       
-      if (shouldWrap) {
-        // Switch to wrapping mode
-        textarea.style.whiteSpace = 'pre-wrap';
-        textarea.style.overflowWrap = 'break-word';
-        textarea.style.wordBreak = 'break-word';
-        textarea.style.wordWrap = 'break-word';
-        textarea.style.width = Math.max(availableWidth, minWidth) + 'px';
-        textarea.style.height = 'auto';
-        
-        // Force reflow to ensure styles are applied
-        textarea.offsetHeight;
-        
-        // Measure wrapped text for proper height
-        const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, availableWidth);
-        textarea.style.height = (wrappedMetrics.height + 10) + 'px';
-        
-        // Update canvas object with wrapped dimensions
-        if (immediateTextObjectId && objects[immediateTextObjectId]) {
-          const textObject = objects[immediateTextObjectId];
-          updateObject(immediateTextObjectId, {
-            data: {
-              ...textObject.data,
-              content: newText || ''
-            },
-            width: availableWidth,
-            height: wrappedMetrics.height
-          });
-        }
-      } else {
-        // Keep single line mode
-        textarea.style.whiteSpace = 'nowrap';
-        textarea.style.overflowWrap = 'normal';
-        textarea.style.wordBreak = 'normal';
-        textarea.style.width = Math.max(textWidth, minWidth) + 'px';
-        textarea.style.height = (fontSize * 1.2) + 'px';
-        
-        // Update canvas object with single line dimensions
-        if (immediateTextObjectId && objects[immediateTextObjectId]) {
-          const textObject = objects[immediateTextObjectId];
-          updateObject(immediateTextObjectId, {
-            data: {
-              ...textObject.data,
-              content: newText || ''
-            },
-            width: Math.max(textWidth, minWidth),
-            height: fontSize * 1.2
-          });
-        }
+      // Measure text with the available width for wrapping
+      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, maxWidth - 20);
+      textarea.style.height = Math.max(wrappedMetrics.height + 10, fontSize * 1.2) + 'px';
+      
+      // Update canvas object with wrapped dimensions
+      if (immediateTextObjectId && objects[immediateTextObjectId]) {
+        const textObject = objects[immediateTextObjectId];
+        updateObject(immediateTextObjectId, {
+          data: {
+            ...textObject.data,
+            content: newText || ''
+          },
+          width: Math.min(wrappedMetrics.width + 20, maxWidth),
+          height: Math.max(wrappedMetrics.height, fontSize * 1.2)
+        });
       }
     } else {
       // Fallback to original behavior if we can't calculate boundaries
+      const metrics = measureText(newText || '', fontSize, fontFamily, bold, italic);
       const newWidth = Math.max(metrics.width + 20, minWidth);
       textarea.style.width = newWidth + 'px';
+      textarea.style.height = Math.max(metrics.height + 10, fontSize * 1.2) + 'px';
       
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
         const textObject = objects[immediateTextObjectId];
@@ -418,7 +388,8 @@ export const Canvas: React.FC = () => {
             ...textObject.data,
             content: newText || ''
           },
-          width: newWidth
+          width: newWidth,
+          height: Math.max(metrics.height, fontSize * 1.2)
         });
       }
     }
@@ -721,7 +692,7 @@ export const Canvas: React.FC = () => {
           style={{
             left: immediateTextPosition.x,
             top: immediateTextPosition.y,
-            width: 100, // Initial minimum width, will be auto-expanded
+            width: 200, // Initial width that allows natural wrapping
             height: toolStore.toolSettings.fontSize * 1.2 || 20, // Height based on font size
             fontSize: toolStore.toolSettings.fontSize || 16,
             fontFamily: toolStore.toolSettings.fontFamily || 'Arial',
@@ -735,7 +706,10 @@ export const Canvas: React.FC = () => {
             padding: '0', // Remove padding to match canvas text positioning exactly
             margin: '0',
             border: 'none',
-            whiteSpace: 'nowrap', // Prevent text wrapping initially
+            whiteSpace: 'pre-wrap', // Enable text wrapping from the start
+            overflowWrap: 'break-word',
+            wordBreak: 'break-word',
+            wordWrap: 'break-word',
             overflow: 'visible', // Allow content to extend beyond bounds
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
