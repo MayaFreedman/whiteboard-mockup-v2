@@ -48,13 +48,24 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
   const handleTextPropertyChange = (property: keyof TextData, value: any) => {
     const updatedData = { ...textData, [property]: value };
     
-    // Calculate new bounds based on updated text properties
-    const newBounds = updateTextBounds(obj, updatedData);
+    // Properties that affect text dimensions and should trigger resize
+    const dimensionAffectingProperties = ['content', 'fontSize', 'fontFamily', 'bold', 'italic'];
+    const shouldUpdateBounds = dimensionAffectingProperties.includes(property);
     
-    updateObject(selectedObjectId, { 
-      data: updatedData,
-      ...newBounds
-    }, userId);
+    if (shouldUpdateBounds) {
+      // Calculate new bounds based on updated text properties
+      const newBounds = updateTextBounds(obj, updatedData);
+      
+      updateObject(selectedObjectId, { 
+        data: updatedData,
+        ...newBounds
+      }, userId);
+    } else {
+      // For properties like textAlign and underline, only update the data
+      updateObject(selectedObjectId, { 
+        data: updatedData
+      }, userId);
+    }
     
     // Also update tool settings for future text objects
     if (property === 'fontSize') updateToolSettings({ fontSize: value });
