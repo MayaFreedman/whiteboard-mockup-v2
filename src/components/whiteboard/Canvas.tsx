@@ -65,6 +65,7 @@ export const Canvas: React.FC = () => {
     canvasRef.current, 
     interactions.getCurrentDrawingPreview,
     interactions.getCurrentShapePreview,
+    interactions.getCurrentSelectionBox,
     editingTextId,
     editingText
   );

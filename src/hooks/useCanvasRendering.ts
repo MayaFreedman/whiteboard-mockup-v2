@@ -77,6 +77,7 @@ export const useCanvasRendering = (
   canvas: HTMLCanvasElement | null, 
   getCurrentDrawingPreview: () => any, 
   getCurrentShapePreview: () => any,
+  getCurrentSelectionBox: () => any,
   editingTextId?: string | null,
   editingText?: string
 ) => {
@@ -893,6 +894,34 @@ export const useCanvasRendering = (
       }
     }
 
+    // Draw selection box if available
+    if (getCurrentSelectionBox) {
+      const selectionBox = getCurrentSelectionBox();
+      if (selectionBox && selectionBox.isActive) {
+        ctx.save();
+        
+        // Calculate box dimensions
+        const width = selectionBox.endX - selectionBox.startX;
+        const height = selectionBox.endY - selectionBox.startY;
+        const left = Math.min(selectionBox.startX, selectionBox.endX);
+        const top = Math.min(selectionBox.startY, selectionBox.endY);
+        
+        // Draw selection box with blue border and light blue fill
+        ctx.strokeStyle = '#007AFF';
+        ctx.fillStyle = 'rgba(0, 122, 255, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]); // Dashed border
+        
+        // Fill the selection area
+        ctx.fillRect(left, top, Math.abs(width), Math.abs(height));
+        
+        // Stroke the border
+        ctx.strokeRect(left, top, Math.abs(width), Math.abs(height));
+        
+        ctx.restore();
+      }
+    }
+
     console.log('🎨 Canvas redrawn with crisp rendering:', {
       objectCount: Object.keys(objects).length,
       selectedCount: selectedObjectIds.length,
@@ -900,10 +929,11 @@ export const useCanvasRendering = (
       devicePixelRatio: window.devicePixelRatio || 1,
       hasDrawingPreview: !!getCurrentDrawingPreview?.(),
       hasShapePreview: !!getCurrentShapePreview?.(),
+      hasSelectionBox: !!getCurrentSelectionBox?.()?.isActive,
       editingTextId: editingTextId || 'none',
       cachedImages: imageCache.current.size
     });
-  }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
+  }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, getCurrentSelectionBox, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
 
   // Auto-redraw when state changes
   useEffect(() => {

@@ -296,8 +296,71 @@ export const useObjectDetection = () => {
     return null;
   }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInText, isPointInImage, isPointInComplexShape]);
 
+  /**
+   * Checks if an object intersects with a selection box
+   */
+  const isObjectInSelectionBox = useCallback((obj: WhiteboardObject, box: { startX: number; startY: number; endX: number; endY: number }): boolean => {
+    // Calculate selection box bounds
+    const boxLeft = Math.min(box.startX, box.endX);
+    const boxRight = Math.max(box.startX, box.endX);
+    const boxTop = Math.min(box.startY, box.endY);
+    const boxBottom = Math.max(box.startY, box.endY);
+
+    // Calculate object bounds based on type
+    let objLeft = obj.x;
+    let objRight = obj.x + (obj.width || 0);
+    let objTop = obj.y;
+    let objBottom = obj.y + (obj.height || 0);
+
+    // For paths, we need to account for stroke width and potentially analyze the path bounds
+    if (obj.type === 'path' && obj.data?.path) {
+      const strokeWidth = obj.strokeWidth || 2;
+      objLeft -= strokeWidth / 2;
+      objRight += strokeWidth / 2;
+      objTop -= strokeWidth / 2;
+      objBottom += strokeWidth / 2;
+    }
+
+    // Check if object bounds intersect with selection box bounds
+    return !(objRight < boxLeft || 
+             objLeft > boxRight || 
+             objBottom < boxTop || 
+             objTop > boxBottom);
+  }, []);
+
+  /**
+   * Finds all objects within a selection box
+   */
+  const findObjectsInSelectionBox = useCallback((box: { startX: number; startY: number; endX: number; endY: number }): string[] => {
+    const objects = Object.entries(whiteboardStore.objects);
+    const selectedIds: string[] = [];
+    
+    console.log('🎯 Finding objects in selection box:', box);
+    
+    for (const [id, obj] of objects) {
+      // Skip eraser objects
+      if (obj.data?.isEraser) {
+        continue;
+      }
+      
+      if (isObjectInSelectionBox(obj, box)) {
+        selectedIds.push(id);
+        console.log('✅ Object in selection box:', {
+          id: id.slice(0, 8),
+          type: obj.type,
+          bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height }
+        });
+      }
+    }
+    
+    console.log('🎯 Found objects in selection box:', selectedIds.length);
+    return selectedIds;
+  }, [whiteboardStore.objects, isObjectInSelectionBox]);
+
   return {
     findObjectAt,
+    findObjectsInSelectionBox,
+    isObjectInSelectionBox,
     isPointInPath,
     isPointInRectangle,
     isPointInCircle,

@@ -18,7 +18,7 @@ export const useCanvasInteractions = () => {
   const toolStore = useToolStore();
   const { userId } = useUser();
   const { getCanvasCoordinates } = useCanvasCoordinates();
-  const { findObjectAt } = useObjectDetection();
+  const { findObjectAt, findObjectsInSelectionBox } = useObjectDetection();
   
   // Initialize action batching with optimized settings
   const { startBatch, endBatch, checkBatchSize } = useActionBatching({
@@ -68,6 +68,15 @@ export const useCanvasInteractions = () => {
     strokeColor: string;
     strokeWidth: number;
     opacity: number;
+  } | null>(null);
+
+  // Store selection box for multi-select
+  const selectionBoxRef = useRef<{
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    isActive: boolean;
   } | null>(null);
 
   /**
@@ -439,6 +448,7 @@ export const useCanvasInteractions = () => {
     dragStartRef.current = null;
     currentDrawingPreviewRef.current = null;
     currentShapePreviewRef.current = null;
+    selectionBoxRef.current = null;
     
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
@@ -518,19 +528,57 @@ export const useCanvasInteractions = () => {
       }
 
       case 'select': {
+        const isShiftPressed = 'shiftKey' in event ? event.shiftKey : false;
         const objectId = findObjectAt(coords.x, coords.y);
+        
         if (objectId) {
-          // START BATCH for object dragging
-          currentBatchIdRef.current = startBatch('UPDATE_OBJECT', objectId, userId);
-          draggedObjectIdRef.current = objectId;
+          // Handle Shift+click for multi-select
+          if (isShiftPressed) {
+            const currentSelection = whiteboardStore.selectedObjectIds;
+            if (currentSelection.includes(objectId)) {
+              // Remove from selection
+              const newSelection = currentSelection.filter(id => id !== objectId);
+              whiteboardStore.selectObjects(newSelection, userId);
+              console.log('🎯 Removed object from selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
+            } else {
+              // Add to selection
+              const newSelection = [...currentSelection, objectId];
+              whiteboardStore.selectObjects(newSelection, userId);
+              console.log('🎯 Added object to selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
+            }
+          } else {
+            // Normal single selection
+            whiteboardStore.selectObjects([objectId], userId);
+            console.log('🎯 Selected single object:', objectId.slice(0, 8));
+          }
           
-          whiteboardStore.selectObjects([objectId], userId);
-          isDraggingRef.current = true;
-          dragStartRef.current = coords;
-          console.log('🎯 Selected object for dragging:', objectId.slice(0, 8), 'batch:', currentBatchIdRef.current?.slice(0, 8), 'by user:', userId.slice(0, 8));
+          // Check if we're clicking on an already selected object for dragging
+          if (whiteboardStore.selectedObjectIds.includes(objectId)) {
+            // START BATCH for object dragging
+            currentBatchIdRef.current = startBatch('UPDATE_OBJECT', objectId, userId);
+            draggedObjectIdRef.current = objectId;
+            isDraggingRef.current = true;
+            dragStartRef.current = coords;
+            console.log('🎯 Started dragging selected object(s):', objectId.slice(0, 8));
+          }
         } else {
-          whiteboardStore.clearSelection();
-          console.log('🎯 Cleared selection');
+          // Clicked on empty area
+          if (!isShiftPressed) {
+            // Clear selection and start selection box
+            whiteboardStore.clearSelection(userId);
+            console.log('🎯 Cleared selection, starting selection box');
+          }
+          
+          // Start selection box
+          selectionBoxRef.current = {
+            startX: coords.x,
+            startY: coords.y,
+            endX: coords.x,
+            endY: coords.y,
+            isActive: true
+          };
+          isDrawingRef.current = true;
+          console.log('📦 Started selection box at:', coords);
         }
         break;
       }
@@ -642,6 +690,7 @@ export const useCanvasInteractions = () => {
     switch (activeTool) {
       case 'select': {
         if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+          // Dragging selected objects
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
           
@@ -662,6 +711,14 @@ export const useCanvasInteractions = () => {
           }
           
           dragStartRef.current = coords;
+          
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
+        } else if (isDrawingRef.current && selectionBoxRef.current) {
+          // Updating selection box
+          selectionBoxRef.current.endX = coords.x;
+          selectionBoxRef.current.endY = coords.y;
           
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
@@ -752,7 +809,35 @@ export const useCanvasInteractions = () => {
             currentBatchIdRef.current = null;
             draggedObjectIdRef.current = null;
           }
+        } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
+          // Complete selection box
+          const objectIds = findObjectsInSelectionBox(selectionBoxRef.current);
+          
+          if (objectIds.length > 0) {
+            const currentSelection = whiteboardStore.selectedObjectIds;
+            const isShiftPressed = 'shiftKey' in event ? event.shiftKey : false;
+            
+            let newSelection: string[];
+            if (isShiftPressed) {
+              // Add to existing selection
+              newSelection = [...new Set([...currentSelection, ...objectIds])];
+            } else {
+              // Replace selection
+              newSelection = objectIds;
+            }
+            
+            whiteboardStore.selectObjects(newSelection, userId);
+            console.log('📦 Selection box completed, selected:', newSelection.length, 'objects');
+          }
+          
+          // Clear selection box
+          selectionBoxRef.current = null;
+          
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
         }
+        
         isDraggingRef.current = false;
         dragStartRef.current = null;
         break;
@@ -907,6 +992,13 @@ export const useCanvasInteractions = () => {
     return currentShapePreviewRef.current;
   }, []);
 
+  /**
+   * Gets the current selection box for rendering
+   */
+  const getCurrentSelectionBox = useCallback(() => {
+    return selectionBoxRef.current;
+  }, []);
+
   return {
     handlePointerDown,
     handlePointerMove,
@@ -916,6 +1008,7 @@ export const useCanvasInteractions = () => {
     isDragging: isDraggingRef.current,
     getCurrentDrawingPreview,
     getCurrentShapePreview,
+    getCurrentSelectionBox,
     setRedrawCanvas,
     setDoubleClickProtection,
     setEditingState
