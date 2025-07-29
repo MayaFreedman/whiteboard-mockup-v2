@@ -452,8 +452,18 @@ export const Canvas: React.FC = () => {
       // Measure text to get proper height
       const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, textEditorPosition.width);
       
-      // Update textarea height so cursor moves correctly
-      textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + 'px';
+      // Update textarea height so it expands downward and cursor moves correctly
+      const newHeight = Math.max(wrappedMetrics.height, fontSize * 1.2);
+      textarea.style.height = newHeight + 'px';
+      
+      // Also update the canvas object bounds to match
+      updateObject(editingTextId, {
+        data: {
+          ...textObject.data,
+          content: newText
+        },
+        height: newHeight
+      }, userId);
     }
     
     console.log('✏️ Text changed:', {
