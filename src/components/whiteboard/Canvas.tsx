@@ -351,18 +351,11 @@ export const Canvas: React.FC = () => {
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
       const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
-      const maxWidth = Math.max(availableWidth * 0.98, minWidth); // Use 98% like original wrapping logic
       
-      // Always use wrapping mode with dynamic width
-      textarea.style.maxWidth = maxWidth + 'px';
-      textarea.style.width = 'auto';
-      textarea.style.height = 'auto';
+      // Set maxWidth to prevent textarea from going off screen
+      textarea.style.maxWidth = availableWidth + 'px';
       
-      // Measure text with the available width for wrapping
-      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, maxWidth - 20);
-      textarea.style.height = Math.max(wrappedMetrics.height + 10, fontSize * 1.2) + 'px';
-      
-      // Update canvas object with wrapped dimensions
+      // Update canvas object - use simple dimensions
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
         const textObject = objects[immediateTextObjectId];
         updateObject(immediateTextObjectId, {
@@ -370,8 +363,8 @@ export const Canvas: React.FC = () => {
             ...textObject.data,
             content: newText || ''
           },
-          width: Math.min(wrappedMetrics.width + 20, maxWidth),
-          height: Math.max(wrappedMetrics.height, fontSize * 1.2)
+          width: Math.min(300, availableWidth), // Simple fixed width that grows
+          height: Math.max(fontSize * 1.2, 20)
         });
       }
     } else {
