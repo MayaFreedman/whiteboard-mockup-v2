@@ -84,7 +84,7 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
   return (
     <div>
       <label className="text-sm font-medium mb-3 block">{label}</label>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1 p-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1 p-0">
         {memoizedItems.map((item) => {
           const isLoading = imageLoading[item.url] === true;
           const isCustomStamp = item.url.startsWith('data:'); // Custom stamps use dataURL
