@@ -760,14 +760,24 @@ export const useCanvasInteractions = () => {
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
           
+          console.log('🔄 Dragging movement:', {
+            selectedCount: whiteboardStore.selectedObjectIds.length,
+            delta: { x: deltaX, y: deltaY },
+            initialPositions: Object.keys(initialDragPositionsRef.current).length
+          });
+          
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const initialPos = initialDragPositionsRef.current[objectId];
             if (initialPos) {
-              // Use absolute positioning based on initial stored positions
-              whiteboardStore.updateObject(objectId, {
+              const newPos = {
                 x: initialPos.x + deltaX,
                 y: initialPos.y + deltaY
-              }, userId);
+              };
+              console.log('🔄 Moving object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
+              // Use absolute positioning based on initial stored positions
+              whiteboardStore.updateObject(objectId, newPos, userId);
+            } else {
+              console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
             }
           });
           
