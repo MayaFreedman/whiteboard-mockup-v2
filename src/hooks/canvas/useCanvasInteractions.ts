@@ -586,9 +586,14 @@ export const useCanvasInteractions = () => {
               console.log('🎯 Added object to selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
             }
           } else {
-            // Normal single selection
-            whiteboardStore.selectObjects([objectId], userId);
-            console.log('🎯 Selected single object:', objectId.slice(0, 8));
+            // Normal click - only change selection if clicking on unselected object
+            if (!whiteboardStore.selectedObjectIds.includes(objectId)) {
+              // Single selection - clear existing and select only this object
+              whiteboardStore.selectObjects([objectId], userId);
+              console.log('🎯 Selected single object:', objectId.slice(0, 8));
+            } else {
+              console.log('🎯 Clicked on already selected object - maintaining selection for drag');
+            }
           }
           
           // Check if we're clicking on an already selected object for dragging
