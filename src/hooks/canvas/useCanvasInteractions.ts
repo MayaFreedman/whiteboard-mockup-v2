@@ -632,11 +632,19 @@ export const useCanvasInteractions = () => {
         // Set timer to detect single click (200ms delay)
         textClickTimerRef.current = setTimeout(() => {
           // If timer completes without significant movement, trigger immediate text editing
+          console.log('📝 Timer completed, checking if still valid:', {
+            hasClickStartPos: !!textClickStartPosRef.current,
+            clickPos: textClickStartPosRef.current,
+            currentCoords: coords
+          });
+          
           if (textClickStartPosRef.current) {
             console.log('📝 Click detected - triggering immediate text editing at:', coords);
             triggerImmediateTextEditing(coords);
             textClickTimerRef.current = null;
             textClickStartPosRef.current = null;
+          } else {
+            console.log('📝 Timer completed but click position was cleared - drag detected');
           }
         }, 200);
 
