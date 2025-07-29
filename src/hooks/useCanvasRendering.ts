@@ -454,9 +454,9 @@ export const useCanvasRendering = (
           
           ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
           
-          // Make placeholder text lighter
+          // Make placeholder text lighter but not too light
           if (contentToRender === 'Double-click to edit') {
-            ctx.fillStyle = obj.stroke ? `${obj.stroke}80` : '#00000080'; // 50% opacity for placeholder
+            ctx.fillStyle = obj.stroke ? `${obj.stroke}B3` : '#000000B3'; // 70% opacity for placeholder
           } else {
             ctx.fillStyle = obj.stroke || '#000000';
           }
