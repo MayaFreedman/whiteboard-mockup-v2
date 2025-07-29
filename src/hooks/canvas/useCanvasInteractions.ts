@@ -48,6 +48,9 @@ export const useCanvasInteractions = () => {
   const draggedObjectIdRef = useRef<string | null>(null);
   const drawingObjectIdRef = useRef<string | null>(null);
   
+  // Multi-object dragging state
+  const initialDragPositionsRef = useRef<Record<string, { x: number; y: number }>>({});
+  
   // Simple path builder for smooth drawing
   const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
   
@@ -590,12 +593,23 @@ export const useCanvasInteractions = () => {
           
           // Check if we're clicking on an already selected object for dragging
           if (whiteboardStore.selectedObjectIds.includes(objectId)) {
-            // START BATCH for object dragging
-            currentBatchIdRef.current = startBatch('UPDATE_OBJECT', objectId, userId);
+            // Store initial positions of ALL selected objects for multi-object dragging
+            const initialPositions: Record<string, { x: number; y: number }> = {};
+            whiteboardStore.selectedObjectIds.forEach(id => {
+              const obj = whiteboardStore.objects[id];
+              if (obj) {
+                initialPositions[id] = { x: obj.x, y: obj.y };
+              }
+            });
+            initialDragPositionsRef.current = initialPositions;
+            
+            // START BATCH for object dragging - use appropriate action type based on selection count
+            const actionType = whiteboardStore.selectedObjectIds.length > 1 ? 'MULTI_OBJECT_DRAG' : 'UPDATE_OBJECT';
+            currentBatchIdRef.current = startBatch(actionType, objectId, userId);
             draggedObjectIdRef.current = objectId;
             isDraggingRef.current = true;
             dragStartRef.current = coords;
-            console.log('🎯 Started dragging selected object(s):', objectId.slice(0, 8));
+            console.log('🎯 Started dragging', whiteboardStore.selectedObjectIds.length, 'object(s):', objectId.slice(0, 8));
           }
         } else {
           // Clicked on empty area
@@ -742,17 +756,17 @@ export const useCanvasInteractions = () => {
     switch (activeTool) {
       case 'select': {
         if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
-          // Dragging selected objects
+          // Multi-object dragging with absolute positioning to prevent drift
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
           
           whiteboardStore.selectedObjectIds.forEach(objectId => {
-            const obj = whiteboardStore.objects[objectId];
-            if (obj) {
-              // Update object position - this will be batched
+            const initialPos = initialDragPositionsRef.current[objectId];
+            if (initialPos) {
+              // Use absolute positioning based on initial stored positions
               whiteboardStore.updateObject(objectId, {
-                x: obj.x + deltaX,
-                y: obj.y + deltaY
+                x: initialPos.x + deltaX,
+                y: initialPos.y + deltaY
               }, userId);
             }
           });
@@ -761,8 +775,6 @@ export const useCanvasInteractions = () => {
           if (currentBatchIdRef.current) {
             checkBatchSize();
           }
-          
-          dragStartRef.current = coords;
           
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
@@ -881,13 +893,15 @@ export const useCanvasInteractions = () => {
     switch (activeTool) {
       case 'select': {
         if (isDraggingRef.current) {
-          console.log('🔄 Finished dragging objects, ending batch:', currentBatchIdRef.current?.slice(0, 8), 'for user:', userId.slice(0, 8));
+          console.log('🔄 Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), ending batch:', currentBatchIdRef.current?.slice(0, 8), 'for user:', userId.slice(0, 8));
           // END BATCH for object dragging
           if (currentBatchIdRef.current) {
             endBatch();
             currentBatchIdRef.current = null;
             draggedObjectIdRef.current = null;
           }
+          // Clear initial drag positions
+          initialDragPositionsRef.current = {};
         } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
           // Complete selection box
           const objectIds = findObjectsInSelectionBox(selectionBoxRef.current);
