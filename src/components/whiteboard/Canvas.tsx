@@ -339,7 +339,6 @@ export const Canvas: React.FC = () => {
     const newText = e.target.value;
     setImmediateTextContent(newText);
     
-    // Update textarea width based on text content
     const fontSize = toolStore.toolSettings.fontSize || 16;
     const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
     const bold = toolStore.toolSettings.textBold || false;
@@ -347,25 +346,76 @@ export const Canvas: React.FC = () => {
     
     const metrics = measureText(newText || '', fontSize, fontFamily, bold, italic);
     const minWidth = 100;
-    const newWidth = Math.max(metrics.width + 20, minWidth); // Add padding
-    
-    // Update textarea width
     const textarea = e.target;
-    textarea.style.width = newWidth + 'px';
     
-    // Update the canvas text object in real-time if it exists
-    if (immediateTextObjectId && objects[immediateTextObjectId]) {
-      const textObject = objects[immediateTextObjectId];
-      updateObject(immediateTextObjectId, {
-        data: {
-          ...textObject.data,
-          content: newText || ''
-        },
-        width: newWidth + 8 // Add padding for canvas object
-      });
+    // Calculate available space from text position to screen edge
+    const canvasRect = canvasRef.current?.getBoundingClientRect();
+    if (canvasRect && immediateTextPosition) {
+      const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 40; // 40px padding from edge
+      const textWidth = metrics.width + 20; // Add padding
       
-      redrawCanvas();
+      // Check if we need to wrap (when text would exceed 90% of available space)
+      const shouldWrap = textWidth > availableWidth * 0.9;
+      
+      if (shouldWrap) {
+        // Switch to wrapping mode
+        textarea.style.whiteSpace = 'pre-wrap';
+        textarea.style.width = Math.max(availableWidth, minWidth) + 'px';
+        textarea.style.height = 'auto';
+        
+        // Measure wrapped text for proper height
+        const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, availableWidth);
+        textarea.style.height = (wrappedMetrics.height + 10) + 'px';
+        
+        // Update canvas object with wrapped dimensions
+        if (immediateTextObjectId && objects[immediateTextObjectId]) {
+          const textObject = objects[immediateTextObjectId];
+          updateObject(immediateTextObjectId, {
+            data: {
+              ...textObject.data,
+              content: newText || ''
+            },
+            width: availableWidth,
+            height: wrappedMetrics.height
+          });
+        }
+      } else {
+        // Keep single line mode
+        textarea.style.whiteSpace = 'nowrap';
+        textarea.style.width = Math.max(textWidth, minWidth) + 'px';
+        textarea.style.height = (fontSize * 1.2) + 'px';
+        
+        // Update canvas object with single line dimensions
+        if (immediateTextObjectId && objects[immediateTextObjectId]) {
+          const textObject = objects[immediateTextObjectId];
+          updateObject(immediateTextObjectId, {
+            data: {
+              ...textObject.data,
+              content: newText || ''
+            },
+            width: Math.max(textWidth, minWidth),
+            height: fontSize * 1.2
+          });
+        }
+      }
+    } else {
+      // Fallback to original behavior if we can't calculate boundaries
+      const newWidth = Math.max(metrics.width + 20, minWidth);
+      textarea.style.width = newWidth + 'px';
+      
+      if (immediateTextObjectId && objects[immediateTextObjectId]) {
+        const textObject = objects[immediateTextObjectId];
+        updateObject(immediateTextObjectId, {
+          data: {
+            ...textObject.data,
+            content: newText || ''
+          },
+          width: newWidth
+        });
+      }
     }
+    
+    redrawCanvas();
   };
 
   // Handle immediate text editing completion
