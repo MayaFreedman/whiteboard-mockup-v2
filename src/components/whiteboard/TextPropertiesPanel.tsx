@@ -4,7 +4,7 @@ import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+
 import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -83,17 +83,6 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
 
   return (
     <div className="space-y-4">
-      {/* Text Content */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">Text Content</Label>
-        <Input
-          value={textData.content}
-          onChange={(e) => handleTextPropertyChange('content', e.target.value)}
-          placeholder="Enter text..."
-          className="w-full"
-        />
-      </div>
-
       {/* Font Size */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">
