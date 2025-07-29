@@ -355,7 +355,10 @@ export const Canvas: React.FC = () => {
       // Set maxWidth to prevent textarea from going off screen
       textarea.style.maxWidth = availableWidth + 'px';
       
-      // Update canvas object - use simple dimensions
+      // Measure text with the same width for consistent wrapping
+      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, availableWidth);
+      
+      // Update canvas object - use same width as textarea for consistent wrapping
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
         const textObject = objects[immediateTextObjectId];
         updateObject(immediateTextObjectId, {
@@ -363,8 +366,8 @@ export const Canvas: React.FC = () => {
             ...textObject.data,
             content: newText || ''
           },
-          width: Math.min(300, availableWidth), // Simple fixed width that grows
-          height: Math.max(fontSize * 1.2, 20)
+          width: availableWidth, // Use same width as textarea
+          height: Math.max(wrappedMetrics.height, fontSize * 1.2)
         });
       }
     } else {
