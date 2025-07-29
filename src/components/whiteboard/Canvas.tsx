@@ -349,11 +349,11 @@ export const Canvas: React.FC = () => {
           deleteObject(objectId, userId);
         });
         
-        // Clear selection after deletion
-        clearSelection(userId);
-        
         // End the batch
         endBatch();
+        
+        // Clear selection after deletion (not part of undo/redo)
+        clearSelection(userId);
         
         console.log('🗑️ Deleted selected objects in batch:', selectedObjectIds.length, 'objects');
       }

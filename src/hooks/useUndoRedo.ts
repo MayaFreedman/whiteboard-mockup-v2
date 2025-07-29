@@ -166,25 +166,8 @@ export const useUndoRedo = (): UndoRedoManager => {
         };
       }
       
-      case 'SELECT_OBJECTS': {
-        // Undo selection: restore previous selection
-        const previousSelection = action.previousState?.selectedObjectIds || [];
-        return {
-          stateChange: {
-            selectedObjectIds: previousSelection
-          }
-        };
-      }
-      
-      case 'CLEAR_SELECTION': {
-        // Undo clear selection: restore previous selection
-        const previousSelection = action.previousState?.selectedObjectIds || [];
-        return {
-          stateChange: {
-            selectedObjectIds: previousSelection
-          }
-        };
-      }
+      // Note: Selection actions (SELECT_OBJECTS, CLEAR_SELECTION) are no longer 
+      // recorded in undo/redo history as they are ephemeral UI state
       
       case 'UPDATE_VIEWPORT': {
         // Undo viewport: restore previous viewport
@@ -361,21 +344,8 @@ export const useUndoRedo = (): UndoRedoManager => {
         };
       }
       
-      case 'SELECT_OBJECTS': {
-        return {
-          stateChange: {
-            selectedObjectIds: action.payload.objectIds
-          }
-        };
-      }
-      
-      case 'CLEAR_SELECTION': {
-        return {
-          stateChange: {
-            selectedObjectIds: []
-          }
-        };
-      }
+      // Note: Selection actions (SELECT_OBJECTS, CLEAR_SELECTION) are no longer 
+      // recorded in undo/redo history as they are ephemeral UI state
       
       case 'UPDATE_VIEWPORT': {
         return {

@@ -150,9 +150,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                            // Same object ID OR eraser stroke (which can affect multiple objects)
                            state.currentBatch.objectId === getActionObjectId(action) ||
                            (state.currentBatch.actionType === 'ERASE_PATH' && action.type === 'ERASE_PATH') ||
-                           // Multi-delete batch: allow any DELETE_OBJECT or CLEAR_SELECTION to be added
-                           (state.currentBatch.objectId === 'multi-delete' && 
-                            (action.type === 'DELETE_OBJECT' || action.type === 'CLEAR_SELECTION'))
+                           // Multi-delete batch: allow any DELETE_OBJECT to be added
+                           (state.currentBatch.objectId === 'multi-delete' && action.type === 'DELETE_OBJECT')
                          ) &&
                          (Date.now() - (state.currentBatch.startTime || 0)) < 10000; // 10 second timeout
     
@@ -406,35 +405,15 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
 
   selectObjects: (ids, userId = 'local') => {
-    const state = get();
-    
-    const action: WhiteboardAction = {
-      type: 'SELECT_OBJECTS',
-      payload: { objectIds: ids },
-      timestamp: Date.now(),
-      id: nanoid(),
-      userId,
-      previousState: { selectedObjectIds: state.selectedObjectIds },
-    };
-
     set({ selectedObjectIds: ids });
-    get().recordAction(action);
+    // Note: Selection actions are not recorded in undo/redo history
+    // They are ephemeral UI state that doesn't need to be undone
   },
 
   clearSelection: (userId = 'local') => {
-    const state = get();
-    
-    const action: WhiteboardAction = {
-      type: 'CLEAR_SELECTION',
-      payload: {},
-      timestamp: Date.now(),
-      id: nanoid(),
-      userId,
-      previousState: { selectedObjectIds: state.selectedObjectIds },
-    };
-
     set({ selectedObjectIds: [] });
-    get().recordAction(action);
+    // Note: Selection actions are not recorded in undo/redo history
+    // They are ephemeral UI state that doesn't need to be undone
   },
 
   updateObjectPosition: (id, x, y) => {
