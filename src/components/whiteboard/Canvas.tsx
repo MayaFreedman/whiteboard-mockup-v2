@@ -339,6 +339,20 @@ export const Canvas: React.FC = () => {
     const newText = e.target.value;
     setImmediateTextContent(newText);
     
+    // Update textarea width based on text content
+    const fontSize = toolStore.toolSettings.fontSize || 16;
+    const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
+    const bold = toolStore.toolSettings.textBold || false;
+    const italic = toolStore.toolSettings.textItalic || false;
+    
+    const metrics = measureText(newText || '', fontSize, fontFamily, bold, italic);
+    const minWidth = 100;
+    const newWidth = Math.max(metrics.width + 20, minWidth); // Add padding
+    
+    // Update textarea width
+    const textarea = e.target;
+    textarea.style.width = newWidth + 'px';
+    
     // Update the canvas text object in real-time if it exists
     if (immediateTextObjectId && objects[immediateTextObjectId]) {
       const textObject = objects[immediateTextObjectId];
@@ -346,16 +360,9 @@ export const Canvas: React.FC = () => {
         data: {
           ...textObject.data,
           content: newText || ''
-        }
+        },
+        width: newWidth + 8 // Add padding for canvas object
       });
-      
-      // Auto-resize text bounds to fit content
-      setTimeout(() => {
-        const updatedObject = objects[immediateTextObjectId];
-        if (updatedObject) {
-          updateTextBounds(updatedObject, newText || '');
-        }
-      }, 0);
       
       redrawCanvas();
     }
@@ -656,7 +663,7 @@ export const Canvas: React.FC = () => {
           style={{
             left: immediateTextPosition.x,
             top: immediateTextPosition.y,
-            width: 300, // Wider default width to prevent early wrapping
+            width: 100, // Initial minimum width, will be auto-expanded
             height: toolStore.toolSettings.fontSize * 1.2 || 20, // Height based on font size
             fontSize: toolStore.toolSettings.fontSize || 16,
             fontFamily: toolStore.toolSettings.fontFamily || 'Arial',
@@ -671,9 +678,8 @@ export const Canvas: React.FC = () => {
             padding: '0', // Remove padding to match canvas text positioning exactly
             margin: '0',
             border: 'none',
-            wordWrap: 'break-word',
-            whiteSpace: 'pre-wrap',
-            overflowWrap: 'break-word',
+            whiteSpace: 'nowrap', // Prevent text wrapping
+            overflow: 'visible', // Allow content to extend beyond bounds
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
             WebkitFontSmoothing: 'antialiased',
