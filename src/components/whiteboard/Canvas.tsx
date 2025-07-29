@@ -360,8 +360,13 @@ export const Canvas: React.FC = () => {
       if (shouldWrap) {
         // Switch to wrapping mode
         textarea.style.whiteSpace = 'pre-wrap';
+        textarea.style.overflowWrap = 'break-word';
+        textarea.style.wordBreak = 'break-word';
         textarea.style.width = Math.max(availableWidth, minWidth) + 'px';
         textarea.style.height = 'auto';
+        
+        // Force reflow to ensure styles are applied
+        textarea.offsetHeight;
         
         // Measure wrapped text for proper height
         const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, availableWidth);
