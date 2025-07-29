@@ -269,11 +269,14 @@ export const Canvas: React.FC = () => {
       const finalText = editingText?.trim() || '';
       const textObject = objects[editingTextId];
       
+      // If text is empty, revert to placeholder text
+      const contentToSave = finalText || 'Double-click to edit';
+      
       // Update the text content
       updateObject(editingTextId, {
         data: {
           ...textObject.data,
-          content: finalText
+          content: contentToSave
         }
       });
       
@@ -281,7 +284,7 @@ export const Canvas: React.FC = () => {
       setTimeout(() => {
         const updatedObject = objects[editingTextId];
         if (updatedObject) {
-          updateTextBounds(updatedObject, finalText);
+          updateTextBounds(updatedObject, contentToSave);
         }
       }, 0);
       
@@ -326,8 +329,8 @@ export const Canvas: React.FC = () => {
 
       const textObject = {
         type: 'text' as const,
-        x: immediateTextPosition.x, // Use exact textarea position
-        y: immediateTextPosition.y, // Use exact textarea position
+        x: immediateTextPosition.x - 4, // Subtract textarea padding to align with canvas text
+        y: immediateTextPosition.y - 4, // Subtract textarea padding to align with canvas text
         width,
         height,
         stroke: toolStore.toolSettings.strokeColor,
