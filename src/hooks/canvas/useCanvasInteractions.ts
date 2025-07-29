@@ -626,29 +626,10 @@ export const useCanvasInteractions = () => {
           return;
         }
 
-        // Store click position and start timer to detect click vs drag
+        // Store click position for drag detection
         textClickStartPosRef.current = coords;
         
-        // Set timer to detect single click (200ms delay)
-        textClickTimerRef.current = setTimeout(() => {
-          // If timer completes without significant movement, trigger immediate text editing
-          console.log('📝 Timer completed, checking if still valid:', {
-            hasClickStartPos: !!textClickStartPosRef.current,
-            clickPos: textClickStartPosRef.current,
-            currentCoords: coords
-          });
-          
-          if (textClickStartPosRef.current) {
-            console.log('📝 Click detected - triggering immediate text editing at:', coords);
-            triggerImmediateTextEditing(coords);
-            textClickTimerRef.current = null;
-            textClickStartPosRef.current = null;
-          } else {
-            console.log('📝 Timer completed but click position was cleared - drag detected');
-          }
-        }, 200);
-
-        // Don't set isDrawingRef.current immediately - wait to see if it's a click or drag
+        // Don't set timer or drawing state - wait to see if it's a click or drag
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
@@ -664,7 +645,7 @@ export const useCanvasInteractions = () => {
           opacity: 1
         };
         
-        console.log('📝 Started text interaction:', coords, 'for user:', userId.slice(0, 8));
+        console.log('📝 Started text interaction (waiting for click/drag decision):', coords, 'for user:', userId.slice(0, 8));
         break;
       }
 
@@ -787,19 +768,14 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        // Cancel timer if significant movement is detected (drag intent)
-        if (textClickTimerRef.current && textClickStartPosRef.current) {
+        // Check for drag intent: if significant movement is detected, enter drag mode
+        if (textClickStartPosRef.current && !isDrawingRef.current) {
           const deltaX = Math.abs(coords.x - textClickStartPosRef.current.x);
           const deltaY = Math.abs(coords.y - textClickStartPosRef.current.y);
           
           if (deltaX > 5 || deltaY > 5) {
-            console.log('📝 Drag detected - cancelling click timer, entering drag mode');
-            clearTimeout(textClickTimerRef.current);
-            textClickTimerRef.current = null;
-            textClickStartPosRef.current = null;
-            isImmediateTextEditingRef.current = false;
-            // Now mark as drawing since it's a drag
-            isDrawingRef.current = true;
+            console.log('📝 Drag detected - entering drag mode');
+            isDrawingRef.current = true; // Now mark as drawing since it's a drag
           }
         }
         
@@ -935,12 +911,11 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        // Only clear timer if we were actually dragging
-        if (isDrawingRef.current && textClickTimerRef.current) {
-          console.log('📝 Clearing timer due to drag completion');
-          clearTimeout(textClickTimerRef.current);
-          textClickTimerRef.current = null;
-        }
+        console.log('📝 Text pointer up - checking mode:', {
+          wasDrawing: isDrawingRef.current,
+          hasClickStartPos: !!textClickStartPosRef.current,
+          clickStartPos: textClickStartPosRef.current
+        });
         
         // Additional check to prevent text creation while editing
         if (isEditingTextRef.current) {
@@ -948,12 +923,16 @@ export const useCanvasInteractions = () => {
           isDrawingRef.current = false;
           currentShapePreviewRef.current = null;
           textClickStartPosRef.current = null;
-          isImmediateTextEditingRef.current = false;
           return;
         }
 
-        // Only create text box if we were in drag mode (not immediate editing)
-        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current && !isImmediateTextEditingRef.current) {
+        // Decide: was this a click or a drag?
+        if (!isDrawingRef.current && textClickStartPosRef.current) {
+          // This was a click (no drag detected) - trigger immediate text editing
+          console.log('📝 Single click detected - triggering immediate text editing');
+          triggerImmediateTextEditing(textClickStartPosRef.current);
+        } else if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
+          // This was a drag - create text box
           const preview = currentShapePreviewRef.current;
           const width = Math.abs(preview.endX - preview.startX);
           const height = Math.abs(preview.endY - preview.startY);
@@ -978,10 +957,9 @@ export const useCanvasInteractions = () => {
           }
         }
         
-        // Reset click detection state only if not in immediate editing mode
-        if (!isImmediateTextEditingRef.current) {
-          textClickStartPosRef.current = null;
-        }
+        // Reset all states
+        textClickStartPosRef.current = null;
+        isDrawingRef.current = false;
         break;
       }
 
