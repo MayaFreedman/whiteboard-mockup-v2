@@ -84,26 +84,22 @@ export const Canvas: React.FC = () => {
   interactions.setDoubleClickProtection(isHandlingDoubleClick);
   interactions.setEditingState(editingTextId !== null || isImmediateTextEditing);
   
-  // Check for immediate text editing trigger
-  const immediateTextEditingActive = interactions.getIsImmediateTextEditing();
-  const immediateTextPos = interactions.getImmediateTextPosition();
-  
-  // Trigger immediate text editing when detected
-  React.useEffect(() => {
-    if (immediateTextEditingActive && immediateTextPos && !isImmediateTextEditing) {
-      console.log('📝 Activating immediate text editing at:', immediateTextPos);
-      setIsImmediateTextEditing(true);
-      setImmediateTextPosition(immediateTextPos);
-      setImmediateTextContent('');
-      
-      // Focus the textarea after a short delay
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.focus();
-        }
-      }, 0);
-    }
-  }, [immediateTextEditingActive, immediateTextPos, isImmediateTextEditing]);
+  // Set callback for immediate text editing
+  interactions.setImmediateTextTrigger((coords) => {
+    console.log('📝 Immediate text editing triggered by interactions hook at:', coords);
+    setIsImmediateTextEditing(true);
+    setImmediateTextPosition(coords);
+    setImmediateTextContent('');
+    
+    // Focus the textarea after a short delay
+    setTimeout(() => {
+      const textarea = document.querySelector('[data-immediate-text]') as HTMLTextAreaElement;
+      if (textarea) {
+        textarea.focus();
+        console.log('📝 Focused immediate text textarea');
+      }
+    }, 50);
+  });
 
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
@@ -594,7 +590,7 @@ export const Canvas: React.FC = () => {
       {/* Immediate Text Editor Overlay - For click-to-type functionality */}
       {isImmediateTextEditing && immediateTextPosition && (
         <textarea
-          ref={textareaRef}
+          data-immediate-text="true"
           className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
           style={{
             left: immediateTextPosition.x,

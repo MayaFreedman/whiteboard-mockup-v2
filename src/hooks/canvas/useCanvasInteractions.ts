@@ -156,11 +156,22 @@ export const useCanvasInteractions = () => {
   }, [toolStore.toolSettings]);
 
   /**
+   * Callback for when immediate text editing is triggered
+   */
+  const onImmediateTextTriggerRef = useRef<((coords: { x: number; y: number }) => void) | null>(null);
+
+  /**
+   * Sets the callback for immediate text editing trigger
+   */
+  const setImmediateTextTrigger = useCallback((callback: (coords: { x: number; y: number }) => void) => {
+    onImmediateTextTriggerRef.current = callback;
+  }, []);
+
+  /**
    * Triggers immediate text editing mode at the specified position
    */
   const triggerImmediateTextEditing = useCallback((coords: { x: number; y: number }) => {
     console.log('📝 Triggering immediate text editing at:', coords);
-    isImmediateTextEditingRef.current = true;
     
     // Clear any existing timer
     if (textClickTimerRef.current) {
@@ -168,9 +179,9 @@ export const useCanvasInteractions = () => {
       textClickTimerRef.current = null;
     }
     
-    // Trigger redraw to show cursor
-    if (redrawCanvasRef.current) {
-      redrawCanvasRef.current();
+    // Trigger the callback to notify Canvas component
+    if (onImmediateTextTriggerRef.current) {
+      onImmediateTextTriggerRef.current(coords);
     }
   }, []);
 
@@ -629,11 +640,11 @@ export const useCanvasInteractions = () => {
           }
         }, 200);
 
-        // Prepare for potential drag mode
-        isDrawingRef.current = true;
+        // Don't set isDrawingRef.current immediately - wait to see if it's a click or drag
         lastPointRef.current = coords;
         pathStartRef.current = coords;
         
+        // Prepare shape preview but don't mark as drawing yet
         currentShapePreviewRef.current = {
           type: 'text',
           startX: coords.x,
@@ -779,10 +790,12 @@ export const useCanvasInteractions = () => {
             textClickTimerRef.current = null;
             textClickStartPosRef.current = null;
             isImmediateTextEditingRef.current = false;
+            // Now mark as drawing since it's a drag
+            isDrawingRef.current = true;
           }
         }
         
-        // Update shape preview for drag mode
+        // Update shape preview for drag mode only if we're actually drawing
         if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           currentShapePreviewRef.current.endX = coords.x;
           currentShapePreviewRef.current.endY = coords.y;
@@ -914,8 +927,9 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        // Clear any remaining timer
-        if (textClickTimerRef.current) {
+        // Only clear timer if we were actually dragging
+        if (isDrawingRef.current && textClickTimerRef.current) {
+          console.log('📝 Clearing timer due to drag completion');
           clearTimeout(textClickTimerRef.current);
           textClickTimerRef.current = null;
         }
@@ -956,9 +970,10 @@ export const useCanvasInteractions = () => {
           }
         }
         
-        // Reset click detection state
-        textClickStartPosRef.current = null;
-        isImmediateTextEditingRef.current = false;
+        // Reset click detection state only if not in immediate editing mode
+        if (!isImmediateTextEditingRef.current) {
+          textClickStartPosRef.current = null;
+        }
         break;
       }
 
@@ -1082,15 +1097,6 @@ export const useCanvasInteractions = () => {
     return selectionBoxRef.current;
   }, []);
 
-  // Expose immediate text editing state
-  const getIsImmediateTextEditing = useCallback(() => {
-    return isImmediateTextEditingRef.current;
-  }, []);
-
-  const getImmediateTextPosition = useCallback(() => {
-    return textClickStartPosRef.current;
-  }, []);
-
   return {
     handlePointerDown,
     handlePointerMove,
@@ -1104,8 +1110,6 @@ export const useCanvasInteractions = () => {
     setRedrawCanvas,
     setDoubleClickProtection,
     setEditingState,
-    triggerImmediateTextEditing,
-    getIsImmediateTextEditing,
-    getImmediateTextPosition
+    setImmediateTextTrigger
   };
 };
