@@ -440,6 +440,22 @@ export const Canvas: React.FC = () => {
     const newText = e.target.value;
     setEditingText(newText);
     
+    // Update textarea height dynamically for proper cursor positioning
+    const textarea = e.target;
+    if (editingTextId && objects[editingTextId] && textEditorPosition) {
+      const textObject = objects[editingTextId];
+      const fontSize = textObject.data?.fontSize || 16;
+      const fontFamily = textObject.data?.fontFamily || 'Arial';
+      const bold = textObject.data?.bold || false;
+      const italic = textObject.data?.italic || false;
+      
+      // Measure text to get proper height
+      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, textEditorPosition.width);
+      
+      // Update textarea height so cursor moves correctly
+      textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + 'px';
+    }
+    
     console.log('✏️ Text changed:', {
       length: newText.length,
       content: newText.slice(0, 50) + (newText.length > 50 ? '...' : ''),
