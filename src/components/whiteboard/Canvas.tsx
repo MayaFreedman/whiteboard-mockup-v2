@@ -634,8 +634,7 @@ export const Canvas: React.FC = () => {
             MozOsxFontSmoothing: 'grayscale',
             WebkitTextSizeAdjust: '100%',
             boxSizing: 'border-box',
-            background: 'rgba(255, 255, 255, 0.9)', // Semi-transparent background for visibility
-            borderRadius: '2px',
+            background: 'transparent', // Match canvas text - no background
             minHeight: (toolStore.toolSettings.fontSize || 16) * 1.2 + 'px'
           }}
           value={immediateTextContent}
