@@ -42,8 +42,10 @@ export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { viewport, selectedObjectIds, updateObject, objects, deleteObject, clearSelection } = useWhiteboardStore();
-  const { activeTool } = useToolStore();
+  const whiteboardStore = useWhiteboardStore();
+  const { viewport, selectedObjectIds, updateObject, objects, deleteObject, clearSelection, addObject } = whiteboardStore;
+  const toolStore = useToolStore();
+  const { activeTool } = toolStore;
   const { userId } = useUser();
   const { startBatch, endBatch } = useActionBatching({ batchTimeout: 100, maxBatchSize: 50 });
   
@@ -51,6 +53,11 @@ export const Canvas: React.FC = () => {
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textEditorPosition, setTextEditorPosition] = useState<{ x: number, y: number, width: number, height: number, lineHeight: number } | null>(null);
   const [editingText, setEditingText] = useState('');
+  
+  // Immediate text editing state
+  const [isImmediateTextEditing, setIsImmediateTextEditing] = useState(false);
+  const [immediateTextPosition, setImmediateTextPosition] = useState<{ x: number, y: number } | null>(null);
+  const [immediateTextContent, setImmediateTextContent] = useState('');
   
   // Double-click protection flag - reduced timeout to 200ms
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
@@ -75,7 +82,28 @@ export const Canvas: React.FC = () => {
   // Update interactions hook with redraw function and double-click protection AND editing state
   interactions.setRedrawCanvas(redrawCanvas);
   interactions.setDoubleClickProtection(isHandlingDoubleClick);
-  interactions.setEditingState(editingTextId !== null);
+  interactions.setEditingState(editingTextId !== null || isImmediateTextEditing);
+  
+  // Check for immediate text editing trigger
+  const immediateTextEditingActive = interactions.getIsImmediateTextEditing();
+  const immediateTextPos = interactions.getImmediateTextPosition();
+  
+  // Trigger immediate text editing when detected
+  React.useEffect(() => {
+    if (immediateTextEditingActive && immediateTextPos && !isImmediateTextEditing) {
+      console.log('📝 Activating immediate text editing at:', immediateTextPos);
+      setIsImmediateTextEditing(true);
+      setImmediateTextPosition(immediateTextPos);
+      setImmediateTextContent('');
+      
+      // Focus the textarea after a short delay
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, 0);
+    }
+  }, [immediateTextEditingActive, immediateTextPos, isImmediateTextEditing]);
 
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
@@ -239,7 +267,7 @@ export const Canvas: React.FC = () => {
     }, 200);
   };
 
-  // Handle text editing completion
+  // Handle text editing completion (for double-click editing)
   const handleTextEditComplete = () => {
     if (editingTextId && objects[editingTextId]) {
       const finalText = editingText?.trim() || '';
@@ -269,6 +297,64 @@ export const Canvas: React.FC = () => {
     setEditingText('');
   };
 
+  // Handle immediate text editing completion
+  const handleImmediateTextComplete = () => {
+    const finalText = immediateTextContent?.trim() || '';
+    
+    if (finalText && immediateTextPosition) {
+      // Measure the text to get optimal dimensions
+      const fontSize = toolStore.toolSettings.fontSize || 16;
+      const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
+      const bold = toolStore.toolSettings.textBold || false;
+      const italic = toolStore.toolSettings.textItalic || false;
+      
+      const metrics = measureText(finalText, fontSize, fontFamily, bold, italic);
+      
+      // Add padding and ensure minimum dimensions
+      const padding = 8;
+      const width = Math.max(metrics.width + padding, 100);
+      const height = Math.max(metrics.height + padding, fontSize + padding);
+      
+      // Create the text object with the typed content
+      const textData = {
+        content: finalText,
+        fontSize,
+        fontFamily,
+        bold,
+        italic,
+        underline: toolStore.toolSettings.textUnderline || false,
+        textAlign: toolStore.toolSettings.textAlign || 'left'
+      };
+
+      const textObject = {
+        type: 'text' as const,
+        x: immediateTextPosition.x,
+        y: immediateTextPosition.y,
+        width,
+        height,
+        stroke: toolStore.toolSettings.strokeColor,
+        fill: 'transparent',
+        strokeWidth: 1,
+        opacity: 1,
+        data: textData
+      };
+
+      const objectId = addObject(textObject, userId);
+      console.log('📝 Created immediate text object:', objectId.slice(0, 8), {
+        content: finalText,
+        dimensions: { width, height },
+        position: immediateTextPosition
+      });
+      
+      redrawCanvas();
+    }
+    
+    // Reset immediate editing state
+    setIsImmediateTextEditing(false);
+    setImmediateTextPosition(null);
+    setImmediateTextContent('');
+  };
+
   // Handle text input changes with logging
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
@@ -282,7 +368,7 @@ export const Canvas: React.FC = () => {
     });
   };
 
-  // Handle text input key events
+  // Handle text input key events (double-click editing)
   const handleTextKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -291,6 +377,18 @@ export const Canvas: React.FC = () => {
       setEditingTextId(null);
       setTextEditorPosition(null);
       setEditingText('');
+    }
+  };
+
+  // Handle immediate text input key events
+  const handleImmediateTextKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleImmediateTextComplete();
+    } else if (event.key === 'Escape') {
+      setIsImmediateTextEditing(false);
+      setImmediateTextPosition(null);
+      setImmediateTextContent('');
     }
   };
 
@@ -330,10 +428,10 @@ export const Canvas: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle delete when:
-      // 1. Not editing text
+      // 1. Not editing text (any kind)
       // 2. Objects are selected
       // 3. Focus is on the canvas container or its children
-      if (editingTextId || selectedObjectIds.length === 0) {
+      if (editingTextId || isImmediateTextEditing || selectedObjectIds.length === 0) {
         return;
       }
 
@@ -365,7 +463,7 @@ export const Canvas: React.FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [editingTextId, selectedObjectIds, deleteObject, clearSelection, userId, startBatch, endBatch]);
+  }, [editingTextId, isImmediateTextEditing, selectedObjectIds, deleteObject, clearSelection, userId, startBatch, endBatch]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -381,15 +479,21 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    // Only block interactions if we're editing the specific text that was clicked
-    // This allows creating new text objects while editing existing ones
+    // Block interactions during double-click protection or when editing text
     if (isHandlingDoubleClick) {
       console.log('🖱️ Mouse down blocked - double-click protection active');
       return;
     }
+    
+    // Handle click outside immediate text editing area - complete the text
+    if (isImmediateTextEditing) {
+      console.log('🖱️ Click outside immediate text editing - completing text');
+      handleImmediateTextComplete();
+      return;
+    }
 
     if (canvasRef.current) {
-      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick, 'editing:', !!editingTextId);
+      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick, 'editing text:', !!editingTextId, 'immediate editing:', isImmediateTextEditing);
       interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
@@ -483,6 +587,50 @@ export const Canvas: React.FC = () => {
           onChange={handleTextChange}
           onBlur={handleTextEditComplete}
           onKeyDown={handleTextKeyDown}
+          autoFocus
+        />
+      )}
+
+      {/* Immediate Text Editor Overlay - For click-to-type functionality */}
+      {isImmediateTextEditing && immediateTextPosition && (
+        <textarea
+          ref={textareaRef}
+          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
+          style={{
+            left: immediateTextPosition.x,
+            top: immediateTextPosition.y,
+            width: 200, // Start with reasonable default width
+            height: toolStore.toolSettings.fontSize * 1.2 || 20, // Height based on font size
+            fontSize: toolStore.toolSettings.fontSize || 16,
+            fontFamily: toolStore.toolSettings.fontFamily || 'Arial',
+            fontWeight: toolStore.toolSettings.textBold ? 'bold' : 'normal',
+            fontStyle: toolStore.toolSettings.textItalic ? 'italic' : 'normal',
+            textDecoration: toolStore.toolSettings.textUnderline ? 'underline' : 'none',
+            textAlign: toolStore.toolSettings.textAlign || 'left',
+            color: toolStore.toolSettings.strokeColor || '#000000',
+            caretColor: toolStore.toolSettings.strokeColor || '#000000',
+            zIndex: 1001, // Higher than regular text editing
+            lineHeight: (toolStore.toolSettings.fontSize * 1.2 || 20) + 'px',
+            padding: '0',
+            margin: '0',
+            border: 'none',
+            wordWrap: 'break-word',
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'break-word',
+            textRendering: 'optimizeLegibility',
+            fontSmooth: 'antialiased',
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            WebkitTextSizeAdjust: '100%',
+            boxSizing: 'border-box',
+            background: 'rgba(255, 255, 255, 0.9)', // Semi-transparent background for visibility
+            borderRadius: '2px'
+          }}
+          value={immediateTextContent}
+          onChange={(e) => setImmediateTextContent(e.target.value)}
+          onBlur={handleImmediateTextComplete}
+          onKeyDown={handleImmediateTextKeyDown}
+          placeholder="Type here..."
           autoFocus
         />
       )}
