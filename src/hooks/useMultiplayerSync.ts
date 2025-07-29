@@ -8,8 +8,17 @@ import { MultiplayerContext } from '../contexts/MultiplayerContext'
  * Determines if an action should be synchronized across multiplayer clients
  * Selection-related actions are kept local to each user
  */
-const shouldSyncAction = (action: WhiteboardAction): boolean => {
+const shouldSyncAction = (action: WhiteboardAction, whiteboardStore: any): boolean => {
   const localOnlyActions = ['SELECT_OBJECTS', 'CLEAR_SELECTION']
+  
+  // Don't sync individual UPDATE_OBJECT actions during drag operations
+  if (action.type === 'UPDATE_OBJECT') {
+    const currentBatch = whiteboardStore.getState().currentBatch
+    if (currentBatch.id && currentBatch.actionType.includes('DRAG')) {
+      return false
+    }
+  }
+  
   return !localOnlyActions.includes(action.type)
 }
 
@@ -59,7 +68,7 @@ export const useMultiplayerSync = () => {
   const processActionQueue = () => {
     if (actionQueueRef.current.length > 0 && isReadyToSend()) {
       console.log('📤 Processing queued actions:', actionQueueRef.current.length)
-      const actionsToSend = [...actionQueueRef.current.filter(shouldSyncAction)]
+      const actionsToSend = [...actionQueueRef.current.filter(action => shouldSyncAction(action, whiteboardStore))]
       actionQueueRef.current = []
       
       actionsToSend.forEach(action => {
@@ -301,12 +310,12 @@ export const useMultiplayerSync = () => {
             type: state.lastAction.type,
             id: state.lastAction.id,
             userId: state.lastAction.userId,
-            shouldSync: shouldSyncAction(state.lastAction),
+            shouldSync: shouldSyncAction(state.lastAction, whiteboardStore),
             isReadyToSend: isReadyToSend()
           })
           
           // Check if this action should be synchronized
-          if (!shouldSyncAction(state.lastAction)) {
+          if (!shouldSyncAction(state.lastAction, whiteboardStore)) {
             console.log('🔒 Action filtered - keeping local:', state.lastAction.type)
             return
           }

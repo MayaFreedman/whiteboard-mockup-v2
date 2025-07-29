@@ -800,48 +800,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         }
         break;
         
-      case 'BATCH_UPDATE':
-        // Handle batch updates by applying each action in the batch
-        if (action.payload.actions && Array.isArray(action.payload.actions)) {
-          console.log('🎯 Processing remote BATCH_UPDATE with', action.payload.actions.length, 'actions');
-          
-          // Apply each action's state changes directly without recording them individually
-          action.payload.actions.forEach(batchedAction => {
-            console.log('🔄 Applying batched action:', batchedAction.type, batchedAction.id);
-            
-            // Apply the state change directly without recording to history
-            switch (batchedAction.type) {
-              case 'UPDATE_OBJECT':
-                if (batchedAction.payload.id && batchedAction.payload.updates) {
-                  set((state) => {
-                    const existingObject = state.objects[batchedAction.payload.id];
-                    if (existingObject) {
-                      return {
-                        objects: {
-                          ...state.objects,
-                          [batchedAction.payload.id]: {
-                            ...existingObject,
-                            ...batchedAction.payload.updates,
-                            updatedAt: Date.now(),
-                          },
-                        },
-                      };
-                    }
-                    return state;
-                  });
-                }
-                break;
-              // Add other action types as needed for batched operations
-              default:
-                console.log('🔄 Batched action type not handled directly:', batchedAction.type);
-                break;
-            }
-          });
-          
-          // Record only the batch action itself in history
-          break;
-        }
-        break;
         
       default:
         console.log('🔄 Unknown action type for remote application:', action.type);
