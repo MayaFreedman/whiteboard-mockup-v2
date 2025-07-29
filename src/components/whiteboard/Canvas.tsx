@@ -351,7 +351,7 @@ export const Canvas: React.FC = () => {
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
       const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
-      const maxWidth = Math.max(availableWidth, minWidth);
+      const maxWidth = Math.max(availableWidth * 0.98, minWidth); // Use 98% like original wrapping logic
       
       // Always use wrapping mode with dynamic width
       textarea.style.maxWidth = maxWidth + 'px';
