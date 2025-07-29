@@ -722,18 +722,20 @@ export const Canvas: React.FC = () => {
             textDecoration: toolStore.toolSettings.textUnderline ? 'underline' : 'none',
             textAlign: toolStore.toolSettings.textAlign || 'left',
             color: 'transparent', // Make text invisible like double-click editing
-            caretColor: toolStore.toolSettings.strokeColor || '#000000',
             zIndex: 1001, // Higher than regular text editing
             lineHeight: (toolStore.toolSettings.fontSize * 1.2 || 20) + 'px',
             padding: '0', // Remove padding to match canvas text positioning exactly
             margin: '0',
             border: 'none',
-            whiteSpace: 'nowrap', // Prevent text wrapping
+            whiteSpace: 'nowrap', // Prevent text wrapping initially
             overflow: 'visible', // Allow content to extend beyond bounds
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
+            caretColor: toolStore.toolSettings.strokeColor || '#000000', // Ensure cursor is visible and matches text color
+            wordBreak: 'break-word', // Allow cursor to wrap with text
+            overflowWrap: 'break-word', // Ensure proper text wrapping behavior
             WebkitTextSizeAdjust: '100%',
             boxSizing: 'border-box',
             background: 'transparent', // Match canvas text - no background
