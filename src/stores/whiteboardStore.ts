@@ -360,7 +360,14 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       },
     }));
 
-    get().recordAction(action);
+    // If we're in an active batch, add to batch instead of recording immediately
+    const currentBatch = get().currentBatch;
+    if (currentBatch.id && currentBatch.actions.length >= 0) {
+      console.log('🎯 Adding UPDATE_OBJECT to active batch:', action.id, 'batch:', currentBatch.id);
+      get().addToBatch(action);
+    } else {
+      get().recordAction(action);
+    }
   },
 
   deleteObject: (id, userId = 'local') => {
