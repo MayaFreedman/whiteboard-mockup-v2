@@ -81,23 +81,43 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       // Set up room event listeners for occupancy tracking
       const room = newServerInstance.server.room
       if (room) {
-        // Listen for participant events
+        console.log('👥 Setting up participant tracking for room:', room.id)
+        
+        // Listen for participant events from server
         room.onMessage('participantJoined', (participant: any) => {
-          console.log('👥 Participant joined:', participant)
-          setConnectedUserCount(prev => prev + 1)
+          console.log('👥 Participant joined event:', participant)
+          setConnectedUserCount(prev => {
+            const newCount = prev + 1
+            console.log('👥 User count increased to:', newCount)
+            return newCount
+          })
         })
 
         room.onMessage('participantLeft', (data: any) => {
-          console.log('👥 Participant left:', data)
-          setConnectedUserCount(prev => Math.max(0, prev - 1))
+          console.log('👥 Participant left event:', data)
+          setConnectedUserCount(prev => {
+            const newCount = Math.max(0, prev - 1)
+            console.log('👥 User count decreased to:', newCount)
+            return newCount
+          })
         })
 
         // Listen for default room state to get initial player count
         room.onMessage('defaultRoomState', (state: any) => {
+          console.log('🏠 Default room state received:', state)
           if (state?.players) {
             const playerCount = Object.keys(state.players).length
             console.log('👥 Initial room state - player count:', playerCount)
             setConnectedUserCount(playerCount)
+          }
+        })
+
+        // Also track state changes directly for more immediate updates
+        room.onStateChange((state: any) => {
+          if (state?.players) {
+            const currentPlayerCount = Object.keys(state.players).length
+            console.log('👥 State change - current player count:', currentPlayerCount)
+            setConnectedUserCount(currentPlayerCount)
           }
         })
       }

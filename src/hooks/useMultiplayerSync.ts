@@ -286,7 +286,7 @@ export const useMultiplayerSync = () => {
         stateRequestAttemptsRef.current = 0
         requestInitialState()
       } else {
-        console.log('🏠 No other users in room - proceeding without state request')
+        console.log('🏠 No other users in room (count:', connectedUserCount, ') - proceeding without state request')
         hasReceivedInitialStateRef.current = true
         setIsWaitingForInitialState(false)
       }
@@ -374,6 +374,17 @@ export const useMultiplayerSync = () => {
       }
     }
   }, [isConnected])
+
+  // Re-evaluate state request when user count changes (for late joiners)
+  useEffect(() => {
+    if (isConnected && isReadyToSend() && !hasReceivedInitialStateRef.current) {
+      if (connectedUserCount > 1) {
+        console.log('👥 User count changed to', connectedUserCount, '- requesting initial state from other users')
+        stateRequestAttemptsRef.current = 0
+        requestInitialState()
+      }
+    }
+  }, [connectedUserCount, isConnected])
 
   return {
     isConnected,

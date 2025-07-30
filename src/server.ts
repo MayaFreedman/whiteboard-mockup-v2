@@ -159,10 +159,6 @@ export class ServerClass {
       this.server.room = tempRoom;
       console.log("🎯 All setup complete, connection established");
       
-      // Request initial state after successful connection
-      console.log("🔄 Requesting initial state from existing users...");
-      this.requestInitialState();
-      
     } catch (error) {
       console.error("💥 Failed to connect to Colyseus server:", error);
 
