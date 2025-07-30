@@ -37,7 +37,10 @@ export const useViewportSync = () => {
   const { viewport, setViewport } = useWhiteboardStore();
   const multiplayer = useMultiplayer();
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
+  const roomSyncTimeoutRef = useRef<NodeJS.Timeout>();
+  const dimensionUpdateTimeoutRef = useRef<NodeJS.Timeout>();
   const isInitialized = useRef(false);
+  const isMountedRef = useRef(true);
   const lastBroadcastTimestamp = useRef<number>(0);
   const [userScreenDimensions, setUserScreenDimensions] = useState<Map<string, UserScreenDimensions>>(new Map());
 
@@ -233,7 +236,13 @@ export const useViewportSync = () => {
       });
       
       // Immediately recalculate using the unified function
-      setTimeout(() => {
+      if (dimensionUpdateTimeoutRef.current) {
+        clearTimeout(dimensionUpdateTimeoutRef.current);
+      }
+      
+      dimensionUpdateTimeoutRef.current = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        
         const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
         
         const newViewport = {
@@ -294,6 +303,17 @@ export const useViewportSync = () => {
     }
   }, [calculateOptimalCanvasSize, setViewport, viewport, multiplayer, broadcastScreenDimensions]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+      if (roomSyncTimeoutRef.current) clearTimeout(roomSyncTimeoutRef.current);
+      if (dimensionUpdateTimeoutRef.current) clearTimeout(dimensionUpdateTimeoutRef.current);
+    };
+  }, []);
+
   // Listen for window resize
   useEffect(() => {
     window.addEventListener('resize', handleWindowResize);
@@ -332,7 +352,13 @@ export const useViewportSync = () => {
   useEffect(() => {
     if (multiplayer?.isConnected) {
       // Small delay to ensure connection is fully established
-      setTimeout(() => {
+      if (roomSyncTimeoutRef.current) {
+        clearTimeout(roomSyncTimeoutRef.current);
+      }
+      
+      roomSyncTimeoutRef.current = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        
         console.log('🔗 Room connected - broadcasting dimensions and triggering sync');
         broadcastScreenDimensions();
         
@@ -366,7 +392,13 @@ export const useViewportSync = () => {
       console.log('🔗 Room sync event:', message);
       
       // Recalculate canvas size for any room change
-      setTimeout(() => {
+      if (roomSyncTimeoutRef.current) {
+        clearTimeout(roomSyncTimeoutRef.current);
+      }
+      
+      roomSyncTimeoutRef.current = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        
         const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
         const newViewport = { ...viewport, canvasWidth, canvasHeight };
         setViewport(newViewport);
