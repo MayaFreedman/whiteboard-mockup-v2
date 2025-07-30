@@ -3,45 +3,23 @@ import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useMultiplayer } from './useMultiplayer';
 import { Viewport } from '../types/viewport';
 
-// Get actual available canvas space by measuring DOM elements
-const getActualCanvasSpace = () => {
-  // Try to find the canvas container element
-  const canvasContainer = document.querySelector('[data-canvas-container]') || 
-                         document.querySelector('.canvas-container') ||
-                         document.querySelector('canvas')?.parentElement;
-                         
-  if (canvasContainer) {
-    const rect = canvasContainer.getBoundingClientRect();
-    console.log('📐 Measured canvas container:', {
-      width: rect.width,
-      height: rect.height,
-      top: rect.top,
-      left: rect.left
-    });
-    
-    return {
-      availableWidth: Math.floor(rect.width),
-      availableHeight: Math.floor(rect.height)
-    };
-  }
+// Simple calculation: use full screen minus minimal UI space
+const getScreenDimensions = () => {
+  // Just use full window with minimal padding for any UI
+  const padding = 20; // Small padding
   
-  // Fallback: calculate based on known UI elements
-  const toolbarHeight = 64; // Toolbar height
-  const connectionStatusHeight = 32; // Connection status overlay
-  const totalTopOffset = toolbarHeight + connectionStatusHeight;
+  const availableWidth = window.innerWidth - padding;
+  const availableHeight = window.innerHeight - padding;
   
-  // Sidebar is positioned absolute and overlays, so doesn't reduce available width
-  const availableWidth = window.innerWidth;
-  const availableHeight = window.innerHeight - totalTopOffset;
-  
-  console.log('📐 Fallback calculation:', {
-    windowSize: { width: window.innerWidth, height: window.innerHeight },
-    toolbarHeight,
-    connectionStatusHeight,
-    result: { availableWidth, availableHeight }
+  console.log('📐 Full screen dimensions:', {
+    window: { width: window.innerWidth, height: window.innerHeight },
+    available: { width: availableWidth, height: availableHeight },
+    padding
   });
   
   return {
+    screenWidth: window.innerWidth,
+    screenHeight: window.innerHeight,
     availableWidth: Math.max(300, availableWidth),
     availableHeight: Math.max(200, availableHeight)
   };
@@ -64,73 +42,44 @@ export const useViewportSync = () => {
   const [userScreenDimensions, setUserScreenDimensions] = useState<Map<string, UserScreenDimensions>>(new Map());
 
   const calculateAvailableSpace = useCallback(() => {
-    const actualSpace = getActualCanvasSpace();
-    
-    console.log('📐 Final available space calculation:', {
-      actualSpace,
-      windowSize: { width: window.innerWidth, height: window.innerHeight }
-    });
-    
-    return {
-      screenWidth: window.innerWidth,
-      screenHeight: window.innerHeight,
-      availableWidth: actualSpace.availableWidth,
-      availableHeight: actualSpace.availableHeight
-    };
+    return getScreenDimensions();
   }, []);
 
   const calculateOptimalCanvasSize = useCallback(() => {
-    const isConnected = multiplayer?.isConnected && multiplayer?.connectedUserCount > 1;
+    const isMultiplayer = multiplayer?.isConnected && userScreenDimensions.size > 0;
     const currentDimensions = calculateAvailableSpace();
     
-    console.log('🎯 Calculating optimal canvas size:', {
-      isConnected,
-      connectedUserCount: multiplayer?.connectedUserCount,
-      userScreenDimensionsCount: userScreenDimensions.size,
+    console.log('🎯 Calculating canvas size:', {
+      isMultiplayer,
+      userCount: userScreenDimensions.size,
       currentDimensions
     });
     
-    if (!isConnected || userScreenDimensions.size === 0) {
-      // Single user mode - use current user's full available space
-      const result = { 
+    if (!isMultiplayer) {
+      // Single user: use full screen
+      console.log('🎯 Single user mode - using full screen');
+      return { 
         canvasWidth: currentDimensions.availableWidth, 
         canvasHeight: currentDimensions.availableHeight 
       };
-      
-      console.log('🎯 Single user mode result:', result);
-      return result;
     }
     
-    // Multi-user mode - find the smallest dimensions across all users
-    let minAvailableWidth = currentDimensions.availableWidth;
-    let minAvailableHeight = currentDimensions.availableHeight;
+    // Multiplayer: find smallest screen and scale down to that
+    let minWidth = currentDimensions.availableWidth;
+    let minHeight = currentDimensions.availableHeight;
     
-    console.log('🎯 Starting with current user dimensions:', {
-      minAvailableWidth,
-      minAvailableHeight
+    userScreenDimensions.forEach((dims, userId) => {
+      console.log(`🎯 User ${userId} dimensions:`, dims);
+      minWidth = Math.min(minWidth, dims.availableWidth);
+      minHeight = Math.min(minHeight, dims.availableHeight);
     });
-    
-    userScreenDimensions.forEach((dimensions, userId) => {
-      console.log(`🎯 Comparing with user ${userId}:`, dimensions);
-      minAvailableWidth = Math.min(minAvailableWidth, dimensions.availableWidth);
-      minAvailableHeight = Math.min(minAvailableHeight, dimensions.availableHeight);
-    });
-    
-    // Apply minimum constraints based on actual measurements
-    const minWidth = 300;
-    const minHeight = 200;
     
     const result = {
-      canvasWidth: Math.max(minWidth, minAvailableWidth),
-      canvasHeight: Math.max(minHeight, minAvailableHeight)
+      canvasWidth: Math.max(300, minWidth),
+      canvasHeight: Math.max(200, minHeight)
     };
     
-    console.log('🎯 Multi-user mode result:', {
-      ...result,
-      appliedMinConstraints: { minWidth, minHeight },
-      beforeConstraints: { minAvailableWidth, minAvailableHeight }
-    });
-    
+    console.log('🎯 Multiplayer result:', result);
     return result;
   }, [userScreenDimensions, multiplayer, calculateAvailableSpace]);
 
