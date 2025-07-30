@@ -104,7 +104,7 @@ export const useViewportSync = () => {
     });
     
     return result;
-  }, [userScreenDimensions, multiplayer, calculateAvailableSpace]);
+  }, [userScreenDimensions, multiplayer?.isConnected]);
 
   const broadcastScreenDimensions = useCallback(() => {
     if (!multiplayer?.serverInstance?.server?.room) return;
@@ -163,7 +163,9 @@ export const useViewportSync = () => {
       const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
       
       const newViewport = {
-        ...viewport,
+        x: viewport.x || 0,
+        y: viewport.y || 0,
+        zoom: viewport.zoom || 1,
         canvasWidth,
         canvasHeight
       };
@@ -174,7 +176,14 @@ export const useViewportSync = () => {
       });
       
       // Update local viewport immediately
-      setViewport(newViewport);
+      const updatedViewport: Viewport = {
+        x: viewport.x || 0,
+        y: viewport.y || 0,
+        zoom: viewport.zoom || 1,
+        canvasWidth,
+        canvasHeight
+      };
+      setViewport(updatedViewport);
       
       // Broadcast to multiplayer room (if connected)
       if (multiplayer?.isConnected && multiplayer?.serverInstance?.server?.room) {
@@ -205,7 +214,7 @@ export const useViewportSync = () => {
         }
       }
     }, 300);
-  }, [viewport, setViewport, multiplayer, calculateOptimalCanvasSize, broadcastScreenDimensions]);
+  }, [calculateOptimalCanvasSize, broadcastScreenDimensions, multiplayer]);
 
   const handleReceivedViewport = useCallback((message: { viewport: Viewport; timestamp: number; source?: string }) => {
     const { viewport: receivedViewport, timestamp, source } = message;
@@ -287,13 +296,16 @@ export const useViewportSync = () => {
 
   // Initialize canvas size on mount
   useEffect(() => {
-    if (!isInitialized.current) {
+    if (!isInitialized.current && isMountedRef.current) {
       const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
-      setViewport({
-        ...viewport,
+      const updatedViewport: Viewport = {
+        x: viewport.x || 0,
+        y: viewport.y || 0,
+        zoom: viewport.zoom || 1,
         canvasWidth,
         canvasHeight
-      });
+      };
+      setViewport(updatedViewport);
       isInitialized.current = true;
       
       // Broadcast initial screen dimensions if connected
@@ -301,7 +313,7 @@ export const useViewportSync = () => {
         broadcastScreenDimensions();
       }
     }
-  }, [calculateOptimalCanvasSize, setViewport, viewport, multiplayer, broadcastScreenDimensions]);
+  }, [calculateOptimalCanvasSize, multiplayer?.isConnected, broadcastScreenDimensions]);
 
   // Cleanup on unmount
   useEffect(() => {
