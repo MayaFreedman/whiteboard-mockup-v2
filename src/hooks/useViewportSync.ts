@@ -111,23 +111,18 @@ export const useViewportSync = () => {
       // Always broadcast new screen dimensions
       broadcastScreenDimensions();
       
-      // Calculate and apply new canvas size
-      const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
-      const newViewport = {
-        ...viewport,
-        canvasWidth,
-        canvasHeight
-      };
-      
-      setViewport(newViewport);
-      
-      // Only the first user (or if alone) syncs canvas size to prevent conflicts
-      const isFirstUser = !multiplayer?.connectedUserCount || multiplayer.connectedUserCount <= 1;
-      if (isFirstUser && multiplayer?.isConnected) {
-        syncCanvasSizeToRoom();
+      // If we're in a multiplayer room, let the screen dimension handler trigger the sync
+      // If we're alone, update immediately
+      if (!multiplayer?.isConnected || userScreenDimensions.size === 0) {
+        const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
+        setViewport({
+          ...viewport,
+          canvasWidth,
+          canvasHeight
+        });
       }
     }, 300);
-  }, [viewport, setViewport, multiplayer, calculateOptimalCanvasSize, broadcastScreenDimensions, syncCanvasSizeToRoom]);
+  }, [viewport, setViewport, multiplayer, calculateOptimalCanvasSize, broadcastScreenDimensions, userScreenDimensions.size]);
 
   const handleReceivedViewport = useCallback((receivedViewport: Viewport) => {
     if (receivedViewport.canvasWidth && receivedViewport.canvasHeight) {
@@ -139,19 +134,49 @@ export const useViewportSync = () => {
     setUserScreenDimensions(prev => {
       const updated = new Map(prev);
       updated.set(dimensions.userId, dimensions);
+      
+      // Immediately recalculate and broadcast new canvas size to everyone
+      setTimeout(() => {
+        const currentDimensions = calculateAvailableSpace();
+        
+        // Find the smallest screen dimensions across all users including current
+        let minAvailableWidth = currentDimensions.availableWidth;
+        let minAvailableHeight = currentDimensions.availableHeight;
+        
+        updated.forEach((userDims) => {
+          minAvailableWidth = Math.min(minAvailableWidth, userDims.availableWidth);
+          minAvailableHeight = Math.min(minAvailableHeight, userDims.availableHeight);
+        });
+        
+        const newCanvasSize = {
+          canvasWidth: Math.max(400, minAvailableWidth),
+          canvasHeight: Math.max(300, minAvailableHeight)
+        };
+        
+        const newViewport = {
+          ...viewport,
+          ...newCanvasSize
+        };
+        
+        // Update local viewport
+        setViewport(newViewport);
+        
+        // Broadcast to all users so they sync to the same size
+        if (multiplayer?.serverInstance?.server?.room) {
+          try {
+            multiplayer.serverInstance.server.room.send('viewport_sync', {
+              viewport: newViewport,
+              timestamp: Date.now()
+            });
+          } catch (error) {
+            console.error('Failed to sync canvas size after dimension update:', error);
+          }
+        }
+      }, 50);
+      
       return updated;
     });
-    
-    // Recalculate canvas size with new dimensions
-    setTimeout(() => {
-      const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
-      setViewport({
-        ...viewport,
-        canvasWidth,
-        canvasHeight
-      });
-    }, 100);
-  }, [setViewport, calculateOptimalCanvasSize, viewport]);
+  }, [setViewport, viewport, calculateAvailableSpace, multiplayer]);
 
   // Initialize canvas size on mount
   useEffect(() => {
@@ -208,7 +233,10 @@ export const useViewportSync = () => {
   // Broadcast screen dimensions when connecting
   useEffect(() => {
     if (multiplayer?.isConnected) {
-      broadcastScreenDimensions();
+      // Small delay to ensure connection is fully established
+      setTimeout(() => {
+        broadcastScreenDimensions();
+      }, 100);
     }
   }, [multiplayer?.isConnected, broadcastScreenDimensions]);
 
