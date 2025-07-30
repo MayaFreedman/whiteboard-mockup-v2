@@ -182,12 +182,20 @@ export const useViewportSync = () => {
           lastBroadcastTimestamp.current = timestamp;
           
           try {
+            // Send viewport sync
             multiplayer.serverInstance.server.room.send('viewport_sync', {
               viewport: newViewport,
               timestamp,
               source: 'resize'
             });
-            console.log('🔄 Broadcasted viewport sync after resize');
+            
+            // Send room sync to trigger everyone to recalculate
+            multiplayer.serverInstance.server.room.send('room_sync', {
+              action: 'window_resize',
+              timestamp
+            });
+            
+            console.log('🔄 Broadcasted viewport sync and room sync after resize');
           } catch (error) {
             console.error('Failed to sync canvas size after resize:', error);
           }
@@ -320,22 +328,70 @@ export const useViewportSync = () => {
     };
   }, [multiplayer?.serverInstance, handleReceivedViewport, handleReceivedScreenDimensions]);
 
-  // Broadcast screen dimensions when connecting
+  // On room connection: broadcast dimensions AND trigger room-wide recalculation
   useEffect(() => {
     if (multiplayer?.isConnected) {
       // Small delay to ensure connection is fully established
       setTimeout(() => {
+        console.log('🔗 Room connected - broadcasting dimensions and triggering sync');
         broadcastScreenDimensions();
+        
+        // Trigger immediate canvas size recalculation for room
+        const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
+        const newViewport = { ...viewport, canvasWidth, canvasHeight };
+        setViewport(newViewport);
+        
+        // Send room_sync message to tell everyone to recalculate
+        if (multiplayer.serverInstance?.server?.room) {
+          try {
+            multiplayer.serverInstance.server.room.send('room_sync', {
+              action: 'user_joined',
+              timestamp: Date.now()
+            });
+          } catch (error) {
+            console.error('Failed to send room sync:', error);
+          }
+        }
       }, 100);
     }
-  }, [multiplayer?.isConnected, broadcastScreenDimensions]);
+  }, [multiplayer?.isConnected, broadcastScreenDimensions, calculateOptimalCanvasSize, viewport, setViewport, multiplayer]);
 
-  // Clean up user dimensions when they disconnect
+  // Listen for room sync events (user join/leave)
+  useEffect(() => {
+    if (!multiplayer?.serverInstance?.server?.room) return;
+
+    const room = multiplayer.serverInstance.server.room;
+
+    const handleRoomSync = (message: { action: string; timestamp: number }) => {
+      console.log('🔗 Room sync event:', message);
+      
+      // Recalculate canvas size for any room change
+      setTimeout(() => {
+        const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
+        const newViewport = { ...viewport, canvasWidth, canvasHeight };
+        setViewport(newViewport);
+        console.log('🔗 Recalculated canvas after room sync:', { canvasWidth, canvasHeight });
+      }, 50);
+    };
+
+    room.onMessage('room_sync', handleRoomSync);
+    
+    return () => {
+      room.removeAllListeners('room_sync');
+    };
+  }, [multiplayer?.serverInstance, calculateOptimalCanvasSize, viewport, setViewport]);
+
+  // Clean up user dimensions when they disconnect AND trigger recalculation
   useEffect(() => {
     if (!multiplayer?.isConnected) {
+      console.log('🔗 Disconnected - clearing user dimensions and using full screen');
       setUserScreenDimensions(new Map());
+      
+      // Recalculate to full screen when disconnected
+      const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
+      setViewport({ ...viewport, canvasWidth, canvasHeight });
     }
-  }, [multiplayer?.isConnected]);
+  }, [multiplayer?.isConnected, calculateOptimalCanvasSize, viewport, setViewport]);
 
   return {
     syncCanvasSizeToRoom,
