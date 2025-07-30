@@ -33,23 +33,28 @@ export const DynamicToolSettings: React.FC = () => {
   const stampItems = useMemo(() => {
     if (activeTool !== 'stamp') return [];
     
-    if (selectedCategory === 'all') {
-      // Get all icons including custom stamps
-      return getAllCategories().flatMap(category => 
-        getIconsByCategoryWithCustom(category).map(icon => ({
-          name: icon.name,
-          url: icon.path,
-          preview: icon.path // Use the actual SVG/image path as preview for OpenMoji, dataURL for custom
-        }))
-      );
-    }
+    // Create a stable reference by stringifying the icons
+    const getStampItems = () => {
+      if (selectedCategory === 'all') {
+        // Get all icons including custom stamps
+        return getAllCategories().flatMap(category => 
+          getIconsByCategoryWithCustom(category).map(icon => ({
+            name: icon.name,
+            url: icon.path,
+            preview: icon.path // Use the actual SVG/image path as preview for OpenMoji, dataURL for custom
+          }))
+        );
+      }
+      
+      // Filter icons by category (including custom)
+      return getIconsByCategoryWithCustom(selectedCategory).map(icon => ({
+        name: icon.name,
+        url: icon.path,
+        preview: icon.path // Use the actual SVG/image path as preview for OpenMoji, dataURL for custom
+      }));
+    };
     
-    // Filter icons by category (including custom)
-    return getIconsByCategoryWithCustom(selectedCategory).map(icon => ({
-      name: icon.name,
-      url: icon.path,
-      preview: icon.path // Use the actual SVG/image path as preview for OpenMoji, dataURL for custom
-    }));
+    return getStampItems();
   }, [activeTool, selectedCategory, refreshKey]);
   
   // Memoize category change handler to prevent re-renders

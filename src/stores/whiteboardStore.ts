@@ -860,44 +860,50 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     // Apply batch of actions without triggering sync
     console.log('🔄 Applying batch update:', actions.length, 'actions');
     
-    // Set batch flag to prevent sync loops
+    // Set batch flag to prevent sync loops with timeout protection
     set((state) => ({ ...state, isBatchingRemoteActions: true }));
     
-    // Apply all actions in a single state update to prevent multiple subscription triggers
-    set((state) => {
-      const updatedObjects = { ...state.objects };
-      
-      actions.forEach(action => {
-        switch (action.type) {
-          case 'ADD_OBJECT':
-            if (action.payload.object) {
-              updatedObjects[action.payload.object.id] = action.payload.object;
-            }
-            break;
-          case 'UPDATE_OBJECT':
-            if (action.payload.id && action.payload.updates && updatedObjects[action.payload.id]) {
-              updatedObjects[action.payload.id] = {
-                ...updatedObjects[action.payload.id],
-                ...action.payload.updates,
-              };
-            }
-            break;
-          case 'DELETE_OBJECT':
-            if (action.payload.id) {
-              delete updatedObjects[action.payload.id];
-            }
-            break;
-          default:
-            console.warn('Unhandled action type in batchUpdate:', action.type);
-        }
+    try {
+      // Apply all actions in a single state update to prevent multiple subscription triggers
+      set((state) => {
+        const updatedObjects = { ...state.objects };
+        
+        actions.forEach(action => {
+          switch (action.type) {
+            case 'ADD_OBJECT':
+              if (action.payload.object) {
+                updatedObjects[action.payload.object.id] = action.payload.object;
+              }
+              break;
+            case 'UPDATE_OBJECT':
+              if (action.payload.id && action.payload.updates && updatedObjects[action.payload.id]) {
+                updatedObjects[action.payload.id] = {
+                  ...updatedObjects[action.payload.id],
+                  ...action.payload.updates,
+                };
+              }
+              break;
+            case 'DELETE_OBJECT':
+              if (action.payload.id) {
+                delete updatedObjects[action.payload.id];
+              }
+              break;
+            default:
+              console.warn('Unhandled action type in batchUpdate:', action.type);
+          }
+        });
+        
+        return {
+          ...state,
+          objects: updatedObjects,
+        };
       });
-      
-      return {
-        ...state,
-        objects: updatedObjects,
-        isBatchingRemoteActions: false, // Clear batch flag
-      };
-    });
+    } finally {
+      // Ensure batch flag is always cleared, even if there's an error
+      setTimeout(() => {
+        set((state) => ({ ...state, isBatchingRemoteActions: false }));
+      }, 0);
+    }
   },
   updateLocalUserHistoryIndex: (userId, index) => {
     set((state) => {

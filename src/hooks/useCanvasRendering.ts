@@ -19,6 +19,8 @@ import {
 } from '../utils/shapeRendering';
 import { measureText } from '../utils/textMeasurement';
 import { pathPointsCache } from '../utils/pathPointsCache';
+import { useImageLoadingDebouncer } from './useImageLoadingDebouncer';
+import { imageCache, registerCanvas, unregisterCanvas, registerBlobUrl, cleanupBlobUrl } from '../utils/canvasCleanup';
 
 /**
  * Wraps text to fit within the specified width
@@ -84,17 +86,24 @@ export const useCanvasRendering = (
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
   
-  // Image cache to prevent blinking/glitching
-  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
+  // Track loading images to prevent duplicate requests
   const loadingImages = useRef<Set<string>>(new Set());
+  
+  // Set up debounced image redrawing with circuit breaker
+  const { debouncedImageRedraw, cleanup: cleanupDebouncer, isCircuitBreakerTripped } = useImageLoadingDebouncer(() => {
+    if (canvas) {
+      redrawCanvas();
+    }
+  });
 
   /**
-   * Loads and caches an image for synchronous rendering
+   * Loads and caches an image for synchronous rendering with improved memory management
    */
   const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
     // Return cached image if available
-    if (imageCache.current.has(src)) {
-      return imageCache.current.get(src)!;
+    const cachedImage = imageCache.get(src);
+    if (cachedImage) {
+      return cachedImage;
     }
     
     // Prevent duplicate loading requests
@@ -109,9 +118,12 @@ export const useCanvasRendering = (
       
       return new Promise((resolve, reject) => {
         img.onload = () => {
-          // Cache the loaded image
-          imageCache.current.set(src, img);
+          // Cache the loaded image with improved cache management
+          imageCache.set(src, img);
           loadingImages.current.delete(src);
+          
+          // Use debounced redraw to prevent cascade effects
+          debouncedImageRedraw(src);
           resolve(img);
         };
         
@@ -121,20 +133,24 @@ export const useCanvasRendering = (
           reject(new Error(`Failed to load image: ${src}`));
         };
         
-        // Handle SVG files by converting to blob URL
+        // Handle SVG files by converting to blob URL with proper cleanup
         if (src.endsWith('.svg')) {
           fetch(src)
             .then(response => response.text())
             .then(svgText => {
               const blob = new Blob([svgText], { type: 'image/svg+xml' });
               const url = URL.createObjectURL(blob);
+              registerBlobUrl(url);
               img.src = url;
               
               // Clean up blob URL after image loads
               img.onload = () => {
-                imageCache.current.set(src, img);
+                imageCache.set(src, img);
                 loadingImages.current.delete(src);
-                URL.revokeObjectURL(url);
+                cleanupBlobUrl(url);
+                
+                // Use debounced redraw
+                debouncedImageRedraw(src);
                 resolve(img);
               };
             })
@@ -151,7 +167,7 @@ export const useCanvasRendering = (
       loadingImages.current.delete(src);
       return null;
     }
-  }, []);
+  }, [debouncedImageRedraw]);
 
   /**
    * Sets up canvas for crisp rendering with proper pixel alignment
@@ -377,7 +393,7 @@ export const useCanvasRendering = (
       case 'image': {
         if (obj.data?.src && obj.width && obj.height) {
           const imageData = obj.data as ImageData;
-          const cachedImage = imageCache.current.get(imageData.src);
+          const cachedImage = imageCache.get(imageData.src);
           
           if (cachedImage) {
             // Draw immediately from cache - no blinking!
@@ -389,13 +405,8 @@ export const useCanvasRendering = (
               Math.round(obj.height)
             );
           } else {
-            // Load image asynchronously and trigger redraw when ready
-            getOrLoadImage(imageData.src).then(() => {
-              // Only redraw if canvas still exists
-              if (canvas) {
-                redrawCanvas();
-              }
-            }).catch(error => {
+            // Load image asynchronously - debounced redraw will handle the update
+            getOrLoadImage(imageData.src).catch(error => {
               console.warn('Failed to load image for rendering:', error);
             });
           }
@@ -817,6 +828,12 @@ export const useCanvasRendering = (
   const redrawCanvas = useCallback((immediate = false) => {
     if (!canvas) return;
 
+    // Check circuit breaker to prevent infinite loops
+    if (!immediate && isCircuitBreakerTripped()) {
+      console.warn('⚡ Skipping redraw due to circuit breaker');
+      return;
+    }
+
     const now = Date.now();
     
     // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
@@ -846,7 +863,7 @@ export const useCanvasRendering = (
         }, timeUntilNextRedraw);
       }
     }
-  }, [canvas, viewport, objects, selectedObjectIds, settings, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText]);
+  }, [canvas, viewport, objects, selectedObjectIds, settings, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, isCircuitBreakerTripped]);
 
   const performRedraw = useCallback(() => {
     if (!canvas) return;
@@ -937,7 +954,7 @@ export const useCanvasRendering = (
       hasShapePreview: !!getCurrentShapePreview?.(),
       hasSelectionBox: !!getCurrentSelectionBox?.()?.isActive,
       editingTextId: editingTextId || 'none',
-      cachedImages: imageCache.current.size
+      cachedImages: imageCache.getStats().entries
     });
   }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, getCurrentSelectionBox, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
 
@@ -946,14 +963,22 @@ export const useCanvasRendering = (
     redrawCanvas();
   }, [redrawCanvas]);
 
-  // Cleanup throttle timeout on unmount
+  // Register canvas for cleanup tracking and cleanup on unmount
   useEffect(() => {
+    if (canvas) {
+      registerCanvas(canvas);
+    }
+    
     return () => {
       if (redrawTimeoutRef.current) {
         clearTimeout(redrawTimeoutRef.current);
       }
+      cleanupDebouncer();
+      if (canvas) {
+        unregisterCanvas(canvas);
+      }
     };
-  }, []);
+  }, [canvas, cleanupDebouncer]);
 
   return {
     redrawCanvas,
