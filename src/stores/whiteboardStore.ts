@@ -844,9 +844,30 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
   
   batchUpdate: (actions) => {
-    // Apply batch of actions
-    console.log('Applying batch update:', actions.length, 'actions');
-    actions.forEach(action => get().applyRemoteAction(action));
+    // Apply batch of actions without triggering sync
+    console.log('🔄 Applying batch update:', actions.length, 'actions');
+    
+    // Apply each action directly without setting lastAction
+    actions.forEach(action => {
+      switch (action.type) {
+        case 'UPDATE_OBJECT':
+          if (action.payload.id && action.payload.updates) {
+            set((state) => ({
+              objects: {
+                ...state.objects,
+                [action.payload.id]: {
+                  ...state.objects[action.payload.id],
+                  ...action.payload.updates,
+                },
+              },
+            }));
+          }
+          break;
+        // Add other action types as needed
+        default:
+          console.warn('Unhandled action type in batchUpdate:', action.type);
+      }
+    });
   },
   updateLocalUserHistoryIndex: (userId, index) => {
     set((state) => {
