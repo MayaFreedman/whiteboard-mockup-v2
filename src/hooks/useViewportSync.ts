@@ -20,19 +20,12 @@ export const useViewportSync = () => {
   const [userScreenDimensions, setUserScreenDimensions] = useState<Map<string, UserScreenDimensions>>(new Map());
 
   const calculateAvailableSpace = useCallback(() => {
-    // Calculate available space minus UI elements
-    const toolbarHeight = 64; // Toolbar height
-    const sidebarWidth = 240; // Sidebar width when expanded
-    const padding = 32; // Some padding
-    
-    const availableWidth = window.innerWidth - sidebarWidth - padding;
-    const availableHeight = window.innerHeight - toolbarHeight - padding;
-    
+    // Return full screen dimensions for full-screen canvas
     return {
       screenWidth: window.innerWidth,
       screenHeight: window.innerHeight,
-      availableWidth: Math.max(400, availableWidth), // Minimum 400px
-      availableHeight: Math.max(300, availableHeight) // Minimum 300px
+      availableWidth: window.innerWidth,
+      availableHeight: window.innerHeight
     };
   }, []);
 
