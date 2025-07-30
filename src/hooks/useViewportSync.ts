@@ -105,54 +105,17 @@ export const useViewportSync = () => {
 
     debounceTimeoutRef.current = setTimeout(() => {
       console.log('🔄 Processing window resize after debounce');
-      // Always broadcast new screen dimensions first
+      
+      // First broadcast new screen dimensions to all users
       broadcastScreenDimensions();
       
-      // Immediately recalculate canvas size with new dimensions for ALL users
-      const currentDimensions = calculateAvailableSpace();
-      let minAvailableWidth = currentDimensions.availableWidth;
-      let minAvailableHeight = currentDimensions.availableHeight;
-      
-      // Include all other users' dimensions
-      userScreenDimensions.forEach((userDims) => {
-        minAvailableWidth = Math.min(minAvailableWidth, userDims.availableWidth);
-        minAvailableHeight = Math.min(minAvailableHeight, userDims.availableHeight);
-      });
-      
-      const newCanvasSize = {
-        canvasWidth: Math.max(400, minAvailableWidth),
-        canvasHeight: Math.max(300, minAvailableHeight)
-      };
-      
-      const newViewport = {
-        ...viewport,
-        ...newCanvasSize
-      };
-      
-      // Update local viewport immediately
-      setViewport(newViewport);
-      
-      // Broadcast to multiplayer room with timestamp-based conflict resolution
-      if (multiplayer?.isConnected && multiplayer?.serverInstance?.server?.room) {
-        const timestamp = Date.now();
-        
-        // Only broadcast if enough time has passed since last broadcast (prevent spam)
-        if (timestamp - lastBroadcastTimestamp.current > 100) {
-          lastBroadcastTimestamp.current = timestamp;
-          
-          try {
-            multiplayer.serverInstance.server.room.send('viewport_sync', {
-              viewport: newViewport,
-              timestamp,
-              source: 'resize'
-            });
-          } catch (error) {
-            console.error('Failed to sync canvas size after resize:', error);
-          }
-        }
-      }
+      // Force everyone (including this user) to recalculate canvas size
+      // by triggering a delayed recalculation that ensures all dimension updates are processed
+      setTimeout(() => {
+        syncCanvasSizeToRoom();
+      }, 150); // Small delay to ensure dimension broadcasts are received
     }, 300);
-  }, [viewport, setViewport, multiplayer, calculateOptimalCanvasSize, broadcastScreenDimensions, userScreenDimensions, calculateAvailableSpace]);
+  }, [broadcastScreenDimensions, syncCanvasSizeToRoom]);
 
   const handleReceivedViewport = useCallback((message: { viewport: Viewport; timestamp: number; source?: string }) => {
     const { viewport: receivedViewport, timestamp, source } = message;
