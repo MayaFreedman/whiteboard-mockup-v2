@@ -279,23 +279,7 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
     console.log('✅ Message handlers set up for room:', room.id)
 
-    // Wait for user count to be determined before making state request decision
-    if (!hasReceivedInitialStateRef.current) {
-      // Only proceed if we have a definitive user count (> 0)
-      if (connectedUserCount > 0) {
-        if (connectedUserCount > 1) {
-          console.log('🔄 Starting initial state request process... (other users present:', connectedUserCount, ')')
-          stateRequestAttemptsRef.current = 0
-          requestInitialState()
-        } else {
-          console.log('🏠 Confirmed alone in room (count:', connectedUserCount, ') - proceeding without state request')
-          hasReceivedInitialStateRef.current = true
-          setIsWaitingForInitialState(false)
-        }
-      } else {
-        console.log('⏳ Waiting for user count to be determined... (current count:', connectedUserCount, ')')
-      }
-    }
+    // Message handlers are set up - state request decisions handled by connectedUserCount effect
 
     // Process any queued actions now that we're connected
     processActionQueue()
