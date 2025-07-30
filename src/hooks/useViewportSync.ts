@@ -16,6 +16,7 @@ export const useViewportSync = () => {
   const multiplayer = useMultiplayer();
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   const isInitialized = useRef(false);
+  const lastBroadcastTimestamp = useRef<number>(0);
   const [userScreenDimensions, setUserScreenDimensions] = useState<Map<string, UserScreenDimensions>>(new Map());
 
   const calculateAvailableSpace = useCallback(() => {
@@ -108,24 +109,64 @@ export const useViewportSync = () => {
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      // Always broadcast new screen dimensions
+      // Always broadcast new screen dimensions first
       broadcastScreenDimensions();
       
-      // If we're in a multiplayer room, let the screen dimension handler trigger the sync
-      // If we're alone, update immediately
-      if (!multiplayer?.isConnected || userScreenDimensions.size === 0) {
-        const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
-        setViewport({
-          ...viewport,
-          canvasWidth,
-          canvasHeight
-        });
+      // Immediately recalculate canvas size with new dimensions for ALL users
+      const currentDimensions = calculateAvailableSpace();
+      let minAvailableWidth = currentDimensions.availableWidth;
+      let minAvailableHeight = currentDimensions.availableHeight;
+      
+      // Include all other users' dimensions
+      userScreenDimensions.forEach((userDims) => {
+        minAvailableWidth = Math.min(minAvailableWidth, userDims.availableWidth);
+        minAvailableHeight = Math.min(minAvailableHeight, userDims.availableHeight);
+      });
+      
+      const newCanvasSize = {
+        canvasWidth: Math.max(400, minAvailableWidth),
+        canvasHeight: Math.max(300, minAvailableHeight)
+      };
+      
+      const newViewport = {
+        ...viewport,
+        ...newCanvasSize
+      };
+      
+      // Update local viewport immediately
+      setViewport(newViewport);
+      
+      // Broadcast to multiplayer room with timestamp-based conflict resolution
+      if (multiplayer?.isConnected && multiplayer?.serverInstance?.server?.room) {
+        const timestamp = Date.now();
+        
+        // Only broadcast if enough time has passed since last broadcast (prevent spam)
+        if (timestamp - lastBroadcastTimestamp.current > 100) {
+          lastBroadcastTimestamp.current = timestamp;
+          
+          try {
+            multiplayer.serverInstance.server.room.send('viewport_sync', {
+              viewport: newViewport,
+              timestamp,
+              source: 'resize'
+            });
+          } catch (error) {
+            console.error('Failed to sync canvas size after resize:', error);
+          }
+        }
       }
     }, 300);
-  }, [viewport, setViewport, multiplayer, calculateOptimalCanvasSize, broadcastScreenDimensions, userScreenDimensions.size]);
+  }, [viewport, setViewport, multiplayer, calculateOptimalCanvasSize, broadcastScreenDimensions, userScreenDimensions, calculateAvailableSpace]);
 
-  const handleReceivedViewport = useCallback((receivedViewport: Viewport) => {
-    if (receivedViewport.canvasWidth && receivedViewport.canvasHeight) {
+  const handleReceivedViewport = useCallback((message: { viewport: Viewport; timestamp: number; source?: string }) => {
+    const { viewport: receivedViewport, timestamp, source } = message;
+    
+    // Conflict resolution: only accept if timestamp is newer than our last broadcast
+    // or if we haven't broadcast recently (meaning we're not the one driving changes)
+    const timeSinceLastBroadcast = Date.now() - lastBroadcastTimestamp.current;
+    const shouldAccept = timestamp > lastBroadcastTimestamp.current || timeSinceLastBroadcast > 500;
+    
+    if (shouldAccept && receivedViewport.canvasWidth && receivedViewport.canvasHeight) {
       setViewport(receivedViewport);
     }
   }, [setViewport]);
@@ -161,15 +202,23 @@ export const useViewportSync = () => {
         // Update local viewport
         setViewport(newViewport);
         
-        // Broadcast to all users so they sync to the same size
+        // Broadcast to all users with timestamp-based conflict resolution
         if (multiplayer?.serverInstance?.server?.room) {
-          try {
-            multiplayer.serverInstance.server.room.send('viewport_sync', {
-              viewport: newViewport,
-              timestamp: Date.now()
-            });
-          } catch (error) {
-            console.error('Failed to sync canvas size after dimension update:', error);
+          const timestamp = Date.now();
+          
+          // Only broadcast if enough time has passed since last broadcast
+          if (timestamp - lastBroadcastTimestamp.current > 100) {
+            lastBroadcastTimestamp.current = timestamp;
+            
+            try {
+              multiplayer.serverInstance.server.room.send('viewport_sync', {
+                viewport: newViewport,
+                timestamp,
+                source: 'dimension_change'
+              });
+            } catch (error) {
+              console.error('Failed to sync canvas size after dimension update:', error);
+            }
           }
         }
       }, 50);
@@ -214,7 +263,7 @@ export const useViewportSync = () => {
     const room = multiplayer.serverInstance.server.room;
 
     const handleViewportSync = (message: any) => {
-      handleReceivedViewport(message.viewport);
+      handleReceivedViewport(message);
     };
 
     const handleScreenDimensions = (dimensions: UserScreenDimensions) => {
