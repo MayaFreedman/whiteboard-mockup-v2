@@ -64,22 +64,42 @@ export const useViewportSync = () => {
       };
     }
     
-    // Multiplayer: find smallest screen and scale down to that
-    let minWidth = currentDimensions.availableWidth;
-    let minHeight = currentDimensions.availableHeight;
+    // Multiplayer: find the smallest device's FULL SCREEN dimensions
+    let smallestScreenWidth = currentDimensions.screenWidth;
+    let smallestScreenHeight = currentDimensions.screenHeight;
+    let smallestUserId = 'current';
     
     userScreenDimensions.forEach((dims, userId) => {
-      console.log(`🎯 User ${userId} dimensions:`, dims);
-      minWidth = Math.min(minWidth, dims.availableWidth);
-      minHeight = Math.min(minHeight, dims.availableHeight);
+      console.log(`🎯 User ${userId} screen:`, { 
+        screen: { width: dims.screenWidth, height: dims.screenHeight },
+        available: { width: dims.availableWidth, height: dims.availableHeight }
+      });
+      
+      // Find smallest by total screen area
+      const currentArea = smallestScreenWidth * smallestScreenHeight;
+      const userArea = dims.screenWidth * dims.screenHeight;
+      
+      if (userArea < currentArea) {
+        smallestScreenWidth = dims.screenWidth;
+        smallestScreenHeight = dims.screenHeight;
+        smallestUserId = userId;
+      }
     });
     
+    // Use the smallest device's full screen dimensions (minus small padding)
+    const padding = 20;
     const result = {
-      canvasWidth: Math.max(300, minWidth),
-      canvasHeight: Math.max(200, minHeight)
+      canvasWidth: Math.max(300, smallestScreenWidth - padding),
+      canvasHeight: Math.max(200, smallestScreenHeight - padding)
     };
     
-    console.log('🎯 Multiplayer result:', result);
+    console.log('🎯 Multiplayer result - using smallest device full screen:', {
+      ...result,
+      smallestUserId,
+      smallestDevice: { width: smallestScreenWidth, height: smallestScreenHeight },
+      padding
+    });
+    
     return result;
   }, [userScreenDimensions, multiplayer, calculateAvailableSpace]);
 
