@@ -279,16 +279,21 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
     console.log('✅ Message handlers set up for room:', room.id)
 
-    // Only request initial state if there are other users in the room
+    // Wait for user count to be determined before making state request decision
     if (!hasReceivedInitialStateRef.current) {
-      if (connectedUserCount > 1) {
-        console.log('🔄 Starting initial state request process... (other users present:', connectedUserCount, ')')
-        stateRequestAttemptsRef.current = 0
-        requestInitialState()
+      // Only proceed if we have a definitive user count (> 0)
+      if (connectedUserCount > 0) {
+        if (connectedUserCount > 1) {
+          console.log('🔄 Starting initial state request process... (other users present:', connectedUserCount, ')')
+          stateRequestAttemptsRef.current = 0
+          requestInitialState()
+        } else {
+          console.log('🏠 Confirmed alone in room (count:', connectedUserCount, ') - proceeding without state request')
+          hasReceivedInitialStateRef.current = true
+          setIsWaitingForInitialState(false)
+        }
       } else {
-        console.log('🏠 No other users in room (count:', connectedUserCount, ') - proceeding without state request')
-        hasReceivedInitialStateRef.current = true
-        setIsWaitingForInitialState(false)
+        console.log('⏳ Waiting for user count to be determined... (current count:', connectedUserCount, ')')
       }
     }
 
@@ -380,8 +385,13 @@ export const useMultiplayerSync = () => {
     if (isConnected && isReadyToSend() && !hasReceivedInitialStateRef.current) {
       if (connectedUserCount > 1) {
         console.log('👥 User count changed to', connectedUserCount, '- requesting initial state from other users')
+        setIsWaitingForInitialState(true)
         stateRequestAttemptsRef.current = 0
         requestInitialState()
+      } else if (connectedUserCount === 1) {
+        console.log('👥 Confirmed alone in room (count: 1) - no state request needed')
+        hasReceivedInitialStateRef.current = true
+        setIsWaitingForInitialState(false)
       }
     }
   }, [connectedUserCount, isConnected])
