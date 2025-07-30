@@ -638,6 +638,15 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     
     // Execute the action logic based on action type for non-SYNC actions
     switch (action.type) {
+      case 'BATCH_UPDATE':
+        // Handle batch updates by processing each individual action
+        if (action.payload.actions && Array.isArray(action.payload.actions)) {
+          console.log('🔄 Processing remote BATCH_UPDATE with', action.payload.actions.length, 'actions');
+          get().batchUpdate(action.payload.actions);
+          return; // Don't add the batch action itself to history
+        }
+        break;
+        
       case 'ADD_OBJECT':
         if (action.payload.object) {
           set((state) => ({
