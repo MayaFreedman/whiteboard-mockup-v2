@@ -11,10 +11,11 @@ import { MultiplayerContext } from '../contexts/MultiplayerContext'
 const shouldSyncAction = (action: WhiteboardAction, whiteboardStore: any): boolean => {
   const localOnlyActions = ['SELECT_OBJECTS', 'CLEAR_SELECTION']
   
-  // Don't sync individual UPDATE_OBJECT actions during drag operations
+  // Don't sync individual UPDATE_OBJECT actions during any active batch operation
   if (action.type === 'UPDATE_OBJECT') {
     const currentBatch = whiteboardStore.getState().currentBatch
-    if (currentBatch.id && currentBatch.actionType.includes('DRAG')) {
+    if (currentBatch.id) {
+      console.log('🚫 Filtering UPDATE_OBJECT during batch:', currentBatch.actionType)
       return false
     }
   }
