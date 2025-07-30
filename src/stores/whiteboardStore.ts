@@ -857,6 +857,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     // Apply each action directly without setting lastAction
     actions.forEach(action => {
       switch (action.type) {
+        case 'ADD_OBJECT':
+          if (action.payload.object) {
+            set((state) => ({
+              objects: {
+                ...state.objects,
+                [action.payload.object.id]: action.payload.object,
+              },
+            }));
+          }
+          break;
         case 'UPDATE_OBJECT':
           if (action.payload.id && action.payload.updates) {
             set((state) => ({

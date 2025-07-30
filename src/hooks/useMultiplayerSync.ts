@@ -152,7 +152,7 @@ export const useMultiplayerSync = () => {
       if (message.type === 'request_state') {
         console.log('🔄 Received state request from:', message.requesterId)
         
-        // Only respond if we're not the requester AND we have objects to share
+        // Only respond if we're not the requester
         if (message.requesterId !== room.sessionId) {
           const currentState = whiteboardStore.getStateSnapshot()
           const hasObjectsToShare = Object.keys(currentState.objects).length > 0
@@ -161,19 +161,15 @@ export const useMultiplayerSync = () => {
             isRequester: message.requesterId === room.sessionId,
             hasObjects: hasObjectsToShare,
             objectCount: Object.keys(currentState.objects).length,
-            willRespond: hasObjectsToShare
+            willRespond: true // Always respond, even with empty state
           })
           
-          if (hasObjectsToShare) {
-            console.log('📤 Responding to state request with', Object.keys(currentState.objects).length, 'objects')
-            
-            // Increased random delay to better avoid conflicts
-            setTimeout(() => {
-              serverInstance.sendStateResponse(message.requesterId, currentState)
-            }, Math.random() * 300 + 100) // 100-400ms random delay
-          } else {
-            console.log('🔄 Not responding to state request - no objects to share')
-          }
+          console.log('📤 Responding to state request with', Object.keys(currentState.objects).length, 'objects')
+          
+          // Always respond - even with empty state to unblock infinite loading
+          setTimeout(() => {
+            serverInstance.sendStateResponse(message.requesterId, currentState)
+          }, Math.random() * 300 + 100) // 100-400ms random delay
         } else {
           console.log('🔄 Not responding to state request - we are the requester')
         }
@@ -201,8 +197,11 @@ export const useMultiplayerSync = () => {
             stateRequestTimeoutRef.current = undefined
           }
           
-          // Apply the received state with improved object conversion
-          if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
+          // Apply the received state - handle both empty and populated states
+          const objectCount = message.state?.objects ? Object.keys(message.state.objects).length : 0
+          console.log('🔄 Processing received state with', objectCount, 'objects')
+          
+          if (objectCount > 0) {
             console.log('🔄 Converting and applying received objects...')
             
             // Convert objects to actions and apply them
@@ -227,6 +226,8 @@ export const useMultiplayerSync = () => {
               whiteboardStore.batchUpdate(actions)
               console.log('✅ Successfully applied initial state with', actions.length, 'objects')
             }
+          } else {
+            console.log('✅ Received empty state - continuing without objects')
           }
           
           // Apply viewport if provided
