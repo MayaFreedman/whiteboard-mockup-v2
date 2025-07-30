@@ -3,13 +3,48 @@ import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useMultiplayer } from './useMultiplayer';
 import { Viewport } from '../types/viewport';
 
-// Utility to detect if we're running in an iframe
-const isInIframe = () => {
-  try {
-    return window.self !== window.top;
-  } catch (e) {
-    return true;
+// Get actual available canvas space by measuring DOM elements
+const getActualCanvasSpace = () => {
+  // Try to find the canvas container element
+  const canvasContainer = document.querySelector('[data-canvas-container]') || 
+                         document.querySelector('.canvas-container') ||
+                         document.querySelector('canvas')?.parentElement;
+                         
+  if (canvasContainer) {
+    const rect = canvasContainer.getBoundingClientRect();
+    console.log('📐 Measured canvas container:', {
+      width: rect.width,
+      height: rect.height,
+      top: rect.top,
+      left: rect.left
+    });
+    
+    return {
+      availableWidth: Math.floor(rect.width),
+      availableHeight: Math.floor(rect.height)
+    };
   }
+  
+  // Fallback: calculate based on known UI elements
+  const toolbarHeight = 64; // Toolbar height
+  const connectionStatusHeight = 32; // Connection status overlay
+  const totalTopOffset = toolbarHeight + connectionStatusHeight;
+  
+  // Sidebar is positioned absolute and overlays, so doesn't reduce available width
+  const availableWidth = window.innerWidth;
+  const availableHeight = window.innerHeight - totalTopOffset;
+  
+  console.log('📐 Fallback calculation:', {
+    windowSize: { width: window.innerWidth, height: window.innerHeight },
+    toolbarHeight,
+    connectionStatusHeight,
+    result: { availableWidth, availableHeight }
+  });
+  
+  return {
+    availableWidth: Math.max(300, availableWidth),
+    availableHeight: Math.max(200, availableHeight)
+  };
 };
 
 interface UserScreenDimensions {
@@ -29,56 +64,19 @@ export const useViewportSync = () => {
   const [userScreenDimensions, setUserScreenDimensions] = useState<Map<string, UserScreenDimensions>>(new Map());
 
   const calculateAvailableSpace = useCallback(() => {
-    const inIframe = isInIframe();
+    const actualSpace = getActualCanvasSpace();
     
-    console.log('📐 Calculating available space:', {
-      inIframe,
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight
+    console.log('📐 Final available space calculation:', {
+      actualSpace,
+      windowSize: { width: window.innerWidth, height: window.innerHeight }
     });
     
-    if (inIframe) {
-      // In iframe context - use full window dimensions with minimal padding
-      const padding = 16; // Minimal padding for iframe
-      const availableWidth = window.innerWidth - padding;
-      const availableHeight = window.innerHeight - padding;
-      
-      console.log('📐 Iframe calculation:', {
-        availableWidth,
-        availableHeight,
-        padding
-      });
-      
-      return {
-        screenWidth: window.innerWidth,
-        screenHeight: window.innerHeight,
-        availableWidth: Math.max(300, availableWidth),
-        availableHeight: Math.max(200, availableHeight)
-      };
-    } else {
-      // Full page context - account for UI elements
-      const toolbarHeight = 64;
-      const sidebarWidth = 240;
-      const padding = 32;
-      
-      const availableWidth = window.innerWidth - sidebarWidth - padding;
-      const availableHeight = window.innerHeight - toolbarHeight - padding;
-      
-      console.log('📐 Full page calculation:', {
-        availableWidth,
-        availableHeight,
-        toolbarHeight,
-        sidebarWidth,
-        padding
-      });
-      
-      return {
-        screenWidth: window.innerWidth,
-        screenHeight: window.innerHeight,
-        availableWidth: Math.max(400, availableWidth),
-        availableHeight: Math.max(300, availableHeight)
-      };
-    }
+    return {
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight,
+      availableWidth: actualSpace.availableWidth,
+      availableHeight: actualSpace.availableHeight
+    };
   }, []);
 
   const calculateOptimalCanvasSize = useCallback(() => {
@@ -118,10 +116,9 @@ export const useViewportSync = () => {
       minAvailableHeight = Math.min(minAvailableHeight, dimensions.availableHeight);
     });
     
-    // Apply minimum constraints
-    const inIframe = isInIframe();
-    const minWidth = inIframe ? 300 : 400;
-    const minHeight = inIframe ? 200 : 300;
+    // Apply minimum constraints based on actual measurements
+    const minWidth = 300;
+    const minHeight = 200;
     
     const result = {
       canvasWidth: Math.max(minWidth, minAvailableWidth),

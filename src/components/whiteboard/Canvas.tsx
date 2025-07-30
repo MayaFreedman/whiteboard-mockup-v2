@@ -662,6 +662,7 @@ export const Canvas: React.FC = () => {
     >
       <div 
         ref={containerRef}
+        data-canvas-container="true"
         className="relative bg-background rounded-sm border border-border/20 shadow-sm"
         style={{
           width: canvasWidth,
