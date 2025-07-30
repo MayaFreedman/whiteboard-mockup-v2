@@ -6,6 +6,7 @@ import { useCanvasRendering } from '../../hooks/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
 import { useUser } from '../../contexts/UserContext';
 import { useActionBatching } from '../../hooks/useActionBatching';
+import { useViewportSync } from '../../hooks/useViewportSync';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
 import { measureText } from '../../utils/textMeasurement';
@@ -66,6 +67,9 @@ export const Canvas: React.FC = () => {
   
   // Handle tool selection logic (clearing selection when switching tools)
   useToolSelection();
+  
+  // Initialize viewport sync
+  useViewportSync();
   
   // Initialize interactions hook first to get the preview functions
   const interactions = useCanvasInteractions();
@@ -647,28 +651,42 @@ export const Canvas: React.FC = () => {
     interactions.handleMouseLeave();
   };
 
+  const canvasWidth = viewport.canvasWidth || 800;
+  const canvasHeight = viewport.canvasHeight || 600;
+
   return (
     <div 
-      ref={containerRef}
-      className="w-full h-full relative bg-background overflow-hidden"
+      className="w-full h-full bg-sidebar border-sidebar overflow-hidden flex items-center justify-center"
       tabIndex={0}
       style={{ outline: 'none' }}
     >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+      <div 
+        ref={containerRef}
+        className="relative bg-background rounded-sm border border-border/20 shadow-sm"
         style={{
-          cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
-          touchAction: 'none' // Prevent default touch behaviors
+          width: canvasWidth,
+          height: canvasHeight,
+          maxWidth: '100%',
+          maxHeight: '100%'
         }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseLeave}
-        onDoubleClick={handleDoubleClick}
-      />
-      
-      {/* Text Editor Overlay - Positioned to match canvas text exactly */}
+      >
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full rounded-sm"
+          width={canvasWidth}
+          height={canvasHeight}
+          style={{
+            cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
+            touchAction: 'none' // Prevent default touch behaviors
+          }}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseLeave}
+          onDoubleClick={handleDoubleClick}
+        />
+        
+        {/* Text Editor Overlay - Positioned to match canvas text exactly */}
       {editingTextId && textEditorPosition && (
         <textarea
           ref={textareaRef}
@@ -770,13 +788,14 @@ export const Canvas: React.FC = () => {
         />
       ))}
       
-      {/* Canvas Info Overlay */}
-      <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
-        Zoom: {Math.round(viewport.zoom * 100)}% | 
-        Tool: {activeTool} |
-        {interactions.isDragging && ' Dragging'}
-        {isHandlingDoubleClick && ' | Double-click Protection Active'}
-        {editingTextId && ' | Editing Text'}
+        {/* Canvas Info Overlay */}
+        <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
+          Zoom: {Math.round(viewport.zoom * 100)}% | 
+          Tool: {activeTool} |
+          {interactions.isDragging && ' Dragging'}
+          {isHandlingDoubleClick && ' | Double-click Protection Active'}
+          {editingTextId && ' | Editing Text'}
+        </div>
       </div>
     </div>
   );
