@@ -17,22 +17,9 @@ export const Whiteboard: React.FC = () => {
   const { isWaitingForInitialState } = useMultiplayerSync();
   const [showLoader, setShowLoader] = useState(false);
 
-  // Show loader briefly when waiting for initial state, then proceed to blank state
+  // Show loader only when actually waiting for initial state from other users
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    
-    if (isWaitingForInitialState) {
-      setShowLoader(true);
-      timeout = setTimeout(() => {
-        setShowLoader(false);
-      }, 3000); // 3 seconds - much shorter
-    } else {
-      setShowLoader(false);
-    }
-
-    return () => {
-      if (timeout) clearTimeout(timeout);
-    };
+    setShowLoader(isWaitingForInitialState);
   }, [isWaitingForInitialState]);
 
   return (

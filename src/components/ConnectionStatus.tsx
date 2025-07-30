@@ -11,7 +11,7 @@ export const ConnectionStatus: React.FC = () => {
     return null;
   }
 
-  const { isConnected, roomId, connectionError, isAutoConnecting } = multiplayerContext;
+  const { isConnected, roomId, connectionError, isAutoConnecting, connectedUserCount } = multiplayerContext;
 
   if (isAutoConnecting) {
     return (
@@ -41,6 +41,10 @@ export const ConnectionStatus: React.FC = () => {
         <Wifi className="h-4 w-4 text-green-600" />
         <AlertDescription className="text-green-800">
           Connected to room: <strong>{roomId}</strong>
+          <br />
+          <span className="text-sm text-green-600">
+            {connectedUserCount === 1 ? 'You are alone' : `${connectedUserCount} users connected`}
+          </span>
         </AlertDescription>
       </Alert>
     );
