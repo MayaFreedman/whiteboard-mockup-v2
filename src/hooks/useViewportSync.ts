@@ -104,11 +104,14 @@ export const useViewportSync = () => {
   }, [multiplayer, viewport, setViewport, calculateOptimalCanvasSize]);
 
   const handleWindowResize = useCallback(() => {
+    console.log('🔄 Window resize triggered');
+    
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
+      console.log('🔄 Processing window resize after debounce');
       // Always broadcast new screen dimensions first
       broadcastScreenDimensions();
       
