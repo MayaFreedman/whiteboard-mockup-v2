@@ -3,6 +3,15 @@ import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useMultiplayer } from './useMultiplayer';
 import { Viewport } from '../types/viewport';
 
+// Utility to detect if we're running in an iframe
+const isInIframe = () => {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+};
+
 interface UserScreenDimensions {
   userId: string;
   screenWidth: number;
@@ -20,49 +29,112 @@ export const useViewportSync = () => {
   const [userScreenDimensions, setUserScreenDimensions] = useState<Map<string, UserScreenDimensions>>(new Map());
 
   const calculateAvailableSpace = useCallback(() => {
-    // Calculate available space minus UI elements
-    const toolbarHeight = 64; // Toolbar height
-    const sidebarWidth = 240; // Sidebar width when expanded
-    const padding = 32; // Some padding
+    const inIframe = isInIframe();
     
-    const availableWidth = window.innerWidth - sidebarWidth - padding;
-    const availableHeight = window.innerHeight - toolbarHeight - padding;
+    console.log('📐 Calculating available space:', {
+      inIframe,
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight
+    });
     
-    return {
-      screenWidth: window.innerWidth,
-      screenHeight: window.innerHeight,
-      availableWidth: Math.max(400, availableWidth), // Minimum 400px
-      availableHeight: Math.max(300, availableHeight) // Minimum 300px
-    };
+    if (inIframe) {
+      // In iframe context - use full window dimensions with minimal padding
+      const padding = 16; // Minimal padding for iframe
+      const availableWidth = window.innerWidth - padding;
+      const availableHeight = window.innerHeight - padding;
+      
+      console.log('📐 Iframe calculation:', {
+        availableWidth,
+        availableHeight,
+        padding
+      });
+      
+      return {
+        screenWidth: window.innerWidth,
+        screenHeight: window.innerHeight,
+        availableWidth: Math.max(300, availableWidth),
+        availableHeight: Math.max(200, availableHeight)
+      };
+    } else {
+      // Full page context - account for UI elements
+      const toolbarHeight = 64;
+      const sidebarWidth = 240;
+      const padding = 32;
+      
+      const availableWidth = window.innerWidth - sidebarWidth - padding;
+      const availableHeight = window.innerHeight - toolbarHeight - padding;
+      
+      console.log('📐 Full page calculation:', {
+        availableWidth,
+        availableHeight,
+        toolbarHeight,
+        sidebarWidth,
+        padding
+      });
+      
+      return {
+        screenWidth: window.innerWidth,
+        screenHeight: window.innerHeight,
+        availableWidth: Math.max(400, availableWidth),
+        availableHeight: Math.max(300, availableHeight)
+      };
+    }
   }, []);
 
   const calculateOptimalCanvasSize = useCallback(() => {
     const isConnected = multiplayer?.isConnected && multiplayer?.connectedUserCount > 1;
+    const currentDimensions = calculateAvailableSpace();
     
-    if (!isConnected || userScreenDimensions.size <= 1) {
-      // Use full screen if alone or not connected
-      const { availableWidth, availableHeight } = calculateAvailableSpace();
-      return { canvasWidth: availableWidth, canvasHeight: availableHeight };
+    console.log('🎯 Calculating optimal canvas size:', {
+      isConnected,
+      connectedUserCount: multiplayer?.connectedUserCount,
+      userScreenDimensionsCount: userScreenDimensions.size,
+      currentDimensions
+    });
+    
+    if (!isConnected || userScreenDimensions.size === 0) {
+      // Single user mode - use current user's full available space
+      const result = { 
+        canvasWidth: currentDimensions.availableWidth, 
+        canvasHeight: currentDimensions.availableHeight 
+      };
+      
+      console.log('🎯 Single user mode result:', result);
+      return result;
     }
     
-    // Find the smallest screen dimensions across all users
-    let minAvailableWidth = Infinity;
-    let minAvailableHeight = Infinity;
+    // Multi-user mode - find the smallest dimensions across all users
+    let minAvailableWidth = currentDimensions.availableWidth;
+    let minAvailableHeight = currentDimensions.availableHeight;
     
-    userScreenDimensions.forEach((dimensions) => {
+    console.log('🎯 Starting with current user dimensions:', {
+      minAvailableWidth,
+      minAvailableHeight
+    });
+    
+    userScreenDimensions.forEach((dimensions, userId) => {
+      console.log(`🎯 Comparing with user ${userId}:`, dimensions);
       minAvailableWidth = Math.min(minAvailableWidth, dimensions.availableWidth);
       minAvailableHeight = Math.min(minAvailableHeight, dimensions.availableHeight);
     });
     
-    // Include current user's dimensions
-    const currentDimensions = calculateAvailableSpace();
-    minAvailableWidth = Math.min(minAvailableWidth, currentDimensions.availableWidth);
-    minAvailableHeight = Math.min(minAvailableHeight, currentDimensions.availableHeight);
+    // Apply minimum constraints
+    const inIframe = isInIframe();
+    const minWidth = inIframe ? 300 : 400;
+    const minHeight = inIframe ? 200 : 300;
     
-    return {
-      canvasWidth: Math.max(400, minAvailableWidth),
-      canvasHeight: Math.max(300, minAvailableHeight)
+    const result = {
+      canvasWidth: Math.max(minWidth, minAvailableWidth),
+      canvasHeight: Math.max(minHeight, minAvailableHeight)
     };
+    
+    console.log('🎯 Multi-user mode result:', {
+      ...result,
+      appliedMinConstraints: { minWidth, minHeight },
+      beforeConstraints: { minAvailableWidth, minAvailableHeight }
+    });
+    
+    return result;
   }, [userScreenDimensions, multiplayer, calculateAvailableSpace]);
 
   const broadcastScreenDimensions = useCallback(() => {
@@ -112,34 +184,30 @@ export const useViewportSync = () => {
 
     debounceTimeoutRef.current = setTimeout(() => {
       console.log('🔄 Processing window resize after debounce');
-      // Always broadcast new screen dimensions first
-      broadcastScreenDimensions();
       
-      // Immediately recalculate canvas size with new dimensions for ALL users
-      const currentDimensions = calculateAvailableSpace();
-      let minAvailableWidth = currentDimensions.availableWidth;
-      let minAvailableHeight = currentDimensions.availableHeight;
+      // Broadcast new screen dimensions first (if connected)
+      if (multiplayer?.isConnected) {
+        broadcastScreenDimensions();
+      }
       
-      // Include all other users' dimensions
-      userScreenDimensions.forEach((userDims) => {
-        minAvailableWidth = Math.min(minAvailableWidth, userDims.availableWidth);
-        minAvailableHeight = Math.min(minAvailableHeight, userDims.availableHeight);
-      });
-      
-      const newCanvasSize = {
-        canvasWidth: Math.max(400, minAvailableWidth),
-        canvasHeight: Math.max(300, minAvailableHeight)
-      };
+      // Use the unified calculation function
+      const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
       
       const newViewport = {
         ...viewport,
-        ...newCanvasSize
+        canvasWidth,
+        canvasHeight
       };
+      
+      console.log('🔄 Window resize - updating viewport:', {
+        old: { width: viewport.canvasWidth, height: viewport.canvasHeight },
+        new: { canvasWidth, canvasHeight }
+      });
       
       // Update local viewport immediately
       setViewport(newViewport);
       
-      // Broadcast to multiplayer room with timestamp-based conflict resolution
+      // Broadcast to multiplayer room (if connected)
       if (multiplayer?.isConnected && multiplayer?.serverInstance?.server?.room) {
         const timestamp = Date.now();
         
@@ -153,13 +221,14 @@ export const useViewportSync = () => {
               timestamp,
               source: 'resize'
             });
+            console.log('🔄 Broadcasted viewport sync after resize');
           } catch (error) {
             console.error('Failed to sync canvas size after resize:', error);
           }
         }
       }
     }, 300);
-  }, [viewport, setViewport, multiplayer, calculateOptimalCanvasSize, broadcastScreenDimensions, userScreenDimensions, calculateAvailableSpace]);
+  }, [viewport, setViewport, multiplayer, calculateOptimalCanvasSize, broadcastScreenDimensions]);
 
   const handleReceivedViewport = useCallback((message: { viewport: Viewport; timestamp: number; source?: string }) => {
     const { viewport: receivedViewport, timestamp, source } = message;
@@ -175,32 +244,34 @@ export const useViewportSync = () => {
   }, [setViewport]);
 
   const handleReceivedScreenDimensions = useCallback((dimensions: UserScreenDimensions) => {
+    console.log('📡 Received screen dimensions from user:', dimensions);
+    
     setUserScreenDimensions(prev => {
       const updated = new Map(prev);
       updated.set(dimensions.userId, dimensions);
       
-      // Immediately recalculate and broadcast new canvas size to everyone
+      console.log('📡 Updated user screen dimensions map:', {
+        totalUsers: updated.size,
+        users: Array.from(updated.entries()).map(([userId, dims]) => ({
+          userId,
+          available: { width: dims.availableWidth, height: dims.availableHeight }
+        }))
+      });
+      
+      // Immediately recalculate using the unified function
       setTimeout(() => {
-        const currentDimensions = calculateAvailableSpace();
-        
-        // Find the smallest screen dimensions across all users including current
-        let minAvailableWidth = currentDimensions.availableWidth;
-        let minAvailableHeight = currentDimensions.availableHeight;
-        
-        updated.forEach((userDims) => {
-          minAvailableWidth = Math.min(minAvailableWidth, userDims.availableWidth);
-          minAvailableHeight = Math.min(minAvailableHeight, userDims.availableHeight);
-        });
-        
-        const newCanvasSize = {
-          canvasWidth: Math.max(400, minAvailableWidth),
-          canvasHeight: Math.max(300, minAvailableHeight)
-        };
+        const { canvasWidth, canvasHeight } = calculateOptimalCanvasSize();
         
         const newViewport = {
           ...viewport,
-          ...newCanvasSize
+          canvasWidth,
+          canvasHeight
         };
+        
+        console.log('📡 Recalculated canvas size after dimension update:', {
+          old: { width: viewport.canvasWidth, height: viewport.canvasHeight },
+          new: { canvasWidth, canvasHeight }
+        });
         
         // Update local viewport
         setViewport(newViewport);
@@ -219,6 +290,7 @@ export const useViewportSync = () => {
                 timestamp,
                 source: 'dimension_change'
               });
+              console.log('📡 Broadcasted viewport sync after dimension update');
             } catch (error) {
               console.error('Failed to sync canvas size after dimension update:', error);
             }
@@ -228,7 +300,7 @@ export const useViewportSync = () => {
       
       return updated;
     });
-  }, [setViewport, viewport, calculateAvailableSpace, multiplayer]);
+  }, [setViewport, viewport, calculateOptimalCanvasSize, multiplayer]);
 
   // Initialize canvas size on mount
   useEffect(() => {
