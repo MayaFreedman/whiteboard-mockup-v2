@@ -27,6 +27,9 @@ export interface WhiteboardStore {
   // Track object relationships for conflict resolution
   objectRelationships: Map<string, { originalId?: string; segmentIds?: string[] }>;
 
+  // Batch processing flag to prevent sync loops
+  isBatchingRemoteActions: boolean;
+
   // Action recording
   recordAction: (action: WhiteboardAction) => void;
 
@@ -128,6 +131,9 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   userActionHistories: new Map(),
   userHistoryIndices: new Map(),
   objectRelationships: new Map(),
+
+  // Initialize batch processing flag
+  isBatchingRemoteActions: false,
 
   // Initialize currentBatch
   currentBatch: {
@@ -854,36 +860,43 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     // Apply batch of actions without triggering sync
     console.log('🔄 Applying batch update:', actions.length, 'actions');
     
-    // Apply each action directly without setting lastAction
-    actions.forEach(action => {
-      switch (action.type) {
-        case 'ADD_OBJECT':
-          if (action.payload.object) {
-            set((state) => ({
-              objects: {
-                ...state.objects,
-                [action.payload.object.id]: action.payload.object,
-              },
-            }));
-          }
-          break;
-        case 'UPDATE_OBJECT':
-          if (action.payload.id && action.payload.updates) {
-            set((state) => ({
-              objects: {
-                ...state.objects,
-                [action.payload.id]: {
-                  ...state.objects[action.payload.id],
-                  ...action.payload.updates,
-                },
-              },
-            }));
-          }
-          break;
-        // Add other action types as needed
-        default:
-          console.warn('Unhandled action type in batchUpdate:', action.type);
-      }
+    // Set batch flag to prevent sync loops
+    set((state) => ({ ...state, isBatchingRemoteActions: true }));
+    
+    // Apply all actions in a single state update to prevent multiple subscription triggers
+    set((state) => {
+      const updatedObjects = { ...state.objects };
+      
+      actions.forEach(action => {
+        switch (action.type) {
+          case 'ADD_OBJECT':
+            if (action.payload.object) {
+              updatedObjects[action.payload.object.id] = action.payload.object;
+            }
+            break;
+          case 'UPDATE_OBJECT':
+            if (action.payload.id && action.payload.updates && updatedObjects[action.payload.id]) {
+              updatedObjects[action.payload.id] = {
+                ...updatedObjects[action.payload.id],
+                ...action.payload.updates,
+              };
+            }
+            break;
+          case 'DELETE_OBJECT':
+            if (action.payload.id) {
+              delete updatedObjects[action.payload.id];
+            }
+            break;
+          default:
+            console.warn('Unhandled action type in batchUpdate:', action.type);
+        }
+      });
+      
+      return {
+        ...state,
+        objects: updatedObjects,
+        isBatchingRemoteActions: false, // Clear batch flag
+      };
     });
   },
   updateLocalUserHistoryIndex: (userId, index) => {

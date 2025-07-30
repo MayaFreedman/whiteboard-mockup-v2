@@ -302,6 +302,12 @@ export const useMultiplayerSync = () => {
 
     const unsubscribe = useWhiteboardStore.subscribe(
       (state) => {
+        // Don't sync actions during batch operations to prevent infinite loops
+        if (state.isBatchingRemoteActions) {
+          console.log('🔄 Skipping sync during batch operation');
+          return;
+        }
+        
         if (state.lastAction && !sentActionIdsRef.current.has(state.lastAction.id)) {
           console.log('📤 New local action detected:', {
             type: state.lastAction.type,
