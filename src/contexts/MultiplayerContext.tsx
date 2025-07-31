@@ -89,15 +89,17 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
         
         // Listen for participantJoined messages from server
         room.onMessage('participantJoined', (player: any) => {
-          console.log('👥 Participant joined:', player)
+          console.log('🎉 RECEIVED participantJoined message:', player)
           userCount++
+          console.log('👥 Updated user count to:', userCount)
           setConnectedUserCount(userCount)
         })
         
         // Listen for participantLeft messages from server
         room.onMessage('participantLeft', (player: any) => {
-          console.log('👋 Participant left:', player)
+          console.log('🚪 RECEIVED participantLeft message:', player)
           userCount = Math.max(1, userCount - 1) // Never go below 1 (ourselves)
+          console.log('👥 Updated user count to:', userCount)
           setConnectedUserCount(userCount)
         })
       }
