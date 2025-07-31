@@ -6,35 +6,33 @@ import { nanoid } from 'nanoid';
 import { ViewportResizeAction } from '../types/whiteboard';
 
 export const useViewportSync = () => {
-  const { viewport, setViewport } = useWhiteboardStore();
+  const { 
+    viewport, 
+    setViewport, 
+    updateUserScreenSize, 
+    removeUserScreenSize, 
+    calculateMinimumScreenSize 
+  } = useWhiteboardStore();
   const { userId } = useUser();
   const { sendWhiteboardAction, isConnected } = useMultiplayerSync();
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   const isInitialized = useRef(false);
 
-  const updateCanvasSize = useCallback((newWidth?: number, newHeight?: number) => {
-    const currentViewport = useWhiteboardStore.getState().viewport;
+  // Update user's screen size and recalculate canvas based on global minimum
+  const updateMyScreenSize = useCallback((newWidth?: number, newHeight?: number) => {
     const targetWidth = newWidth || window.innerWidth;
     const targetHeight = newHeight || window.innerHeight;
     
-    // Only update if dimensions actually changed to prevent loops
-    if (currentViewport.canvasWidth !== targetWidth || 
-        currentViewport.canvasHeight !== targetHeight) {
-      const newViewport = {
-        ...currentViewport,
-        canvasWidth: targetWidth,
-        canvasHeight: targetHeight
-      };
-      
-      setViewport(newViewport);
-      console.log('📐 Updated canvas size:', { width: targetWidth, height: targetHeight });
-    }
-  }, [setViewport]);
+    console.log('📐 Updating my screen size:', { userId, width: targetWidth, height: targetHeight });
+    updateUserScreenSize(userId, targetWidth, targetHeight);
+  }, [userId, updateUserScreenSize]);
 
   const sendResizeAction = useCallback(() => {
+    // Always update my screen size first (this will trigger canvas resize if needed)
+    updateMyScreenSize();
+    
     if (!isConnected) {
-      // Not connected - just update local canvas
-      updateCanvasSize();
+      console.log('📐 Not connected - screen size updated locally only');
       return;
     }
 
@@ -54,7 +52,7 @@ export const useViewportSync = () => {
     
     console.log('📤 Sending resize action:', resizeAction);
     sendWhiteboardAction(resizeAction);
-  }, [isConnected, sendWhiteboardAction, userId, updateCanvasSize]);
+  }, [isConnected, sendWhiteboardAction, userId, updateMyScreenSize]);
 
   const handleWindowResize = useCallback(() => {
     console.log('🔄 Window resize triggered');
@@ -69,14 +67,14 @@ export const useViewportSync = () => {
     }, 300);
   }, [sendResizeAction]);
 
-  // Initialize canvas size on mount and force full size when offline
+  // Initialize with my screen size on mount
   useEffect(() => {
     if (!isInitialized.current) {
-      console.log('🔄 Initializing canvas size to full window:', { width: window.innerWidth, height: window.innerHeight });
-      updateCanvasSize(window.innerWidth, window.innerHeight);
+      console.log('🔄 Initializing with my screen size:', { width: window.innerWidth, height: window.innerHeight });
+      updateMyScreenSize(window.innerWidth, window.innerHeight);
       isInitialized.current = true;
     }
-  }, [updateCanvasSize]);
+  }, [updateMyScreenSize]);
 
   // Send initial screen size when connecting
   useEffect(() => {
@@ -97,7 +95,7 @@ export const useViewportSync = () => {
     };
   }, [handleWindowResize]);
 
-  // Listen for incoming resize actions
+  // Listen for incoming resize actions and update user screen sizes
   useEffect(() => {
     const unsubscribe = useWhiteboardStore.subscribe(
       (state) => {
@@ -105,28 +103,25 @@ export const useViewportSync = () => {
         if (lastAction?.type === 'VIEWPORT_RESIZE' && lastAction.userId !== userId) {
           console.log('📥 Received resize from user:', lastAction.userId, lastAction.payload.screenSize);
           
-          const currentViewport = useWhiteboardStore.getState().viewport;
+          // Update the screen size for this user
           const incomingSize = lastAction.payload.screenSize;
-          
-          // If incoming screen size is smaller than current canvas, resize to match
-          const shouldResizeWidth = incomingSize.width < (currentViewport.canvasWidth || window.innerWidth);
-          const shouldResizeHeight = incomingSize.height < (currentViewport.canvasHeight || window.innerHeight);
-          
-          if (shouldResizeWidth || shouldResizeHeight) {
-            const newWidth = shouldResizeWidth ? incomingSize.width : currentViewport.canvasWidth;
-            const newHeight = shouldResizeHeight ? incomingSize.height : currentViewport.canvasHeight;
-            
-            console.log('📐 Resizing canvas to smaller size:', { newWidth, newHeight });
-            updateCanvasSize(newWidth, newHeight);
-          }
+          updateUserScreenSize(lastAction.userId, incomingSize.width, incomingSize.height);
         }
       }
     );
 
     return unsubscribe;
-  }, [userId, updateCanvasSize]);
+  }, [userId, updateUserScreenSize]);
+
+  // Handle user disconnection
+  useEffect(() => {
+    return () => {
+      // Clean up this user's screen size when component unmounts
+      removeUserScreenSize(userId);
+    };
+  }, [userId, removeUserScreenSize]);
 
   return {
-    updateCanvasSize
+    updateMyScreenSize
   };
 };

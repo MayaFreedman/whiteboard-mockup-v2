@@ -30,6 +30,15 @@ export interface WhiteboardStore {
   // Batch processing flag to prevent sync loops
   isBatchingRemoteActions: boolean;
 
+  // Track all user screen sizes for global minimum calculation
+  userScreenSizes: Map<string, { width: number; height: number }>;
+  
+  // Screen size management
+  updateUserScreenSize: (userId: string, width: number, height: number) => void;
+  removeUserScreenSize: (userId: string) => void;
+  calculateMinimumScreenSize: () => { width: number; height: number };
+  updateCanvasToMinimumSize: () => void;
+
   // Action recording
   recordAction: (action: WhiteboardAction) => void;
 
@@ -134,6 +143,9 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
 
   // Initialize batch processing flag
   isBatchingRemoteActions: false,
+
+  // Initialize user screen sizes tracking
+  userScreenSizes: new Map(),
 
   // Initialize currentBatch
   currentBatch: {
@@ -939,6 +951,97 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
   getObjectRelationship: (objectId) => {
     return get().objectRelationships.get(objectId);
+  },
+
+  // Screen size management methods
+  updateUserScreenSize: (userId, width, height) => {
+    set((state) => {
+      const newUserScreenSizes = new Map(state.userScreenSizes);
+      newUserScreenSizes.set(userId, { width, height });
+      
+      // Calculate minimum screen size across all users with the new sizes
+      const screenSizes = Array.from(newUserScreenSizes.values());
+      let minSize = { width: window.innerWidth, height: window.innerHeight };
+      
+      if (screenSizes.length > 0) {
+        const minWidth = Math.min(...screenSizes.map(size => size.width));
+        const minHeight = Math.min(...screenSizes.map(size => size.height));
+        minSize = { width: minWidth, height: minHeight };
+      }
+      
+      // Update canvas if minimum changed
+      const currentViewport = state.viewport;
+      if (currentViewport.canvasWidth !== minSize.width || 
+          currentViewport.canvasHeight !== minSize.height) {
+        console.log('📐 Updating canvas to minimum size:', minSize);
+        return {
+          ...state,
+          userScreenSizes: newUserScreenSizes,
+          viewport: {
+            ...currentViewport,
+            canvasWidth: minSize.width,
+            canvasHeight: minSize.height
+          }
+        };
+      }
+      
+      return { ...state, userScreenSizes: newUserScreenSizes };
+    });
+  },
+
+  removeUserScreenSize: (userId) => {
+    set((state) => {
+      const newUserScreenSizes = new Map(state.userScreenSizes);
+      newUserScreenSizes.delete(userId);
+      
+      // Recalculate minimum without this user
+      if (newUserScreenSizes.size > 0) {
+        const screenSizes = Array.from(newUserScreenSizes.values());
+        const minWidth = Math.min(...screenSizes.map(size => size.width));
+        const minHeight = Math.min(...screenSizes.map(size => size.height));
+        const minSize = { width: minWidth, height: minHeight };
+        
+        const currentViewport = state.viewport;
+        console.log('📐 User disconnected, updating canvas to new minimum size:', minSize);
+        
+        return {
+          ...state,
+          userScreenSizes: newUserScreenSizes,
+          viewport: {
+            ...currentViewport,
+            canvasWidth: minSize.width,
+            canvasHeight: minSize.height
+          }
+        };
+      }
+      
+      return { ...state, userScreenSizes: newUserScreenSizes };
+    });
+  },
+
+  calculateMinimumScreenSize: () => {
+    const state = get();
+    const screenSizes = Array.from(state.userScreenSizes.values());
+    
+    if (screenSizes.length === 0) {
+      return { width: window.innerWidth, height: window.innerHeight };
+    }
+    
+    const minWidth = Math.min(...screenSizes.map(size => size.width));
+    const minHeight = Math.min(...screenSizes.map(size => size.height));
+    
+    return { width: minWidth, height: minHeight };
+  },
+
+  updateCanvasToMinimumSize: () => {
+    const minSize = get().calculateMinimumScreenSize();
+    set((state) => ({
+      viewport: {
+        ...state.viewport,
+        canvasWidth: minSize.width,
+        canvasHeight: minSize.height
+      }
+    }));
   },
 }));
 
