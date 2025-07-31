@@ -137,36 +137,43 @@ export const useViewportSync = () => {
         ...currentDimensions
       });
       
-      const handleDimensionResponse = (message: any) => {
-        if (message.type === 'dimension_response') {
+      // Set up temporary listener for responses only
+      const responseHandler = (message: any) => {
+        if (message.type === 'dimension_response' && message.requesterId === sessionId) {
+          console.log('📥 Received dimension response:', message.data);
           collectedDimensions.push(message.data);
         }
       };
       
-      multiplayer.serverInstance.server.room.onMessage('broadcast', handleDimensionResponse);
+      // Add temporary listener - DON'T remove main listener
+      const room = multiplayer.serverInstance.server.room;
+      room.onMessage('broadcast', responseHandler);
       
       setTimeout(() => {
-        multiplayer.serverInstance.server.room.removeAllListeners('broadcast');
+        // Remove only the temporary response handler
+        room.removeListener('broadcast', responseHandler);
         
         console.log('📏 Collected dimensions from all users:', collectedDimensions);
         
         // Calculate optimal size from all collected dimensions
         const optimalSize = calculateOptimalCanvasSizeFromAll(collectedDimensions);
         
+        // Get current viewport to avoid stale closure
+        const currentViewport = useWhiteboardStore.getState().viewport;
         const newViewport = {
-          ...viewport,
+          ...currentViewport,
           canvasWidth: optimalSize.canvasWidth,
           canvasHeight: optimalSize.canvasHeight
         };
         
-        // Update local viewport
-        setViewport(newViewport);
+        // Update local viewport using store directly
+        useWhiteboardStore.getState().setViewport(newViewport);
         
         // Broadcast the result
         const timestamp = Date.now();
         lastBroadcastTimestamp.current = timestamp;
         
-        multiplayer.serverInstance.server.room.send("broadcast", {
+        room.send("broadcast", {
           type: 'viewport_sync',
           viewport: newViewport,
           timestamp,
@@ -175,8 +182,10 @@ export const useViewportSync = () => {
         
         console.log('📡 Broadcasted viewport after collecting all dimensions:', newViewport);
       }, 300);
+    } else {
+      console.log('📏 Non-authoritative user - not triggering collection');
     }
-  }, [multiplayer, calculateAvailableSpace, calculateOptimalCanvasSizeFromAll, viewport, setViewport]);
+  }, [multiplayer, calculateAvailableSpace, calculateOptimalCanvasSizeFromAll]);
 
   const handleWindowResize = useCallback(() => {
     console.log('🔄 Window resize triggered');
@@ -243,13 +252,18 @@ export const useViewportSync = () => {
         canvasHeight
       });
       isInitialized.current = true;
-      
-      // Trigger dimension collection if connected
-      if (multiplayer?.isConnected) {
-        collectDimensionsAndCalculate();
-      }
     }
-  }, [calculateOptimalCanvasSize, setViewport, viewport, multiplayer, collectDimensionsAndCalculate]);
+  }, [calculateOptimalCanvasSize, setViewport, viewport]);
+
+  // Trigger dimension collection ONLY when first connecting (separate from initialization)
+  useEffect(() => {
+    if (multiplayer?.isConnected && isInitialized.current) {
+      // Small delay to ensure connection is fully established
+      setTimeout(() => {
+        collectDimensionsAndCalculate();
+      }, 100);
+    }
+  }, [multiplayer?.isConnected]);
 
   // Listen for window resize
   useEffect(() => {
@@ -288,15 +302,6 @@ export const useViewportSync = () => {
     };
   }, [multiplayer?.serverInstance, handleReceivedViewport, handleDimensionRequest]);
 
-  // Trigger dimension collection when connecting
-  useEffect(() => {
-    if (multiplayer?.isConnected) {
-      // Small delay to ensure connection is fully established
-      setTimeout(() => {
-        collectDimensionsAndCalculate();
-      }, 100);
-    }
-  }, [multiplayer?.isConnected, collectDimensionsAndCalculate]);
 
   return {
     syncCanvasSizeToRoom,
