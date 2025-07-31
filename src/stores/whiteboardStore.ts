@@ -831,6 +831,33 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         }
         break;
         
+      case 'VIEWPORT_RESIZE':
+        // Handle viewport resize from remote users
+        if (action.payload?.screenSize) {
+          const currentViewport = get().viewport;
+          const incomingSize = action.payload.screenSize;
+          
+          // Only resize canvas if incoming size is smaller
+          const shouldResize = 
+            incomingSize.width < (currentViewport.canvasWidth || window.innerWidth) ||
+            incomingSize.height < (currentViewport.canvasHeight || window.innerHeight);
+            
+          if (shouldResize) {
+            const newWidth = Math.min(incomingSize.width, currentViewport.canvasWidth || window.innerWidth);
+            const newHeight = Math.min(incomingSize.height, currentViewport.canvasHeight || window.innerHeight);
+            
+            set({
+              viewport: {
+                ...currentViewport,
+                canvasWidth: newWidth,
+                canvasHeight: newHeight
+              }
+            });
+            
+            console.log('📐 Canvas resized due to remote user:', { newWidth, newHeight });
+          }
+        }
+        break;
         
       default:
         console.log('🔄 Unknown action type for remote application:', action.type);
