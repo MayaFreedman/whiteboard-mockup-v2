@@ -52,7 +52,8 @@ export const useViewportSync = () => {
     }
 
     // Broadcast resize event with actual screen size and userId
-    multiplayer.serverInstance.server.room.send("broadcast", {
+    console.log('🚀 About to send broadcast via room.send...');
+    const payload = {
       type: 'viewport_sync',
       action: 'resize',
       userId: userId,
@@ -61,9 +62,13 @@ export const useViewportSync = () => {
         height: window.innerHeight
       },
       timestamp: Date.now()
-    });
+    };
+    
+    console.log('📋 Payload being sent:', payload);
+    multiplayer.serverInstance.server.room.send("broadcast", payload);
     
     console.log('📤 Broadcasted resize event with userId:', userId);
+    console.log('📤 Room object:', multiplayer.serverInstance.server.room);
     
     // DON'T update canvas immediately - wait for broadcast to come back
     // This ensures everyone calculates using the same updated data
@@ -178,8 +183,14 @@ export const useViewportSync = () => {
     const room = multiplayer.serverInstance.server.room;
 
     const handleBroadcastMessage = (message: any) => {
+      console.log('🔵 Raw broadcast message received:', message);
+      console.log('🔍 Message type:', message.type);
+      
       if (message.type === 'viewport_sync') {
+        console.log('✅ This is a viewport_sync message!');
         handleViewportSyncMessage(message);
+      } else {
+        console.log('⚪ This is NOT a viewport_sync message, ignoring');
       }
     };
 
