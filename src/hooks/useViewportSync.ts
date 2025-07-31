@@ -178,13 +178,9 @@ export const useViewportSync = () => {
 
   // Listen for viewport sync messages
   useEffect(() => {
-    if (!multiplayer?.serverInstance?.server?.room) {
-      console.log('❌ No room available for viewport sync listeners');
-      return;
-    }
+    if (!multiplayer?.serverInstance?.server?.room) return;
 
     const room = multiplayer.serverInstance.server.room;
-    console.log('🎧 Setting up viewport sync broadcast listener on room:', room.roomId);
 
     const handleBroadcastMessage = (message: any) => {
       console.log('🔵 Raw broadcast message received:', message);
@@ -198,13 +194,10 @@ export const useViewportSync = () => {
       }
     };
 
-    // Add our specific listener
     room.onMessage('broadcast', handleBroadcastMessage);
-    console.log('✅ Viewport sync broadcast listener added');
     
     return () => {
-      console.log('🧹 Cleaning up viewport sync broadcast listener');
-      room.removeListener('broadcast', handleBroadcastMessage);
+      room.removeAllListeners('broadcast');
     };
   }, [multiplayer?.serverInstance, handleViewportSyncMessage]);
 
