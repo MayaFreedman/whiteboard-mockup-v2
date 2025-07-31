@@ -958,24 +958,40 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   // Screen size management methods
   updateUserScreenSize: (userId, width, height) => {
     set((state) => {
+      // Calculate current minimum BEFORE updating
+      const currentMinSize = get().calculateMinimumScreenSize(state.userScreenSizes);
+      
       const newUserScreenSizes = new Map(state.userScreenSizes);
       newUserScreenSizes.set(userId, { width, height });
       
-      // Calculate minimum screen size across all users using the updated map
-      const minSize = get().calculateMinimumScreenSize(newUserScreenSizes);
+      // Calculate new minimum AFTER updating
+      const newMinSize = get().calculateMinimumScreenSize(newUserScreenSizes);
       
-      // Always update canvas to match the true minimum across all users
-      const currentViewport = state.viewport;
-      console.log('📐 Updating canvas to minimum size:', minSize);
-      return {
-        ...state,
-        userScreenSizes: newUserScreenSizes,
-        viewport: {
-          ...currentViewport,
-          canvasWidth: minSize.width,
-          canvasHeight: minSize.height
-        }
-      };
+      // Only update canvas if the minimum actually changed
+      if (currentMinSize.width !== newMinSize.width || currentMinSize.height !== newMinSize.height) {
+        const currentViewport = state.viewport;
+        console.log('📐 Canvas resized to new minimum:', { 
+          from: { width: currentMinSize.width, height: currentMinSize.height },
+          to: { width: newMinSize.width, height: newMinSize.height },
+          reason: `Minimum changed when user ${userId} resized`
+        });
+        
+        return {
+          ...state,
+          userScreenSizes: newUserScreenSizes,
+          viewport: {
+            ...currentViewport,
+            canvasWidth: newMinSize.width,
+            canvasHeight: newMinSize.height
+          }
+        };
+      } else {
+        console.log('📐 Screen size updated but minimum unchanged, no canvas resize needed');
+        return {
+          ...state,
+          userScreenSizes: newUserScreenSizes
+        };
+      }
     });
   },
 
