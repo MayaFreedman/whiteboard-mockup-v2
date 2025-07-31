@@ -254,7 +254,7 @@ export const useViewportSync = () => {
     const room = multiplayer.serverInstance.server.room;
 
     const handleBroadcastMessage = (message: any) => {
-      console.log('📥 Received broadcast message:', message);
+      console.log('📥 Received broadcast message (v2):', message);
       
       if (message.type === 'viewport_sync') {
         console.log('📥 Processing viewport_sync broadcast');
