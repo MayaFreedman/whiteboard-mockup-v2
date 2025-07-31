@@ -69,10 +69,11 @@ export const useViewportSync = () => {
     }, 300);
   }, [sendResizeAction]);
 
-  // Initialize canvas size on mount
+  // Initialize canvas size on mount and force full size when offline
   useEffect(() => {
     if (!isInitialized.current) {
-      updateCanvasSize();
+      console.log('🔄 Initializing canvas size to full window:', { width: window.innerWidth, height: window.innerHeight });
+      updateCanvasSize(window.innerWidth, window.innerHeight);
       isInitialized.current = true;
     }
   }, [updateCanvasSize]);
