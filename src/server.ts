@@ -247,12 +247,7 @@ export class ServerClass {
   }
 
   sendEvent(payload: any) {
-    console.log("📡 Attempting to send event:", {
-      type: payload.type,
-      hasAction: !!payload.action,
-      actionId: payload.action?.id,
-      actionType: payload.action?.type,
-    });
+    console.log("📡 Attempting to send event:", payload);
 
     if (!this.server.room) {
       console.error("❌ Cannot send event: room not connected");
