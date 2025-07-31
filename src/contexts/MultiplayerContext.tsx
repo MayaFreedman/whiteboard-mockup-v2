@@ -83,40 +83,23 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       if (room) {
         console.log('👥 Setting up participant tracking for room:', room.id)
         
-        // Use Colyseus's built-in user tracking via state changes
-        const updateUserCount = () => {
-          // Get the actual connected clients count from Colyseus
-          const clientCount = room.clients?.length || 0
-          console.log('👥 Connected clients (from Colyseus):', clientCount)
-          setConnectedUserCount(clientCount)
-        }
+        // Track connected users
+        let userCount = 1 // Start with ourselves
+        setConnectedUserCount(userCount)
         
-        // Listen for state changes that indicate user count changes
-        room.onStateChange((state: any) => {
-          if (state?.players) {
-            const playerCount = Object.keys(state.players).length
-            console.log('👥 State players count:', playerCount)
-            setConnectedUserCount(playerCount)
-          } else {
-            // Fallback to client count if no players in state
-            updateUserCount()
-          }
+        // Listen for participantJoined messages from server
+        room.onMessage('participantJoined', (player: any) => {
+          console.log('👥 Participant joined:', player)
+          userCount++
+          setConnectedUserCount(userCount)
         })
         
-        // Listen for users joining
-        room.onJoin(() => {
-          console.log('✅ User joined the room')
-          updateUserCount()
+        // Listen for participantLeft messages from server
+        room.onMessage('participantLeft', (player: any) => {
+          console.log('👋 Participant left:', player)
+          userCount = Math.max(1, userCount - 1) // Never go below 1 (ourselves)
+          setConnectedUserCount(userCount)
         })
-        
-        // Listen for users leaving  
-        room.onLeave(() => {
-          console.log('👋 User left the room')
-          updateUserCount()
-        })
-        
-        // Initial count update
-        updateUserCount()
       }
 
       console.log('✅ Connection successful!')
