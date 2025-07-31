@@ -105,17 +105,22 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
           }
         })
         
-        // Broadcast that we joined
-        const broadcastJoin = () => {
-          console.log('📢 Broadcasting that we joined')
-          room.send('broadcast', {
-            type: 'user_joined',
-            userId: room.sessionId
-          })
-          // Add ourselves to the active users
-          activeUsers.add(room.sessionId)
-          updateUserCount()
-        }
+         // Broadcast that we joined
+         const broadcastJoin = () => {
+           console.log('📢 Broadcasting that we joined - using room.send')
+           try {
+             room.send('broadcast', {
+               type: 'user_joined',
+               userId: room.sessionId
+             })
+             console.log('✅ Successfully sent join broadcast')
+             // Add ourselves to the active users
+             activeUsers.add(room.sessionId)
+             updateUserCount()
+           } catch (error) {
+             console.error('❌ Failed to broadcast join:', error)
+           }
+         }
         
         // Listen for room leave to broadcast departure
         room.onLeave(() => {
