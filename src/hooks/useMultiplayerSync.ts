@@ -140,6 +140,11 @@ export const useMultiplayerSync = () => {
     console.log('🔄 Setting up message-based sync for room:', room.id)
 
     const handleBroadcastMessage = (message: any) => {
+      // Filter out viewport sync messages - they're handled by useViewportSync
+      if (message.type === 'viewport_sync') {
+        return
+      }
+      
       console.log('📥 Received broadcast message:', {
         type: message.type,
         hasAction: !!message.action,
