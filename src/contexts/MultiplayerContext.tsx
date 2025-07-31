@@ -82,89 +82,65 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       const room = newServerInstance.server.room
       if (room) {
         console.log('👥 Setting up participant tracking for room:', room.id)
+        console.log('🔍 Room object properties:', Object.keys(room))
+        console.log('🔍 Room state:', room.state)
+        console.log('🔍 Room clients count:', (room as any).clients?.size || 'not available')
         
-        // Listen for default room state to get initial player count
-        room.onMessage('defaultRoomState', (state: any) => {
-          console.log('🏠 Default room state received:', JSON.stringify(state, null, 2))
-          // Try to find user count in various possible state structures
+        // Check if there's a built-in way to get client count
+        const checkUserCount = () => {
           let userCount = 0
-          if (state?.players) {
-            userCount = Object.keys(state.players).length
-          } else if (state?.users) {
-            userCount = Object.keys(state.users).length
-          } else if (state?.clients) {
-            userCount = Object.keys(state.clients).length
-          } else if (typeof state === 'object' && state !== null) {
-            // Log all keys to understand the structure
-            console.log('🏠 Available state keys:', Object.keys(state))
-            // Try to find any object that might contain user info
-            for (const [key, value] of Object.entries(state)) {
-              if (value && typeof value === 'object' && !Array.isArray(value)) {
-                const subKeys = Object.keys(value)
-                console.log(`🏠 State.${key} keys:`, subKeys)
-                // If this looks like a user collection, count it
-                if (subKeys.length > 0 && (key.includes('player') || key.includes('user') || key.includes('client'))) {
-                  userCount = subKeys.length
-                  console.log(`🏠 Found user count in state.${key}:`, userCount)
-                  break
-                }
-              }
+          
+          // Method 1: Check room.clients (common in Colyseus)
+          if ((room as any).clients) {
+            userCount = (room as any).clients.size || (room as any).clients.length || Object.keys((room as any).clients).length
+            console.log('👥 Method 1 - Room clients count:', userCount)
+          }
+          
+          // Method 2: Check room.state
+          if (room.state) {
+            console.log('🔍 Room state type:', typeof room.state)
+            console.log('🔍 Room state content:', room.state)
+            
+            // Try to find users in state
+            const state = room.state as any
+            if (state?.players) {
+              userCount = Object.keys(state.players).length
+              console.log('👥 Method 2a - State players count:', userCount)
+            } else if (state?.users) {
+              userCount = Object.keys(state.users).length
+              console.log('👥 Method 2b - State users count:', userCount)
+            } else if (state?.clients) {
+              userCount = Object.keys(state.clients).length
+              console.log('👥 Method 2c - State clients count:', userCount)
             }
           }
-          console.log('👥 Initial room state - player count:', userCount)
+          
+          // Method 3: Check sessionId existence (at least 1 user - us)
+          if (userCount === 0 && room.sessionId) {
+            userCount = 1 // At least we are connected
+            console.log('👥 Method 3 - Fallback to 1 (we are connected)')
+          }
+          
+          console.log('👥 Final calculated user count:', userCount)
           setConnectedUserCount(userCount)
-        })
-
-        // Listen for playground message types (seems to be sent by server)
-        room.onMessage('__playground_message_types', (data: any) => {
-          console.log('🛝 Playground message types:', data)
-        })
-
-        // Listen for participant events from server (if they exist)
-        room.onMessage('participantJoined', (participant: any) => {
-          console.log('👥 Participant joined event:', participant)
-          setConnectedUserCount(prev => {
-            const newCount = prev + 1
-            console.log('👥 User count increased to:', newCount)
-            return newCount
-          })
-        })
-
-        room.onMessage('participantLeft', (data: any) => {
-          console.log('👥 Participant left event:', data)
-          setConnectedUserCount(prev => {
-            const newCount = Math.max(0, prev - 1)
-            console.log('👥 User count decreased to:', newCount)
-            return newCount
-          })
-        })
-
-        // Also track state changes directly for more immediate updates
+        }
+        
+        // Check immediately
+        checkUserCount()
+        
+        // Listen for state changes
         room.onStateChange((state: any) => {
-          console.log('🔄 Room state changed:', JSON.stringify(state, null, 2))
-          let userCount = 0
-          if (state?.players) {
-            userCount = Object.keys(state.players).length
-          } else if (state?.users) {
-            userCount = Object.keys(state.users).length
-          } else if (state?.clients) {
-            userCount = Object.keys(state.clients).length
-          } else if (typeof state === 'object' && state !== null) {
-            // Try to find any object that might contain user info
-            for (const [key, value] of Object.entries(state)) {
-              if (value && typeof value === 'object' && !Array.isArray(value)) {
-                const subKeys = Object.keys(value)
-                // If this looks like a user collection, count it
-                if (subKeys.length > 0 && (key.includes('player') || key.includes('user') || key.includes('client'))) {
-                  userCount = subKeys.length
-                  console.log(`🔄 Found user count in state.${key}:`, userCount)
-                  break
-                }
-              }
-            }
+          console.log('🔄 State changed, rechecking user count')
+          checkUserCount()
+        })
+        
+        // Listen for any join/leave events
+        room.onMessage('*', (type: string, message: any) => {
+          console.log('📨 Received message type:', type, 'data:', message)
+          if (type.includes('join') || type.includes('leave') || type.includes('user') || type.includes('player')) {
+            console.log('👥 User-related message detected, rechecking count')
+            checkUserCount()
           }
-          console.log('👥 State change - current player count:', userCount)
-          setConnectedUserCount(userCount)
         })
       }
 
