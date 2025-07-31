@@ -1,132 +1,60 @@
-import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
-import { useMultiplayer } from './useMultiplayer';
+import { useMultiplayerSync } from './useMultiplayerSync';
 import { useUser } from '../contexts/UserContext';
+import { nanoid } from 'nanoid';
+import { ViewportResizeAction } from '../types/whiteboard';
 
 export const useViewportSync = () => {
   const { viewport, setViewport } = useWhiteboardStore();
   const { userId } = useUser();
-  const multiplayer = useMultiplayer();
+  const { sendWhiteboardAction, isConnected } = useMultiplayerSync();
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   const isInitialized = useRef(false);
-  const [userScreenSizes, setUserScreenSizes] = useState<Record<string, { width: number; height: number }>>({});
 
-  const calculateOptimalCanvasSize = useCallback(() => {
-    const isConnected = multiplayer?.isConnected && multiplayer?.connectedUserCount > 1;
+  const updateCanvasSize = useCallback((newWidth?: number, newHeight?: number) => {
+    const currentViewport = useWhiteboardStore.getState().viewport;
+    const targetWidth = newWidth || window.innerWidth;
+    const targetHeight = newHeight || window.innerHeight;
     
+    // Only update if dimensions actually changed to prevent loops
+    if (currentViewport.canvasWidth !== targetWidth || 
+        currentViewport.canvasHeight !== targetHeight) {
+      const newViewport = {
+        ...currentViewport,
+        canvasWidth: targetWidth,
+        canvasHeight: targetHeight
+      };
+      
+      setViewport(newViewport);
+      console.log('📐 Updated canvas size:', { width: targetWidth, height: targetHeight });
+    }
+  }, [setViewport]);
+
+  const sendResizeAction = useCallback(() => {
     if (!isConnected) {
-      // Use full screen if not connected
-      return { 
-        canvasWidth: window.innerWidth, 
-        canvasHeight: window.innerHeight 
-      };
-    }
-    
-    // Include current user's screen size
-    const currentUserSize = { width: window.innerWidth, height: window.innerHeight };
-    const allSizes = { ...userScreenSizes, current: currentUserSize };
-    
-    // Find minimum dimensions among all connected users
-    const screenSizes = Object.values(allSizes);
-    if (screenSizes.length === 0) {
-      return {
-        canvasWidth: Math.max(400, window.innerWidth),
-        canvasHeight: Math.max(300, window.innerHeight)
-      };
-    }
-    
-    const minWidth = Math.min(...screenSizes.map(s => s.width));
-    const minHeight = Math.min(...screenSizes.map(s => s.height));
-    
-    return {
-      canvasWidth: Math.max(400, minWidth),
-      canvasHeight: Math.max(300, minHeight)
-    };
-  }, [multiplayer, userScreenSizes]);
-
-  const broadcastResize = useCallback(() => {
-    if (!multiplayer?.isConnected || !multiplayer?.serverInstance?.server?.room) {
       // Not connected - just update local canvas
       updateCanvasSize();
       return;
     }
 
-    // Broadcast resize event with actual screen size and userId
-    console.log('🚀 About to send broadcast via room.send...');
-    const payload = {
-      type: 'viewport_sync',
-      action: 'resize',
-      userId: userId,
-      screenSize: {
-        width: window.innerWidth,
-        height: window.innerHeight
+    // Send resize action through the existing action system
+    const resizeAction: ViewportResizeAction = {
+      type: 'VIEWPORT_RESIZE',
+      payload: {
+        screenSize: {
+          width: window.innerWidth,
+          height: window.innerHeight
+        }
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      id: nanoid(),
+      userId: userId
     };
     
-    console.log('📋 Payload being sent:', payload);
-    multiplayer.serverInstance.server.room.send("broadcast", payload);
-    
-    console.log('📤 Broadcasted resize event with userId:', userId);
-    console.log('📤 Room object:', multiplayer.serverInstance.server.room);
-    
-    // DON'T update canvas immediately - wait for broadcast to come back
-    // This ensures everyone calculates using the same updated data
-  }, [multiplayer, userId]);
-
-  const updateCanvasSize = useCallback(() => {
-    const optimalSize = calculateOptimalCanvasSize();
-    const currentViewport = useWhiteboardStore.getState().viewport;
-    
-    // Only update if dimensions actually changed to prevent loops
-    if (currentViewport.canvasWidth !== optimalSize.canvasWidth || 
-        currentViewport.canvasHeight !== optimalSize.canvasHeight) {
-      const newViewport = {
-        ...currentViewport,
-        canvasWidth: optimalSize.canvasWidth,
-        canvasHeight: optimalSize.canvasHeight
-      };
-      
-      setViewport(newViewport);
-      console.log('📐 Updated canvas size:', optimalSize);
-    }
-  }, [calculateOptimalCanvasSize, setViewport]);
-
-  const handleViewportSyncMessage = useCallback((message: any) => {
-    if ((message.action === 'resize' || message.action === 'initial_screen_size') && message.screenSize) {
-      console.log('📥 Received', message.action, 'with screen size:', message.screenSize, 'from user:', message.userId);
-      
-      // Update screen sizes from all users (including self)
-      setUserScreenSizes(prev => ({
-        ...prev,
-        [message.userId || 'unknown']: {
-          width: message.screenSize.width,
-          height: message.screenSize.height
-        }
-      }));
-      
-      // Recalculate canvas size with new information
-      updateCanvasSize();
-    }
-  }, [updateCanvasSize]);
-
-  const broadcastInitialScreenSize = useCallback(() => {
-    if (!multiplayer?.isConnected || !multiplayer?.serverInstance?.server?.room) return;
-
-    // Broadcast current screen size when connecting
-    multiplayer.serverInstance.server.room.send("broadcast", {
-      type: 'viewport_sync',
-      action: 'initial_screen_size',
-      userId: userId,
-      screenSize: {
-        width: window.innerWidth,
-        height: window.innerHeight
-      },
-      timestamp: Date.now()
-    });
-    
-    console.log('📤 Broadcasted initial screen size:', { width: window.innerWidth, height: window.innerHeight });
-  }, [multiplayer, userId]);
+    console.log('📤 Sending resize action:', resizeAction);
+    sendWhiteboardAction(resizeAction);
+  }, [isConnected, sendWhiteboardAction, userId, updateCanvasSize]);
 
   const handleWindowResize = useCallback(() => {
     console.log('🔄 Window resize triggered');
@@ -137,9 +65,9 @@ export const useViewportSync = () => {
 
     debounceTimeoutRef.current = setTimeout(() => {
       console.log('🔄 Processing window resize after debounce');
-      broadcastResize();
+      sendResizeAction();
     }, 300);
-  }, [broadcastResize]);
+  }, [sendResizeAction]);
 
   // Initialize canvas size on mount
   useEffect(() => {
@@ -149,21 +77,13 @@ export const useViewportSync = () => {
     }
   }, [updateCanvasSize]);
 
-  // Broadcast initial screen size when connecting
+  // Send initial screen size when connecting
   useEffect(() => {
-    if (multiplayer?.isConnected && isInitialized.current) {
-      console.log('🔗 Connection established - broadcasting initial screen size');
-      broadcastInitialScreenSize();
+    if (isConnected && isInitialized.current) {
+      console.log('🔗 Connection established - sending initial screen size');
+      sendResizeAction();
     }
-  }, [multiplayer?.isConnected, broadcastInitialScreenSize]);
-
-  // Recalculate canvas when user count changes
-  useEffect(() => {
-    if (multiplayer?.isConnected && isInitialized.current) {
-      console.log('👥 Connected user count changed:', multiplayer.connectedUserCount);
-      updateCanvasSize();
-    }
-  }, [multiplayer?.connectedUserCount, updateCanvasSize]);
+  }, [isConnected, sendResizeAction]);
 
   // Listen for window resize
   useEffect(() => {
@@ -176,33 +96,36 @@ export const useViewportSync = () => {
     };
   }, [handleWindowResize]);
 
-  // Listen for viewport sync messages
+  // Listen for incoming resize actions
   useEffect(() => {
-    if (!multiplayer?.serverInstance?.server?.room) return;
-
-    const room = multiplayer.serverInstance.server.room;
-
-    const handleBroadcastMessage = (message: any) => {
-      console.log('🔵 Raw broadcast message received:', message);
-      console.log('🔍 Message type:', message.type);
-      
-      if (message.type === 'viewport_sync') {
-        console.log('✅ This is a viewport_sync message!');
-        handleViewportSyncMessage(message);
-      } else {
-        console.log('⚪ This is NOT a viewport_sync message, ignoring');
+    const unsubscribe = useWhiteboardStore.subscribe(
+      (state) => {
+        const lastAction = state.lastAction;
+        if (lastAction?.type === 'VIEWPORT_RESIZE' && lastAction.userId !== userId) {
+          console.log('📥 Received resize from user:', lastAction.userId, lastAction.payload.screenSize);
+          
+          const currentViewport = useWhiteboardStore.getState().viewport;
+          const incomingSize = lastAction.payload.screenSize;
+          
+          // If incoming screen size is smaller than current canvas, resize to match
+          const shouldResizeWidth = incomingSize.width < (currentViewport.canvasWidth || window.innerWidth);
+          const shouldResizeHeight = incomingSize.height < (currentViewport.canvasHeight || window.innerHeight);
+          
+          if (shouldResizeWidth || shouldResizeHeight) {
+            const newWidth = shouldResizeWidth ? incomingSize.width : currentViewport.canvasWidth;
+            const newHeight = shouldResizeHeight ? incomingSize.height : currentViewport.canvasHeight;
+            
+            console.log('📐 Resizing canvas to smaller size:', { newWidth, newHeight });
+            updateCanvasSize(newWidth, newHeight);
+          }
+        }
       }
-    };
+    );
 
-    room.onMessage('broadcast', handleBroadcastMessage);
-    
-    return () => {
-      room.removeAllListeners('broadcast');
-    };
-  }, [multiplayer?.serverInstance, handleViewportSyncMessage]);
+    return unsubscribe;
+  }, [userId, updateCanvasSize]);
 
   return {
-    connectedUserCount: multiplayer?.connectedUserCount || 0,
     updateCanvasSize
   };
 };

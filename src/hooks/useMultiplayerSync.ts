@@ -20,6 +20,11 @@ const shouldSyncAction = (action: WhiteboardAction, whiteboardStore: any): boole
     }
   }
   
+  // Always sync VIEWPORT_RESIZE actions
+  if (action.type === 'VIEWPORT_RESIZE') {
+    return true
+  }
+  
   return !localOnlyActions.includes(action.type)
 }
 
