@@ -83,7 +83,44 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       if (room) {
         console.log('👥 Setting up participant tracking for room:', room.id)
         
-        // Listen for participant events from server
+        // Listen for default room state to get initial player count
+        room.onMessage('defaultRoomState', (state: any) => {
+          console.log('🏠 Default room state received:', JSON.stringify(state, null, 2))
+          // Try to find user count in various possible state structures
+          let userCount = 0
+          if (state?.players) {
+            userCount = Object.keys(state.players).length
+          } else if (state?.users) {
+            userCount = Object.keys(state.users).length
+          } else if (state?.clients) {
+            userCount = Object.keys(state.clients).length
+          } else if (typeof state === 'object' && state !== null) {
+            // Log all keys to understand the structure
+            console.log('🏠 Available state keys:', Object.keys(state))
+            // Try to find any object that might contain user info
+            for (const [key, value] of Object.entries(state)) {
+              if (value && typeof value === 'object' && !Array.isArray(value)) {
+                const subKeys = Object.keys(value)
+                console.log(`🏠 State.${key} keys:`, subKeys)
+                // If this looks like a user collection, count it
+                if (subKeys.length > 0 && (key.includes('player') || key.includes('user') || key.includes('client'))) {
+                  userCount = subKeys.length
+                  console.log(`🏠 Found user count in state.${key}:`, userCount)
+                  break
+                }
+              }
+            }
+          }
+          console.log('👥 Initial room state - player count:', userCount)
+          setConnectedUserCount(userCount)
+        })
+
+        // Listen for playground message types (seems to be sent by server)
+        room.onMessage('__playground_message_types', (data: any) => {
+          console.log('🛝 Playground message types:', data)
+        })
+
+        // Listen for participant events from server (if they exist)
         room.onMessage('participantJoined', (participant: any) => {
           console.log('👥 Participant joined event:', participant)
           setConnectedUserCount(prev => {
@@ -102,23 +139,32 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
           })
         })
 
-        // Listen for default room state to get initial player count
-        room.onMessage('defaultRoomState', (state: any) => {
-          console.log('🏠 Default room state received:', state)
-          if (state?.players) {
-            const playerCount = Object.keys(state.players).length
-            console.log('👥 Initial room state - player count:', playerCount)
-            setConnectedUserCount(playerCount)
-          }
-        })
-
         // Also track state changes directly for more immediate updates
         room.onStateChange((state: any) => {
+          console.log('🔄 Room state changed:', JSON.stringify(state, null, 2))
+          let userCount = 0
           if (state?.players) {
-            const currentPlayerCount = Object.keys(state.players).length
-            console.log('👥 State change - current player count:', currentPlayerCount)
-            setConnectedUserCount(currentPlayerCount)
+            userCount = Object.keys(state.players).length
+          } else if (state?.users) {
+            userCount = Object.keys(state.users).length
+          } else if (state?.clients) {
+            userCount = Object.keys(state.clients).length
+          } else if (typeof state === 'object' && state !== null) {
+            // Try to find any object that might contain user info
+            for (const [key, value] of Object.entries(state)) {
+              if (value && typeof value === 'object' && !Array.isArray(value)) {
+                const subKeys = Object.keys(value)
+                // If this looks like a user collection, count it
+                if (subKeys.length > 0 && (key.includes('player') || key.includes('user') || key.includes('client'))) {
+                  userCount = subKeys.length
+                  console.log(`🔄 Found user count in state.${key}:`, userCount)
+                  break
+                }
+              }
+            }
           }
+          console.log('👥 State change - current player count:', userCount)
+          setConnectedUserCount(userCount)
         })
       }
 
