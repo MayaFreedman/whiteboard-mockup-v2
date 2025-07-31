@@ -171,38 +171,40 @@ export const useViewportSync = () => {
       updated.set(dimensions.userId, dimensions);
       
       console.log('📏 Updated dimensions cache, total users:', updated.size);
+      
+      // Phase 2: Collective recalculation - all users recalculate, but only one broadcasts
+      // Use deterministic selection: user with lexicographically smallest userId becomes authoritative
+      if (multiplayer?.serverInstance?.server?.room) {
+        const sessionId = multiplayer.serverInstance.server.room.sessionId;
+        
+        // Get all connected session IDs and sort them - use the UPDATED dimensions
+        const allSessionIds = Array.from(updated.keys());
+        allSessionIds.push(sessionId); // Include current user
+        allSessionIds.sort();
+        
+        const isAuthoritative = allSessionIds[0] === sessionId;
+        
+        console.log('📏 User authority check:', { 
+          mySessionId: sessionId, 
+          allSessions: allSessionIds, 
+          isAuthoritative,
+          updatedCacheSize: updated.size
+        });
+        
+        // Small delay to ensure all dimension updates are processed
+        setTimeout(() => {
+          if (isAuthoritative) {
+            console.log('📏 Acting as authoritative user - broadcasting new viewport');
+            syncCanvasSizeToRoom();
+          } else {
+            console.log('📏 Non-authoritative user - waiting for viewport update');
+          }
+        }, 100);
+      }
+      
       return updated;
     });
-
-    // Phase 2: Collective recalculation - all users recalculate, but only one broadcasts
-    // Use deterministic selection: user with lexicographically smallest userId becomes authoritative
-    if (multiplayer?.serverInstance?.server?.room) {
-      const sessionId = multiplayer.serverInstance.server.room.sessionId;
-      
-      // Get all connected session IDs and sort them
-      const allSessionIds = Array.from(userScreenDimensions.keys());
-      allSessionIds.push(sessionId); // Include current user
-      allSessionIds.sort();
-      
-      const isAuthoritative = allSessionIds[0] === sessionId;
-      
-      console.log('📏 User authority check:', { 
-        mySessionId: sessionId, 
-        allSessions: allSessionIds, 
-        isAuthoritative 
-      });
-      
-      // Small delay to ensure all dimension updates are processed
-      setTimeout(() => {
-        if (isAuthoritative) {
-          console.log('📏 Acting as authoritative user - broadcasting new viewport');
-          syncCanvasSizeToRoom();
-        } else {
-          console.log('📏 Non-authoritative user - waiting for viewport update');
-        }
-      }, 100);
-    }
-  }, [syncCanvasSizeToRoom, multiplayer?.serverInstance?.server?.room, userScreenDimensions]);
+  }, [syncCanvasSizeToRoom, multiplayer?.serverInstance?.server?.room]);
 
   // Initialize canvas size on mount
   useEffect(() => {
