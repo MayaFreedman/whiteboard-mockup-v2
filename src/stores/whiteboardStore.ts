@@ -36,7 +36,7 @@ export interface WhiteboardStore {
   // Screen size management
   updateUserScreenSize: (userId: string, width: number, height: number) => void;
   removeUserScreenSize: (userId: string) => void;
-  calculateMinimumScreenSize: () => { width: number; height: number };
+  calculateMinimumScreenSize: (userScreenSizes?: Map<string, { width: number; height: number }>) => { width: number; height: number };
   updateCanvasToMinimumSize: () => void;
 
   // Action recording
@@ -961,15 +961,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       const newUserScreenSizes = new Map(state.userScreenSizes);
       newUserScreenSizes.set(userId, { width, height });
       
-      // Calculate minimum screen size across all users with the new sizes
-      const screenSizes = Array.from(newUserScreenSizes.values());
-      let minSize = { width: window.innerWidth, height: window.innerHeight };
-      
-      if (screenSizes.length > 0) {
-        const minWidth = Math.min(...screenSizes.map(size => size.width));
-        const minHeight = Math.min(...screenSizes.map(size => size.height));
-        minSize = { width: minWidth, height: minHeight };
-      }
+      // Calculate minimum screen size across all users using the updated map
+      const minSize = get().calculateMinimumScreenSize(newUserScreenSizes);
       
       // Always update canvas to match the true minimum across all users
       const currentViewport = state.viewport;
@@ -1016,9 +1009,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     });
   },
 
-  calculateMinimumScreenSize: () => {
-    const state = get();
-    const screenSizes = Array.from(state.userScreenSizes.values());
+  calculateMinimumScreenSize: (userScreenSizes) => {
+    const screenSizes = Array.from((userScreenSizes || get().userScreenSizes).values());
     
     if (screenSizes.length === 0) {
       return { width: window.innerWidth, height: window.innerHeight };
