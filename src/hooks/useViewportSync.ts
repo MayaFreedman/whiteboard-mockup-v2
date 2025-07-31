@@ -72,7 +72,11 @@ export const useViewportSync = () => {
     try {
       multiplayer.serverInstance.sendEvent({
         type: 'screen_dimensions',
-        data: screenDimensionsData
+        userId: screenDimensionsData.userId,
+        screenWidth: screenDimensionsData.screenWidth,
+        screenHeight: screenDimensionsData.screenHeight,
+        availableWidth: screenDimensionsData.availableWidth,
+        availableHeight: screenDimensionsData.availableHeight
       });
     } catch (error) {
       console.error('Failed to broadcast screen dimensions:', error);
@@ -116,11 +120,9 @@ export const useViewportSync = () => {
     try {
       multiplayer.serverInstance.sendEvent({
         type: 'viewport_sync',
-        data: {
-          viewport: newViewport,
-          timestamp,
-          source: 'authoritative_sync'
-        }
+        viewport: newViewport,
+        timestamp,
+        source: 'authoritative_sync'
       });
       console.log('📡 Broadcasted new viewport via sendEvent:', newViewport);
     } catch (error) {
@@ -243,10 +245,10 @@ export const useViewportSync = () => {
       
       if (message.type === 'viewport_sync') {
         console.log('📥 Processing viewport_sync broadcast');
-        handleReceivedViewport(message.data);
+        handleReceivedViewport(message);
       } else if (message.type === 'screen_dimensions') {
         console.log('📥 Processing screen_dimensions broadcast');
-        handleReceivedScreenDimensions(message.data);
+        handleReceivedScreenDimensions(message);
       }
     };
 
