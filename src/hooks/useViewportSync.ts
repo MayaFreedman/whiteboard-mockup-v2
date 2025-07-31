@@ -1,9 +1,11 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useMultiplayer } from './useMultiplayer';
+import { useUser } from '../contexts/UserContext';
 
 export const useViewportSync = () => {
   const { viewport, setViewport } = useWhiteboardStore();
+  const { userId } = useUser();
   const multiplayer = useMultiplayer();
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   const isInitialized = useRef(false);
@@ -42,17 +44,18 @@ export const useViewportSync = () => {
     };
   }, [multiplayer, userScreenSizes]);
 
-  const broadcastResizeAndRecalculate = useCallback(() => {
+  const broadcastResize = useCallback(() => {
     if (!multiplayer?.isConnected || !multiplayer?.serverInstance?.server?.room) {
       // Not connected - just update local canvas
       updateCanvasSize();
       return;
     }
 
-    // Broadcast resize event with actual screen size
+    // Broadcast resize event with actual screen size and userId
     multiplayer.serverInstance.server.room.send("broadcast", {
       type: 'viewport_sync',
       action: 'resize',
+      userId: userId,
       screenSize: {
         width: window.innerWidth,
         height: window.innerHeight
@@ -60,11 +63,11 @@ export const useViewportSync = () => {
       timestamp: Date.now()
     });
     
-    console.log('📤 Broadcasted resize event');
+    console.log('📤 Broadcasted resize event with userId:', userId);
     
-    // Update local canvas immediately
-    updateCanvasSize();
-  }, [multiplayer]);
+    // DON'T update canvas immediately - wait for broadcast to come back
+    // This ensures everyone calculates using the same updated data
+  }, [multiplayer, userId]);
 
   const updateCanvasSize = useCallback(() => {
     const optimalSize = calculateOptimalCanvasSize();
@@ -85,10 +88,10 @@ export const useViewportSync = () => {
   }, [calculateOptimalCanvasSize, setViewport]);
 
   const handleViewportSyncMessage = useCallback((message: any) => {
-    if (message.action === 'resize' && message.screenSize) {
-      console.log('📥 Received resize event with screen size:', message.screenSize);
+    if ((message.action === 'resize' || message.action === 'initial_screen_size') && message.screenSize) {
+      console.log('📥 Received', message.action, 'with screen size:', message.screenSize, 'from user:', message.userId);
       
-      // Update screen sizes from other users
+      // Update screen sizes from all users (including self)
       setUserScreenSizes(prev => ({
         ...prev,
         [message.userId || 'unknown']: {
@@ -102,6 +105,24 @@ export const useViewportSync = () => {
     }
   }, [updateCanvasSize]);
 
+  const broadcastInitialScreenSize = useCallback(() => {
+    if (!multiplayer?.isConnected || !multiplayer?.serverInstance?.server?.room) return;
+
+    // Broadcast current screen size when connecting
+    multiplayer.serverInstance.server.room.send("broadcast", {
+      type: 'viewport_sync',
+      action: 'initial_screen_size',
+      userId: userId,
+      screenSize: {
+        width: window.innerWidth,
+        height: window.innerHeight
+      },
+      timestamp: Date.now()
+    });
+    
+    console.log('📤 Broadcasted initial screen size:', { width: window.innerWidth, height: window.innerHeight });
+  }, [multiplayer, userId]);
+
   const handleWindowResize = useCallback(() => {
     console.log('🔄 Window resize triggered');
     
@@ -111,9 +132,9 @@ export const useViewportSync = () => {
 
     debounceTimeoutRef.current = setTimeout(() => {
       console.log('🔄 Processing window resize after debounce');
-      broadcastResizeAndRecalculate();
+      broadcastResize();
     }, 300);
-  }, [broadcastResizeAndRecalculate]);
+  }, [broadcastResize]);
 
   // Initialize canvas size on mount
   useEffect(() => {
@@ -122,6 +143,14 @@ export const useViewportSync = () => {
       isInitialized.current = true;
     }
   }, [updateCanvasSize]);
+
+  // Broadcast initial screen size when connecting
+  useEffect(() => {
+    if (multiplayer?.isConnected && isInitialized.current) {
+      console.log('🔗 Connection established - broadcasting initial screen size');
+      broadcastInitialScreenSize();
+    }
+  }, [multiplayer?.isConnected, broadcastInitialScreenSize]);
 
   // Recalculate canvas when user count changes
   useEffect(() => {
