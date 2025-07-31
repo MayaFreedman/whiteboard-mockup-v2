@@ -70,7 +70,7 @@ export const useViewportSync = () => {
     console.log('📤 Broadcasting screen dimensions via sendEvent:', screenDimensionsData);
     
     try {
-      multiplayer.serverInstance.sendEvent({
+      multiplayer.serverInstance.server.room.send("broadcast", {
         type: 'screen_dimensions',
         userId: screenDimensionsData.userId,
         screenWidth: screenDimensionsData.screenWidth,
@@ -118,13 +118,13 @@ export const useViewportSync = () => {
     lastBroadcastTimestamp.current = timestamp;
 
     try {
-      multiplayer.serverInstance.sendEvent({
+      multiplayer.serverInstance.server.room.send("broadcast", {
         type: 'viewport_sync',
         viewport: newViewport,
         timestamp,
         source: 'authoritative_sync'
       });
-      console.log('📡 Broadcasted new viewport via sendEvent:', newViewport);
+      console.log('📡 Broadcasted new viewport via room.send:', newViewport);
     } catch (error) {
       console.error('Failed to sync viewport:', error);
     }
