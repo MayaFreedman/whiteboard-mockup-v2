@@ -832,33 +832,20 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         break;
         
       case 'VIEWPORT_RESIZE':
-        // Only apply incoming size if it's smaller than current user's screen
+        // Always apply incoming screen size as new canvas size
         if (action.payload?.screenSize) {
           const currentViewport = get().viewport;
           const incomingSize = action.payload.screenSize;
-          const myScreenSize = { width: window.innerWidth, height: window.innerHeight };
           
-          // Only resize if incoming size is smaller than my screen
-          if (incomingSize.width < myScreenSize.width || incomingSize.height < myScreenSize.height) {
-            set({
-              viewport: {
-                ...currentViewport,
-                canvasWidth: Math.min(incomingSize.width, myScreenSize.width),
-                canvasHeight: Math.min(incomingSize.height, myScreenSize.height)
-              }
-            });
-            
-            console.log('📐 Canvas resized to smaller size:', { 
-              incoming: incomingSize, 
-              myScreen: myScreenSize,
-              newCanvas: { 
-                width: Math.min(incomingSize.width, myScreenSize.width),
-                height: Math.min(incomingSize.height, myScreenSize.height)
-              }
-            });
-          } else {
-            console.log('📐 Ignoring resize - incoming size not smaller than my screen:', { incoming: incomingSize, myScreen: myScreenSize });
-          }
+          set({
+            viewport: {
+              ...currentViewport,
+              canvasWidth: incomingSize.width,
+              canvasHeight: incomingSize.height
+            }
+          });
+          
+          console.log('📐 Canvas resized to match user screen:', incomingSize);
         }
         break;
         
