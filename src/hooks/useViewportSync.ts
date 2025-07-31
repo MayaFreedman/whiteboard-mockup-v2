@@ -125,13 +125,11 @@ export const useViewportSync = () => {
     };
 
     room.onMessage('broadcast', handleBroadcastMessage);
-    console.log('✅ Viewport sync listener setup for room:', room.id);
     
     return () => {
-      room.off('broadcast', handleBroadcastMessage);
-      console.log('🧹 Viewport sync listener cleaned up for room:', room.id);
+      room.removeAllListeners('broadcast');
     };
-  }, [multiplayer?.serverInstance?.server?.room, handleViewportSyncMessage]);
+  }, [multiplayer?.serverInstance, handleViewportSyncMessage]);
 
   return {
     connectedUserCount: multiplayer?.connectedUserCount || 0,
