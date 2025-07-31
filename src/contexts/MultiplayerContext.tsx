@@ -4,11 +4,13 @@ import { ServerClass } from '../server'
 import { WhiteboardAction } from '../types/whiteboard'
 
 interface User {
-  id: string
+  sessionId: string
+  id?: string  // Keep for backward compatibility
   name?: string
   color?: string
   cursor?: { x: number; y: number }
   isActive?: boolean
+  isModerator?: boolean
 }
 
 interface MultiplayerContextType {
@@ -83,25 +85,47 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       if (room) {
         console.log('👥 Setting up participant tracking for room:', room.id)
         
-        // Track connected users - handlers are now registered in server.ts immediately
-        let userCount = 1 // Start with ourselves
-        setConnectedUserCount(userCount)
+        // Initialize with current user
+        setConnectedUsers([{ sessionId: room.sessionId, isModerator }])
+        setConnectedUserCount(1)
         
-        // Override the handlers from server.ts to include our state updates
-        console.log('📝 Overriding participantJoined handler with state updates...')
+        // Set up participant tracking handlers
+        console.log('📝 Setting up participantJoined handler with state updates...')
         room.onMessage('participantJoined', (player: any) => {
           console.log('🎉 RECEIVED participantJoined message in context:', player)
-          userCount++
-          console.log('👥 Updated user count to:', userCount)
-          setConnectedUserCount(userCount)
+          
+          setConnectedUsers(prev => {
+            // Check if user already exists
+            if (prev.some(user => user.sessionId === player.id)) {
+              console.log('User already in list, skipping')
+              return prev
+            }
+            
+            const newUser: User = {
+              sessionId: player.id,
+              isModerator: player.moderator || false
+            }
+            
+            console.log('Adding new user to connected users:', newUser)
+            return [...prev, newUser]
+          })
+          
+          setConnectedUserCount(prev => prev + 1)
         })
         
-        console.log('📝 Overriding participantLeft handler with state updates...')
-        room.onMessage('participantLeft', (player: any) => {
-          console.log('🚪 RECEIVED participantLeft message in context:', player)
-          userCount = Math.max(1, userCount - 1) // Never go below 1 (ourselves)
-          console.log('👥 Updated user count to:', userCount)
-          setConnectedUserCount(userCount)
+        console.log('📝 Setting up participantLeft handler with state updates...')
+        room.onMessage('participantLeft', (data: any) => {
+          console.log('🚪 RECEIVED participantLeft message in context:', data)
+          
+          if (data.playerLeft) {
+            setConnectedUsers(prev => {
+              const filtered = prev.filter(user => user.sessionId !== data.playerLeft.id)
+              console.log('Removed user from connected users, new list:', filtered)
+              return filtered
+            })
+            
+            setConnectedUserCount(prev => Math.max(1, prev - 1)) // Never go below 1
+          }
         })
         
         console.log('✅ Message handlers overridden with state updates')
