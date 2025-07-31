@@ -304,7 +304,7 @@ export const useMultiplayerSync = () => {
         stateRequestTimeoutRef.current = undefined
       }
     }
-  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId, connectedUserCount])
+  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId])
 
   // Send local actions to other clients (with filtering)
   useEffect(() => {

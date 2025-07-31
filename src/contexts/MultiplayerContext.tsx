@@ -96,26 +96,47 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
             console.log('👥 Method 1 - Room clients count:', userCount)
           }
           
-          // Method 2: Check room.state
+          // Method 2: Check room.state for ACTIVE players only
           if (room.state) {
             console.log('🔍 Room state type:', typeof room.state)
-            console.log('🔍 Room state content:', room.state)
             
-            // Try to find users in state
             const state = room.state as any
             if (state?.players) {
-              userCount = Object.keys(state.players).length
-              console.log('👥 Method 2a - State players count:', userCount)
-            } else if (state?.users) {
-              userCount = Object.keys(state.users).length
-              console.log('👥 Method 2b - State users count:', userCount)
-            } else if (state?.clients) {
-              userCount = Object.keys(state.clients).length
-              console.log('👥 Method 2c - State clients count:', userCount)
+              // For MapSchema, we need to iterate and check if players are active
+              const players = state.players
+              let activeCount = 0
+              
+              console.log('🔍 Players MapSchema:', players)
+              
+              // Try different ways to count active players
+              if (players.size !== undefined) {
+                // MapSchema has a size property
+                activeCount = players.size
+                console.log('👥 Method 2a - MapSchema size:', activeCount)
+              } else if (typeof players.forEach === 'function') {
+                // Iterate through active players
+                players.forEach((player: any, sessionId: string) => {
+                  console.log('👥 Found active player:', sessionId, player)
+                  activeCount++
+                })
+                console.log('👥 Method 2b - Active players via forEach:', activeCount)
+              } else {
+                // Fallback to Object.keys but filter for active
+                const playerKeys = Object.keys(players)
+                activeCount = playerKeys.filter(key => {
+                  const player = players[key]
+                  return player && (player.connected !== false) // Assume connected unless explicitly false
+                }).length
+                console.log('👥 Method 2c - Filtered active players:', activeCount, 'from total:', playerKeys.length)
+              }
+              
+              if (activeCount > 0) {
+                userCount = activeCount
+              }
             }
           }
           
-          // Method 3: Check sessionId existence (at least 1 user - us)
+          // Method 3: Minimum count check - if we're connected, at least 1
           if (userCount === 0 && room.sessionId) {
             userCount = 1 // At least we are connected
             console.log('👥 Method 3 - Fallback to 1 (we are connected)')
