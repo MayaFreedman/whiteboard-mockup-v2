@@ -82,12 +82,14 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       const room = newServerInstance.server.room
       if (room) {
         console.log('👥 Setting up participant tracking for room:', room.id)
+        console.log('🔧 Room object:', room)
         
         // Track connected users
         let userCount = 1 // Start with ourselves
         setConnectedUserCount(userCount)
         
-        // Listen for participantJoined messages from server
+        // Register message handlers immediately
+        console.log('📝 Registering participantJoined handler...')
         room.onMessage('participantJoined', (player: any) => {
           console.log('🎉 RECEIVED participantJoined message:', player)
           userCount++
@@ -95,13 +97,15 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
           setConnectedUserCount(userCount)
         })
         
-        // Listen for participantLeft messages from server
+        console.log('📝 Registering participantLeft handler...')
         room.onMessage('participantLeft', (player: any) => {
           console.log('🚪 RECEIVED participantLeft message:', player)
           userCount = Math.max(1, userCount - 1) // Never go below 1 (ourselves)
           console.log('👥 Updated user count to:', userCount)
           setConnectedUserCount(userCount)
         })
+        
+        console.log('✅ Message handlers registered')
       }
 
       console.log('✅ Connection successful!')
