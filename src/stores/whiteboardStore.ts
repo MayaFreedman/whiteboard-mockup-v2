@@ -125,6 +125,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     x: 0,
     y: 0,
     zoom: 1,
+    canvasWidth: window.innerWidth,
+    canvasHeight: window.innerHeight,
   },
   settings: {
     gridVisible: false,
