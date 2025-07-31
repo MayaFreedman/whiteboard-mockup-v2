@@ -59,18 +59,21 @@ export const useViewportSync = () => {
   }, [userScreenDimensions, multiplayer, calculateAvailableSpace]);
 
   const broadcastScreenDimensions = useCallback(() => {
-    if (!multiplayer?.serverInstance?.server?.room) return;
+    if (!multiplayer?.serverInstance) return;
     
     const dimensions = calculateAvailableSpace();
     const screenDimensionsData: UserScreenDimensions = {
-      userId: multiplayer.serverInstance.server.room.sessionId,
+      userId: multiplayer.serverInstance.server?.room?.sessionId || 'unknown',
       ...dimensions
     };
     
-    console.log('📤 Broadcasting screen dimensions:', screenDimensionsData);
+    console.log('📤 Broadcasting screen dimensions via sendEvent:', screenDimensionsData);
     
     try {
-      multiplayer.serverInstance.server.room.send('screen_dimensions', screenDimensionsData);
+      multiplayer.serverInstance.sendEvent({
+        type: 'screen_dimensions',
+        data: screenDimensionsData
+      });
     } catch (error) {
       console.error('Failed to broadcast screen dimensions:', error);
     }
@@ -111,12 +114,15 @@ export const useViewportSync = () => {
     lastBroadcastTimestamp.current = timestamp;
 
     try {
-      multiplayer.serverInstance.server.room.send('viewport_sync', {
-        viewport: newViewport,
-        timestamp,
-        source: 'authoritative_sync'
+      multiplayer.serverInstance.sendEvent({
+        type: 'viewport_sync',
+        data: {
+          viewport: newViewport,
+          timestamp,
+          source: 'authoritative_sync'
+        }
       });
-      console.log('📡 Broadcasted new viewport:', newViewport);
+      console.log('📡 Broadcasted new viewport via sendEvent:', newViewport);
     } catch (error) {
       console.error('Failed to sync viewport:', error);
     }
@@ -141,8 +147,8 @@ export const useViewportSync = () => {
     }, 300);
   }, [broadcastScreenDimensions]);
 
-  const handleReceivedViewport = useCallback((message: { viewport: Viewport; timestamp: number; source?: string }) => {
-    const { viewport: receivedViewport, timestamp, source } = message;
+  const handleReceivedViewport = useCallback((data: { viewport: Viewport; timestamp: number; source?: string }) => {
+    const { viewport: receivedViewport, timestamp, source } = data;
     
     console.log('📥 Received viewport update:', { receivedViewport, timestamp, source });
     
@@ -226,26 +232,28 @@ export const useViewportSync = () => {
     };
   }, [handleWindowResize]);
 
-  // Listen for viewport and screen dimension messages
+  // Listen for broadcast messages with viewport sync and screen dimensions
   useEffect(() => {
     if (!multiplayer?.serverInstance?.server?.room) return;
 
     const room = multiplayer.serverInstance.server.room;
 
-    const handleViewportSync = (message: any) => {
-      handleReceivedViewport(message);
+    const handleBroadcastMessage = (message: any) => {
+      console.log('📥 Received broadcast message:', message);
+      
+      if (message.type === 'viewport_sync') {
+        console.log('📥 Processing viewport_sync broadcast');
+        handleReceivedViewport(message.data);
+      } else if (message.type === 'screen_dimensions') {
+        console.log('📥 Processing screen_dimensions broadcast');
+        handleReceivedScreenDimensions(message.data);
+      }
     };
 
-    const handleScreenDimensions = (dimensions: UserScreenDimensions) => {
-      handleReceivedScreenDimensions(dimensions);
-    };
-
-    room.onMessage('viewport_sync', handleViewportSync);
-    room.onMessage('screen_dimensions', handleScreenDimensions);
+    room.onMessage('broadcast', handleBroadcastMessage);
     
     return () => {
-      room.removeAllListeners('viewport_sync');
-      room.removeAllListeners('screen_dimensions');
+      room.removeAllListeners('broadcast');
     };
   }, [multiplayer?.serverInstance, handleReceivedViewport, handleReceivedScreenDimensions]);
 
