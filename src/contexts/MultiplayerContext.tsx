@@ -83,64 +83,43 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       if (room) {
         console.log('👥 Setting up participant tracking for room:', room.id)
         
-        // Track active users with a Set
-        const activeUsers = new Set<string>()
-        
+        // Use Colyseus's built-in user tracking via state changes
         const updateUserCount = () => {
-          const count = activeUsers.size
-          console.log('👥 Active users:', Array.from(activeUsers), 'Count:', count)
-          setConnectedUserCount(count)
+          // Get the actual connected clients count from Colyseus
+          const clientCount = room.clients?.length || 0
+          console.log('👥 Connected clients (from Colyseus):', clientCount)
+          setConnectedUserCount(clientCount)
         }
         
-        // Listen for user join/leave broadcasts
-        room.onMessage('broadcast', (message: any) => {
-          if (message.type === 'user_joined') {
-            console.log('👥 User joined:', message.userId)
-            activeUsers.add(message.userId)
-            updateUserCount()
-          } else if (message.type === 'user_left') {
-            console.log('👥 User left:', message.userId)
-            activeUsers.delete(message.userId)
+        // Listen for state changes that indicate user count changes
+        room.onStateChange((state: any) => {
+          if (state?.players) {
+            const playerCount = Object.keys(state.players).length
+            console.log('👥 State players count:', playerCount)
+            setConnectedUserCount(playerCount)
+          } else {
+            // Fallback to client count if no players in state
             updateUserCount()
           }
         })
         
-         // Broadcast that we joined
-         const broadcastJoin = () => {
-           console.log('📢 Broadcasting that we joined - using room.send')
-           try {
-             room.send('broadcast', {
-               type: 'user_joined',
-               userId: room.sessionId
-             })
-             console.log('✅ Successfully sent join broadcast')
-             // Add ourselves to the active users
-             activeUsers.add(room.sessionId)
-             updateUserCount()
-           } catch (error) {
-             console.error('❌ Failed to broadcast join:', error)
-           }
-         }
-        
-        // Listen for room leave to broadcast departure
-        room.onLeave(() => {
-          console.log('📢 Broadcasting that we left')
-          room.send('broadcast', {
-            type: 'user_left',
-            userId: room.sessionId
-          })
+        // Listen for users joining
+        room.onJoin(() => {
+          console.log('✅ User joined the room')
+          updateUserCount()
         })
         
-        // Store the broadcast function to call it after connection is complete
-        ;(room as any)._broadcastJoin = broadcastJoin
+        // Listen for users leaving  
+        room.onLeave(() => {
+          console.log('👋 User left the room')
+          updateUserCount()
+        })
+        
+        // Initial count update
+        updateUserCount()
       }
 
       console.log('✅ Connection successful!')
-      
-      // Now broadcast that we joined (after connection is complete)
-      if (newServerInstance.server.room && (newServerInstance.server.room as any)._broadcastJoin) {
-        (newServerInstance.server.room as any)._broadcastJoin()
-      }
     } catch (error) {
       console.error('❌ Connection failed:', error)
       
