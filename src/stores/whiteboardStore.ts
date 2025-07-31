@@ -846,20 +846,11 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         break;
         
       case 'VIEWPORT_RESIZE':
-        // Always apply incoming screen size as new canvas size
-        if (action.payload?.screenSize) {
-          const currentViewport = get().viewport;
+        // Update the user's screen size using the proper minimum calculation logic
+        if (action.payload?.screenSize && action.userId) {
           const incomingSize = action.payload.screenSize;
-          
-          set({
-            viewport: {
-              ...currentViewport,
-              canvasWidth: incomingSize.width,
-              canvasHeight: incomingSize.height
-            }
-          });
-          
-          console.log('📐 Canvas resized to match user screen:', incomingSize);
+          console.log('📥 Processing VIEWPORT_RESIZE action for user:', action.userId, incomingSize);
+          get().updateUserScreenSize(action.userId, incomingSize.width, incomingSize.height);
         }
         break;
         
