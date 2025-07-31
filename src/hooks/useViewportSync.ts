@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useMultiplayer } from './useMultiplayer';
 
@@ -7,6 +7,7 @@ export const useViewportSync = () => {
   const multiplayer = useMultiplayer();
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   const isInitialized = useRef(false);
+  const [userScreenSizes, setUserScreenSizes] = useState<Record<string, { width: number; height: number }>>({});
 
   const calculateOptimalCanvasSize = useCallback(() => {
     const isConnected = multiplayer?.isConnected && multiplayer?.connectedUserCount > 1;
@@ -19,13 +20,27 @@ export const useViewportSync = () => {
       };
     }
     
-    // When connected, everyone uses their own current screen size
-    // This will be synchronized when anyone resizes
+    // Include current user's screen size
+    const currentUserSize = { width: window.innerWidth, height: window.innerHeight };
+    const allSizes = { ...userScreenSizes, current: currentUserSize };
+    
+    // Find minimum dimensions among all connected users
+    const screenSizes = Object.values(allSizes);
+    if (screenSizes.length === 0) {
+      return {
+        canvasWidth: Math.max(400, window.innerWidth),
+        canvasHeight: Math.max(300, window.innerHeight)
+      };
+    }
+    
+    const minWidth = Math.min(...screenSizes.map(s => s.width));
+    const minHeight = Math.min(...screenSizes.map(s => s.height));
+    
     return {
-      canvasWidth: Math.max(400, window.innerWidth),
-      canvasHeight: Math.max(300, window.innerHeight)
+      canvasWidth: Math.max(400, minWidth),
+      canvasHeight: Math.max(300, minHeight)
     };
-  }, [multiplayer]);
+  }, [multiplayer, userScreenSizes]);
 
   const broadcastResizeAndRecalculate = useCallback(() => {
     if (!multiplayer?.isConnected || !multiplayer?.serverInstance?.server?.room) {
@@ -34,10 +49,14 @@ export const useViewportSync = () => {
       return;
     }
 
-    // Broadcast resize event to trigger recalculation everywhere
+    // Broadcast resize event with actual screen size
     multiplayer.serverInstance.server.room.send("broadcast", {
       type: 'viewport_sync',
       action: 'resize',
+      screenSize: {
+        width: window.innerWidth,
+        height: window.innerHeight
+      },
       timestamp: Date.now()
     });
     
@@ -66,8 +85,19 @@ export const useViewportSync = () => {
   }, [calculateOptimalCanvasSize, setViewport]);
 
   const handleViewportSyncMessage = useCallback((message: any) => {
-    if (message.action === 'resize') {
-      console.log('📥 Received resize event - recalculating canvas size');
+    if (message.action === 'resize' && message.screenSize) {
+      console.log('📥 Received resize event with screen size:', message.screenSize);
+      
+      // Update screen sizes from other users
+      setUserScreenSizes(prev => ({
+        ...prev,
+        [message.userId || 'unknown']: {
+          width: message.screenSize.width,
+          height: message.screenSize.height
+        }
+      }));
+      
+      // Recalculate canvas size with new information
       updateCanvasSize();
     }
   }, [updateCanvasSize]);
