@@ -40,6 +40,13 @@ const getCursorStyle = (activeTool: string): string => {
  * Handles rendering of background patterns, objects, and user interactions
  */
 export const Canvas: React.FC = () => {
+  const { userId } = useUser();
+  
+  // Don't render until userId is initialized
+  if (!userId) {
+    return <div className="w-full h-full bg-background" />;
+  }
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,13 +54,7 @@ export const Canvas: React.FC = () => {
   const { viewport, selectedObjectIds, updateObject, objects, deleteObject, clearSelection, addObject } = whiteboardStore;
   const toolStore = useToolStore();
   const { activeTool } = toolStore;
-  const { userId } = useUser();
   const { startBatch, endBatch } = useActionBatching({ batchTimeout: 100, maxBatchSize: 50 });
-  
-  // Don't render until userId is initialized
-  if (!userId) {
-    return <div className="w-full h-full bg-background" />;
-  }
   
   // Text editing state
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
