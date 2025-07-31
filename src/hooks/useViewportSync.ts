@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useMultiplayer } from './useMultiplayer';
 import { Viewport } from '../types/viewport';
@@ -17,7 +17,6 @@ export const useViewportSync = () => {
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   const isInitialized = useRef(false);
   const lastBroadcastTimestamp = useRef<number>(0);
-  const [userScreenDimensions, setUserScreenDimensions] = useState<Map<string, UserScreenDimensions>>(new Map());
 
   const calculateAvailableSpace = useCallback(() => {
     // Return full screen dimensions for full-screen canvas
@@ -29,34 +28,31 @@ export const useViewportSync = () => {
     };
   }, []);
 
-  const calculateOptimalCanvasSize = useCallback(() => {
+  const calculateOptimalCanvasSize = useCallback((otherUserDimensions?: UserScreenDimensions) => {
     const isConnected = multiplayer?.isConnected && multiplayer?.connectedUserCount > 1;
     
-    if (!isConnected || userScreenDimensions.size <= 1) {
-      // Use full screen if alone or not connected
+    if (!isConnected) {
+      // Use full screen if not connected
       const { availableWidth, availableHeight } = calculateAvailableSpace();
       return { canvasWidth: availableWidth, canvasHeight: availableHeight };
     }
     
-    // Find the smallest screen dimensions across all users
-    let minAvailableWidth = Infinity;
-    let minAvailableHeight = Infinity;
-    
-    userScreenDimensions.forEach((dimensions) => {
-      minAvailableWidth = Math.min(minAvailableWidth, dimensions.availableWidth);
-      minAvailableHeight = Math.min(minAvailableHeight, dimensions.availableHeight);
-    });
-    
-    // Include current user's dimensions
+    // Get current user's dimensions
     const currentDimensions = calculateAvailableSpace();
-    minAvailableWidth = Math.min(minAvailableWidth, currentDimensions.availableWidth);
-    minAvailableHeight = Math.min(minAvailableHeight, currentDimensions.availableHeight);
+    let minAvailableWidth = currentDimensions.availableWidth;
+    let minAvailableHeight = currentDimensions.availableHeight;
+    
+    // If we have other user dimensions, include them in calculation
+    if (otherUserDimensions) {
+      minAvailableWidth = Math.min(minAvailableWidth, otherUserDimensions.availableWidth);
+      minAvailableHeight = Math.min(minAvailableHeight, otherUserDimensions.availableHeight);
+    }
     
     return {
       canvasWidth: Math.max(400, minAvailableWidth),
       canvasHeight: Math.max(300, minAvailableHeight)
     };
-  }, [userScreenDimensions, multiplayer, calculateAvailableSpace]);
+  }, [multiplayer, calculateAvailableSpace]);
 
   const broadcastScreenDimensions = useCallback(() => {
     if (!multiplayer?.serverInstance) return;
@@ -166,45 +162,61 @@ export const useViewportSync = () => {
   const handleReceivedScreenDimensions = useCallback((dimensions: UserScreenDimensions) => {
     console.log('📏 Received screen dimensions from user:', dimensions.userId, dimensions);
     
-    setUserScreenDimensions(prev => {
-      const updated = new Map(prev);
-      updated.set(dimensions.userId, dimensions);
-      
-      console.log('📏 Updated dimensions cache, total users:', updated.size);
-      
-      // Phase 2: Collective recalculation - all users recalculate, but only one broadcasts
-      // Use deterministic selection: user with lexicographically smallest userId becomes authoritative
-      if (multiplayer?.serverInstance?.server?.room) {
-        const sessionId = multiplayer.serverInstance.server.room.sessionId;
-        
-        // Get all connected session IDs and sort them - use the UPDATED dimensions
-        const allSessionIds = Array.from(updated.keys());
-        allSessionIds.push(sessionId); // Include current user
-        allSessionIds.sort();
-        
-        const isAuthoritative = allSessionIds[0] === sessionId;
-        
-        console.log('📏 User authority check:', { 
-          mySessionId: sessionId, 
-          allSessions: allSessionIds, 
-          isAuthoritative,
-          updatedCacheSize: updated.size
-        });
-        
-        // Small delay to ensure all dimension updates are processed
-        setTimeout(() => {
-          if (isAuthoritative) {
-            console.log('📏 Acting as authoritative user - broadcasting new viewport');
-            syncCanvasSizeToRoom();
-          } else {
-            console.log('📏 Non-authoritative user - waiting for viewport update');
-          }
-        }, 100);
-      }
-      
-      return updated;
+    if (!multiplayer?.serverInstance?.server?.room) return;
+    
+    const sessionId = multiplayer.serverInstance.server.room.sessionId;
+    
+    // Get all currently connected users from Colyseus room state
+    const connectedUsers = Array.from(multiplayer.serverInstance.server.room.state.players?.keys() || []);
+    connectedUsers.push(sessionId); // Include current user
+    connectedUsers.sort();
+    
+    const isAuthoritative = connectedUsers[0] === sessionId;
+    
+    console.log('📏 User authority check:', { 
+      mySessionId: sessionId, 
+      allConnectedUsers: connectedUsers, 
+      isAuthoritative,
+      receivedFrom: dimensions.userId
     });
-  }, [syncCanvasSizeToRoom, multiplayer?.serverInstance?.server?.room]);
+    
+    // Immediately recalculate canvas size with the new dimension
+    if (isAuthoritative) {
+      console.log('📏 Acting as authoritative user - recalculating with new dimensions');
+      
+      // Calculate optimal size including the received dimensions
+      const optimalSize = calculateOptimalCanvasSize(dimensions);
+      
+      const newViewport = {
+        ...viewport,
+        canvasWidth: optimalSize.canvasWidth,
+        canvasHeight: optimalSize.canvasHeight
+      };
+      
+      // Update local viewport
+      setViewport(newViewport);
+      
+      // Broadcast the new viewport
+      const timestamp = Date.now();
+      if (timestamp - lastBroadcastTimestamp.current >= 200) {
+        lastBroadcastTimestamp.current = timestamp;
+        
+        try {
+          multiplayer.serverInstance.server.room.send("broadcast", {
+            type: 'viewport_sync',
+            viewport: newViewport,
+            timestamp,
+            source: 'dimension_update'
+          });
+          console.log('📡 Broadcasted viewport update after dimension change:', newViewport);
+        } catch (error) {
+          console.error('Failed to broadcast viewport after dimension update:', error);
+        }
+      }
+    } else {
+      console.log('📏 Non-authoritative user - waiting for viewport update from authority');
+    }
+  }, [multiplayer, calculateOptimalCanvasSize, viewport, setViewport]);
 
   // Initialize canvas size on mount
   useEffect(() => {
@@ -270,16 +282,9 @@ export const useViewportSync = () => {
     }
   }, [multiplayer?.isConnected, broadcastScreenDimensions]);
 
-  // Clean up user dimensions when they disconnect
-  useEffect(() => {
-    if (!multiplayer?.isConnected) {
-      setUserScreenDimensions(new Map());
-    }
-  }, [multiplayer?.isConnected]);
-
   return {
     syncCanvasSizeToRoom,
     handleReceivedViewport,
-    userScreenDimensions: userScreenDimensions.size
+    connectedUserCount: multiplayer?.connectedUserCount || 0
   };
 };
