@@ -969,23 +969,18 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         minSize = { width: minWidth, height: minHeight };
       }
       
-      // Update canvas if minimum changed
+      // Always update canvas to match the true minimum across all users
       const currentViewport = state.viewport;
-      if (currentViewport.canvasWidth !== minSize.width || 
-          currentViewport.canvasHeight !== minSize.height) {
-        console.log('📐 Updating canvas to minimum size:', minSize);
-        return {
-          ...state,
-          userScreenSizes: newUserScreenSizes,
-          viewport: {
-            ...currentViewport,
-            canvasWidth: minSize.width,
-            canvasHeight: minSize.height
-          }
-        };
-      }
-      
-      return { ...state, userScreenSizes: newUserScreenSizes };
+      console.log('📐 Updating canvas to minimum size:', minSize);
+      return {
+        ...state,
+        userScreenSizes: newUserScreenSizes,
+        viewport: {
+          ...currentViewport,
+          canvasWidth: minSize.width,
+          canvasHeight: minSize.height
+        }
+      };
     });
   },
 
