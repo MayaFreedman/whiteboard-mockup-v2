@@ -285,21 +285,19 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
     console.log('✅ Message handlers set up for room:', room.id)
 
-    // Message handlers are set up - state request decisions handled by connectedUserCount effect
-
     // Process any queued actions now that we're connected
     processActionQueue()
 
     return () => {
       console.log('🧹 Cleaning up message-based sync for room:', room.id)
-      room.removeAllListeners('broadcast')
+      room.off('broadcast', handleBroadcastMessage)
       
       if (stateRequestTimeoutRef.current) {
         clearTimeout(stateRequestTimeoutRef.current)
         stateRequestTimeoutRef.current = undefined
       }
     }
-  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId, connectedUserCount])
+  }, [serverInstance?.server?.room, isConnected])
 
   // Send local actions to other clients (with filtering)
   useEffect(() => {
