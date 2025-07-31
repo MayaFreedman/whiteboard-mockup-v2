@@ -72,7 +72,18 @@ export class ServerClass {
               state: room.state ? "has state" : "no state",
             });
 
-            // Set up detailed event logging BEFORE clearing timeout
+            // CRITICAL: Register participant handlers FIRST before any other setup
+            console.log("📝 Registering participantJoined handler IMMEDIATELY...");
+            room.onMessage("participantJoined", (player: any) => {
+              console.log("🎉 RECEIVED participantJoined in server.ts:", player);
+            });
+            
+            console.log("📝 Registering participantLeft handler IMMEDIATELY...");
+            room.onMessage("participantLeft", (data: any) => {
+              console.log("🚪 RECEIVED participantLeft in server.ts:", data);
+            });
+
+            // Set up detailed event logging AFTER critical handlers
             console.log("📡 Setting up room event listeners...");
 
             room.onStateChange.once((state: any) => {
@@ -105,17 +116,6 @@ export class ServerClass {
                 messageKeys: message ? Object.keys(message) : [],
                 messageType: typeof message,
               });
-            });
-
-            // Register critical participant tracking handlers IMMEDIATELY
-            console.log("📝 Registering participantJoined handler in server.ts...");
-            room.onMessage("participantJoined", (player: any) => {
-              console.log("🎉 RECEIVED participantJoined in server.ts:", player);
-            });
-            
-            console.log("📝 Registering participantLeft handler in server.ts...");
-            room.onMessage("participantLeft", (player: any) => {
-              console.log("🚪 RECEIVED participantLeft in server.ts:", player);
             });
 
             room.onMessage("broadcast", (message: any) => {
