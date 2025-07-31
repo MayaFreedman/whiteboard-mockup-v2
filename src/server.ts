@@ -107,6 +107,17 @@ export class ServerClass {
               });
             });
 
+            // Register critical participant tracking handlers IMMEDIATELY
+            console.log("📝 Registering participantJoined handler in server.ts...");
+            room.onMessage("participantJoined", (player: any) => {
+              console.log("🎉 RECEIVED participantJoined in server.ts:", player);
+            });
+            
+            console.log("📝 Registering participantLeft handler in server.ts...");
+            room.onMessage("participantLeft", (player: any) => {
+              console.log("🚪 RECEIVED participantLeft in server.ts:", player);
+            });
+
             room.onMessage("broadcast", (message: any) => {
               console.log("📨 Broadcast message received:", message);
             });

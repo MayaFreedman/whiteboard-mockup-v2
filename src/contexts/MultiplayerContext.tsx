@@ -82,30 +82,29 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       const room = newServerInstance.server.room
       if (room) {
         console.log('👥 Setting up participant tracking for room:', room.id)
-        console.log('🔧 Room object:', room)
         
-        // Track connected users
+        // Track connected users - handlers are now registered in server.ts immediately
         let userCount = 1 // Start with ourselves
         setConnectedUserCount(userCount)
         
-        // Register message handlers immediately
-        console.log('📝 Registering participantJoined handler...')
+        // Override the handlers from server.ts to include our state updates
+        console.log('📝 Overriding participantJoined handler with state updates...')
         room.onMessage('participantJoined', (player: any) => {
-          console.log('🎉 RECEIVED participantJoined message:', player)
+          console.log('🎉 RECEIVED participantJoined message in context:', player)
           userCount++
           console.log('👥 Updated user count to:', userCount)
           setConnectedUserCount(userCount)
         })
         
-        console.log('📝 Registering participantLeft handler...')
+        console.log('📝 Overriding participantLeft handler with state updates...')
         room.onMessage('participantLeft', (player: any) => {
-          console.log('🚪 RECEIVED participantLeft message:', player)
+          console.log('🚪 RECEIVED participantLeft message in context:', player)
           userCount = Math.max(1, userCount - 1) // Never go below 1 (ourselves)
           console.log('👥 Updated user count to:', userCount)
           setConnectedUserCount(userCount)
         })
         
-        console.log('✅ Message handlers registered')
+        console.log('✅ Message handlers overridden with state updates')
       }
 
       console.log('✅ Connection successful!')
