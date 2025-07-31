@@ -108,7 +108,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
         // Broadcast that we joined
         const broadcastJoin = () => {
           console.log('📢 Broadcasting that we joined')
-          serverInstance.sendEvent({
+          room.send('broadcast', {
             type: 'user_joined',
             userId: room.sessionId
           })
@@ -117,20 +117,25 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
           updateUserCount()
         }
         
-        // Broadcast join immediately
-        broadcastJoin()
-        
         // Listen for room leave to broadcast departure
         room.onLeave(() => {
           console.log('📢 Broadcasting that we left')
-          serverInstance.sendEvent({
+          room.send('broadcast', {
             type: 'user_left',
             userId: room.sessionId
           })
         })
+        
+        // Store the broadcast function to call it after connection is complete
+        ;(room as any)._broadcastJoin = broadcastJoin
       }
 
       console.log('✅ Connection successful!')
+      
+      // Now broadcast that we joined (after connection is complete)
+      if (newServerInstance.server.room && (newServerInstance.server.room as any)._broadcastJoin) {
+        (newServerInstance.server.room as any)._broadcastJoin()
+      }
     } catch (error) {
       console.error('❌ Connection failed:', error)
       
