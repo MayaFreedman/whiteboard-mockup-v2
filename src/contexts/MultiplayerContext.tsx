@@ -82,86 +82,51 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       const room = newServerInstance.server.room
       if (room) {
         console.log('👥 Setting up participant tracking for room:', room.id)
-        console.log('🔍 Room object properties:', Object.keys(room))
-        console.log('🔍 Room state:', room.state)
-        console.log('🔍 Room clients count:', (room as any).clients?.size || 'not available')
         
-        // Check if there's a built-in way to get client count
-        const checkUserCount = () => {
-          let userCount = 0
-          
-          // Method 1: Check room.clients (common in Colyseus)
-          if ((room as any).clients) {
-            userCount = (room as any).clients.size || (room as any).clients.length || Object.keys((room as any).clients).length
-            console.log('👥 Method 1 - Room clients count:', userCount)
-          }
-          
-          // Method 2: Check room.state for ACTIVE players only
-          if (room.state) {
-            console.log('🔍 Room state type:', typeof room.state)
-            
-            const state = room.state as any
-            if (state?.players) {
-              // For MapSchema, we need to iterate and check if players are active
-              const players = state.players
-              let activeCount = 0
-              
-              console.log('🔍 Players MapSchema:', players)
-              
-              // Try different ways to count active players
-              if (players.size !== undefined) {
-                // MapSchema has a size property
-                activeCount = players.size
-                console.log('👥 Method 2a - MapSchema size:', activeCount)
-              } else if (typeof players.forEach === 'function') {
-                // Iterate through active players
-                players.forEach((player: any, sessionId: string) => {
-                  console.log('👥 Found active player:', sessionId, player)
-                  activeCount++
-                })
-                console.log('👥 Method 2b - Active players via forEach:', activeCount)
-              } else {
-                // Fallback to Object.keys but filter for active
-                const playerKeys = Object.keys(players)
-                activeCount = playerKeys.filter(key => {
-                  const player = players[key]
-                  return player && (player.connected !== false) // Assume connected unless explicitly false
-                }).length
-                console.log('👥 Method 2c - Filtered active players:', activeCount, 'from total:', playerKeys.length)
-              }
-              
-              if (activeCount > 0) {
-                userCount = activeCount
-              }
-            }
-          }
-          
-          // Method 3: Minimum count check - if we're connected, at least 1
-          if (userCount === 0 && room.sessionId) {
-            userCount = 1 // At least we are connected
-            console.log('👥 Method 3 - Fallback to 1 (we are connected)')
-          }
-          
-          console.log('👥 Final calculated user count:', userCount)
-          setConnectedUserCount(userCount)
+        // Track active users with a Set
+        const activeUsers = new Set<string>()
+        
+        const updateUserCount = () => {
+          const count = activeUsers.size
+          console.log('👥 Active users:', Array.from(activeUsers), 'Count:', count)
+          setConnectedUserCount(count)
         }
         
-        // Check immediately
-        checkUserCount()
-        
-        // Listen for state changes
-        room.onStateChange((state: any) => {
-          console.log('🔄 State changed, rechecking user count')
-          checkUserCount()
+        // Listen for user join/leave broadcasts
+        room.onMessage('broadcast', (message: any) => {
+          if (message.type === 'user_joined') {
+            console.log('👥 User joined:', message.userId)
+            activeUsers.add(message.userId)
+            updateUserCount()
+          } else if (message.type === 'user_left') {
+            console.log('👥 User left:', message.userId)
+            activeUsers.delete(message.userId)
+            updateUserCount()
+          }
         })
         
-        // Listen for any join/leave events
-        room.onMessage('*', (type: string, message: any) => {
-          console.log('📨 Received message type:', type, 'data:', message)
-          if (type.includes('join') || type.includes('leave') || type.includes('user') || type.includes('player')) {
-            console.log('👥 User-related message detected, rechecking count')
-            checkUserCount()
-          }
+        // Broadcast that we joined
+        const broadcastJoin = () => {
+          console.log('📢 Broadcasting that we joined')
+          serverInstance.sendEvent({
+            type: 'user_joined',
+            userId: room.sessionId
+          })
+          // Add ourselves to the active users
+          activeUsers.add(room.sessionId)
+          updateUserCount()
+        }
+        
+        // Broadcast join immediately
+        broadcastJoin()
+        
+        // Listen for room leave to broadcast departure
+        room.onLeave(() => {
+          console.log('📢 Broadcasting that we left')
+          serverInstance.sendEvent({
+            type: 'user_left',
+            userId: room.sessionId
+          })
         })
       }
 
