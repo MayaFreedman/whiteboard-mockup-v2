@@ -113,4 +113,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Custom placeholder color for immediate text editing */
+  textarea[data-immediate-text="true"]::placeholder {
+    color: var(--placeholder-color);
+    opacity: 1;
+  }
 }

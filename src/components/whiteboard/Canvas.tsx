@@ -842,7 +842,7 @@ export const Canvas: React.FC = () => {
       {isImmediateTextEditing && immediateTextPosition && (
         <textarea
           data-immediate-text="true"
-          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
+          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
           style={{
             left: immediateTextPosition.x,
             top: immediateTextPosition.y,
@@ -873,8 +873,10 @@ export const Canvas: React.FC = () => {
             WebkitTextSizeAdjust: '100%',
             boxSizing: 'border-box',
             background: 'transparent', // Match canvas text - no background
-            minHeight: (toolStore.toolSettings.fontSize || 16) * 1.2 + 'px'
-          }}
+            minHeight: (toolStore.toolSettings.fontSize || 16) * 1.2 + 'px',
+            // Set placeholder color to match stroke color with reduced opacity
+            '--placeholder-color': `${toolStore.toolSettings.strokeColor || '#000000'}B3`
+          } as React.CSSProperties & { '--placeholder-color': string }}
           value={immediateTextContent}
           onChange={handleImmediateTextChange}
           onBlur={handleImmediateTextComplete}
