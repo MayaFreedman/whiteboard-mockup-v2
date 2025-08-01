@@ -28,6 +28,7 @@ export const useMultiplayerSync = () => {
   const { userId } = useUser()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const hasReceivedInitialStateRef = useRef(false)
+  const hasEverBeenInRoomRef = useRef(false)
   const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
 
   // If no multiplayer context, return null values (graceful degradation)
@@ -192,17 +193,20 @@ export const useMultiplayerSync = () => {
   useEffect(() => {
     if (!isReadyToSend()) return
     
-    console.log('🔄 connectedUserCount changed:', connectedUserCount, 'hasReceived:', hasReceivedInitialStateRef.current)
+    console.log('🔄 connectedUserCount changed:', connectedUserCount, 'hasReceived:', hasReceivedInitialStateRef.current, 'hasEverBeenInRoom:', hasEverBeenInRoomRef.current)
     
-    // Only request state if we haven't received it yet and there are other users
-    if (!hasReceivedInitialStateRef.current && connectedUserCount > 1) {
-      console.log('📤 Requesting initial state due to user count change')
+    // Only request state if:
+    // 1. We haven't received initial state yet
+    // 2. There are other users (count > 1) 
+    // 3. We haven't been in room before (this is our first time seeing multiple users)
+    if (!hasReceivedInitialStateRef.current && connectedUserCount > 1 && !hasEverBeenInRoomRef.current) {
+      console.log('📤 Requesting initial state - new user joining')
+      hasEverBeenInRoomRef.current = true // Mark that we've now been in a room with others
       // Small delay to ensure room is fully initialized
       setTimeout(() => {
         requestInitialState()
       }, 100)
     }
-    // Note: We don't set hasReceived=true when alone - let it stay false until we actually receive state
   }, [connectedUserCount, isConnected, serverInstance])
 
   /**
@@ -211,6 +215,7 @@ export const useMultiplayerSync = () => {
   useEffect(() => {
     if (!isConnected) {
       hasReceivedInitialStateRef.current = false
+      hasEverBeenInRoomRef.current = false
       setIsWaitingForInitialState(false)
     }
   }, [isConnected])
