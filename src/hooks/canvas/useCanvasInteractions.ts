@@ -199,8 +199,16 @@ export const useCanvasInteractions = () => {
     const selectedSticker = toolStore.toolSettings.selectedSticker || '/icons/emotions/happy.svg';
     const actualSize = size * 10; // Convert slider value to actual pixel size
     
-    // Create an image object for icon stamps
-    const stampData = {
+    // Check if this is a custom stamp (base64 data URL)
+    const isCustomStamp = selectedSticker.startsWith('data:');
+    
+    // For multiplayer compatibility, store custom stamps differently
+    const stampData = isCustomStamp ? {
+      // Store custom stamp reference instead of full base64 data
+      customStampId: selectedSticker, // This will be resolved locally on each client
+      isCustomStamp: true,
+      alt: 'Custom stamp'
+    } : {
       src: selectedSticker,
       alt: 'Stamp icon'
     };

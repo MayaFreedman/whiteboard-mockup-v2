@@ -375,9 +375,20 @@ export const useCanvasRendering = (
       }
 
       case 'image': {
-        if (obj.data?.src && obj.width && obj.height) {
-          const imageData = obj.data as ImageData;
-          const cachedImage = imageCache.current.get(imageData.src);
+        const imageData = obj.data as any;
+        let imageSrc: string | null = null;
+        
+        // Handle custom stamps vs regular stamps
+        if (imageData?.isCustomStamp && imageData?.customStampId) {
+          // For custom stamps, use the customStampId directly as src
+          imageSrc = imageData.customStampId;
+        } else if (imageData?.src) {
+          // For regular stamps, use src
+          imageSrc = imageData.src;
+        }
+        
+        if (imageSrc && obj.width && obj.height) {
+          const cachedImage = imageCache.current.get(imageSrc);
           
           if (cachedImage) {
             // Draw immediately from cache - no blinking!
@@ -390,7 +401,7 @@ export const useCanvasRendering = (
             );
           } else {
             // Load image asynchronously and trigger redraw when ready
-            getOrLoadImage(imageData.src).then(() => {
+            getOrLoadImage(imageSrc).then(() => {
               // Only redraw if canvas still exists
               if (canvas) {
                 redrawCanvas();
