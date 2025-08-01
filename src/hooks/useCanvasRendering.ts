@@ -93,6 +93,9 @@ export const useCanvasRendering = (
   const failedImages = useRef<Set<string>>(new Set());
   // Debounce redraw to prevent excessive calls
   const redrawTimeoutRef = useRef<number | null>(null);
+  // Circuit breaker to prevent infinite loops
+  const redrawCounter = useRef<number>(0);
+  const redrawResetTimer = useRef<number | null>(null);
 
   /**
    * Loads and caches an image for synchronous rendering
@@ -420,7 +423,7 @@ export const useCanvasRendering = (
             getOrLoadImage(imageSrc).then(() => {
               // Only redraw if canvas still exists
               if (canvas) {
-                redrawCanvas();
+                redrawCanvas(false, `image-loaded:${imageSrc.slice(-20)}`);
               }
             }).catch(error => {
               console.warn('Failed to load image for rendering:', error);
@@ -429,7 +432,7 @@ export const useCanvasRendering = (
               if (fallbackSrc && !imageCache.current.has(fallbackSrc) && !failedImages.current.has(fallbackSrc)) {
                 getOrLoadImage(fallbackSrc).then(() => {
                   if (canvas) {
-                    redrawCanvas();
+                    redrawCanvas(false, `fallback-loaded:${fallbackSrc.slice(-20)}`);
                   }
                 }).catch(fallbackError => {
                   console.error('Failed to load fallback image:', fallbackError);
@@ -866,10 +869,34 @@ export const useCanvasRendering = (
   const lastRedrawTime = useRef<number>(0);
   const REDRAW_THROTTLE_MS = 16; // 60fps throttling
 
-  const redrawCanvas = useCallback((immediate = false) => {
+  const redrawCanvas = useCallback((immediate = false, source = 'unknown') => {
     if (!canvas) return;
 
+    // Circuit breaker: prevent infinite loops
+    redrawCounter.current++;
+    
+    // Reset counter every 2 seconds
+    if (redrawResetTimer.current) {
+      window.clearTimeout(redrawResetTimer.current);
+    }
+    redrawResetTimer.current = window.setTimeout(() => {
+      redrawCounter.current = 0;
+    }, 2000);
+    
+    // If too many redraws in short time, stop and log error
+    if (redrawCounter.current > 50) {
+      console.error('🚨 INFINITE REDRAW LOOP DETECTED - CIRCUIT BREAKER ACTIVATED', {
+        source,
+        count: redrawCounter.current,
+        objectCount: Object.keys(objects).length,
+        failedImages: Array.from(failedImages.current),
+        cachedImages: Array.from(imageCache.current.keys())
+      });
+      return;
+    }
+
     const now = Date.now();
+    console.log(`🔍 REDRAW #${redrawCounter.current} TRIGGERED BY: ${source}`);
     
     // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
     const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
@@ -994,7 +1021,7 @@ export const useCanvasRendering = (
 
   // Auto-redraw when state changes
   useEffect(() => {
-    redrawCanvas();
+    redrawCanvas(false, 'state-change');
   }, [redrawCanvas]);
 
   // Cleanup throttle timeout on unmount
