@@ -667,88 +667,82 @@ export const Canvas: React.FC = () => {
   return (
     <div 
       ref={containerRef}
-      className="w-full h-full relative bg-background overflow-hidden"
+      className="w-full h-full relative bg-muted/10 overflow-hidden"
       tabIndex={0}
       style={{ outline: 'none' }}
     >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0"
+      {/* Whiteboard area with subtle styling */}
+      <div 
+        className="absolute top-0 left-0 bg-background"
         style={{
           width: activeWhiteboardSize.width,
           height: activeWhiteboardSize.height,
-          cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
-          touchAction: 'none', // Prevent default touch behaviors
-          border: '2px solid hsl(var(--border))',
-          backgroundColor: 'hsl(var(--background))'
+          boxShadow: hasMultipleUsers 
+            ? '0 4px 20px -2px hsl(var(--border) / 0.3), 0 0 0 1px hsl(var(--border) / 0.2)' 
+            : 'none',
+          borderRadius: hasMultipleUsers ? '8px' : '0px'
         }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseLeave}
-        onDoubleClick={handleDoubleClick}
-      />
+      >
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0"
+          style={{
+            width: activeWhiteboardSize.width,
+            height: activeWhiteboardSize.height,
+            cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
+            touchAction: 'none', // Prevent default touch behaviors
+            backgroundColor: 'hsl(var(--background))',
+            borderRadius: hasMultipleUsers ? '8px' : '0px'
+          }}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseLeave}
+          onDoubleClick={handleDoubleClick}
+        />
+      </div>
       
       {/* Grey overlay for non-whiteboard areas - only show in multiplayer */}
       {hasMultipleUsers && (
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `
-              linear-gradient(to right, 
-                hsl(var(--muted) / 0.7) 0%, 
-                hsl(var(--muted) / 0.7) ${activeWhiteboardSize.width}px,
-                hsl(var(--muted) / 0.9) ${activeWhiteboardSize.width}px,
-                hsl(var(--muted) / 0.9) 100%
-              ),
-              linear-gradient(to bottom,
-                transparent 0%,
-                transparent ${activeWhiteboardSize.height}px,
-                hsl(var(--muted) / 0.9) ${activeWhiteboardSize.height}px,
-                hsl(var(--muted) / 0.9) 100%
-              )
-            `,
-            backgroundBlendMode: 'multiply'
-          }}
-        >
-          {/* Pattern overlay for grey areas */}
+        <>
+          {/* Right side overlay */}
           <div 
-            className="absolute"
+            className="absolute top-0 bg-muted/40 pointer-events-none"
             style={{
               left: activeWhiteboardSize.width,
-              top: 0,
               right: 0,
-              bottom: 0,
+              height: '100%',
               backgroundImage: `
                 repeating-linear-gradient(
                   45deg,
                   transparent,
-                  transparent 10px,
-                  hsl(var(--border) / 0.3) 10px,
-                  hsl(var(--border) / 0.3) 20px
+                  transparent 20px,
+                  hsl(var(--border) / 0.1) 20px,
+                  hsl(var(--border) / 0.1) 40px
                 )
               `
             }}
           />
+          
+          {/* Bottom overlay */}
           <div 
-            className="absolute"
+            className="absolute left-0 bg-muted/40 pointer-events-none"
             style={{
-              left: 0,
               top: activeWhiteboardSize.height,
-              right: 0,
               bottom: 0,
+              width: '100%',
               backgroundImage: `
                 repeating-linear-gradient(
                   45deg,
                   transparent,
-                  transparent 10px,
-                  hsl(var(--border) / 0.3) 10px,
-                  hsl(var(--border) / 0.3) 20px
+                  transparent 20px,
+                  hsl(var(--border) / 0.1) 20px,
+                  hsl(var(--border) / 0.1) 40px
                 )
               `
             }}
           />
-        </div>
+        </>
       )}
       
       {/* Text Editor Overlay - Positioned to match canvas text exactly */}
