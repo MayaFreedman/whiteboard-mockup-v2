@@ -98,48 +98,88 @@ export const useCanvasRendering = (
   const redrawResetTimer = useRef<number | null>(null);
 
   /**
+   * Normalizes image path for consistent cache keys
+   */
+  const normalizeImagePath = useCallback((path: string): string => {
+    // Remove any URL encoding and normalize path separators
+    const decoded = decodeURIComponent(path);
+    return decoded.replace(/\\/g, '/');
+  }, []);
+
+  /**
    * Loads and caches an image for synchronous rendering
    */
   const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
+    const normalizedSrc = normalizeImagePath(src);
+    
+    // Add detailed cache lookup logging
+    console.log(`🔍 Cache lookup for: "${normalizedSrc.slice(-30)}"`);
+    console.log(`📦 Cache has ${imageCache.current.size} images:`, 
+      Array.from(imageCache.current.keys()).map(k => k.slice(-20)));
+    
     // Return cached image if available
-    if (imageCache.current.has(src)) {
-      return imageCache.current.get(src)!;
+    if (imageCache.current.has(normalizedSrc)) {
+      console.log(`✨ Cache HIT for: ${normalizedSrc.slice(-20)}`);
+      return imageCache.current.get(normalizedSrc)!;
     }
     
+    // Check alternative key formats for cache validation
+    const alternativeKeys = [
+      src, // Original src
+      src.replace(/\\/g, '/'), // Forward slashes
+      encodeURIComponent(src), // URL encoded
+      decodeURIComponent(src) // URL decoded
+    ];
+    
+    for (const altKey of alternativeKeys) {
+      if (imageCache.current.has(altKey) && altKey !== normalizedSrc) {
+        console.log(`✨ Cache HIT with alternative key: ${altKey.slice(-20)} -> ${normalizedSrc.slice(-20)}`);
+        const img = imageCache.current.get(altKey)!;
+        // Store under normalized key as well
+        imageCache.current.set(normalizedSrc, img);
+        return img;
+      }
+    }
+    
+    console.log(`❌ Cache MISS for: ${normalizedSrc.slice(-20)}`);
+    
     // Don't retry failed images to prevent infinite loops
-    if (failedImages.current.has(src)) {
+    if (failedImages.current.has(normalizedSrc)) {
+      console.log(`🚫 Skipping failed image: ${normalizedSrc.slice(-20)}`);
       return null;
     }
     
     // Prevent duplicate loading requests
-    if (loadingImages.current.has(src)) {
+    if (loadingImages.current.has(normalizedSrc)) {
+      console.log(`⏳ Already loading: ${normalizedSrc.slice(-20)}`);
       return null;
     }
     
-    loadingImages.current.add(src);
+    console.log(`📥 Starting load for: ${normalizedSrc.slice(-20)}`);
+    loadingImages.current.add(normalizedSrc);
     
     try {
       const img = new Image();
       
       return new Promise((resolve, reject) => {
         img.onload = () => {
-          // Cache the loaded image
-          imageCache.current.set(src, img);
-          loadingImages.current.delete(src);
-          console.log(`✅ Regular Image cached: ${src.slice(-20)}`);
+          // Cache the loaded image with normalized key
+          imageCache.current.set(normalizedSrc, img);
+          loadingImages.current.delete(normalizedSrc);
+          console.log(`✅ Regular Image cached with key: "${normalizedSrc.slice(-30)}"`);
           resolve(img);
         };
         
         img.onerror = () => {
-          loadingImages.current.delete(src);
-          failedImages.current.add(src); // Mark as failed to prevent retries
-          console.warn('Failed to load image:', src);
-          reject(new Error(`Failed to load image: ${src}`));
+          loadingImages.current.delete(normalizedSrc);
+          failedImages.current.add(normalizedSrc); // Mark as failed to prevent retries
+          console.warn('Failed to load image:', normalizedSrc);
+          reject(new Error(`Failed to load image: ${normalizedSrc}`));
         };
         
         // Handle SVG files by converting to blob URL
-        if (src.endsWith('.svg')) {
-          fetch(src)
+        if (normalizedSrc.endsWith('.svg')) {
+          fetch(normalizedSrc)
             .then(response => response.text())
             .then(svgText => {
               const blob = new Blob([svgText], { type: 'image/svg+xml' });
@@ -148,36 +188,36 @@ export const useCanvasRendering = (
               
               // Clean up blob URL after image loads
               img.onload = () => {
-                imageCache.current.set(src, img); // Cache using original src, not blob URL
-                loadingImages.current.delete(src);
+                imageCache.current.set(normalizedSrc, img); // Cache using normalized src
+                loadingImages.current.delete(normalizedSrc);
                 URL.revokeObjectURL(url);
-                console.log(`✅ SVG Image cached: ${src.slice(-20)}`);
+                console.log(`✅ SVG Image cached with key: "${normalizedSrc.slice(-30)}"`);
                 resolve(img);
               };
               
               img.onerror = () => {
-                loadingImages.current.delete(src);
-                failedImages.current.add(src);
+                loadingImages.current.delete(normalizedSrc);
+                failedImages.current.add(normalizedSrc);
                 URL.revokeObjectURL(url);
-                console.warn('Failed to load SVG image:', src);
-                reject(new Error(`Failed to load SVG image: ${src}`));
+                console.warn('Failed to load SVG image:', normalizedSrc);
+                reject(new Error(`Failed to load SVG image: ${normalizedSrc}`));
               };
             })
             .catch(error => {
-              loadingImages.current.delete(src);
-              failedImages.current.add(src); // Mark as failed to prevent retries
+              loadingImages.current.delete(normalizedSrc);
+              failedImages.current.add(normalizedSrc); // Mark as failed to prevent retries
               console.warn('Failed to fetch SVG:', error);
               reject(error);
             });
         } else {
-          img.src = src;
+          img.src = normalizedSrc;
         }
       });
     } catch (error) {
-      loadingImages.current.delete(src);
+      loadingImages.current.delete(normalizedSrc);
       return null;
     }
-  }, []);
+  }, [normalizeImagePath]);
 
   /**
    * Sets up canvas for crisp rendering with proper pixel alignment
@@ -417,7 +457,8 @@ export const useCanvasRendering = (
         }
         
         if (imageSrc && obj.width && obj.height) {
-          const cachedImage = imageCache.current.get(imageSrc);
+          const normalizedSrc = normalizeImagePath(imageSrc);
+          const cachedImage = imageCache.current.get(normalizedSrc);
           
           if (cachedImage) {
             // Image is ready, render it
@@ -439,7 +480,7 @@ export const useCanvasRendering = (
               console.warn('Failed to load image for rendering:', error);
               
               // If it's a custom stamp and we have a fallback, try loading that ONCE
-              if (fallbackSrc && !imageCache.current.has(fallbackSrc) && !failedImages.current.has(fallbackSrc)) {
+              if (fallbackSrc && !imageCache.current.has(normalizeImagePath(fallbackSrc)) && !failedImages.current.has(normalizeImagePath(fallbackSrc))) {
                 getOrLoadImage(fallbackSrc).then(() => {
                   if (canvas) {
                     redrawCanvas(false, `fallback-loaded:${fallbackSrc.slice(-20)}`);
@@ -452,17 +493,20 @@ export const useCanvasRendering = (
             });
             
             // If we have a fallback and the main image failed, try rendering the fallback
-            if (fallbackSrc && imageCache.current.has(fallbackSrc)) {
-              const fallbackImage = imageCache.current.get(fallbackSrc)!;
-              ctx.globalAlpha = 0.7; // Slightly transparent to indicate fallback
-              ctx.drawImage(
-                fallbackImage, 
-                Math.round(obj.x), 
-                Math.round(obj.y), 
-                Math.round(obj.width), 
-                Math.round(obj.height)
-              );
-              ctx.globalAlpha = 1;
+            if (fallbackSrc) {
+              const normalizedFallbackSrc = normalizeImagePath(fallbackSrc);
+              if (imageCache.current.has(normalizedFallbackSrc)) {
+                const fallbackImage = imageCache.current.get(normalizedFallbackSrc)!;
+                ctx.globalAlpha = 0.7; // Slightly transparent to indicate fallback
+                ctx.drawImage(
+                  fallbackImage, 
+                  Math.round(obj.x), 
+                  Math.round(obj.y), 
+                  Math.round(obj.width), 
+                  Math.round(obj.height)
+                );
+                ctx.globalAlpha = 1;
+              }
             }
           }
         }
