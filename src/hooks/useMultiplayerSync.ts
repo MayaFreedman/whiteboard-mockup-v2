@@ -29,6 +29,7 @@ export const useMultiplayerSync = () => {
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const hasReceivedInitialStateRef = useRef(false)
   const hasEverBeenInRoomRef = useRef(false)
+  const hasRequestedStateRef = useRef(false)
   const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
 
   // If no multiplayer context, return null values (graceful degradation)
@@ -54,11 +55,12 @@ export const useMultiplayerSync = () => {
    * Request initial state from other users (simplified for room join only)
    */
   const requestInitialState = () => {
-    if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
+    if (!isReadyToSend() || hasReceivedInitialStateRef.current || hasRequestedStateRef.current) {
       return
     }
 
     console.log('📤 Sending initial state request...')
+    hasRequestedStateRef.current = true
     setIsWaitingForInitialState(true)
     
     try {
@@ -66,6 +68,7 @@ export const useMultiplayerSync = () => {
     } catch (error) {
       console.error('❌ Failed to send state request:', error)
       hasReceivedInitialStateRef.current = true
+      hasRequestedStateRef.current = false
       setIsWaitingForInitialState(false)
     }
   }
@@ -193,13 +196,14 @@ export const useMultiplayerSync = () => {
   useEffect(() => {
     if (!isReadyToSend()) return
     
-    console.log('🔄 connectedUserCount changed:', connectedUserCount, 'hasReceived:', hasReceivedInitialStateRef.current, 'hasEverBeenInRoom:', hasEverBeenInRoomRef.current)
+    console.log('🔄 connectedUserCount changed:', connectedUserCount, 'hasReceived:', hasReceivedInitialStateRef.current, 'hasEverBeenInRoom:', hasEverBeenInRoomRef.current, 'hasRequested:', hasRequestedStateRef.current)
     
     // Only request state if:
     // 1. We haven't received initial state yet
     // 2. There are other users (count > 1) 
     // 3. We haven't been in room before (this is our first time seeing multiple users)
-    if (!hasReceivedInitialStateRef.current && connectedUserCount > 1 && !hasEverBeenInRoomRef.current) {
+    // 4. We haven't already requested state
+    if (!hasReceivedInitialStateRef.current && connectedUserCount > 1 && !hasEverBeenInRoomRef.current && !hasRequestedStateRef.current) {
       console.log('📤 Requesting initial state - new user joining')
       hasEverBeenInRoomRef.current = true // Mark that we've now been in a room with others
       // Small delay to ensure room is fully initialized
@@ -216,6 +220,7 @@ export const useMultiplayerSync = () => {
     if (!isConnected) {
       hasReceivedInitialStateRef.current = false
       hasEverBeenInRoomRef.current = false
+      hasRequestedStateRef.current = false
       setIsWaitingForInitialState(false)
     }
   }, [isConnected])
