@@ -18,7 +18,7 @@ interface TextPropertiesPanelProps {
 
 export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ selectedObjectId }) => {
   const { objects, updateObject } = useWhiteboardStore();
-  const { toolSettings, updateToolSettings } = useToolStore();
+  const { toolSettings, updateToolSettings, getActiveColors } = useToolStore();
   const { userId } = useUser();
   const obj = objects[selectedObjectId];
   
@@ -191,7 +191,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
       <div className="space-y-2">
         <Label className="text-sm font-medium">Text Color</Label>
         <div className="flex gap-1 flex-wrap">
-          {['#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'].map(color => (
+          {getActiveColors().map(color => (
             <button
               key={color}
               className={`w-6 h-6 rounded border-2 ${obj.stroke === color ? 'border-primary' : 'border-border'}`}
