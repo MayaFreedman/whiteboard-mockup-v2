@@ -26,6 +26,9 @@ export interface WhiteboardStore {
   
   // Track object relationships for conflict resolution
   objectRelationships: Map<string, { originalId?: string; segmentIds?: string[] }>;
+  
+  // Track processed batch IDs to prevent duplicate processing
+  processedBatchIds: Set<string>;
 
   // Action recording
   recordAction: (action: WhiteboardAction) => void;
@@ -128,6 +131,9 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   userActionHistories: new Map(),
   userHistoryIndices: new Map(),
   objectRelationships: new Map(),
+  
+  // Track processed batch IDs to prevent duplicate processing
+  processedBatchIds: new Set(),
 
   // Initialize currentBatch
   currentBatch: {
@@ -648,7 +654,18 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       case 'BATCH_UPDATE':
         // Handle batch updates by processing each individual action
         if (action.payload.actions && Array.isArray(action.payload.actions)) {
-          console.log('🔄 Processing remote BATCH_UPDATE with', action.payload.actions.length, 'actions');
+          // Check for duplicate batch processing
+          if (get().processedBatchIds.has(action.id)) {
+            console.log('🚫 Skipping duplicate BATCH_UPDATE:', action.id.slice(0, 8));
+            return;
+          }
+          
+          // Mark this batch as processed
+          set((state) => ({
+            processedBatchIds: new Set(state.processedBatchIds).add(action.id)
+          }));
+          
+          console.log('🔄 Processing remote BATCH_UPDATE with', action.payload.actions.length, 'actions, ID:', action.id.slice(0, 8));
           get().batchUpdate(action.payload.actions);
           return; // Don't add the batch action itself to history
         }
@@ -853,10 +870,22 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   batchUpdate: (actions) => {
     // Apply batch of actions without triggering sync
     console.log('🔄 Applying batch update:', actions.length, 'actions');
+    console.log('🔄 Action types in batch:', actions.map(a => a.type).join(', '));
     
     // Apply each action directly without setting lastAction
     actions.forEach(action => {
       switch (action.type) {
+        case 'ADD_OBJECT':
+          if (action.payload.object) {
+            set((state) => ({
+              objects: {
+                ...state.objects,
+                [action.payload.object.id]: action.payload.object,
+              },
+            }));
+          }
+          break;
+          
         case 'UPDATE_OBJECT':
           if (action.payload.id && action.payload.updates) {
             set((state) => ({
@@ -870,7 +899,72 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             }));
           }
           break;
-        // Add other action types as needed
+          
+        case 'DELETE_OBJECT':
+          if (action.payload.id) {
+            set((state) => {
+              const newObjects = { ...state.objects };
+              delete newObjects[action.payload.id];
+              return {
+                objects: newObjects,
+                selectedObjectIds: state.selectedObjectIds.filter((objId) => objId !== action.payload.id),
+              };
+            });
+          }
+          break;
+          
+        case 'CLEAR_CANVAS':
+          set({ objects: {}, selectedObjectIds: [] });
+          break;
+          
+        case 'ERASE_PATH':
+          if (action.payload.originalObjectId && action.payload.resultingSegments) {
+            const { originalObjectId, resultingSegments } = action.payload;
+            const originalObject = get().objects[originalObjectId];
+            
+            if (originalObject) {
+              // Extract brush metadata from the action payload if available
+              const originalObjectMetadata = (action as any).payload.originalObjectMetadata || {
+                brushType: originalObject.data?.brushType,
+                stroke: originalObject.stroke,
+                strokeWidth: originalObject.strokeWidth,
+                opacity: originalObject.opacity,
+                fill: originalObject.fill
+              };
+              
+              console.log('🎨 Processing batched ERASE_PATH with brush metadata:', {
+                originalId: originalObjectId.slice(0, 8),
+                brushType: originalObjectMetadata.brushType,
+                segmentCount: resultingSegments.length
+              });
+              
+              if (resultingSegments.length === 0) {
+                // Remove the object entirely
+                set((state) => {
+                  const newObjects = { ...state.objects };
+                  delete newObjects[originalObjectId];
+                  return {
+                    objects: newObjects,
+                    selectedObjectIds: state.selectedObjectIds.filter((id) => id !== originalObjectId),
+                  };
+                });
+              } else {
+                // Update with erased segments
+                set((state) => ({
+                  objects: {
+                    ...state.objects,
+                    [originalObjectId]: {
+                      ...originalObject,
+                      data: resultingSegments.join(' '),
+                      updatedAt: Date.now(),
+                    },
+                  },
+                }));
+              }
+            }
+          }
+          break;
+          
         default:
           console.warn('Unhandled action type in batchUpdate:', action.type);
       }
