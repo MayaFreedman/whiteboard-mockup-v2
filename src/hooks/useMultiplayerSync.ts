@@ -27,11 +27,7 @@ export const useMultiplayerSync = () => {
   const whiteboardStore = useWhiteboardStore()
   const { userId } = useUser()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
-  const actionQueueRef = useRef<WhiteboardAction[]>([])
-  const stateRequestTimeoutRef = useRef<NodeJS.Timeout>()
   const hasReceivedInitialStateRef = useRef(false)
-  const stateRequestAttemptsRef = useRef(0)
-  const maxStateRequestAttempts = 3
   const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
 
   // If no multiplayer context, return null values (graceful degradation)
@@ -54,59 +50,21 @@ export const useMultiplayerSync = () => {
   }
 
   /**
-   * Process queued actions when connection becomes ready
-   */
-  const processActionQueue = () => {
-    if (actionQueueRef.current.length > 0 && isReadyToSend()) {
-      const actionsToSend = [...actionQueueRef.current.filter(action => shouldSyncAction(action, whiteboardStore))]
-      actionQueueRef.current = []
-      
-      actionsToSend.forEach(action => {
-        try {
-          sendWhiteboardAction(action)
-          sentActionIdsRef.current.add(action.id)
-        } catch (error) {
-          console.error('❌ Failed to send queued action:', action.id, error)
-        }
-      })
-    }
-  }
-
-  /**
-   * Request initial state from other users with retry logic
+   * Request initial state from other users (simplified for room join only)
    */
   const requestInitialState = () => {
     if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
       return
     }
 
-    if (stateRequestAttemptsRef.current === 0) {
-      setIsWaitingForInitialState(true)
-    }
-
-    stateRequestAttemptsRef.current += 1
+    setIsWaitingForInitialState(true)
     
     try {
       serverInstance.requestInitialState()
-      
-      const timeoutDuration = 3000 + (stateRequestAttemptsRef.current * 2000)
-      stateRequestTimeoutRef.current = setTimeout(() => {
-        if (stateRequestAttemptsRef.current < maxStateRequestAttempts) {
-          requestInitialState()
-        } else {
-          hasReceivedInitialStateRef.current = true
-          setIsWaitingForInitialState(false)
-        }
-      }, timeoutDuration)
-      
     } catch (error) {
       console.error('❌ Failed to send state request:', error)
-      if (stateRequestAttemptsRef.current < maxStateRequestAttempts) {
-        setTimeout(() => requestInitialState(), 1000)
-      } else {
-        hasReceivedInitialStateRef.current = true
-        setIsWaitingForInitialState(false)
-      }
+      hasReceivedInitialStateRef.current = true
+      setIsWaitingForInitialState(false)
     }
   }
 
@@ -141,11 +99,6 @@ export const useMultiplayerSync = () => {
         if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
           hasReceivedInitialStateRef.current = true
           setIsWaitingForInitialState(false)
-          
-          if (stateRequestTimeoutRef.current) {
-            clearTimeout(stateRequestTimeoutRef.current)
-            stateRequestTimeoutRef.current = undefined
-          }
           
           // Apply received state
           if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
@@ -199,31 +152,13 @@ export const useMultiplayerSync = () => {
 
     room.onMessage('broadcast', handleBroadcastMessage)
 
-    // Request initial state if other users are present
-    if (!hasReceivedInitialStateRef.current) {
-      if (connectedUserCount > 1) {
-        stateRequestAttemptsRef.current = 0
-        requestInitialState()
-      } else {
-        hasReceivedInitialStateRef.current = true
-        setIsWaitingForInitialState(false)
-      }
-    }
-
-    processActionQueue()
-
     return () => {
       room.onMessage('broadcast', () => {})
-      
-      if (stateRequestTimeoutRef.current) {
-        clearTimeout(stateRequestTimeoutRef.current)
-        stateRequestTimeoutRef.current = undefined
-      }
     }
   }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId, connectedUserCount])
 
   /**
-   * Send local actions to other clients (with filtering)
+   * Send local actions to other clients (real-time sync)
    */
   useEffect(() => {
     const unsubscribe = useWhiteboardStore.subscribe(
@@ -247,10 +182,7 @@ export const useMultiplayerSync = () => {
               }
             } catch (error) {
               console.error('❌ Failed to send action:', state.lastAction.id, error)
-              actionQueueRef.current.push(state.lastAction)
             }
-          } else {
-            actionQueueRef.current.push(state.lastAction)
           }
         }
       }
@@ -260,21 +192,31 @@ export const useMultiplayerSync = () => {
   }, [sendWhiteboardAction])
 
   /**
-   * Process queue when connection state changes
+   * Request initial state when user count changes (room join scenario)
    */
   useEffect(() => {
-    processActionQueue()
-  }, [serverInstance, isConnected])
+    if (!isReadyToSend()) return
+    
+    // Only request state if we haven't received it yet and there are other users
+    if (!hasReceivedInitialStateRef.current && connectedUserCount > 1) {
+      // Small delay to ensure room is fully initialized
+      setTimeout(() => {
+        requestInitialState()
+      }, 100)
+    } else if (connectedUserCount <= 1) {
+      // If we're alone, mark as received to stop waiting
+      hasReceivedInitialStateRef.current = true
+      setIsWaitingForInitialState(false)
+    }
+  }, [connectedUserCount, isConnected, serverInstance])
 
-  // Reset state sync flag when disconnecting
+  /**
+   * Reset state sync flags when disconnecting
+   */
   useEffect(() => {
     if (!isConnected) {
       hasReceivedInitialStateRef.current = false
       setIsWaitingForInitialState(false)
-      if (stateRequestTimeoutRef.current) {
-        clearTimeout(stateRequestTimeoutRef.current)
-        stateRequestTimeoutRef.current = undefined
-      }
     }
   }, [isConnected])
 
