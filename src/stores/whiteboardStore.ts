@@ -852,11 +852,23 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   
   batchUpdate: (actions) => {
     // Apply batch of actions without triggering sync
-    console.log('🔄 Applying batch update:', actions.length, 'actions');
+    console.log('🔄 Applying batch update:', actions.length, 'actions', 'types:', actions.map(a => a.type));
     
     // Apply each action directly without setting lastAction
     actions.forEach(action => {
+      console.log('🔄 Processing action in batch:', action.type, action.id);
       switch (action.type) {
+        case 'ADD_OBJECT':
+          if (action.payload.object) {
+            set((state) => ({
+              objects: {
+                ...state.objects,
+                [action.payload.object.id]: action.payload.object,
+              },
+            }));
+          }
+          break;
+          
         case 'UPDATE_OBJECT':
           if (action.payload.id && action.payload.updates) {
             set((state) => ({
@@ -870,9 +882,114 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             }));
           }
           break;
-        // Add other action types as needed
+          
+        case 'DELETE_OBJECT':
+          if (action.payload.id) {
+            set((state) => {
+              const newObjects = { ...state.objects };
+              delete newObjects[action.payload.id];
+              return {
+                objects: newObjects,
+                selectedObjectIds: state.selectedObjectIds.filter((objId) => objId !== action.payload.id),
+              };
+            });
+          }
+          break;
+          
+        case 'ERASE_PATH':
+          if (action.payload.originalObjectId && action.payload.resultingSegments) {
+            const { originalObjectId, resultingSegments } = action.payload;
+            const originalObject = get().objects[originalObjectId];
+            
+            if (originalObject) {
+              // Extract brush metadata from the action payload if available
+              const originalObjectMetadata = (action as any).payload.originalObjectMetadata || {
+                brushType: originalObject.data?.brushType,
+                stroke: originalObject.stroke,
+                strokeWidth: originalObject.strokeWidth,
+                opacity: originalObject.opacity,
+                fill: originalObject.fill
+              };
+              
+              console.log('🎨 Processing ERASE_PATH in batch with brush metadata:', {
+                originalId: originalObjectId.slice(0, 8),
+                brushType: originalObjectMetadata.brushType,
+                segmentCount: resultingSegments.length,
+                hasMetadata: !!originalObjectMetadata
+              });
+              
+              set((state) => {
+                const newObjects = { ...state.objects };
+                
+                // Remove the original object
+                delete newObjects[originalObjectId];
+                
+                // Add new segment objects
+                resultingSegments.forEach((segment) => {
+                  const segmentObject: WhiteboardObject = {
+                    id: segment.id,
+                    type: 'path',
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0,
+                    stroke: originalObjectMetadata.stroke || '#000000',
+                    strokeWidth: originalObjectMetadata.strokeWidth || 2,
+                    fill: originalObjectMetadata.fill || 'transparent',
+                    opacity: originalObjectMetadata.opacity || 1,
+                    data: {
+                      points: segment.points,
+                      brushType: originalObjectMetadata.brushType,
+                      ...(originalObjectMetadata.brushType === 'spray' && {
+                        brushEffect: brushEffectCache.get(originalObjectId, 'spray') || 'spray'
+                      }),
+                      ...(originalObjectMetadata.brushType === 'chalk' && {
+                        brushEffect: brushEffectCache.get(originalObjectId, 'chalk') || 'chalk'
+                      }),
+                    },
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                  };
+                  newObjects[segment.id] = segmentObject;
+                });
+                
+                return { objects: newObjects };
+              });
+              
+              // Store object relationships
+              const relationships = get().objectRelationships;
+              relationships.set(originalObjectId, {
+                segmentIds: resultingSegments.map(s => s.id)
+              });
+              resultingSegments.forEach(segment => {
+                relationships.set(segment.id, { originalId: originalObjectId });
+              });
+            } else {
+              console.warn('🎨 Original object not found for erasing in batch:', originalObjectId);
+            }
+          }
+          break;
+          
+        case 'CLEAR_CANVAS':
+          set({ objects: {}, selectedObjectIds: [] });
+          break;
+          
+        case 'UPDATE_BACKGROUND_SETTINGS':
+          if (action.payload.backgroundType) {
+            const { backgroundType } = action.payload;
+            const newSettings = {
+              gridVisible: backgroundType === 'grid',
+              linedPaperVisible: backgroundType === 'lines',
+              showDots: backgroundType === 'dots',
+            };
+            set((state) => ({
+              settings: { ...state.settings, ...newSettings },
+            }));
+          }
+          break;
+          
         default:
-          console.warn('Unhandled action type in batchUpdate:', action.type);
+          console.warn('🔄 Unhandled action type in batchUpdate:', action.type);
       }
     });
   },

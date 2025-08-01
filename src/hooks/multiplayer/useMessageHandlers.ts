@@ -36,12 +36,16 @@ export const useMessageHandlers = (
           
         case 'whiteboard_action':
           if (message.action && !sentActionIds.has(message.action.id)) {
+            console.log('📥 Received action:', message.action.type, message.action.id);
             whiteboardStore.applyRemoteAction(message.action as WhiteboardAction)
+          } else if (message.action && sentActionIds.has(message.action.id)) {
+            console.log('📥 Ignoring own action:', message.action.type, message.action.id);
           }
           break
           
         case 'state_sync':
           if (message.data?.actions && Array.isArray(message.data.actions)) {
+            console.log('📥 Received state_sync with', message.data.actions.length, 'actions');
             whiteboardStore.batchUpdate(message.data.actions)
           }
           break

@@ -173,11 +173,14 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     }
 
     try {
-      // Serialize action for network transmission
+      console.log('📤 Sending action:', action.type, action.id);
+      
+      // Serialize action for network transmission with enhanced handling for different action types
       const serializedAction = {
         ...action,
         payload: {
           ...action.payload,
+          // Enhanced UPDATE_OBJECT serialization
           ...(action.type === 'UPDATE_OBJECT' && action.payload.updates && {
             updates: {
               ...action.payload.updates,
@@ -188,6 +191,16 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
               ...(typeof action.payload.updates.strokeWidth === 'number' && { strokeWidth: action.payload.updates.strokeWidth }),
               ...(typeof action.payload.updates.opacity === 'number' && { opacity: action.payload.updates.opacity }),
             }
+          }),
+          // Enhanced ERASE_PATH serialization
+          ...(action.type === 'ERASE_PATH' && {
+            originalObjectId: action.payload.originalObjectId,
+            eraserPath: action.payload.eraserPath,
+            resultingSegments: action.payload.resultingSegments?.map(segment => ({
+              ...segment,
+              points: segment.points || []
+            })) || [],
+            originalObjectMetadata: (action.payload as any).originalObjectMetadata || {}
           })
         }
       }

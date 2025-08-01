@@ -67,11 +67,13 @@ export const useMultiplayerSync = () => {
         if (state.lastAction && !sentActionIdsRef.current.has(state.lastAction.id)) {
           // Check if this action should be synchronized
           if (!shouldSyncAction(state.lastAction, whiteboardStore)) {
+            console.log('🔄 Skipping sync for local-only action:', state.lastAction.type);
             return
           }
           
           if (serverInstance && serverInstance.server?.room && isConnected) {
             try {
+              console.log('📤 Syncing action:', state.lastAction.type, state.lastAction.id);
               sendWhiteboardAction(state.lastAction)
               sentActionIdsRef.current.add(state.lastAction.id)
               
