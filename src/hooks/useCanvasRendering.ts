@@ -1104,6 +1104,20 @@ export const useCanvasRendering = (
     redrawCanvas(false, 'state-change');
   }, [redrawCanvas]);
 
+  // Force immediate redraw on screen size changes to prevent distortion
+  useEffect(() => {
+    const handleForceRedraw = (event: CustomEvent) => {
+      console.log('📏 Force canvas redraw triggered:', event.detail);
+      redrawCanvas(true, 'force-screen-size-change');
+    };
+
+    window.addEventListener('force-canvas-redraw', handleForceRedraw as EventListener);
+    
+    return () => {
+      window.removeEventListener('force-canvas-redraw', handleForceRedraw as EventListener);
+    };
+  }, [redrawCanvas]);
+
   // Cleanup throttle timeout on unmount
   useEffect(() => {
     return () => {

@@ -96,16 +96,29 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
   },
 
   recalculateMinimumSize: () => {
-    const { userScreenSizes } = get();
+    const { userScreenSizes, activeWhiteboardSize } = get();
     const sizes = Object.values(userScreenSizes);
     
     if (sizes.length === 0) {
       // No other users, use current screen size (full whiteboard)
       const currentSize = calculateUsableScreenSize();
+      const hasChanged = currentSize.width !== activeWhiteboardSize.width || 
+                        currentSize.height !== activeWhiteboardSize.height;
+      
       set({
         minimumScreenSize: currentSize,
         activeWhiteboardSize: currentSize
       });
+      
+      if (hasChanged) {
+        console.log('📏 Canvas size changed to single-user mode, scheduling immediate redraw');
+        // Force immediate redraw after size change
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('force-canvas-redraw', { 
+            detail: { reason: 'screen-size-change', newSize: currentSize } 
+          }));
+        }, 0);
+      }
       return;
     }
     
@@ -114,11 +127,23 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
     const minHeight = Math.min(...sizes.map(s => s.height));
     
     const newMinimumSize = { width: minWidth, height: minHeight };
+    const hasChanged = newMinimumSize.width !== activeWhiteboardSize.width || 
+                      newMinimumSize.height !== activeWhiteboardSize.height;
     
     set({
       minimumScreenSize: newMinimumSize,
       activeWhiteboardSize: newMinimumSize
     });
+    
+    if (hasChanged) {
+      console.log('📏 Canvas size changed to:', newMinimumSize, 'scheduling immediate redraw');
+      // Force immediate redraw after size change
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('force-canvas-redraw', { 
+          detail: { reason: 'screen-size-change', newSize: newMinimumSize } 
+        }));
+      }, 0);
+    }
   },
 
   setActiveWhiteboardSize: (size: { width: number; height: number }) => {
