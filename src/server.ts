@@ -46,6 +46,27 @@ export class ServerClass {
 
         joinPromise
           .then((room) => {
+            // Set up basic event listeners
+            room.onStateChange.once((state: any) => {
+              // State change handled
+            });
+
+            room.onMessage("defaultRoomState", (message: any) => {
+              // Default room state handled
+            });
+
+            room.onError((code: any, message: any) => {
+              console.error("❌ Room error occurred:", { code, message });
+              
+              if (String(message).includes("refId")) {
+                console.error("🚨 DETECTED REFID ERROR - Schema decode error!");
+              }
+            });
+
+            room.onLeave((code: any) => {
+              console.log("👋 Left room with code:", code);
+            });
+
             clearTimeout(timeout);
             resolve(room);
           })

@@ -298,44 +298,10 @@ export const erasePointsFromPathBatch = (
   // Filter out segments that are too small to be meaningful
   const filteredSegments = segments.filter(segment => segment.points.length >= 2);
   
-  // IMPORTANT: If the eraser would delete the entire object (no segments left),
-  // preserve at least some parts to avoid total deletion
-  const totalErasedPercent = totalErasedPoints / interpolatedPoints.length;
-  const wouldDeleteEverything = filteredSegments.length === 0 && totalErasedPercent > 0.8;
-  
-  if (wouldDeleteEverything) {
-    console.warn('🎨 Eraser would delete entire object, preserving some parts:', {
-      totalErasedPercent: (totalErasedPercent * 100).toFixed(1) + '%',
-      originalPoints: points.length,
-      erasedPoints: totalErasedPoints
-    });
-    
-    // Return original segments to prevent complete deletion
-    // This ensures pixel eraser never completely deletes objects
-    const preservedSegments = segments.filter(segment => segment.points.length >= 1);
-    if (preservedSegments.length === 0 && points.length >= 2) {
-      // As last resort, preserve the original path in smaller chunks
-      const chunkSize = Math.max(2, Math.floor(points.length / 3));
-      for (let i = 0; i < points.length; i += chunkSize) {
-        const chunk = points.slice(i, i + chunkSize);
-        if (chunk.length >= 2) {
-          preservedSegments.push({
-            points: chunk,
-            id: `preserved_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-          });
-        }
-      }
-    }
-    
-    console.log('🎨 Preserved segments to prevent total deletion:', preservedSegments.length);
-    return preservedSegments;
-  }
-  
   console.log('✅ Toned-down eraser processing complete:', {
     originalPoints: points.length,
     interpolatedPoints: interpolatedPoints.length,
     erasedPoints: totalErasedPoints,
-    erasedPercent: (totalErasedPercent * 100).toFixed(1) + '%',
     detectionStats,
     resultingSegments: filteredSegments.length,
     totalRemainingPoints: filteredSegments.reduce((sum, seg) => sum + seg.points.length, 0),
