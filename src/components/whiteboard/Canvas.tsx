@@ -158,14 +158,14 @@ export const Canvas: React.FC = () => {
     }
     
     updateObject(objectId, newBounds);
-    redrawCanvas(true, 'manual-resize');
+    // Don't call redrawCanvas here - let the state change trigger it naturally for smoother updates
     
     // Clear the flag after a short delay to allow the resize operation to complete
     setTimeout(() => {
       if (isManualResizing) {
         isManualResizing.current = false;
       }
-    }, 100);
+    }, 50); // Reduced timeout for more responsive feel
   };
 
   // Auto-resize text object to fit content using the same measureText function
