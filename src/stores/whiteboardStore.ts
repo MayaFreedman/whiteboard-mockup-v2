@@ -856,7 +856,20 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     
     // Apply each action directly without setting lastAction
     actions.forEach(action => {
+      console.log('🔄 Processing batch action:', action.type, action.id?.slice(0, 8));
+      
       switch (action.type) {
+        case 'ADD_OBJECT':
+          if (action.payload.object) {
+            set((state) => ({
+              objects: {
+                ...state.objects,
+                [action.payload.object.id]: action.payload.object,
+              },
+            }));
+          }
+          break;
+          
         case 'UPDATE_OBJECT':
           if (action.payload.id && action.payload.updates) {
             set((state) => ({
@@ -870,9 +883,94 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             }));
           }
           break;
-        // Add other action types as needed
+          
+        case 'DELETE_OBJECT':
+          if (action.payload.id) {
+            set((state) => {
+              const newObjects = { ...state.objects };
+              delete newObjects[action.payload.id];
+              return {
+                objects: newObjects,
+                selectedObjectIds: state.selectedObjectIds.filter(id => id !== action.payload.id)
+              };
+            });
+          }
+          break;
+          
+        case 'ERASE_PATH':
+          // Apply the same logic as in applyRemoteAction for ERASE_PATH
+          const { originalObjectId, resultingSegments } = action.payload;
+          
+          set((state) => {
+            const originalObject = state.objects[originalObjectId];
+            if (!originalObject) {
+              console.warn('❌ Cannot erase from non-existent object:', originalObjectId);
+              return state;
+            }
+
+            // Get the preserved metadata from the action (if available)
+            const originalObjectMetadata = (action as any).metadata?.originalObject;
+            
+            console.log('🧹 Batch applying ERASE_PATH:', {
+              originalId: originalObjectId.slice(0, 8),
+              segments: resultingSegments.length,
+              brushType: originalObjectMetadata?.brushType
+            });
+
+            const newObjects = { ...state.objects };
+            const newRelationships = new Map(state.objectRelationships);
+            
+            // Remove the original object
+            delete newObjects[originalObjectId];
+            newRelationships.delete(originalObjectId);
+            
+            // Add new segments based on the structure we expect
+            if (Array.isArray(resultingSegments)) {
+              resultingSegments.forEach((segment: any, index: number) => {
+                if (segment.points && segment.points.length >= 2) {
+                  const pathString = segment.points.reduce((path: string, point: any, idx: number) => {
+                    const command = idx === 0 ? 'M' : 'L';
+                    return `${path} ${command} ${point.x} ${point.y}`;
+                  }, '');
+                  
+                  const segmentId = segment.id || `${originalObjectId}_segment_${index}`;
+                  newObjects[segmentId] = {
+                    id: segmentId,
+                    type: 'path',
+                    x: originalObject.x || 0,
+                    y: originalObject.y || 0,
+                    width: originalObject.width || 100,
+                    height: originalObject.height || 100,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                    data: {
+                      path: pathString,
+                      brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
+                      isEraser: false
+                    }
+                  };
+                }
+              });
+            }
+            
+            return {
+              objects: newObjects,
+              objectRelationships: newRelationships,
+              selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
+            };
+          });
+          break;
+          
+        case 'CLEAR_CANVAS':
+          set((state) => ({
+            objects: {},
+            selectedObjectIds: [],
+            objectRelationships: new Map(),
+          }));
+          break;
+          
         default:
-          console.warn('Unhandled action type in batchUpdate:', action.type);
+          console.warn('❌ Unhandled action type in batchUpdate:', action.type);
       }
     });
   },
