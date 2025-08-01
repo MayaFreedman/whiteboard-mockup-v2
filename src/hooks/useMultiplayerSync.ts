@@ -57,6 +57,7 @@ export const useMultiplayerSync = () => {
       return
     }
 
+    console.log('📤 Sending initial state request...')
     setIsWaitingForInitialState(true)
     
     try {
@@ -81,9 +82,11 @@ export const useMultiplayerSync = () => {
     const handleBroadcastMessage = (message: any) => {
       // Handle state request messages
       if (message.type === 'request_state') {
+        console.log('📥 Received state request from:', message.requesterId)
         if (message.requesterId !== room.sessionId) {
           const currentState = whiteboardStore.getStateSnapshot()
           const hasObjectsToShare = Object.keys(currentState.objects).length > 0
+          console.log('📤 Sending state response with objects:', Object.keys(currentState.objects).length)
           
           if (hasObjectsToShare) {
             setTimeout(() => {
@@ -96,7 +99,9 @@ export const useMultiplayerSync = () => {
       
       // Handle state response messages
       if (message.type === 'state_response') {
+        console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length)
         if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
+          console.log('✅ State response is for us, applying state')
           hasReceivedInitialStateRef.current = true
           setIsWaitingForInitialState(false)
           
@@ -197,8 +202,11 @@ export const useMultiplayerSync = () => {
   useEffect(() => {
     if (!isReadyToSend()) return
     
+    console.log('🔄 connectedUserCount changed:', connectedUserCount, 'hasReceived:', hasReceivedInitialStateRef.current)
+    
     // Only request state if we haven't received it yet and there are other users
     if (!hasReceivedInitialStateRef.current && connectedUserCount > 1) {
+      console.log('📤 Requesting initial state due to user count change')
       // Small delay to ensure room is fully initialized
       setTimeout(() => {
         requestInitialState()

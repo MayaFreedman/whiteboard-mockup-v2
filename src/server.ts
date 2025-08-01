@@ -83,7 +83,6 @@ export class ServerClass {
       });
 
       this.server.room = tempRoom;
-      this.requestInitialState();
       
     } catch (error) {
       console.error("💥 Failed to connect to Colyseus server:", error);
