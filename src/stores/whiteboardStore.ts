@@ -965,7 +965,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 relationships.set(segment.id, { originalId: originalObjectId });
               });
             } else {
-              console.warn('🎨 Original object not found for erasing in batch:', originalObjectId);
+              // Object already deleted in this batch - this is normal for overlapping eraser strokes
+              console.log('🎨 Skipping ERASE_PATH in batch - object already processed:', originalObjectId.slice(0, 8));
             }
           }
           break;
