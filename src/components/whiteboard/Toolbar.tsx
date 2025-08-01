@@ -164,7 +164,8 @@ const ActionButtons: React.FC = () => {
   };
 
   const handleClearCanvas = () => {
-    clearCanvas();
+    console.log('🗑️ Toolbar clear canvas clicked for user:', userId);
+    clearCanvas(userId);
   };
 
   // Add keyboard shortcuts
