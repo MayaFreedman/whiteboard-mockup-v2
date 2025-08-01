@@ -45,28 +45,16 @@ export const useScreenSizeSync = () => {
 
   // Handle initial screen size on mount and window resize
   useEffect(() => {
-    const handleResize = () => {
-      if (!userId) return;
-
-      const newSize = calculateUsableScreenSize();
-      
-      // Update local store without triggering recalculation
-      updateLocalUserScreenSize(userId, newSize);
-      
-      // Broadcast to other users
-      broadcastScreenSize(newSize);
-    };
-
     // Set initial screen size
-    handleResize();
+    handleWindowResize();
 
     // Listen for window resize events
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleWindowResize);
     
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', handleWindowResize);
     };
-  }, [userId]); // Only depend on userId, define handler inside effect
+  }, [handleWindowResize]);
 
   // Send screen size when user connects to multiplayer
   useEffect(() => {
@@ -75,7 +63,7 @@ export const useScreenSizeSync = () => {
       updateLocalUserScreenSize(userId, currentSize);
       broadcastScreenSize(currentSize);
     }
-  }, [multiplayer?.isConnected, userId]); // Remove function dependencies
+  }, [multiplayer?.isConnected, userId, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize]);
 
   // Handle user departures - cleanup screen sizes and recalculate
   useEffect(() => {
@@ -99,7 +87,7 @@ export const useScreenSizeSync = () => {
         }, 50);
       }
     }
-  }, [multiplayer?.connectedUserCount, multiplayer?.isConnected, userId]); // Remove function dependencies
+  }, [multiplayer?.connectedUserCount, multiplayer?.isConnected, userId, clearAllSizes, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize]);
 
   return {
     broadcastScreenSize
