@@ -38,8 +38,10 @@ export const useMessageHandlers = (
           if (message.action && !sentActionIds.has(message.action.id)) {
             console.log('📥 Received action:', message.action.type, message.action.id);
             whiteboardStore.applyRemoteAction(message.action as WhiteboardAction)
+            // Add the action ID to prevent duplicate processing
+            sentActionIds.add(message.action.id)
           } else if (message.action && sentActionIds.has(message.action.id)) {
-            console.log('📥 Ignoring own action:', message.action.type, message.action.id);
+            console.log('📥 Ignoring duplicate action:', message.action.type, message.action.id);
           }
           break
           
