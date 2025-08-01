@@ -22,7 +22,6 @@ async function preloadImage(path: string): Promise<PreloadResult> {
   // Check if already cached
   const cached = getCachedImage(path);
   if (cached.image) {
-    console.log(`🎯 Already cached: ${path}`);
     return { path, success: true };
   }
   if (cached.hasFailed) {
@@ -30,7 +29,6 @@ async function preloadImage(path: string): Promise<PreloadResult> {
     return { path, success: false, error: 'previously_failed' };
   }
   if (cached.isLoading) {
-    console.log(`⏳ Already loading: ${path}`);
     return { path, success: false, error: 'already_loading' };
   }
 
@@ -56,7 +54,6 @@ async function preloadImage(path: string): Promise<PreloadResult> {
         resolved = true;
         clearTimeout(timeout);
         setCachedImage(path, img); // Add to shared cache
-        console.log(`✅ Preloaded and cached: ${path}`);
         resolve({ path, success: true });
       }
     };
@@ -101,14 +98,12 @@ export async function preloadStampImages(): Promise<{
   failed: number;
   failedPaths: string[];
 }> {
-  console.log('🚀 Starting stamp image preload...');
   
   // Get all unique image paths from the registry
   const imagePaths = Array.from(new Set(
     iconRegistry.map(icon => icon.path)
   ));
   
-  console.log(`📦 Preloading ${imagePaths.length} stamp images...`);
   
   const results = await preloadBatch(imagePaths);
   

@@ -118,20 +118,17 @@ export const useCanvasRendering = (
     const sharedCacheResult = getCachedImage(normalizedSrc);
     
     if (sharedCacheResult.image) {
-      console.log(`🎯 Found in shared cache: "${normalizedSrc}"`);
       // Also store in local cache for consistency
       imageCache.current.set(normalizedSrc, sharedCacheResult.image);
       return sharedCacheResult.image;
     }
     
     if (sharedCacheResult.hasFailed) {
-      console.log(`🚫 Previously failed in shared cache: "${normalizedSrc}"`);
       failedImages.current.add(normalizedSrc);
       return null;
     }
     
     if (sharedCacheResult.isLoading) {
-      console.log(`⏳ Already loading in shared cache: "${normalizedSrc}"`);
       return null;
     }
     
@@ -146,8 +143,6 @@ export const useCanvasRendering = (
       return imageCache.current.get(normalizedSrc)!;
     }
     
-    console.log(`❌ Cache MISS for FULL PATH: "${normalizedSrc}"`);
-    
     // Don't retry failed images to prevent infinite loops
     if (failedImages.current.has(normalizedSrc)) {
       console.log(`🚫 Skipping failed image FULL PATH: "${normalizedSrc}"`);
@@ -156,11 +151,9 @@ export const useCanvasRendering = (
     
     // Prevent duplicate loading requests
     if (loadingImages.current.has(normalizedSrc)) {
-      console.log(`⏳ Already loading FULL PATH: "${normalizedSrc}"`);
       return null;
     }
     
-    console.log(`📥 Starting load for FULL PATH: "${normalizedSrc}"`);
     loadingImages.current.add(normalizedSrc);
     setImageLoading(normalizedSrc); // Mark in shared cache too
     
@@ -182,7 +175,6 @@ export const useCanvasRendering = (
           imageCache.current.set(normalizedSrc, img);
           setCachedImage(normalizedSrc, img); // Add to shared cache
           loadingImages.current.delete(normalizedSrc);
-          console.log(`✅ Regular Image cached FULL PATH: "${normalizedSrc}"`);
           resolve(img);
         };
         
@@ -197,17 +189,9 @@ export const useCanvasRendering = (
         
         // Handle SVG files by converting to blob URL
         if (normalizedSrc.endsWith('.svg')) {
-          console.log(`🔍 SVG FETCH starting for: "${normalizedSrc}"`);
           
           fetch(normalizedSrc)
             .then(response => {
-              console.log(`📡 SVG FETCH response for: "${normalizedSrc}"`, {
-                ok: response.ok,
-                status: response.status,
-                statusText: response.statusText,
-                url: response.url
-              });
-              
               if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
               }
@@ -228,7 +212,6 @@ export const useCanvasRendering = (
                 setCachedImage(normalizedSrc, img); // Add to shared cache
                 loadingImages.current.delete(normalizedSrc);
                 URL.revokeObjectURL(url);
-                console.log(`✅ SVG Image cached FULL PATH: "${normalizedSrc}"`);
                 resolve(img);
               };
               
@@ -504,8 +487,6 @@ export const useCanvasRendering = (
         if (imageSrc && obj.width && obj.height) {
           const normalizedSrc = normalizeImagePath(imageSrc);
           const cachedImage = imageCache.current.get(normalizedSrc);
-          
-          console.log(`🎯 Render lookup for: "${normalizedSrc.slice(-30)}" - Found: ${!!cachedImage}`);
           
           if (cachedImage) {
             // Image is ready, render it

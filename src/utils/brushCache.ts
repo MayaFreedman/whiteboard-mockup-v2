@@ -315,10 +315,6 @@ export function pathToPointsForBrush(path: string): Array<{ x: number; y: number
   // Try to get from cache first
   const cachedPoints = pathPointsCache.get(path);
   if (cachedPoints) {
-    console.log('🎯 Using cached path-to-points conversion:', {
-      pathLength: path.length,
-      pointCount: cachedPoints.length
-    });
     return cachedPoints;
   }
 

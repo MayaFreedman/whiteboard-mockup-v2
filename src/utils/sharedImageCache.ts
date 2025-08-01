@@ -35,8 +35,6 @@ export function setCachedImage(path: string, image: HTMLImageElement): void {
   globalImageCache.set(normalizedPath, image);
   globalLoadingImages.delete(normalizedPath);
   globalFailedImages.delete(normalizedPath);
-  
-  console.log(`✅ Cached image: ${normalizedPath} (cache size: ${globalImageCache.size})`);
 }
 
 /**
@@ -90,5 +88,4 @@ export function clearAllCaches(): void {
   globalImageCache.clear();
   globalLoadingImages.clear();
   globalFailedImages.clear();
-  console.log('🧹 All image caches cleared');
 }
