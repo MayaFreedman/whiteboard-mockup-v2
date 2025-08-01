@@ -586,6 +586,14 @@ export const Canvas: React.FC = () => {
     };
   }, []);
 
+  // Watch for batch updates and trigger canvas redraw
+  useEffect(() => {
+    if (whiteboardStore.lastBatchUpdateTime) {
+      console.log('🎨 Triggering redraw after batch update:', whiteboardStore.lastBatchUpdateTime);
+      redrawCanvas(true); // immediate redraw
+    }
+  }, [whiteboardStore.lastBatchUpdateTime, redrawCanvas]);
+
   /**
    * Handles mouse down events on the canvas
    * @param event - Mouse event

@@ -29,6 +29,9 @@ export interface WhiteboardStore {
   
   // Track processed batch IDs to prevent duplicate processing
   processedBatchIds: Set<string>;
+  
+  // Timestamp to trigger canvas redraws after batch updates
+  lastBatchUpdateTime?: number;
 
   // Action recording
   recordAction: (action: WhiteboardAction) => void;
@@ -974,6 +977,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           console.warn('Unhandled action type in batchUpdate:', action.type);
       }
     });
+    
+    // Signal that a batch update occurred to trigger canvas redraw
+    set((state) => ({
+      ...state,
+      lastBatchUpdateTime: Date.now()
+    }));
   },
   updateLocalUserHistoryIndex: (userId, index) => {
     set((state) => {
