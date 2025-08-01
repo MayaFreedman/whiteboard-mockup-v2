@@ -689,65 +689,67 @@ export const Canvas: React.FC = () => {
         onDoubleClick={handleDoubleClick}
       />
       
-      {/* Grey overlay for non-whiteboard areas */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `
-            linear-gradient(to right, 
-              hsl(var(--muted) / 0.7) 0%, 
-              hsl(var(--muted) / 0.7) ${activeWhiteboardSize.width}px,
-              hsl(var(--muted) / 0.9) ${activeWhiteboardSize.width}px,
-              hsl(var(--muted) / 0.9) 100%
-            ),
-            linear-gradient(to bottom,
-              transparent 0%,
-              transparent ${activeWhiteboardSize.height}px,
-              hsl(var(--muted) / 0.9) ${activeWhiteboardSize.height}px,
-              hsl(var(--muted) / 0.9) 100%
-            )
-          `,
-          backgroundBlendMode: 'multiply'
-        }}
-      >
-        {/* Pattern overlay for grey areas */}
+      {/* Grey overlay for non-whiteboard areas - only show in multiplayer */}
+      {hasMultipleUsers && (
         <div 
-          className="absolute"
+          className="absolute inset-0 pointer-events-none"
           style={{
-            left: activeWhiteboardSize.width,
-            top: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: `
-              repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                hsl(var(--border) / 0.3) 10px,
-                hsl(var(--border) / 0.3) 20px
+            background: `
+              linear-gradient(to right, 
+                hsl(var(--muted) / 0.7) 0%, 
+                hsl(var(--muted) / 0.7) ${activeWhiteboardSize.width}px,
+                hsl(var(--muted) / 0.9) ${activeWhiteboardSize.width}px,
+                hsl(var(--muted) / 0.9) 100%
+              ),
+              linear-gradient(to bottom,
+                transparent 0%,
+                transparent ${activeWhiteboardSize.height}px,
+                hsl(var(--muted) / 0.9) ${activeWhiteboardSize.height}px,
+                hsl(var(--muted) / 0.9) 100%
               )
-            `
+            `,
+            backgroundBlendMode: 'multiply'
           }}
-        />
-        <div 
-          className="absolute"
-          style={{
-            left: 0,
-            top: activeWhiteboardSize.height,
-            right: 0,
-            bottom: 0,
-            backgroundImage: `
-              repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                hsl(var(--border) / 0.3) 10px,
-                hsl(var(--border) / 0.3) 20px
-              )
-            `
-          }}
-        />
-      </div>
+        >
+          {/* Pattern overlay for grey areas */}
+          <div 
+            className="absolute"
+            style={{
+              left: activeWhiteboardSize.width,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage: `
+                repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 10px,
+                  hsl(var(--border) / 0.3) 10px,
+                  hsl(var(--border) / 0.3) 20px
+                )
+              `
+            }}
+          />
+          <div 
+            className="absolute"
+            style={{
+              left: 0,
+              top: activeWhiteboardSize.height,
+              right: 0,
+              bottom: 0,
+              backgroundImage: `
+                repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 10px,
+                  hsl(var(--border) / 0.3) 10px,
+                  hsl(var(--border) / 0.3) 20px
+                )
+              `
+            }}
+          />
+        </div>
+      )}
       
       {/* Text Editor Overlay - Positioned to match canvas text exactly */}
       {editingTextId && textEditorPosition && (
