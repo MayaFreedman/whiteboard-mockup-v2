@@ -24,7 +24,6 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
     // Set timeout to auto-end batch (longer for eraser operations)
     const timeout = isEraserBatch ? batchTimeout * 3 : batchTimeout;
     batchTimeoutRef.current = setTimeout(() => {
-      console.log('🎯 Auto-ending batch due to timeout');
       store.endActionBatch();
       batchTimeoutRef.current = null;
     }, timeout);
@@ -46,7 +45,6 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
     const effectiveMaxSize = isEraserBatch ? maxBatchSize * 10 : maxBatchSize;
     
     if (currentBatch.actions.length >= effectiveMaxSize) {
-      console.log('🎯 Auto-ending batch due to size limit');
       endBatch();
       return true;
     }
