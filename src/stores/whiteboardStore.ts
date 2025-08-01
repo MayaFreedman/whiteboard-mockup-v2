@@ -955,7 +955,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                     ...state.objects,
                     [originalObjectId]: {
                       ...originalObject,
-                      data: resultingSegments.join(' '),
+                      data: resultingSegments.map(segment => 
+                        segment.points.reduce((path, point, index) => {
+                          const command = index === 0 ? 'M' : 'L';
+                          return `${path} ${command} ${point.x} ${point.y}`;
+                        }, '')
+                      ).join(' '),
                       updatedAt: Date.now(),
                     },
                   },
