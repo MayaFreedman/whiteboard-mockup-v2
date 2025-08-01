@@ -145,72 +145,106 @@ export const useCanvasRendering = (
       }
     }
     
-    console.log(`❌ Cache MISS for: ${normalizedSrc.slice(-20)}`);
+    console.log(`❌ Cache MISS for FULL PATH: "${normalizedSrc}"`);
     
     // Don't retry failed images to prevent infinite loops
     if (failedImages.current.has(normalizedSrc)) {
-      console.log(`🚫 Skipping failed image: ${normalizedSrc.slice(-20)}`);
+      console.log(`🚫 Skipping failed image FULL PATH: "${normalizedSrc}"`);
       return null;
     }
     
     // Prevent duplicate loading requests
     if (loadingImages.current.has(normalizedSrc)) {
-      console.log(`⏳ Already loading: ${normalizedSrc.slice(-20)}`);
+      console.log(`⏳ Already loading FULL PATH: "${normalizedSrc}"`);
       return null;
     }
     
-    console.log(`📥 Starting load for: ${normalizedSrc.slice(-20)}`);
+    console.log(`📥 Starting load for FULL PATH: "${normalizedSrc}"`);
     loadingImages.current.add(normalizedSrc);
     
     try {
       const img = new Image();
       
       return new Promise((resolve, reject) => {
+        // Set up timeout for hanging loads
+        const timeoutId = setTimeout(() => {
+          loadingImages.current.delete(normalizedSrc);
+          failedImages.current.add(normalizedSrc);
+          console.error(`⏰ TIMEOUT loading image: "${normalizedSrc}"`);
+          reject(new Error(`Timeout loading image: ${normalizedSrc}`));
+        }, 10000); // 10 second timeout
+
         img.onload = () => {
+          clearTimeout(timeoutId);
           // Cache the loaded image with normalized key
           imageCache.current.set(normalizedSrc, img);
           loadingImages.current.delete(normalizedSrc);
-          console.log(`✅ Regular Image cached with key: "${normalizedSrc.slice(-30)}"`);
+          console.log(`✅ Regular Image cached FULL PATH: "${normalizedSrc}"`);
           resolve(img);
         };
         
-        img.onerror = () => {
+        img.onerror = (error) => {
+          clearTimeout(timeoutId);
           loadingImages.current.delete(normalizedSrc);
           failedImages.current.add(normalizedSrc); // Mark as failed to prevent retries
-          console.warn('Failed to load image:', normalizedSrc);
+          console.error(`❌ img.onerror for FULL PATH: "${normalizedSrc}"`, error);
           reject(new Error(`Failed to load image: ${normalizedSrc}`));
         };
         
         // Handle SVG files by converting to blob URL
         if (normalizedSrc.endsWith('.svg')) {
+          console.log(`🔍 SVG FETCH starting for: "${normalizedSrc}"`);
+          
           fetch(normalizedSrc)
-            .then(response => response.text())
+            .then(response => {
+              console.log(`📡 SVG FETCH response for: "${normalizedSrc}"`, {
+                ok: response.ok,
+                status: response.status,
+                statusText: response.statusText,
+                url: response.url
+              });
+              
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+              }
+              
+              return response.text();
+            })
             .then(svgText => {
+              console.log(`📄 SVG TEXT received for: "${normalizedSrc}", length: ${svgText.length}`);
+              
               const blob = new Blob([svgText], { type: 'image/svg+xml' });
               const url = URL.createObjectURL(blob);
-              img.src = url;
+              console.log(`🔗 SVG BLOB URL created for: "${normalizedSrc}" -> ${url}`);
               
-              // Clean up blob URL after image loads
+              // Override onload for SVG
               img.onload = () => {
-                imageCache.current.set(normalizedSrc, img); // Cache using normalized src
+                clearTimeout(timeoutId);
+                imageCache.current.set(normalizedSrc, img);
                 loadingImages.current.delete(normalizedSrc);
                 URL.revokeObjectURL(url);
-                console.log(`✅ SVG Image cached with key: "${normalizedSrc.slice(-30)}"`);
+                console.log(`✅ SVG Image cached FULL PATH: "${normalizedSrc}"`);
                 resolve(img);
               };
               
-              img.onerror = () => {
+              // Override onerror for SVG  
+              img.onerror = (error) => {
+                clearTimeout(timeoutId);
                 loadingImages.current.delete(normalizedSrc);
                 failedImages.current.add(normalizedSrc);
                 URL.revokeObjectURL(url);
-                console.warn('Failed to load SVG image:', normalizedSrc);
+                console.error(`❌ SVG img.onerror for FULL PATH: "${normalizedSrc}"`, error);
                 reject(new Error(`Failed to load SVG image: ${normalizedSrc}`));
               };
+              
+              img.src = url;
+              console.log(`🎯 SVG img.src set for: "${normalizedSrc}"`);
             })
             .catch(error => {
+              clearTimeout(timeoutId);
               loadingImages.current.delete(normalizedSrc);
-              failedImages.current.add(normalizedSrc); // Mark as failed to prevent retries
-              console.warn('Failed to fetch SVG:', error);
+              failedImages.current.add(normalizedSrc);
+              console.error(`❌ SVG FETCH failed for FULL PATH: "${normalizedSrc}"`, error);
               reject(error);
             });
         } else {
@@ -480,7 +514,7 @@ export const useCanvasRendering = (
             getOrLoadImage(normalizedSrc).then(() => {
               // Only redraw if canvas still exists
               if (canvas) {
-                redrawCanvas(false, `image-loaded:${normalizedSrc.slice(-20)}`);
+                redrawCanvas(false, `image-loaded:${normalizedSrc}`);
               }
             }).catch(error => {
               console.warn('Failed to load image for rendering:', error);
@@ -491,7 +525,7 @@ export const useCanvasRendering = (
                 if (!imageCache.current.has(normalizedFallbackSrc) && !failedImages.current.has(normalizedFallbackSrc)) {
                   getOrLoadImage(normalizedFallbackSrc).then(() => {
                     if (canvas) {
-                      redrawCanvas(false, `fallback-loaded:${normalizedFallbackSrc.slice(-20)}`);
+                      redrawCanvas(false, `fallback-loaded:${normalizedFallbackSrc}`);
                     }
                   }).catch(fallbackError => {
                     console.error('Failed to load fallback image:', fallbackError);
