@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
+import { useScreenSizeStore } from '../stores/screenSizeStore';
 import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
 // Import optimized brush effects
 import { 
@@ -83,6 +84,7 @@ export const useCanvasRendering = (
 ) => {
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
+  const { activeWhiteboardSize } = useScreenSizeStore();
   
   // Image cache to prevent blinking/glitching
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
@@ -862,14 +864,13 @@ export const useCanvasRendering = (
   const performRedraw = useCallback(() => {
     if (!canvas) return;
 
-    // Set up canvas for crisp, pixel-aligned rendering
+    // Set up canvas for crisp, pixel-aligned rendering using the constrained whiteboard size
     const devicePixelRatio = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
     
-    canvas.width = rect.width * devicePixelRatio;
-    canvas.height = rect.height * devicePixelRatio;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    canvas.width = activeWhiteboardSize.width * devicePixelRatio;
+    canvas.height = activeWhiteboardSize.height * devicePixelRatio;
+    canvas.style.width = activeWhiteboardSize.width + 'px';
+    canvas.style.height = activeWhiteboardSize.height + 'px';
     
     const ctx = canvas.getContext('2d')!;
     ctx.scale(devicePixelRatio, devicePixelRatio);
@@ -877,19 +878,19 @@ export const useCanvasRendering = (
     ctx.imageSmoothingQuality = 'high';
 
     // Clear the entire canvas completely
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, activeWhiteboardSize.width, activeWhiteboardSize.height);
 
     // Draw background patterns
     if (settings.gridVisible) {
-      drawGrid(ctx, canvas.width, canvas.height);
+      drawGrid(ctx, activeWhiteboardSize.width, activeWhiteboardSize.height);
     }
 
     if (settings.linedPaperVisible) {
-      drawLinedPaper(ctx, canvas.width, canvas.height);
+      drawLinedPaper(ctx, activeWhiteboardSize.width, activeWhiteboardSize.height);
     }
 
     if (settings.showDots) {
-      drawDots(ctx, canvas.width, canvas.height);
+      drawDots(ctx, activeWhiteboardSize.width, activeWhiteboardSize.height);
     }
 
     // Draw all objects with their current positions

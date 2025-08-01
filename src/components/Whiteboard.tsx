@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarInset } from './ui/sidebar';
 import { ConnectionStatus } from './ConnectionStatus';
 import { InitialStateLoader } from './InitialStateLoader';
 import { useMultiplayerSync } from '../hooks/useMultiplayerSync';
+import { useScreenSizeStore } from '../stores/screenSizeStore';
 
 /**
  * Main whiteboard application component
@@ -15,6 +16,7 @@ import { useMultiplayerSync } from '../hooks/useMultiplayerSync';
 export const Whiteboard: React.FC = () => {
   // Initialize multiplayer sync and get loading state
   const { isWaitingForInitialState } = useMultiplayerSync();
+  const { activeWhiteboardSize } = useScreenSizeStore();
   const [showLoader, setShowLoader] = useState(false);
 
   // Show loader only when actually waiting for initial state from other users

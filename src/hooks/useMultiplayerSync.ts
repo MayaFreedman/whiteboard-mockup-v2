@@ -3,6 +3,7 @@ import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
 import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
+import { useScreenSizeStore } from '../stores/screenSizeStore'
 
 /**
  * Determines if an action should be synchronized across multiplayer clients
@@ -26,6 +27,7 @@ export const useMultiplayerSync = () => {
   const multiplayerContext = useContext(MultiplayerContext)
   const whiteboardStore = useWhiteboardStore()
   const { userId } = useUser()
+  const { updateUserScreenSize, removeUser } = useScreenSizeStore()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const hasReceivedInitialStateRef = useRef(false)
   const hasEverBeenInRoomRef = useRef(false)
@@ -155,6 +157,12 @@ export const useMultiplayerSync = () => {
         if (message.data.actions && Array.isArray(message.data.actions)) {
           whiteboardStore.batchUpdate(message.data.actions)
         }
+      }
+      
+      // Handle screen size updates
+      if (message.type === 'screen_size_update' && message.userId && message.screenSize) {
+        console.log('📥 Received screen size update from:', message.userId, message.screenSize)
+        updateUserScreenSize(message.userId, message.screenSize)
       }
     }
 

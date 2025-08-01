@@ -6,6 +6,8 @@ import { useCanvasRendering } from '../../hooks/useCanvasRendering';
 import { useToolSelection } from '../../hooks/useToolSelection';
 import { useUser } from '../../contexts/UserContext';
 import { useActionBatching } from '../../hooks/useActionBatching';
+import { useScreenSizeStore } from '../../stores/screenSizeStore';
+import { useScreenSizeSync } from '../../hooks/useScreenSizeSync';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
 import { measureText } from '../../utils/textMeasurement';
@@ -48,6 +50,10 @@ export const Canvas: React.FC = () => {
   const { activeTool } = toolStore;
   const { userId } = useUser();
   const { startBatch, endBatch } = useActionBatching({ batchTimeout: 100, maxBatchSize: 50 });
+  const { activeWhiteboardSize } = useScreenSizeStore();
+  
+  // Initialize screen size sync
+  useScreenSizeSync();
   
   // Text editing state
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
@@ -664,10 +670,14 @@ export const Canvas: React.FC = () => {
     >
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0"
         style={{
+          width: activeWhiteboardSize.width,
+          height: activeWhiteboardSize.height,
           cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
-          touchAction: 'none' // Prevent default touch behaviors
+          touchAction: 'none', // Prevent default touch behaviors
+          border: '2px solid hsl(var(--border))',
+          backgroundColor: 'hsl(var(--background))'
         }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
@@ -675,6 +685,66 @@ export const Canvas: React.FC = () => {
         onMouseLeave={onMouseLeave}
         onDoubleClick={handleDoubleClick}
       />
+      
+      {/* Grey overlay for non-whiteboard areas */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `
+            linear-gradient(to right, 
+              hsl(var(--muted) / 0.7) 0%, 
+              hsl(var(--muted) / 0.7) ${activeWhiteboardSize.width}px,
+              hsl(var(--muted) / 0.9) ${activeWhiteboardSize.width}px,
+              hsl(var(--muted) / 0.9) 100%
+            ),
+            linear-gradient(to bottom,
+              transparent 0%,
+              transparent ${activeWhiteboardSize.height}px,
+              hsl(var(--muted) / 0.9) ${activeWhiteboardSize.height}px,
+              hsl(var(--muted) / 0.9) 100%
+            )
+          `,
+          backgroundBlendMode: 'multiply'
+        }}
+      >
+        {/* Pattern overlay for grey areas */}
+        <div 
+          className="absolute"
+          style={{
+            left: activeWhiteboardSize.width,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `
+              repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                hsl(var(--border) / 0.3) 10px,
+                hsl(var(--border) / 0.3) 20px
+              )
+            `
+          }}
+        />
+        <div 
+          className="absolute"
+          style={{
+            left: 0,
+            top: activeWhiteboardSize.height,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `
+              repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                hsl(var(--border) / 0.3) 10px,
+                hsl(var(--border) / 0.3) 20px
+              )
+            `
+          }}
+        />
+      </div>
       
       {/* Text Editor Overlay - Positioned to match canvas text exactly */}
       {editingTextId && textEditorPosition && (

@@ -67,10 +67,14 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   const registerMessageHandlers = (room: any) => {
     room.onMessage('participantJoined', (participant: any) => {
       setConnectedUserCount(prev => prev + 1)
+      // Screen size will be handled when the new participant broadcasts their size
     })
 
     room.onMessage('participantLeft', (data: any) => {
       setConnectedUserCount(prev => Math.max(0, prev - 1))
+      // Note: We can't directly remove users from screen size store here 
+      // because we don't have the userId. The store will clean up stale entries
+      // when screen sizes become outdated
     })
 
     room.onMessage('ping', () => {

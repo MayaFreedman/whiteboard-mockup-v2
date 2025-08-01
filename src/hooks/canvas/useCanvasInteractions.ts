@@ -7,6 +7,7 @@ import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
 import { useActionBatching } from '../useActionBatching';
+import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 
 /**
@@ -17,6 +18,7 @@ export const useCanvasInteractions = () => {
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const { userId } = useUser();
+  const { activeWhiteboardSize } = useScreenSizeStore();
   const { getCanvasCoordinates } = useCanvasCoordinates();
   const { findObjectAt, findObjectsInSelectionBox } = useObjectDetection();
   
@@ -50,6 +52,15 @@ export const useCanvasInteractions = () => {
   
   // Multi-object dragging state
   const initialDragPositionsRef = useRef<Record<string, { x: number; y: number }>>({});
+
+  /**
+   * Checks if coordinates are within the active whiteboard boundaries
+   */
+  const isWithinWhiteboardBounds = useCallback((x: number, y: number): boolean => {
+    return x >= 0 && y >= 0 && 
+           x <= activeWhiteboardSize.width && 
+           y <= activeWhiteboardSize.height;
+  }, [activeWhiteboardSize]);
   
   // Simple path builder for smooth drawing
   const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
@@ -540,7 +551,15 @@ export const useCanvasInteractions = () => {
     }
     
     const coords = getCanvasCoordinates(event, canvas);
+    
+    // Check if coordinates are within whiteboard bounds for drawing tools
     const activeTool = toolStore.activeTool;
+    const isDrawingTool = ['pencil', 'brush', 'eraser', 'rectangle', 'circle', 'triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart', 'text', 'stamp', 'fill'].includes(activeTool);
+    
+    if (isDrawingTool && !isWithinWhiteboardBounds(coords.x, coords.y)) {
+      console.log('🚫 Interaction blocked - outside whiteboard bounds:', coords, 'bounds:', activeWhiteboardSize);
+      return;
+    }
 
     console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8), protection: doubleClickProtectionRef.current, editing: isEditingTextRef.current });
 
@@ -765,6 +784,13 @@ export const useCanvasInteractions = () => {
   const handlePointerMove = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
+    
+    // For drawing tools, constrain movement to whiteboard bounds
+    const isDrawingTool = ['pencil', 'brush', 'eraser'].includes(activeTool);
+    if (isDrawingTool && isDrawingRef.current && !isWithinWhiteboardBounds(coords.x, coords.y)) {
+      // Stop drawing if moved outside bounds
+      return;
+    }
 
     switch (activeTool) {
       case 'select': {
