@@ -36,9 +36,7 @@ export const EraserSettings: React.FC = () => {
       <div>
         <Label className="text-sm font-medium">Eraser Mode</Label>
         <div className="flex gap-2 mt-2">
-          <Button variant={toolSettings.eraserMode === 'pixel' ? 'default' : 'outline'} size="sm" onClick={() => handleModeChange('pixel')} className="flex-1">
-            Pixel
-          </Button>
+          <Button variant={toolSettings.eraserMode === 'pixel' ? 'default' : 'outline'} size="sm" onClick={() => handleModeChange('pixel')} className="flex-1">Erase</Button>
           <Button variant={toolSettings.eraserMode === 'object' ? 'default' : 'outline'} size="sm" onClick={() => handleModeChange('object')} className="flex-1">Remove</Button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
