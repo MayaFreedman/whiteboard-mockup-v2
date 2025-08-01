@@ -1,12 +1,11 @@
 /**
- * Image preloader utility to warm up the cache with stamp images
- * Prevents infinite rendering loops caused by missing images
+ * Image preloader utility - now uses central cache system
+ * Prevents infinite rendering loops by pre-warming the central cache
  */
 
 import { iconRegistry } from './iconRegistry';
-import { setCachedImage, setImageLoading, setImageFailed, getCachedImage, getCacheStats } from './sharedImageCache';
+import { loadImage, getCacheStats } from './sharedImageCache';
 
-const PRELOAD_TIMEOUT = 10000; // 10 seconds timeout per image
 const MAX_CONCURRENT_LOADS = 8; // Load up to 8 images concurrently
 
 interface PreloadResult {
@@ -16,63 +15,22 @@ interface PreloadResult {
 }
 
 /**
- * Preloads a single image with timeout and proper error handling
+ * Preloads a single image using the central cache system
  */
 async function preloadImage(path: string): Promise<PreloadResult> {
-  // Check if already cached
-  const cached = getCachedImage(path);
-  if (cached.image) {
-    console.log(`🎯 Already cached: ${path}`);
-    return { path, success: true };
-  }
-  if (cached.hasFailed) {
-    console.log(`❌ Previously failed: ${path}`);
-    return { path, success: false, error: 'previously_failed' };
-  }
-  if (cached.isLoading) {
-    console.log(`⏳ Already loading: ${path}`);
-    return { path, success: false, error: 'already_loading' };
-  }
-
-  return new Promise((resolve) => {
-    const img = new Image();
-    let resolved = false;
-    
-    // Mark as loading in shared cache
-    setImageLoading(path);
-    
-    // Set up timeout
-    const timeout = setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        setImageFailed(path, 'timeout');
-        console.warn(`⏰ Image preload timeout: ${path}`);
-        resolve({ path, success: false, error: 'timeout' });
-      }
-    }, PRELOAD_TIMEOUT);
-    
-    img.onload = () => {
-      if (!resolved) {
-        resolved = true;
-        clearTimeout(timeout);
-        setCachedImage(path, img); // Add to shared cache
-        console.log(`✅ Preloaded and cached: ${path}`);
-        resolve({ path, success: true });
-      }
+  try {
+    const img = await loadImage(path);
+    return { 
+      path, 
+      success: img !== null 
     };
-    
-    img.onerror = (error) => {
-      if (!resolved) {
-        resolved = true;
-        clearTimeout(timeout);
-        setImageFailed(path, error);
-        console.warn(`❌ Failed to preload: ${path}`, error);
-        resolve({ path, success: false, error: 'load_error' });
-      }
+  } catch (error) {
+    return { 
+      path, 
+      success: false, 
+      error: error instanceof Error ? error.message : 'unknown_error' 
     };
-    
-    img.src = path;
-  });
+  }
 }
 
 /**

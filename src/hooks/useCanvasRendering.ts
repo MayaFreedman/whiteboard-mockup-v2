@@ -3,7 +3,8 @@ import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { useScreenSizeStore } from '../stores/screenSizeStore';
 import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
-import { getCachedImage, setCachedImage, setImageLoading, setImageFailed, getCacheStats } from '../utils/sharedImageCache';
+import { getCachedImage, loadImage } from '../utils/sharedImageCache';
+
 // Import optimized brush effects
 import { 
   renderPaintbrushOptimized, 
@@ -20,14 +21,9 @@ import {
   renderHeart 
 } from '../utils/shapeRendering';
 import { measureText } from '../utils/textMeasurement';
-import { pathPointsCache } from '../utils/pathPointsCache';
 
 /**
  * Wraps text to fit within the specified width
- * @param ctx - Canvas rendering context
- * @param text - Text to wrap
- * @param maxWidth - Maximum width for each line
- * @returns Array of wrapped lines
  */
 const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] => {
   if (!text || maxWidth <= 0) return [''];
@@ -38,7 +34,6 @@ const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   
   paragraphs.forEach((paragraph, paragraphIndex) => {
     if (paragraph.trim() === '') {
-      // Preserve empty lines
       wrappedLines.push('');
       return;
     }
@@ -51,10 +46,8 @@ const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
       const testWidth = ctx.measureText(testLine).width;
       
       if (testWidth <= maxWidth || currentLine === '') {
-        // Word fits on current line, or it's the first word (even if too long)
         currentLine = testLine;
       } else {
-        // Word doesn't fit, start new line
         if (currentLine) {
           wrappedLines.push(currentLine);
         }
@@ -62,7 +55,6 @@ const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
       }
     });
     
-    // Add the last line of this paragraph
     if (currentLine) {
       wrappedLines.push(currentLine);
     }
@@ -72,241 +64,38 @@ const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 };
 
 /**
- * Custom hook for handling canvas rendering operations
- * Manages drawing of objects, backgrounds, and selection indicators
+ * Custom hook for handling canvas rendering operations using central image cache
  */
-export const useCanvasRendering = (
-  canvas: HTMLCanvasElement | null, 
-  getCurrentDrawingPreview: () => any, 
+const useCanvasRendering = (
+  canvas: HTMLCanvasElement | null,
+  getCurrentDrawingPreview: () => any,
   getCurrentShapePreview: () => any,
   getCurrentSelectionBox: () => any,
   editingTextId?: string | null,
   editingText?: string
 ) => {
-  const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
-  const { toolSettings } = useToolStore();
-  const { activeWhiteboardSize } = useScreenSizeStore();
+  const { objects, selectedObjectIds } = useWhiteboardStore();
+  const { activeTool } = useToolStore();
   
-  // Image cache to prevent blinking/glitching
-  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
-  const loadingImages = useRef<Set<string>>(new Set());
-  // Failed images cache to prevent infinite retry loops
-  const failedImages = useRef<Set<string>>(new Set());
-  // Debounce redraw to prevent excessive calls
-  const redrawTimeoutRef = useRef<number | null>(null);
-  // Circuit breaker to prevent infinite loops
-  const redrawCounter = useRef<number>(0);
-  const redrawResetTimer = useRef<number | null>(null);
+  // Circuit breaker for infinite redraws
+  const redrawCount = useRef(0);
+  const lastRedrawTime = useRef(0);
+  const throttleTimeout = useRef<NodeJS.Timeout | null>(null);
 
   /**
-   * Normalizes image path for consistent cache keys
+   * Normalizes image paths for consistent handling
    */
   const normalizeImagePath = useCallback((path: string): string => {
-    console.log(`🔧 Normalizing path: "${path}"`);
-    // Remove any URL encoding and normalize path separators
-    const decoded = decodeURIComponent(path);
-    console.log(`🔧 After decode: "${decoded}"`);
-    const normalized = decoded.replace(/\\/g, '/');
-    console.log(`🔧 Final normalized: "${normalized}"`);
-    return normalized;
-  }, []);
-
-  /**
-   * Loads and caches an image for synchronous rendering
-   */
-  const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
-    const normalizedSrc = normalizeImagePath(src);
-    
-    // Check shared cache first
-    const sharedCacheResult = getCachedImage(normalizedSrc);
-    
-    if (sharedCacheResult.image) {
-      console.log(`🎯 Found in shared cache: "${normalizedSrc}"`);
-      // Also store in local cache for consistency
-      imageCache.current.set(normalizedSrc, sharedCacheResult.image);
-      return sharedCacheResult.image;
-    }
-    
-    if (sharedCacheResult.hasFailed) {
-      console.log(`🚫 Previously failed in shared cache: "${normalizedSrc}"`);
-      failedImages.current.add(normalizedSrc);
-      return null;
-    }
-    
-    if (sharedCacheResult.isLoading) {
-      console.log(`⏳ Already loading in shared cache: "${normalizedSrc}"`);
-      return null;
-    }
-    
-    // Add detailed cache lookup logging with FULL paths
-    console.log(`🔍 Cache lookup for FULL PATH: "${normalizedSrc}"`);
-    const cacheStats = getCacheStats();
-    console.log(`📦 Shared cache has ${cacheStats.cached} images, local cache has ${imageCache.current.size} images`);
-    
-    // Return cached image if available in local cache
-    if (imageCache.current.has(normalizedSrc)) {
-      console.log(`✨ Cache HIT for FULL PATH: "${normalizedSrc}"`);
-      return imageCache.current.get(normalizedSrc)!;
-    }
-    
-    console.log(`❌ Cache MISS for FULL PATH: "${normalizedSrc}"`);
-    
-    // Don't retry failed images to prevent infinite loops
-    if (failedImages.current.has(normalizedSrc)) {
-      console.log(`🚫 Skipping failed image FULL PATH: "${normalizedSrc}"`);
-      return null;
-    }
-    
-    // Prevent duplicate loading requests
-    if (loadingImages.current.has(normalizedSrc)) {
-      console.log(`⏳ Already loading FULL PATH: "${normalizedSrc}"`);
-      return null;
-    }
-    
-    console.log(`📥 Starting load for FULL PATH: "${normalizedSrc}"`);
-    loadingImages.current.add(normalizedSrc);
-    setImageLoading(normalizedSrc); // Mark in shared cache too
-    
     try {
-      const img = new Image();
-      
-      return new Promise((resolve, reject) => {
-        // Set up timeout for hanging loads
-        const timeoutId = setTimeout(() => {
-          loadingImages.current.delete(normalizedSrc);
-          failedImages.current.add(normalizedSrc);
-          console.error(`⏰ TIMEOUT loading image: "${normalizedSrc}"`);
-          reject(new Error(`Timeout loading image: ${normalizedSrc}`));
-        }, 10000); // 10 second timeout
-
-        img.onload = () => {
-          clearTimeout(timeoutId);
-          // Cache the loaded image with normalized key
-          imageCache.current.set(normalizedSrc, img);
-          setCachedImage(normalizedSrc, img); // Add to shared cache
-          loadingImages.current.delete(normalizedSrc);
-          console.log(`✅ Regular Image cached FULL PATH: "${normalizedSrc}"`);
-          resolve(img);
-        };
-        
-        img.onerror = (error) => {
-          clearTimeout(timeoutId);
-          loadingImages.current.delete(normalizedSrc);
-          failedImages.current.add(normalizedSrc); // Mark as failed to prevent retries
-          setImageFailed(normalizedSrc, error); // Mark as failed in shared cache
-          console.error(`❌ img.onerror for FULL PATH: "${normalizedSrc}"`, error);
-          reject(new Error(`Failed to load image: ${normalizedSrc}`));
-        };
-        
-        // Handle SVG files by converting to blob URL
-        if (normalizedSrc.endsWith('.svg')) {
-          console.log(`🔍 SVG FETCH starting for: "${normalizedSrc}"`);
-          
-          fetch(normalizedSrc)
-            .then(response => {
-              console.log(`📡 SVG FETCH response for: "${normalizedSrc}"`, {
-                ok: response.ok,
-                status: response.status,
-                statusText: response.statusText,
-                url: response.url
-              });
-              
-              if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-              }
-              
-              return response.text();
-            })
-            .then(svgText => {
-              console.log(`📄 SVG TEXT received for: "${normalizedSrc}", length: ${svgText.length}`);
-              
-              const blob = new Blob([svgText], { type: 'image/svg+xml' });
-              const url = URL.createObjectURL(blob);
-              console.log(`🔗 SVG BLOB URL created for: "${normalizedSrc}" -> ${url}`);
-              
-              // Override onload for SVG
-              img.onload = () => {
-                clearTimeout(timeoutId);
-                imageCache.current.set(normalizedSrc, img);
-                setCachedImage(normalizedSrc, img); // Add to shared cache
-                loadingImages.current.delete(normalizedSrc);
-                URL.revokeObjectURL(url);
-                console.log(`✅ SVG Image cached FULL PATH: "${normalizedSrc}"`);
-                resolve(img);
-              };
-              
-              // Override onerror for SVG  
-              img.onerror = (error) => {
-                clearTimeout(timeoutId);
-                loadingImages.current.delete(normalizedSrc);
-                failedImages.current.add(normalizedSrc);
-                setImageFailed(normalizedSrc, error); // Mark as failed in shared cache
-                URL.revokeObjectURL(url);
-                console.error(`❌ SVG img.onerror for FULL PATH: "${normalizedSrc}"`, error);
-                reject(new Error(`Failed to load SVG image: ${normalizedSrc}`));
-              };
-              
-              img.src = url;
-              console.log(`🎯 SVG img.src set for: "${normalizedSrc}"`);
-            })
-            .catch(error => {
-              clearTimeout(timeoutId);
-              loadingImages.current.delete(normalizedSrc);
-              failedImages.current.add(normalizedSrc);
-              setImageFailed(normalizedSrc, error); // Mark as failed in shared cache
-              console.error(`❌ SVG FETCH failed for FULL PATH: "${normalizedSrc}"`, error);
-              reject(error);
-            });
-        } else {
-          img.src = normalizedSrc;
-        }
-      });
+      return decodeURIComponent(path);
     } catch (error) {
-      loadingImages.current.delete(normalizedSrc);
-      return null;
-    }
-  }, [normalizeImagePath]);
-
-  /**
-   * Sets up canvas for crisp rendering with proper pixel alignment
-   * @param canvas - Canvas element
-   * @param ctx - Canvas rendering context
-   */
-  const setupCanvasForCrispRendering = useCallback((canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
-    // Get device pixel ratio for high-DPI displays
-    const devicePixelRatio = window.devicePixelRatio || 1;
-    
-    // Get the display size (CSS pixels)
-    const displayWidth = Math.floor(canvas.offsetWidth);
-    const displayHeight = Math.floor(canvas.offsetHeight);
-    
-    // Set the actual size in memory (scaled up for high-DPI)
-    canvas.width = displayWidth * devicePixelRatio;
-    canvas.height = displayHeight * devicePixelRatio;
-    
-    // Scale the canvas back down using CSS
-    canvas.style.width = displayWidth + 'px';
-    canvas.style.height = displayHeight + 'px';
-    
-    // Scale the drawing context so everything draws at the correct size
-    ctx.scale(devicePixelRatio, devicePixelRatio);
-    
-    // Configure text rendering for crisp display
-    ctx.textBaseline = 'top';
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    
-    // Enable font smoothing
-    if ('textRenderingOptimizeSpeed' in ctx) {
-      (ctx as any).textRenderingOptimizeSpeed = false;
+      console.warn(`⚠️ Failed to decode path "${path}":`, error);
+      return path;
     }
   }, []);
 
   /**
    * Renders a single whiteboard object on the canvas
-   * @param ctx - Canvas rendering context
-   * @param obj - Whiteboard object to render
-   * @param isSelected - Whether the object is currently selected
    */
   const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, isSelected: boolean = false) => {
     ctx.save();
@@ -317,12 +106,10 @@ export const useCanvasRendering = (
     // Check if this is an eraser object
     const isEraser = obj.data?.isEraser;
     if (isEraser) {
-      // Set blend mode for eraser objects - this removes pixels
       ctx.globalCompositeOperation = 'destination-out';
     }
     
-    // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text
-    // Text objects are excluded because they have their own dashed border highlighting
+    // Draw selection highlight if selected and not eraser and not text
     if (isSelected && !isEraser && obj.type !== 'text') {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
@@ -332,21 +119,18 @@ export const useCanvasRendering = (
       
       switch (obj.type) {
         case 'path': {
-          // Draw the exact same path but with a thicker blue stroke
           ctx.translate(Math.round(obj.x), Math.round(obj.y));
           const path = new Path2D(obj.data.path);
-          ctx.lineWidth = (obj.strokeWidth || 2) + 6; // Add 6px to the original stroke width
+          ctx.lineWidth = (obj.strokeWidth || 2) + 6;
           ctx.stroke(path);
           break;
         }
         case 'rectangle': {
-          // Draw the exact same rectangle but with thicker blue stroke - use pixel-perfect positioning
           ctx.lineWidth = (obj.strokeWidth || 2) + 6;
           ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
           break;
         }
         case 'circle': {
-          // Draw the exact same circle but with thicker blue stroke - use pixel-perfect positioning
           const radiusX = Math.round(obj.width / 2);
           const radiusY = Math.round(obj.height / 2);
           const centerX = Math.round(obj.x + radiusX);
@@ -358,57 +142,17 @@ export const useCanvasRendering = (
           break;
         }
         case 'image': {
-          // Draw selection outline for image objects - use pixel-perfect positioning
           ctx.lineWidth = 6;
           ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
-          break;
-        }
-        case 'triangle':
-        case 'diamond':
-        case 'pentagon':
-        case 'hexagon':
-        case 'star':
-        case 'heart': {
-          // Draw selection outline for complex shapes - use pixel-perfect positioning
-          ctx.lineWidth = (obj.strokeWidth || 2) + 6;
-          
-          // Use rounded coordinates for pixel-perfect rendering
-          const roundedX = Math.round(obj.x);
-          const roundedY = Math.round(obj.y);
-          const roundedWidth = Math.round(obj.width);
-          const roundedHeight = Math.round(obj.height);
-          
-          // Render the shape outline with thick blue stroke
-          switch (obj.type) {
-            case 'triangle':
-              renderTriangle(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
-              break;
-            case 'diamond':
-              renderDiamond(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
-              break;
-            case 'pentagon':
-              renderPentagon(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
-              break;
-            case 'hexagon':
-              renderHexagon(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
-              break;
-            case 'star':
-              renderStar(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
-              break;
-            case 'heart':
-              renderHeart(ctx, roundedX, roundedY, roundedWidth, roundedHeight, undefined, '#007AFF', ctx.lineWidth);
-              break;
-          }
           break;
         }
       }
       ctx.restore();
     }
     
-    // Now draw the actual object ON TOP of the selection highlight
+    // Render the actual object
     switch (obj.type) {
       case 'path': {
-        // For paths, we need to apply translation and then draw the relative path
         ctx.translate(obj.x, obj.y);
         
         const brushType = obj.data?.brushType;
@@ -416,14 +160,11 @@ export const useCanvasRendering = (
         const strokeWidth = obj.strokeWidth || 2;
         const opacity = obj.opacity || 1;
         
-        // Get object ID for caching
         const objectId = Object.keys(objects).find(id => objects[id] === obj);
         
-        // Render based on brush type or if it's an eraser
         if (isEraser) {
-          // Render eraser as a solid path with round caps for smooth erasing
           const path = new Path2D(obj.data.path);
-          ctx.strokeStyle = '#000000'; // Color doesn't matter for destination-out
+          ctx.strokeStyle = '#000000';
           ctx.lineWidth = strokeWidth;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
@@ -437,7 +178,6 @@ export const useCanvasRendering = (
         } else if (brushType === 'crayon') {
           renderCrayonOptimized(ctx, obj.data.path, strokeColor, strokeWidth, opacity);
         } else {
-          // Default rendering for pencil or unknown brush types
           const path = new Path2D(obj.data.path);
           ctx.strokeStyle = strokeColor;
           ctx.lineWidth = strokeWidth;
@@ -450,7 +190,6 @@ export const useCanvasRendering = (
 
       case 'rectangle': {
         if (obj.width && obj.height) {
-          // Draw the original object
           if (obj.fill && obj.fill !== 'none') {
             ctx.fillStyle = obj.fill;
             ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
@@ -471,7 +210,6 @@ export const useCanvasRendering = (
           const centerX = obj.x + radiusX;
           const centerY = obj.y + radiusY;
           
-          // Draw the original object as an ellipse
           ctx.beginPath();
           ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
           
@@ -493,105 +231,63 @@ export const useCanvasRendering = (
         let imageSrc: string | null = null;
         let fallbackSrc: string | null = null;
         
-        // Handle custom stamps vs regular stamps with fallback
         if (imageData?.isCustomStamp && imageData?.customStampId) {
-          // For custom stamps, try the customStampId first
           imageSrc = imageData.customStampId;
-          // Use fallback if available, otherwise default fallback
           fallbackSrc = imageData?.fallbackSrc || '/icons/emotions/happy.svg';
         } else if (imageData?.src) {
-          // For regular stamps, use src directly
           imageSrc = imageData.src;
         }
         
         if (imageSrc && obj.width && obj.height) {
           const normalizedSrc = normalizeImagePath(imageSrc);
-          const cachedImage = imageCache.current.get(normalizedSrc);
+          const cached = getCachedImage(normalizedSrc);
           
-          console.log(`🎯 Render lookup for: "${normalizedSrc.slice(-30)}" - Found: ${!!cachedImage}`);
-          
-          if (cachedImage) {
+          if (cached.image) {
             // Image is ready, render it
             ctx.drawImage(
-              cachedImage, 
+              cached.image, 
               Math.round(obj.x), 
               Math.round(obj.y), 
               Math.round(obj.width), 
               Math.round(obj.height)
             );
-          } else {
-            // Load image asynchronously using normalized src for consistency
-            getOrLoadImage(normalizedSrc).then(() => {
-              // Only redraw if canvas still exists
-              if (canvas) {
-                redrawCanvas(false, `image-loaded:${normalizedSrc}`);
+          } else if (!cached.isLoading && !cached.hasFailed) {
+            // Start loading the image asynchronously
+            loadImage(normalizedSrc).then(img => {
+              if (img && canvas) {
+                redrawCanvas(false, `image-loaded:${normalizedSrc.slice(-20)}`);
               }
             }).catch(error => {
-              console.warn('Failed to load image for rendering:', error);
+              console.warn('Failed to load image:', error);
               
-              // If it's a custom stamp and we have a fallback, try loading that ONCE
+              // Try fallback if available
               if (fallbackSrc) {
                 const normalizedFallbackSrc = normalizeImagePath(fallbackSrc);
-                if (!imageCache.current.has(normalizedFallbackSrc) && !failedImages.current.has(normalizedFallbackSrc)) {
-                  getOrLoadImage(normalizedFallbackSrc).then(() => {
-                    if (canvas) {
-                      redrawCanvas(false, `fallback-loaded:${normalizedFallbackSrc}`);
-                    }
-                  }).catch(fallbackError => {
-                    console.error('Failed to load fallback image:', fallbackError);
-                    // Don't trigger more redraws here - fallback failed permanently
-                  });
-                }
+                loadImage(normalizedFallbackSrc).then(fallbackImg => {
+                  if (fallbackImg && canvas) {
+                    redrawCanvas(false, `fallback-loaded:${normalizedFallbackSrc.slice(-20)}`);
+                  }
+                }).catch(() => {
+                  // Fallback also failed, nothing more to do
+                });
               }
             });
+          } else if (fallbackSrc) {
+            // Try rendering fallback
+            const normalizedFallbackSrc = normalizeImagePath(fallbackSrc);
+            const fallbackCached = getCachedImage(normalizedFallbackSrc);
             
-            // If we have a fallback and the main image failed, try rendering the fallback
-            if (fallbackSrc) {
-              const normalizedFallbackSrc = normalizeImagePath(fallbackSrc);
-              if (imageCache.current.has(normalizedFallbackSrc)) {
-                const fallbackImage = imageCache.current.get(normalizedFallbackSrc)!;
-                ctx.globalAlpha = 0.7; // Slightly transparent to indicate fallback
-                ctx.drawImage(
-                  fallbackImage, 
-                  Math.round(obj.x), 
-                  Math.round(obj.y), 
-                  Math.round(obj.width), 
-                  Math.round(obj.height)
-                );
-                ctx.globalAlpha = 1;
-              }
+            if (fallbackCached.image) {
+              ctx.globalAlpha = 0.7;
+              ctx.drawImage(
+                fallbackCached.image, 
+                Math.round(obj.x), 
+                Math.round(obj.y), 
+                Math.round(obj.width), 
+                Math.round(obj.height)
+              );
+              ctx.globalAlpha = 1;
             }
-          }
-        }
-        break;
-      }
-
-      case 'triangle':
-      case 'diamond':
-      case 'pentagon':
-      case 'hexagon':
-      case 'star':
-      case 'heart': {
-        if (obj.width && obj.height) {
-          switch (obj.type) {
-            case 'triangle':
-              renderTriangle(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-              break;
-            case 'diamond':
-              renderDiamond(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-              break;
-            case 'pentagon':
-              renderPentagon(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-              break;
-            case 'hexagon':
-              renderHexagon(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-              break;
-            case 'star':
-              renderStar(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-              break;
-            case 'heart':
-              renderHeart(ctx, obj.x, obj.y, obj.width, obj.height, obj.fill, obj.stroke, obj.strokeWidth);
-              break;
           }
         }
         break;
@@ -601,31 +297,26 @@ export const useCanvasRendering = (
         if (obj.data?.content && obj.width && obj.height) {
           const textData = obj.data as TextData;
           
-          // Get the text content to render - use live editing text if this object is being edited
           const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
           let contentToRender = isBeingEdited && editingText !== undefined ? editingText : textData.content;
           
-          // Always show placeholder for empty content
           if (!contentToRender || contentToRender.trim() === '') {
             contentToRender = 'Double-click to edit';
           }
           
-          // Set font properties - make placeholder text lighter
           let fontStyle = '';
           if (textData.italic) fontStyle += 'italic ';
-          if (textData.bold && contentToRender !== 'Double-click to edit') fontStyle += 'bold '; // Don't bold placeholder text
+          if (textData.bold && contentToRender !== 'Double-click to edit') fontStyle += 'bold ';
           
           ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
           
-          // Make placeholder text lighter but not too light
           if (contentToRender === 'Double-click to edit') {
-            ctx.fillStyle = obj.stroke ? `${obj.stroke}B3` : '#000000B3'; // 70% opacity for placeholder
+            ctx.fillStyle = obj.stroke ? `${obj.stroke}B3` : '#000000B3';
           } else {
             ctx.fillStyle = obj.stroke || '#000000';
           }
           ctx.textBaseline = 'top';
           
-          // Handle text alignment
           switch (textData.textAlign) {
             case 'left':
               ctx.textAlign = 'left';  
@@ -640,14 +331,10 @@ export const useCanvasRendering = (
               ctx.textAlign = 'left';
           }
           
-          // Calculate pixel-aligned text positions - use consistent 4px top padding
-          const textXBase = Math.round(obj.x + 4); // Add 4px left padding to match textarea
-          const textYBase = Math.round(obj.y + 4); // 4px padding from top
+          const textXBase = Math.round(obj.x + 4);
+          const textYBase = Math.round(obj.y + 4);
+          const availableWidth = Math.max(obj.width - 8, 50);
           
-          // Calculate available width for text wrapping (subtract padding)
-          const availableWidth = Math.max(obj.width - 8, 50); // Subtract left and right padding, minimum 50px
-          
-          // Use the same measureText function as the measurement system for consistent wrapping
           const textMetrics = measureText(
             contentToRender,
             textData.fontSize,
@@ -657,14 +344,7 @@ export const useCanvasRendering = (
             availableWidth
           );
           
-          console.log('🎨 Canvas text rendering:', {
-            content: contentToRender.slice(0, 50) + (contentToRender.length > 50 ? '...' : ''),
-            availableWidth,
-            measuredLines: textMetrics.lines.length,
-            lines: textMetrics.lines
-          });
-          
-          // Render each line with proper alignment
+          // Render each line
           for (let i = 0; i < textMetrics.lines.length; i++) {
             const line = textMetrics.lines[i];
             const lineY = Math.round(textYBase + (i * textMetrics.lineHeight));
@@ -673,28 +353,25 @@ export const useCanvasRendering = (
             if (textData.textAlign === 'center') {
               textX = Math.round(obj.x + obj.width / 2);
             } else if (textData.textAlign === 'right') {
-              textX = Math.round(obj.x + obj.width - 4); // Subtract right padding
+              textX = Math.round(obj.x + obj.width - 4);
             }
             
             ctx.fillText(line, textX, lineY);
           }
           
-          // Draw underline if enabled - using accurate text measurements and closer positioning
+          // Draw underline if enabled
           if (textData.underline && contentToRender !== 'Double-click to edit') {
             ctx.save();
             ctx.strokeStyle = obj.stroke || '#000000';
             ctx.lineWidth = 1;
             
-            // Draw underline for each line individually
             for (let i = 0; i < textMetrics.lines.length; i++) {
               const lineText = textMetrics.lines[i];
-              if (lineText.length === 0) continue; // Skip empty lines
+              if (lineText.length === 0) continue;
               
-              // Measure the actual text width
               const textMeasurement = ctx.measureText(lineText);
               const textWidth = textMeasurement.width;
               
-              // Calculate underline position based on text alignment
               let underlineStartX = textXBase;
               if (textData.textAlign === 'center') {
                 underlineStartX = Math.round((obj.x + obj.width / 2) - textWidth / 2);
@@ -703,7 +380,6 @@ export const useCanvasRendering = (
               }
               
               const underlineEndX = Math.round(underlineStartX + textWidth);
-              // Move underline much closer to text - only 2px below baseline instead of fontSize + 2
               const underlineY = Math.round(textYBase + (i * textMetrics.lineHeight) + textData.fontSize - 2);
               
               ctx.beginPath();
@@ -714,10 +390,9 @@ export const useCanvasRendering = (
             ctx.restore();
           }
           
-          // Draw text box border - only show dashed border when selected (not being edited) or for placeholder
+          // Draw text box border
           if ((isSelected && !isBeingEdited) || contentToRender === 'Double-click to edit') {
             ctx.save();
-            // Use blue color if selected, otherwise use gray for placeholder
             ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc';
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
@@ -729,19 +404,16 @@ export const useCanvasRendering = (
       }
       
       default: {
-        // Handle unknown object types gracefully
         console.warn('Unknown object type:', obj.type);
         break;
       }
     }
 
     ctx.restore();
-  }, [editingTextId, editingText, objects, getOrLoadImage, canvas]);
+  }, [editingTextId, editingText, objects, canvas, normalizeImagePath]);
 
   /**
-   * Renders the current drawing preview (work-in-progress path)
-   * @param ctx - Canvas rendering context
-   * @param preview - Drawing preview data
+   * Renders the current drawing preview
    */
   const renderDrawingPreview = useCallback((ctx: CanvasRenderingContext2D, preview: any) => {
     if (!preview) return;
@@ -749,10 +421,8 @@ export const useCanvasRendering = (
     ctx.save();
     ctx.translate(preview.startX, preview.startY);
     
-    // Check if this is an eraser preview
     if (preview.isEraser) {
-      // Render eraser preview with a semi-transparent red outline to show where it will erase
-      ctx.globalCompositeOperation = 'source-over'; // Normal blend for preview
+      ctx.globalCompositeOperation = 'source-over';
       ctx.strokeStyle = preview.strokeColor;
       ctx.lineWidth = preview.strokeWidth;
       ctx.lineCap = 'round';
@@ -764,7 +434,6 @@ export const useCanvasRendering = (
     } else {
       const brushType = preview.brushType;
       
-      // Render preview based on brush type (no caching for previews)
       if (brushType === 'paintbrush') {
         renderPaintbrushOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else if (brushType === 'chalk') {
@@ -774,7 +443,6 @@ export const useCanvasRendering = (
       } else if (brushType === 'crayon') {
         renderCrayonOptimized(ctx, preview.path, preview.strokeColor, preview.strokeWidth, preview.opacity);
       } else {
-        // Default rendering for pencil
         const path = new Path2D(preview.path);
         ctx.strokeStyle = preview.strokeColor;
         ctx.lineWidth = preview.strokeWidth;
@@ -789,22 +457,19 @@ export const useCanvasRendering = (
   }, []);
 
   /**
-   * Renders the current shape preview (work-in-progress shape)
-   * @param ctx - Canvas rendering context
-   * @param preview - Shape preview data
+   * Renders the current shape preview
    */
   const renderShapePreview = useCallback((ctx: CanvasRenderingContext2D, preview: any) => {
     if (!preview) return;
     
     ctx.save();
-    ctx.globalAlpha = preview.opacity * 0.7; // Make preview slightly transparent
+    ctx.globalAlpha = preview.opacity * 0.7;
     
     const width = Math.abs(preview.endX - preview.startX);
     const height = Math.abs(preview.endY - preview.startY);
     const x = Math.min(preview.startX, preview.endX);
     const y = Math.min(preview.startY, preview.endY);
     
-    // Set stroke and fill styles
     if (preview.strokeColor) {
       ctx.strokeStyle = preview.strokeColor;
       ctx.lineWidth = preview.strokeWidth;
@@ -815,7 +480,6 @@ export const useCanvasRendering = (
     
     switch (preview.type) {
       case 'text': {
-        // Draw text box preview with dashed border only - no placeholder text
         ctx.save();
         ctx.strokeStyle = preview.strokeColor || '#000000';
         ctx.lineWidth = 1;
@@ -852,118 +516,17 @@ export const useCanvasRendering = (
         }
         break;
       }
-      
-      case 'triangle':
-      case 'diamond':
-      case 'pentagon':
-      case 'hexagon':
-      case 'star':
-      case 'heart': {
-        const shapePath = generateShapePathPreview(preview.type, x, y, width, height);
-        if (shapePath) {
-          const path = new Path2D(shapePath);
-          
-          if (preview.fillColor && preview.fillColor !== 'transparent') {
-            ctx.fill(path);
-          }
-          if (preview.strokeColor) {
-            ctx.stroke(path);
-          }
-        }
-        break;
-      }
     }
     
     ctx.restore();
   }, []);
 
   /**
-   * Generates SVG path data for complex shape previews
-   */
-  const generateShapePathPreview = useCallback((shapeType: string, x: number, y: number, width: number, height: number): string => {
-    const centerX = x + width / 2;
-    const centerY = y + height / 2;
-    
-    switch (shapeType) {
-      case 'triangle':
-        return `M ${centerX} ${y} L ${x + width} ${y + height} L ${x} ${y + height} Z`;
-      
-      case 'diamond':
-        return `M ${centerX} ${y} L ${x + width} ${centerY} L ${centerX} ${y + height} L ${x} ${centerY} Z`;
-      
-      case 'pentagon': {
-        const pentagonPoints = [];
-        for (let i = 0; i < 5; i++) {
-          const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-          // Use separate width and height scaling instead of circular radius
-          const px = centerX + (width / 2) * Math.cos(angle);
-          const py = centerY + (height / 2) * Math.sin(angle);
-          pentagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
-        }
-        return pentagonPoints.join(' ') + ' Z';
-      }
-      
-      case 'hexagon': {
-        const hexagonPoints = [];
-        for (let i = 0; i < 6; i++) {
-          const angle = (i * 2 * Math.PI) / 6;
-          // Use separate width and height scaling instead of circular radius
-          const px = centerX + (width / 2) * Math.cos(angle);
-          const py = centerY + (height / 2) * Math.sin(angle);
-          hexagonPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
-        }
-        return hexagonPoints.join(' ') + ' Z';
-      }
-      
-      case 'star': {
-        const starPoints = [];
-        const outerRadiusX = width / 2;
-        const outerRadiusY = height / 2;
-        const innerRadiusX = outerRadiusX * 0.4;
-        const innerRadiusY = outerRadiusY * 0.4;
-        
-        for (let i = 0; i < 10; i++) {
-          const angle = (i * Math.PI) / 5 - Math.PI / 2;
-          // Use separate X and Y scaling for non-circular stars
-          const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
-          const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
-          const px = centerX + radiusX * Math.cos(angle);
-          const py = centerY + radiusY * Math.sin(angle);
-          starPoints.push(`${i === 0 ? 'M' : 'L'} ${px} ${py}`);
-        }
-        return starPoints.join(' ') + ' Z';
-      }
-      
-      case 'heart': {
-        // Heart shape using cubic bezier curves
-        const heartWidth = width;
-        const heartHeight = height;
-        const topCurveHeight = heartHeight * 0.3;
-        const centerXHeart = x + width / 2;
-        const centerYHeart = y + height / 2;
-        
-        return `M ${centerXHeart} ${y + heartHeight * 0.3}
-                C ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.2} ${y}, ${centerXHeart - heartWidth * 0.4} ${y}
-                C ${centerXHeart - heartWidth * 0.6} ${y}, ${centerXHeart - heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}
-                C ${centerXHeart - heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart} ${y + heartHeight}
-                C ${centerXHeart} ${y + heartHeight * 0.6}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}, ${centerXHeart + heartWidth * 0.5} ${y + topCurveHeight}
-                C ${centerXHeart + heartWidth * 0.8} ${y + topCurveHeight * 0.5}, ${centerXHeart + heartWidth * 0.6} ${y}, ${centerXHeart + heartWidth * 0.4} ${y}
-                C ${centerXHeart + heartWidth * 0.2} ${y}, ${centerXHeart} ${y + topCurveHeight * 0.5}, ${centerXHeart} ${y + heartHeight * 0.3} Z`;
-      }
-      
-      default:
-        return '';
-    }
-  }, []);
-
-  /**
-   * Renders all whiteboard objects on the canvas
-   * @param ctx - Canvas rendering context
+   * Renders all whiteboard objects
    */
   const renderAllObjects = useCallback((ctx: CanvasRenderingContext2D) => {
     const objectEntries = Object.entries(objects);
     
-    // Sort by creation time to maintain z-order
     objectEntries.sort(([, a], [, b]) => a.createdAt - b.createdAt);
     
     objectEntries.forEach(([id, obj]) => {
@@ -972,170 +535,117 @@ export const useCanvasRendering = (
     });
   }, [objects, selectedObjectIds, renderObject]);
 
-  // Throttle canvas redraws to improve performance during drawing
-  const lastRedrawTime = useRef<number>(0);
-  const REDRAW_THROTTLE_MS = 16; // 60fps throttling
-
   const redrawCanvas = useCallback((immediate = false, source = 'unknown') => {
     if (!canvas) return;
 
-    // Circuit breaker: prevent infinite loops
-    redrawCounter.current++;
+    // Circuit breaker
+    redrawCount.current++;
+    const now = Date.now();
+    const elapsed = now - lastRedrawTime.current;
     
-    // Reset counter every 2 seconds
-    if (redrawResetTimer.current) {
-      window.clearTimeout(redrawResetTimer.current);
-    }
-    redrawResetTimer.current = window.setTimeout(() => {
-      redrawCounter.current = 0;
-    }, 2000);
-    
-    // If too many redraws in short time, stop and log error
-    if (redrawCounter.current > 50) {
+    if (redrawCount.current > 100 && elapsed < 5000) {
       console.error('🚨 INFINITE REDRAW LOOP DETECTED - CIRCUIT BREAKER ACTIVATED', {
         source,
-        count: redrawCounter.current,
-        objectCount: Object.keys(objects).length,
-        failedImages: Array.from(failedImages.current),
-        cachedImages: Array.from(imageCache.current.keys())
+        count: redrawCount.current,
+        objectCount: objects.length,
+        elapsed: `${elapsed}ms`
       });
       return;
     }
-
-    const now = Date.now();
-    console.log(`🔍 REDRAW #${redrawCounter.current} TRIGGERED BY: ${source}`);
     
-    // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
-    const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
-    const shouldRedrawImmediately = immediate || !hasDrawingPreview;
-    
-    // If immediate redraw is requested, no drawing preview (drawing ended), or enough time has passed, redraw now
-    if (shouldRedrawImmediately || now - lastRedrawTime.current >= REDRAW_THROTTLE_MS) {
+    // Reset counter periodically
+    if (elapsed > 5000) {
+      redrawCount.current = 0;
       lastRedrawTime.current = now;
-      
-      // Clear any pending timeout
-      if (redrawTimeoutRef.current) {
-        window.clearTimeout(redrawTimeoutRef.current);
-        redrawTimeoutRef.current = null;
-      }
-      
+    }
+
+    console.log(`🔍 REDRAW #${redrawCount.current} TRIGGERED BY: ${source}`);
+    
+    if (throttleTimeout.current) {
+      clearTimeout(throttleTimeout.current);
+    }
+    
+    if (immediate) {
       performRedraw();
     } else {
-      // Throttle the redraw only during active drawing - schedule it for later if not already scheduled
-      if (!redrawTimeoutRef.current) {
-        const timeUntilNextRedraw = REDRAW_THROTTLE_MS - (now - lastRedrawTime.current);
-        
-        redrawTimeoutRef.current = window.setTimeout(() => {
-          redrawTimeoutRef.current = null;
-          lastRedrawTime.current = Date.now();
-          performRedraw();
-        }, timeUntilNextRedraw);
-      }
+      throttleTimeout.current = setTimeout(performRedraw, 16); // 60fps
     }
-  }, [canvas, viewport, objects, selectedObjectIds, settings, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText]);
+  }, [canvas, objects]);
 
   const performRedraw = useCallback(() => {
     if (!canvas) return;
 
-    // Set up canvas for crisp, pixel-aligned rendering using the constrained whiteboard size
+    const ctx = canvas.getContext('2d')!;
     const devicePixelRatio = window.devicePixelRatio || 1;
     
-    canvas.width = activeWhiteboardSize.width * devicePixelRatio;
-    canvas.height = activeWhiteboardSize.height * devicePixelRatio;
-    canvas.style.width = activeWhiteboardSize.width + 'px';
-    canvas.style.height = activeWhiteboardSize.height + 'px';
+    // Set up canvas
+    const displayWidth = Math.floor(canvas.offsetWidth);
+    const displayHeight = Math.floor(canvas.offsetHeight);
     
-    const ctx = canvas.getContext('2d')!;
+    canvas.width = displayWidth * devicePixelRatio;
+    canvas.height = displayHeight * devicePixelRatio;
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
+    
     ctx.scale(devicePixelRatio, devicePixelRatio);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    // Clear the entire canvas completely
-    ctx.clearRect(0, 0, activeWhiteboardSize.width, activeWhiteboardSize.height);
+    // Clear canvas
+    ctx.clearRect(0, 0, displayWidth, displayHeight);
 
-    // Draw background patterns
-    if (settings.gridVisible) {
-      drawGrid(ctx, activeWhiteboardSize.width, activeWhiteboardSize.height);
-    }
-
-    if (settings.linedPaperVisible) {
-      drawLinedPaper(ctx, activeWhiteboardSize.width, activeWhiteboardSize.height);
-    }
-
-    if (settings.showDots) {
-      drawDots(ctx, activeWhiteboardSize.width, activeWhiteboardSize.height);
-    }
-
-    // Draw all objects with their current positions
+    // Draw all objects
     renderAllObjects(ctx);
 
-    // Draw current drawing preview if available
-    if (getCurrentDrawingPreview) {
-      const preview = getCurrentDrawingPreview();
-      if (preview) {
-        renderDrawingPreview(ctx, preview);
-      }
+    // Draw previews
+    const drawingPreview = getCurrentDrawingPreview?.();
+    if (drawingPreview) {
+      renderDrawingPreview(ctx, drawingPreview);
     }
 
-    // Draw current shape preview if available
-    if (getCurrentShapePreview) {
-      const shapePreview = getCurrentShapePreview();
-      if (shapePreview) {
-        renderShapePreview(ctx, shapePreview);
-      }
+    const shapePreview = getCurrentShapePreview?.();
+    if (shapePreview) {
+      renderShapePreview(ctx, shapePreview);
     }
 
-    // Draw selection box if available
-    if (getCurrentSelectionBox) {
-      const selectionBox = getCurrentSelectionBox();
-      if (selectionBox && selectionBox.isActive) {
-        ctx.save();
-        
-        // Calculate box dimensions
-        const width = selectionBox.endX - selectionBox.startX;
-        const height = selectionBox.endY - selectionBox.startY;
-        const left = Math.min(selectionBox.startX, selectionBox.endX);
-        const top = Math.min(selectionBox.startY, selectionBox.endY);
-        
-        // Draw selection box with blue border and light blue fill
-        ctx.strokeStyle = '#007AFF';
-        ctx.fillStyle = 'rgba(0, 122, 255, 0.1)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]); // Dashed border
-        
-        // Fill the selection area
-        ctx.fillRect(left, top, Math.abs(width), Math.abs(height));
-        
-        // Stroke the border
-        ctx.strokeRect(left, top, Math.abs(width), Math.abs(height));
-        
-        ctx.restore();
-      }
+    // Draw selection box
+    const selectionBox = getCurrentSelectionBox?.();
+    if (selectionBox && selectionBox.isActive) {
+      ctx.save();
+      
+      const width = selectionBox.endX - selectionBox.startX;
+      const height = selectionBox.endY - selectionBox.startY;
+      const left = Math.min(selectionBox.startX, selectionBox.endX);
+      const top = Math.min(selectionBox.startY, selectionBox.endY);
+      
+      ctx.strokeStyle = '#007AFF';
+      ctx.fillStyle = 'rgba(0, 122, 255, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      
+      ctx.fillRect(left, top, Math.abs(width), Math.abs(height));
+      ctx.strokeRect(left, top, Math.abs(width), Math.abs(height));
+      
+      ctx.restore();
     }
 
-    console.log('🎨 Canvas redrawn with crisp rendering:', {
+    console.log('🎨 Canvas redrawn:', {
       objectCount: Object.keys(objects).length,
       selectedCount: selectedObjectIds.length,
-      canvasSize: { width: canvas.width, height: canvas.height },
-      devicePixelRatio: window.devicePixelRatio || 1,
-      hasDrawingPreview: !!getCurrentDrawingPreview?.(),
-      hasShapePreview: !!getCurrentShapePreview?.(),
-      hasSelectionBox: !!getCurrentSelectionBox?.()?.isActive,
-      editingTextId: editingTextId || 'none',
-      cachedImages: imageCache.current.size
+      canvasSize: { width: canvas.width, height: canvas.height }
     });
-  }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, getCurrentSelectionBox, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
+  }, [canvas, objects, selectedObjectIds, renderAllObjects, renderDrawingPreview, renderShapePreview, getCurrentDrawingPreview, getCurrentShapePreview, getCurrentSelectionBox]);
 
   // Auto-redraw when state changes
   useEffect(() => {
     redrawCanvas(false, 'state-change');
   }, [redrawCanvas]);
 
-  // Cleanup throttle timeout on unmount
+  // Cleanup
   useEffect(() => {
     return () => {
-      if (redrawTimeoutRef.current) {
-        window.clearTimeout(redrawTimeoutRef.current);
+      if (throttleTimeout.current) {
+        clearTimeout(throttleTimeout.current);
       }
     };
   }, []);
@@ -1147,69 +657,4 @@ export const useCanvasRendering = (
   };
 };
 
-/**
- * Draws a grid pattern on the canvas
- * @param ctx - Canvas rendering context
- * @param width - Canvas width
- * @param height - Canvas height
- */
-const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
-  const GRID_SIZE = 20;
-  const GRID_COLOR = '#e5e7eb'; // Subtle light grey like grid paper
-  
-  ctx.save();
-  ctx.strokeStyle = GRID_COLOR;
-  ctx.lineWidth = 0.5; // Thinner lines for subtlety
-
-  // Draw vertical lines
-  for (let x = 0; x <= width; x += GRID_SIZE) {
-    ctx.beginPath();
-    ctx.moveTo(x + 0.5, 0);
-    ctx.lineTo(x + 0.5, height);
-    ctx.stroke();
-  }
-
-  // Draw horizontal lines
-  for (let y = 0; y <= height; y += GRID_SIZE) {
-    ctx.beginPath();
-    ctx.moveTo(0, y + 0.5);
-    ctx.lineTo(width, y + 0.5);
-    ctx.stroke();
-  }
-  ctx.restore();
-};
-
-const drawLinedPaper = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
-  const LINE_SPACING = 24;
-  const LINE_COLOR = '#d1d5db'; // Subtle light grey like notebook paper
-  
-  ctx.save();
-  ctx.strokeStyle = LINE_COLOR;
-  ctx.lineWidth = 0.5; // Thin lines like real paper
-
-  for (let y = LINE_SPACING; y <= height; y += LINE_SPACING) {
-    ctx.beginPath();
-    ctx.moveTo(0, y + 0.5);
-    ctx.lineTo(width, y + 0.5);
-    ctx.stroke();
-  }
-  ctx.restore();
-};
-
-const drawDots = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
-  const DOT_SPACING = 20;
-  const DOT_COLOR = '#d1d5db'; // Subtle light grey like graph paper
-  const DOT_RADIUS = 1; // Small dots like real graph paper
-  
-  ctx.save();
-  ctx.fillStyle = DOT_COLOR;
-  
-  for (let x = DOT_SPACING; x <= width; x += DOT_SPACING) {
-    for (let y = DOT_SPACING; y <= height; y += DOT_SPACING) {
-      ctx.beginPath();
-      ctx.arc(x, y, DOT_RADIUS, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-  }
-  ctx.restore();
-};
+export { useCanvasRendering };
