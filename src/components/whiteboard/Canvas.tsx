@@ -671,12 +671,14 @@ export const Canvas: React.FC = () => {
       tabIndex={0}
       style={{ outline: 'none' }}
     >
-      {/* Whiteboard area with elegant styling */}
+      {/* Whiteboard area with elegant styling - centered */}
       <div 
-        className="absolute top-0 left-0 bg-background"
+        className="absolute bg-background"
         style={{
           width: activeWhiteboardSize.width,
           height: activeWhiteboardSize.height,
+          left: `calc(50% - ${activeWhiteboardSize.width / 2}px)`,
+          top: `calc(50% - ${activeWhiteboardSize.height / 2}px)`,
           boxShadow: '0 8px 32px -4px hsl(var(--foreground) / 0.08), 0 2px 8px -2px hsl(var(--foreground) / 0.04), 0 0 0 1px hsl(var(--border) / 0.1)',
           borderRadius: hasMultipleUsers ? '12px' : '4px'
         }}
@@ -703,14 +705,51 @@ export const Canvas: React.FC = () => {
       {/* Enhanced non-whiteboard areas - only show in multiplayer */}
       {hasMultipleUsers && (
         <>
+          {/* Left side overlay */}
+          <div 
+            className="absolute top-0 bottom-0 pointer-events-none"
+            style={{
+              left: 0,
+              right: `calc(50% + ${activeWhiteboardSize.width / 2}px)`,
+              background: 'linear-gradient(90deg, hsl(var(--muted) / 0.5) 0%, hsl(var(--muted) / 0.3) 100%)',
+              backgroundImage: `
+                repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 30px,
+                  hsl(var(--border) / 0.05) 30px,
+                  hsl(var(--border) / 0.05) 32px
+                )
+              `
+            }}
+          />
+          
           {/* Right side overlay */}
           <div 
-            className="absolute top-0 pointer-events-none"
+            className="absolute top-0 bottom-0 pointer-events-none"
             style={{
-              left: activeWhiteboardSize.width,
+              left: `calc(50% + ${activeWhiteboardSize.width / 2}px)`,
               right: 0,
-              height: '100%',
               background: 'linear-gradient(90deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--muted) / 0.5) 100%)',
+              backgroundImage: `
+                repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 30px,
+                  hsl(var(--border) / 0.05) 30px,
+                  hsl(var(--border) / 0.05) 32px
+                )
+              `
+            }}
+          />
+          
+          {/* Top overlay */}
+          <div 
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{
+              top: 0,
+              bottom: `calc(50% + ${activeWhiteboardSize.height / 2}px)`,
+              background: 'linear-gradient(180deg, hsl(var(--muted) / 0.5) 0%, hsl(var(--muted) / 0.3) 100%)',
               backgroundImage: `
                 repeating-linear-gradient(
                   45deg,
@@ -725,11 +764,10 @@ export const Canvas: React.FC = () => {
           
           {/* Bottom overlay */}
           <div 
-            className="absolute left-0 pointer-events-none"
+            className="absolute left-0 right-0 pointer-events-none"
             style={{
-              top: activeWhiteboardSize.height,
+              top: `calc(50% + ${activeWhiteboardSize.height / 2}px)`,
               bottom: 0,
-              width: '100%',
               background: 'linear-gradient(180deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--muted) / 0.5) 100%)',
               backgroundImage: `
                 repeating-linear-gradient(
@@ -738,27 +776,6 @@ export const Canvas: React.FC = () => {
                   transparent 30px,
                   hsl(var(--border) / 0.05) 30px,
                   hsl(var(--border) / 0.05) 32px
-                )
-              `
-            }}
-          />
-          
-          {/* Corner overlay where right and bottom meet */}
-          <div 
-            className="absolute pointer-events-none"
-            style={{
-              left: activeWhiteboardSize.width,
-              top: activeWhiteboardSize.height,
-              right: 0,
-              bottom: 0,
-              background: 'hsl(var(--muted) / 0.6)',
-              backgroundImage: `
-                repeating-linear-gradient(
-                  45deg,
-                  transparent,
-                  transparent 20px,
-                  hsl(var(--border) / 0.08) 20px,
-                  hsl(var(--border) / 0.08) 22px
                 )
               `
             }}
