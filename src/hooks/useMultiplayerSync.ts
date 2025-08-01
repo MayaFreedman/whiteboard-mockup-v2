@@ -232,12 +232,14 @@ export const useMultiplayerSync = () => {
     if (!hasReceivedInitialStateRef.current && connectedUserCount > 1 && !hasEverBeenInRoomRef.current && !hasRequestedStateRef.current) {
       console.log('📤 Requesting initial state - new user joining')
       hasEverBeenInRoomRef.current = true // Mark that we've now been in a room with others
+      hasRequestedStateRef.current = true // Mark immediately to prevent duplicate requests
+      
       // Small delay to ensure room is fully initialized
       setTimeout(() => {
         requestInitialState()
       }, 100)
     }
-  }, [connectedUserCount, isConnected, serverInstance])
+  }, [connectedUserCount, isConnected])
 
   /**
    * Reset state sync flags when disconnecting
