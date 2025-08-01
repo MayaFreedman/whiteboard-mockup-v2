@@ -158,7 +158,7 @@ export const Canvas: React.FC = () => {
     }
     
     updateObject(objectId, newBounds);
-    redrawCanvas();
+    redrawCanvas(true, 'manual-resize');
     
     // Clear the flag after a short delay to allow the resize operation to complete
     setTimeout(() => {

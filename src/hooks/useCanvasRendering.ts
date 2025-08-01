@@ -1090,7 +1090,12 @@ export const useCanvasRendering = (
 
   // Auto-redraw when state changes
   useEffect(() => {
-    redrawCanvas(false, 'state-change');
+    // Don't trigger auto-redraw during manual resize operations
+    if (!isManualResizing.current) {
+      redrawCanvas(false, 'state-change');
+    } else {
+      console.log('🚫 Skipping state-change redraw during manual resize');
+    }
   }, [redrawCanvas]);
 
   // Cleanup throttle timeout on unmount
