@@ -94,9 +94,6 @@ export const useCanvasRendering = (
   const failedImages = useRef<Set<string>>(new Set());
   // Debounce redraw to prevent excessive calls
   const redrawTimeoutRef = useRef<number | null>(null);
-  // Circuit breaker to prevent infinite loops
-  const redrawCounter = useRef<number>(0);
-  const redrawResetTimer = useRef<number | null>(null);
 
   /**
    * Normalizes image path for consistent cache keys
@@ -979,37 +976,13 @@ export const useCanvasRendering = (
   const redrawCanvas = useCallback((immediate = false, source = 'unknown') => {
     if (!canvas) return;
 
-    // Circuit breaker: prevent infinite loops
-    redrawCounter.current++;
-    
-    // Reset counter every 2 seconds
-    if (redrawResetTimer.current) {
-      window.clearTimeout(redrawResetTimer.current);
-    }
-    redrawResetTimer.current = window.setTimeout(() => {
-      redrawCounter.current = 0;
-    }, 2000);
-    
-    // If too many redraws in short time, stop and log error
-    if (redrawCounter.current > 50) {
-      console.error('🚨 INFINITE REDRAW LOOP DETECTED - CIRCUIT BREAKER ACTIVATED', {
-        source,
-        count: redrawCounter.current,
-        objectCount: Object.keys(objects).length,
-        failedImages: Array.from(failedImages.current),
-        cachedImages: Array.from(imageCache.current.keys())
-      });
-      return;
-    }
-
     const now = Date.now();
-    console.log(`🔍 REDRAW #${redrawCounter.current} TRIGGERED BY: ${source}`);
     
     // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
     const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
-    const shouldRedrawImmediately = immediate || !hasDrawingPreview;
+    const shouldRedrawImmediately = immediate || hasDrawingPreview;
     
-    // If immediate redraw is requested, no drawing preview (drawing ended), or enough time has passed, redraw now
+    // If immediate redraw is requested, drawing preview exists (drawing is active), or enough time has passed, redraw now
     if (shouldRedrawImmediately || now - lastRedrawTime.current >= REDRAW_THROTTLE_MS) {
       lastRedrawTime.current = now;
       
