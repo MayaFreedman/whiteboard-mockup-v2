@@ -16,6 +16,7 @@ interface MultiplayerContextType {
   isConnected: boolean
   roomId: string | null
   connectedUsers: User[]
+  connectedUserCount: number
   connectionError: string | null
   isAutoConnecting: boolean
   connect: (roomId: string, isModerator?: boolean) => Promise<void>
@@ -38,6 +39,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   const [isConnected, setIsConnected] = useState(false)
   const [roomId, setRoomId] = useState<string | null>(null)
   const [connectedUsers, setConnectedUsers] = useState<User[]>([])
+  const [connectedUserCount, setConnectedUserCount] = useState(0)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [isAutoConnecting, setIsAutoConnecting] = useState(false)
 
@@ -75,6 +77,30 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setRoomId(targetRoomId)
       setIsConnected(true)
       setConnectionError(null)
+
+      // Set up room event listeners for occupancy tracking
+      const room = newServerInstance.server.room
+      if (room) {
+        // Listen for participant events
+        room.onMessage('participantJoined', (participant: any) => {
+          console.log('👥 Participant joined:', participant)
+          setConnectedUserCount(prev => prev + 1)
+        })
+
+        room.onMessage('participantLeft', (data: any) => {
+          console.log('👥 Participant left:', data)
+          setConnectedUserCount(prev => Math.max(0, prev - 1))
+        })
+
+        // Listen for default room state to get initial player count
+        room.onMessage('defaultRoomState', (state: any) => {
+          if (state?.players) {
+            const playerCount = Object.keys(state.players).length
+            console.log('👥 Initial room state - player count:', playerCount)
+            setConnectedUserCount(playerCount)
+          }
+        })
+      }
 
       console.log('✅ Connection successful!')
     } catch (error) {
@@ -116,6 +142,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     setIsConnected(false)
     setRoomId(null)
     setConnectedUsers([])
+    setConnectedUserCount(0)
     setConnectionError(null)
     console.log('🔌 Disconnected from room')
   }, [serverInstance])
@@ -163,6 +190,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     isConnected,
     roomId,
     connectedUsers,
+    connectedUserCount,
     connectionError,
     isAutoConnecting,
     connect,

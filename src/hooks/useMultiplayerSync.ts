@@ -46,7 +46,7 @@ export const useMultiplayerSync = () => {
     }
   }
 
-  const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext
+  const { serverInstance, isConnected, sendWhiteboardAction, connectedUserCount } = multiplayerContext
 
   // Improved readiness check with detailed logging
   const isReadyToSend = () => {
@@ -279,11 +279,17 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
     console.log('✅ Message handlers set up for room:', room.id)
 
-    // Start state request process if we haven't received initial state yet
+    // Only request initial state if there are other users in the room
     if (!hasReceivedInitialStateRef.current) {
-      console.log('🔄 Starting initial state request process...')
-      stateRequestAttemptsRef.current = 0
-      requestInitialState()
+      if (connectedUserCount > 1) {
+        console.log('🔄 Starting initial state request process... (other users present:', connectedUserCount, ')')
+        stateRequestAttemptsRef.current = 0
+        requestInitialState()
+      } else {
+        console.log('🏠 No other users in room - proceeding without state request')
+        hasReceivedInitialStateRef.current = true
+        setIsWaitingForInitialState(false)
+      }
     }
 
     // Process any queued actions now that we're connected
@@ -298,7 +304,7 @@ export const useMultiplayerSync = () => {
         stateRequestTimeoutRef.current = undefined
       }
     }
-  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId])
+  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId, connectedUserCount])
 
   // Send local actions to other clients (with filtering)
   useEffect(() => {
