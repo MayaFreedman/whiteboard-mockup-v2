@@ -105,12 +105,19 @@ export const useMultiplayerSync = () => {
       // Handle state response messages
       if (message.type === 'state_response') {
         console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length)
+        
+        // Only apply if this response is for us AND we haven't already applied initial state
         if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
-          console.log('✅ State response is for us, applying state')
+          console.log('✅ State response is for us, applying state (first time only)')
+          
+          // Immediately mark as received to prevent duplicate applications
           hasReceivedInitialStateRef.current = true
           setIsWaitingForInitialState(false)
           
-          // Apply received state directly using addObject for each object
+          // Clear any existing objects first to prevent duplicates
+          whiteboardStore.clearObjects()
+          
+          // Apply received state
           if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
             console.log('🎯 Applying', Object.keys(message.state.objects).length, 'objects from state response')
             Object.values(message.state.objects).forEach((obj: any) => {
@@ -130,6 +137,8 @@ export const useMultiplayerSync = () => {
           if (message.state?.settings) {
             whiteboardStore.setSettings(message.state.settings)
           }
+        } else if (message.requesterId === room.sessionId && hasReceivedInitialStateRef.current) {
+          console.log('⚠️ Ignoring duplicate state response - already received initial state')
         }
         return
       }
