@@ -538,28 +538,7 @@ const useCanvasRendering = (
   const redrawCanvas = useCallback((immediate = false, source = 'unknown') => {
     if (!canvas) return;
 
-    // Circuit breaker
-    redrawCount.current++;
-    const now = Date.now();
-    const elapsed = now - lastRedrawTime.current;
-    
-    if (redrawCount.current > 100 && elapsed < 5000) {
-      console.error('🚨 INFINITE REDRAW LOOP DETECTED - CIRCUIT BREAKER ACTIVATED', {
-        source,
-        count: redrawCount.current,
-        objectCount: objects.length,
-        elapsed: `${elapsed}ms`
-      });
-      return;
-    }
-    
-    // Reset counter periodically
-    if (elapsed > 5000) {
-      redrawCount.current = 0;
-      lastRedrawTime.current = now;
-    }
-
-    console.log(`🔍 REDRAW #${redrawCount.current} TRIGGERED BY: ${source}`);
+    console.log(`🔍 REDRAW TRIGGERED BY: ${source}`);
     
     if (throttleTimeout.current) {
       clearTimeout(throttleTimeout.current);
