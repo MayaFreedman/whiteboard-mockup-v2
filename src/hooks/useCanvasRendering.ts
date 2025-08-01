@@ -1113,6 +1113,28 @@ export const useCanvasRendering = (
     };
   }, []);
 
+  
+  // Watch for canvas size changes and trigger redraw
+  useEffect(() => {
+    if (!canvas) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        console.log('📐 Canvas size changed, triggering redraw');
+        // Use a small delay to allow the canvas to finish resizing
+        setTimeout(() => {
+          redrawCanvas();
+        }, 10);
+      }
+    });
+
+    resizeObserver.observe(canvas);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [canvas, redrawCanvas]);
+
   return {
     redrawCanvas,
     renderObject,
