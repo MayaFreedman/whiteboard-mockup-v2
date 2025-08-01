@@ -710,6 +710,12 @@ export const useCanvasInteractions = () => {
 
       case 'pencil':
       case 'brush': {
+        console.log('🎨 DRAWING START:', {
+          tool: activeTool,
+          coords,
+          timestamp: Date.now()
+        });
+        
         // START BATCH for drawing
         currentBatchIdRef.current = startBatch('ADD_OBJECT', 'drawing', userId);
         
@@ -732,7 +738,11 @@ export const useCanvasInteractions = () => {
           brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
         
-        console.log('✏️ Started drawing at:', coords);
+        console.log('🎨 PREVIEW CREATED:', {
+          hasPreview: !!currentDrawingPreviewRef.current,
+          batchId: currentBatchIdRef.current?.slice(0, 8),
+          timestamp: Date.now()
+        });
         break;
       }
 
@@ -912,6 +922,12 @@ export const useCanvasInteractions = () => {
           }
           
           if (redrawCanvasRef.current) {
+            console.log('🎨 PREVIEW REDRAW:', {
+              tool: activeTool,
+              hasPreview: !!currentDrawingPreviewRef.current,
+              pathLength: currentDrawingPreviewRef.current?.path.length || 0,
+              timestamp: Date.now()
+            });
             requestAnimationFrame(() => {
               if (redrawCanvasRef.current && isDrawingRef.current) {
                 redrawCanvasRef.current();
@@ -1053,11 +1069,28 @@ export const useCanvasInteractions = () => {
       case 'pencil':
       case 'brush': {
         if (isDrawingRef.current && pathBuilderRef.current && pathStartRef.current) {
+          console.log('🎨 DRAWING COMPLETION START:', {
+            tool: activeTool,
+            hasPreview: !!currentDrawingPreviewRef.current,
+            pathLength: pathBuilderRef.current.getCurrentPath().length,
+            timestamp: Date.now()
+          });
+          
           const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
           
           // Clear preview IMMEDIATELY before creating final object to prevent flickering
+          console.log('🎨 CLEARING PREVIEW:', {
+            hadPreview: !!currentDrawingPreviewRef.current,
+            timestamp: Date.now()
+          });
           currentDrawingPreviewRef.current = null;
           pathBuilderRef.current = null;
+          
+          console.log('🎨 CREATING FINAL OBJECT:', {
+            pathLength: finalSmoothPath.length,
+            startCoords: pathStartRef.current,
+            timestamp: Date.now()
+          });
           
           const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
             type: 'path',
@@ -1074,19 +1107,38 @@ export const useCanvasInteractions = () => {
           };
 
           // END BATCH before adding final object to prevent batch interference
+          console.log('🎨 ENDING BATCH:', {
+            hadBatch: !!currentBatchIdRef.current,
+            batchId: currentBatchIdRef.current?.slice(0, 8),
+            timestamp: Date.now()
+          });
           if (currentBatchIdRef.current) {
             endBatch();
             currentBatchIdRef.current = null;
             drawingObjectIdRef.current = null;
           }
 
+          console.log('🎨 ADDING OBJECT TO STORE:', {
+            timestamp: Date.now()
+          });
           const objectId = whiteboardStore.addObject(drawingObject, userId);
-          console.log('✏️ Created drawing object:', objectId.slice(0, 8));
+          console.log('🎨 OBJECT ADDED TO STORE:', {
+            objectId: objectId.slice(0, 8),
+            timestamp: Date.now()
+          });
           
           // Force immediate redraw after object creation
+          console.log('🎨 TRIGGERING REDRAW:', {
+            hasRedrawFn: !!redrawCanvasRef.current,
+            timestamp: Date.now()
+          });
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
+          console.log('🎨 DRAWING COMPLETION END:', {
+            objectId: objectId.slice(0, 8),
+            timestamp: Date.now()
+          });
         }
         break;
       }
@@ -1142,6 +1194,11 @@ export const useCanvasInteractions = () => {
       }
     }
 
+    console.log('🎨 POINTER UP CLEANUP:', {
+      tool: activeTool,
+      wasDrawing: isDrawingRef.current,
+      timestamp: Date.now()
+    });
     isDrawingRef.current = false;
     lastPointRef.current = null;
     pathStartRef.current = null;
