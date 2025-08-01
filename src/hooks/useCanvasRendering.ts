@@ -1088,10 +1088,10 @@ export const useCanvasRendering = (
     });
   }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, getCurrentSelectionBox, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
 
-  // Auto-redraw when state changes
+  // Auto-redraw when specific state changes (avoid redrawCanvas dependency loop)
   useEffect(() => {
     redrawCanvas(false, 'state-change');
-  }, [redrawCanvas]);
+  }, [canvas, viewport, objects, selectedObjectIds, editingTextId, editingText, settings, toolSettings]);
 
   // Cleanup throttle timeout on unmount
   useEffect(() => {
@@ -1103,20 +1103,26 @@ export const useCanvasRendering = (
   }, []);
 
   
-  // Watch for canvas size changes and trigger redraw
-  // Use a ref to track if we're in a manual resize operation to prevent infinite loops
+  // Watch for canvas size changes and trigger redraw with debouncing
   const isManualResizing = useRef(false);
+  const resizeTimeoutRef = useRef<number | null>(null);
   
   useEffect(() => {
     if (!canvas) return;
 
     const resizeObserver = new ResizeObserver((entries) => {
+      // Clear existing timeout
+      if (resizeTimeoutRef.current) {
+        window.clearTimeout(resizeTimeoutRef.current);
+      }
+
       // Only trigger redraw if we're not in a manual resize operation
       if (!isManualResizing.current) {
-        for (const entry of entries) {
-          console.log('📐 Canvas size changed, triggering redraw');
-          redrawCanvas();
-        }
+        // Debounce resize redraws to prevent excessive calls
+        resizeTimeoutRef.current = window.setTimeout(() => {
+          console.log('📐 Canvas size changed, triggering debounced redraw');
+          redrawCanvas(false, 'canvas-resize');
+        }, 16); // ~60fps debounce
       } else {
         console.log('📐 Canvas size changed during manual resize - skipping redraw');
       }
@@ -1126,8 +1132,11 @@ export const useCanvasRendering = (
 
     return () => {
       resizeObserver.disconnect();
+      if (resizeTimeoutRef.current) {
+        window.clearTimeout(resizeTimeoutRef.current);
+      }
     };
-  }, [canvas, redrawCanvas]);
+  }, [canvas]); // Remove redrawCanvas dependency to break the loop
 
   return {
     redrawCanvas,
