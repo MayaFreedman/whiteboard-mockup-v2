@@ -959,6 +959,14 @@ export const useCanvasRendering = (
 
     const now = Date.now();
     
+    console.log('🎨 redrawCanvas called:', { 
+      immediate, 
+      source, 
+      objectCount: Object.keys(objects).length,
+      selectedCount: selectedObjectIds.length,
+      hasSelectedText: selectedObjectIds.some(id => objects[id]?.type === 'text')
+    });
+    
     // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
     const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
     const shouldRedrawImmediately = immediate || hasDrawingPreview;

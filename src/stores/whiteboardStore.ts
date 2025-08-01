@@ -349,6 +349,14 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     const existingObject = state.objects[id];
     if (!existingObject) return;
 
+    console.log('🔄 Store updateObject called:', { 
+      id, 
+      updates, 
+      objectType: existingObject?.type,
+      currentDimensions: existingObject ? { width: existingObject.width, height: existingObject.height } : null,
+      newDimensions: updates.width || updates.height ? { width: updates.width, height: updates.height } : null
+    });
+
     const action: WhiteboardAction = {
       type: 'UPDATE_OBJECT',
       payload: { id, updates },
