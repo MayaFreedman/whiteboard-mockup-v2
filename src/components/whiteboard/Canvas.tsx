@@ -80,7 +80,7 @@ export const Canvas: React.FC = () => {
   const interactions = useCanvasInteractions();
   
   // Initialize rendering hook with both preview functions AND editing state
-  const { redrawCanvas } = useCanvasRendering(
+  const { redrawCanvas, isManualResizing } = useCanvasRendering(
     canvasRef.current, 
     interactions.getCurrentDrawingPreview,
     interactions.getCurrentShapePreview,
@@ -151,8 +151,21 @@ export const Canvas: React.FC = () => {
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
     console.log('🎯 Canvas handleResize called:', { objectId, newBounds, objectType: objects[objectId]?.type });
+    
+    // Set manual resizing flag to prevent ResizeObserver from triggering additional redraws
+    if (isManualResizing) {
+      isManualResizing.current = true;
+    }
+    
     updateObject(objectId, newBounds);
     redrawCanvas();
+    
+    // Clear the flag after a short delay to allow the resize operation to complete
+    setTimeout(() => {
+      if (isManualResizing) {
+        isManualResizing.current = false;
+      }
+    }, 100);
   };
 
   // Auto-resize text object to fit content using the same measureText function

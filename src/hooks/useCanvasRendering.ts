@@ -1104,13 +1104,21 @@ export const useCanvasRendering = (
 
   
   // Watch for canvas size changes and trigger redraw
+  // Use a ref to track if we're in a manual resize operation to prevent infinite loops
+  const isManualResizing = useRef(false);
+  
   useEffect(() => {
     if (!canvas) return;
 
     const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        console.log('📐 Canvas size changed, triggering redraw');
-        redrawCanvas();
+      // Only trigger redraw if we're not in a manual resize operation
+      if (!isManualResizing.current) {
+        for (const entry of entries) {
+          console.log('📐 Canvas size changed, triggering redraw');
+          redrawCanvas();
+        }
+      } else {
+        console.log('📐 Canvas size changed during manual resize - skipping redraw');
       }
     });
 
@@ -1124,7 +1132,8 @@ export const useCanvasRendering = (
   return {
     redrawCanvas,
     renderObject,
-    renderAllObjects
+    renderAllObjects,
+    isManualResizing
   };
 };
 
