@@ -136,41 +136,25 @@ export const useMultiplayerSync = () => {
       if (message.type === 'whiteboard_action' && message.action) {
         const action: WhiteboardAction = message.action
         
-        console.log('📥 Received action via broadcast:', {
-          type: action.type,
-          id: action.id?.slice(0, 8),
-          userId: action.userId?.slice(0, 8),
-          alreadySent: sentActionIdsRef.current.has(action.id)
-        });
-        
         if (!sentActionIdsRef.current.has(action.id)) {
-          console.log('✅ Applying remote action:', action.type, action.id?.slice(0, 8));
           whiteboardStore.applyRemoteAction(action)
-        } else {
-          console.log('⏭️ Skipping action (already sent by us):', action.type, action.id?.slice(0, 8));
         }
       }
       
       // Handle state sync
       if (message.type === 'state_sync' && message.data) {
-        console.log('📥 Received state sync batch:', {
-          actionCount: message.data.actions?.length || 0,
-          types: message.data.actions?.map((a: any) => a.type) || []
-        });
-        
         if (message.data.actions && Array.isArray(message.data.actions)) {
           whiteboardStore.batchUpdate(message.data.actions)
         }
       }
     }
 
-    const messageHandler = room.onMessage('broadcast', handleBroadcastMessage)
+    room.onMessage('broadcast', handleBroadcastMessage)
 
     return () => {
-      // Proper cleanup - remove the message handler
-      messageHandler.clear()
+      room.onMessage('broadcast', () => {})
     }
-  }, [serverInstance, isConnected, whiteboardStore, userId])
+  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId, connectedUserCount])
 
   /**
    * Send local actions to other clients (real-time sync)
@@ -186,12 +170,6 @@ export const useMultiplayerSync = () => {
           
           if (isReadyToSend()) {
             try {
-              console.log('📤 Sending local action:', {
-                type: state.lastAction.type,
-                id: state.lastAction.id?.slice(0, 8),
-                userId: state.lastAction.userId?.slice(0, 8)
-              });
-              
               sendWhiteboardAction(state.lastAction)
               sentActionIdsRef.current.add(state.lastAction.id)
               
@@ -204,8 +182,6 @@ export const useMultiplayerSync = () => {
             } catch (error) {
               console.error('❌ Failed to send action:', state.lastAction.id, error)
             }
-          } else {
-            console.log('⚠️ Connection not ready, skipping action send:', state.lastAction.type);
           }
         }
       }

@@ -65,21 +65,6 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
    * Registers message handlers for multiplayer room events
    */
   const registerMessageHandlers = (room: any) => {
-    // Set up error and leave handlers for debugging
-    room.onError((code: any, message: any) => {
-      console.error("❌ Room error occurred:", { code, message });
-      if (String(message).includes("refId")) {
-        console.error("🚨 DETECTED REFID ERROR - Schema decode error!");
-      }
-      setConnectionError(`Room error: ${code} - ${message}`)
-    });
-
-    room.onLeave((code: any) => {
-      console.log("👋 Left room with code:", code);
-      setIsConnected(false)
-    });
-
-    // Handle participant events for user count tracking
     room.onMessage('participantJoined', (participant: any) => {
       setConnectedUserCount(prev => prev + 1)
     })
@@ -88,21 +73,19 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setConnectedUserCount(prev => Math.max(0, prev - 1))
     })
 
-    // Handle initial room state
-    room.onMessage('defaultRoomState', (state: any) => {
-      if (state?.players) {
-        const playerCount = Object.keys(state.players).length
-        setConnectedUserCount(playerCount)
-      }
-    })
-
-    // Handle utility messages to prevent console warnings
     room.onMessage('ping', () => {
       // Handle ping to prevent console warnings
     })
     
     room.onMessage('__playground_message_types', () => {
       // Handle playground messages to prevent console warnings
+    })
+
+    room.onMessage('defaultRoomState', (state: any) => {
+      if (state?.players) {
+        const playerCount = Object.keys(state.players).length
+        setConnectedUserCount(playerCount)
+      }
     })
   }
 
