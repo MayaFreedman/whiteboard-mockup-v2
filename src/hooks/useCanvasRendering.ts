@@ -89,6 +89,10 @@ export const useCanvasRendering = (
   // Image cache to prevent blinking/glitching
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
   const loadingImages = useRef<Set<string>>(new Set());
+  // Failed images cache to prevent infinite retry loops
+  const failedImages = useRef<Set<string>>(new Set());
+  // Debounce redraw to prevent excessive calls
+  const redrawTimeoutRef = useRef<number | null>(null);
 
   /**
    * Loads and caches an image for synchronous rendering
@@ -97,6 +101,11 @@ export const useCanvasRendering = (
     // Return cached image if available
     if (imageCache.current.has(src)) {
       return imageCache.current.get(src)!;
+    }
+    
+    // Don't retry failed images to prevent infinite loops
+    if (failedImages.current.has(src)) {
+      return null;
     }
     
     // Prevent duplicate loading requests
@@ -119,6 +128,7 @@ export const useCanvasRendering = (
         
         img.onerror = () => {
           loadingImages.current.delete(src);
+          failedImages.current.add(src); // Mark as failed to prevent retries
           console.warn('Failed to load image:', src);
           reject(new Error(`Failed to load image: ${src}`));
         };
@@ -142,6 +152,7 @@ export const useCanvasRendering = (
             })
             .catch(error => {
               loadingImages.current.delete(src);
+              failedImages.current.add(src); // Mark as failed to prevent retries
               console.warn('Failed to fetch SVG:', error);
               reject(error);
             });
@@ -412,16 +423,17 @@ export const useCanvasRendering = (
                 redrawCanvas();
               }
             }).catch(error => {
-              console.warn('Failed to load image for rendering:', error, 'Trying fallback...');
+              console.warn('Failed to load image for rendering:', error);
               
-              // If it's a custom stamp and we have a fallback, try loading that
-              if (fallbackSrc && !imageCache.current.has(fallbackSrc)) {
+              // If it's a custom stamp and we have a fallback, try loading that ONCE
+              if (fallbackSrc && !imageCache.current.has(fallbackSrc) && !failedImages.current.has(fallbackSrc)) {
                 getOrLoadImage(fallbackSrc).then(() => {
                   if (canvas) {
                     redrawCanvas();
                   }
                 }).catch(fallbackError => {
                   console.error('Failed to load fallback image:', fallbackError);
+                  // Don't trigger more redraws here - fallback failed permanently
                 });
               }
             });
@@ -852,7 +864,6 @@ export const useCanvasRendering = (
 
   // Throttle canvas redraws to improve performance during drawing
   const lastRedrawTime = useRef<number>(0);
-  const redrawTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const REDRAW_THROTTLE_MS = 16; // 60fps throttling
 
   const redrawCanvas = useCallback((immediate = false) => {
@@ -870,7 +881,7 @@ export const useCanvasRendering = (
       
       // Clear any pending timeout
       if (redrawTimeoutRef.current) {
-        clearTimeout(redrawTimeoutRef.current);
+        window.clearTimeout(redrawTimeoutRef.current);
         redrawTimeoutRef.current = null;
       }
       
@@ -880,7 +891,7 @@ export const useCanvasRendering = (
       if (!redrawTimeoutRef.current) {
         const timeUntilNextRedraw = REDRAW_THROTTLE_MS - (now - lastRedrawTime.current);
         
-        redrawTimeoutRef.current = setTimeout(() => {
+        redrawTimeoutRef.current = window.setTimeout(() => {
           redrawTimeoutRef.current = null;
           lastRedrawTime.current = Date.now();
           performRedraw();
@@ -990,7 +1001,7 @@ export const useCanvasRendering = (
   useEffect(() => {
     return () => {
       if (redrawTimeoutRef.current) {
-        clearTimeout(redrawTimeoutRef.current);
+        window.clearTimeout(redrawTimeoutRef.current);
       }
     };
   }, []);
