@@ -152,9 +152,10 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
 
     return () => {
+      // Proper cleanup - remove the specific handler
       room.onMessage('broadcast', () => {})
     }
-  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId, connectedUserCount])
+  }, [serverInstance, isConnected, whiteboardStore, userId])
 
   /**
    * Send local actions to other clients (real-time sync)
