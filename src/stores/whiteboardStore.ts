@@ -941,34 +941,71 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 segmentCount: resultingSegments.length
               });
               
-              if (resultingSegments.length === 0) {
-                // Remove the object entirely
-                set((state) => {
-                  const newObjects = { ...state.objects };
-                  delete newObjects[originalObjectId];
-                  return {
-                    objects: newObjects,
-                    selectedObjectIds: state.selectedObjectIds.filter((id) => id !== originalObjectId),
-                  };
+              set((state) => {
+                const newObjects = { ...state.objects };
+                const newRelationships = new Map(state.objectRelationships);
+                
+                // PRESERVE brush effects before removing original object
+                const brushType = originalObjectMetadata?.brushType;
+                if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
+                  console.log('🎨 Preserving brush effects for batched eraser action:', {
+                    originalId: originalObjectId.slice(0, 8),
+                    brushType,
+                    segmentCount: resultingSegments.length
+                  });
+                  
+                  // Transfer brush effects to segments BEFORE clearing the original
+                  brushEffectCache.transferToSegments(originalObjectId, brushType, resultingSegments);
+                  
+                  // Now it's safe to remove the original cache entry
+                  brushEffectCache.remove(originalObjectId, brushType);
+                }
+                
+                // Remove the original object
+                delete newObjects[originalObjectId];
+                
+                // Track relationships
+                const segmentIds = resultingSegments.map(s => s.id);
+                segmentIds.forEach(segmentId => {
+                  newRelationships.set(segmentId, { originalId: originalObjectId });
                 });
-              } else {
-                // Update with erased segments
-                set((state) => ({
-                  objects: {
-                    ...state.objects,
-                    [originalObjectId]: {
-                      ...originalObject,
-                      data: resultingSegments.map(segment => 
-                        segment.points.reduce((path, point, index) => {
-                          const command = index === 0 ? 'M' : 'L';
-                          return `${path} ${command} ${point.x} ${point.y}`;
-                        }, '')
-                      ).join(' '),
+                
+                // Add resulting segments as new objects with preserved metadata
+                resultingSegments.forEach((segment) => {
+                  if (segment.points.length >= 2) {
+                    const pathString = segment.points.reduce((path, point, index) => {
+                      const command = index === 0 ? 'M' : 'L';
+                      return `${path} ${command} ${point.x} ${point.y}`;
+                    }, '');
+                    
+                    // Create new object with preserved metadata - use the metadata from the action
+                    newObjects[segment.id] = {
+                      id: segment.id,
+                      type: 'path',
+                      x: originalObject.x,
+                      y: originalObject.y,
+                      stroke: originalObjectMetadata?.stroke || originalObject.stroke || '#000000',
+                      strokeWidth: originalObjectMetadata?.strokeWidth || originalObject.strokeWidth || 2,
+                      opacity: originalObjectMetadata?.opacity || originalObject.opacity || 1,
+                      fill: originalObjectMetadata?.fill || originalObject.fill,
+                      createdAt: Date.now(),
                       updatedAt: Date.now(),
-                    },
-                  },
-                }));
-              }
+                      data: {
+                        path: pathString,
+                        // Only preserve the essential brush metadata from the action
+                        brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
+                        isEraser: false // Ensure segments are not marked as eraser
+                      }
+                    };
+                  }
+                });
+                
+                return {
+                  objects: newObjects,
+                  objectRelationships: newRelationships,
+                  selectedObjectIds: state.selectedObjectIds.filter(id => id !== originalObjectId)
+                };
+              });
             }
           }
           break;
