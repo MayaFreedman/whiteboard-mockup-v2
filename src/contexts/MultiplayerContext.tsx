@@ -49,9 +49,13 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     const roomParam = urlParams.get('room') || urlParams.get('roomId')
     
     if (roomParam && !isConnected && !serverInstance) {
+      console.log('🔗 Auto-connecting to room from URL:', roomParam)
       setIsAutoConnecting(true)
       
-      connect(roomParam, false)
+      connect(roomParam, false) // Connect as regular user, not moderator
+        .then(() => {
+          console.log('✅ Auto-connection successful')
+        })
         .catch((error) => {
           console.error('❌ Auto-connection failed:', error)
         })
@@ -61,36 +65,9 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     }
   }, [isConnected, serverInstance])
 
-  /**
-   * Registers message handlers for multiplayer room events
-   */
-  const registerMessageHandlers = (room: any) => {
-    room.onMessage('participantJoined', (participant: any) => {
-      setConnectedUserCount(prev => prev + 1)
-    })
-
-    room.onMessage('participantLeft', (data: any) => {
-      setConnectedUserCount(prev => Math.max(0, prev - 1))
-    })
-
-    room.onMessage('ping', () => {
-      // Handle ping to prevent console warnings
-    })
-    
-    room.onMessage('__playground_message_types', () => {
-      // Handle playground messages to prevent console warnings
-    })
-
-    room.onMessage('defaultRoomState', (state: any) => {
-      if (state?.players) {
-        const playerCount = Object.keys(state.players).length
-        setConnectedUserCount(playerCount)
-      }
-    })
-  }
-
   const connect = useCallback(async (targetRoomId: string, isModerator: boolean = false) => {
     try {
+      console.log('🔌 Starting connection process to room:', targetRoomId)
       setConnectionError(null)
       
       const newServerInstance = new ServerClass()
@@ -101,11 +78,31 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setIsConnected(true)
       setConnectionError(null)
 
-      // Register message handlers
+      // Set up room event listeners for occupancy tracking
       const room = newServerInstance.server.room
       if (room) {
-        registerMessageHandlers(room)
+        // Listen for participant events
+        room.onMessage('participantJoined', (participant: any) => {
+          console.log('👥 Participant joined:', participant)
+          setConnectedUserCount(prev => prev + 1)
+        })
+
+        room.onMessage('participantLeft', (data: any) => {
+          console.log('👥 Participant left:', data)
+          setConnectedUserCount(prev => Math.max(0, prev - 1))
+        })
+
+        // Listen for default room state to get initial player count
+        room.onMessage('defaultRoomState', (state: any) => {
+          if (state?.players) {
+            const playerCount = Object.keys(state.players).length
+            console.log('👥 Initial room state - player count:', playerCount)
+            setConnectedUserCount(playerCount)
+          }
+        })
       }
+
+      console.log('✅ Connection successful!')
     } catch (error) {
       console.error('❌ Connection failed:', error)
       
@@ -127,6 +124,8 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
           errorMessage = `Connection failed: ${JSON.stringify(error)}`
         }
       }
+      
+      console.error('📊 Processed error message:', errorMessage)
       setConnectionError(errorMessage)
       setServerInstance(null)
       setIsConnected(false)
@@ -145,42 +144,44 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     setConnectedUsers([])
     setConnectedUserCount(0)
     setConnectionError(null)
+    console.log('🔌 Disconnected from room')
   }, [serverInstance])
 
-  /**
-   * Sends a whiteboard action to other connected users
-   */
   const sendWhiteboardAction = useCallback((action: WhiteboardAction) => {
-    if (!serverInstance || !isConnected) {
-      return
-    }
-
-    try {
-      // Serialize action for network transmission
-      const serializedAction = {
-        ...action,
-        payload: {
-          ...action.payload,
-          ...(action.type === 'UPDATE_OBJECT' && action.payload.updates && {
-            updates: {
-              ...action.payload.updates,
-              ...(typeof action.payload.updates.x === 'number' && { x: action.payload.updates.x }),
-              ...(typeof action.payload.updates.y === 'number' && { y: action.payload.updates.y }),
-              ...(typeof action.payload.updates.width === 'number' && { width: action.payload.updates.width }),
-              ...(typeof action.payload.updates.height === 'number' && { height: action.payload.updates.height }),
-              ...(typeof action.payload.updates.strokeWidth === 'number' && { strokeWidth: action.payload.updates.strokeWidth }),
-              ...(typeof action.payload.updates.opacity === 'number' && { opacity: action.payload.updates.opacity }),
-            }
-          })
-        }
+    if (serverInstance && isConnected) {
+      console.log('📤 Sending whiteboard action via ServerClass:', action.type, action.id)
+      try {
+        // Ensure shape updates are properly serialized for multiplayer
+        const serializedAction = {
+          ...action,
+          payload: {
+            ...action.payload,
+            // Make sure all shape properties are included
+            ...(action.type === 'UPDATE_OBJECT' && action.payload.updates && {
+              updates: {
+                ...action.payload.updates,
+                // Ensure numeric values are properly serialized
+                ...(typeof action.payload.updates.x === 'number' && { x: action.payload.updates.x }),
+                ...(typeof action.payload.updates.y === 'number' && { y: action.payload.updates.y }),
+                ...(typeof action.payload.updates.width === 'number' && { width: action.payload.updates.width }),
+                ...(typeof action.payload.updates.height === 'number' && { height: action.payload.updates.height }),
+                ...(typeof action.payload.updates.strokeWidth === 'number' && { strokeWidth: action.payload.updates.strokeWidth }),
+                ...(typeof action.payload.updates.opacity === 'number' && { opacity: action.payload.updates.opacity }),
+              }
+            })
+          }
+        };
+        
+        serverInstance.sendEvent({
+          type: 'whiteboard_action',
+          action: serializedAction
+        })
+      } catch (error) {
+        console.error('❌ Failed to send action:', error)
+        // Could set an error state here if needed
       }
-      
-      serverInstance.sendEvent({
-        type: 'whiteboard_action',
-        action: serializedAction
-      })
-    } catch (error) {
-      console.error('❌ Failed to send action:', error)
+    } else {
+      console.warn('⚠️ Cannot send action: not connected to server')
     }
   }, [serverInstance, isConnected])
 
