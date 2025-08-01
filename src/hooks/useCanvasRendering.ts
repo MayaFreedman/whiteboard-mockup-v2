@@ -3,6 +3,7 @@ import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { useScreenSizeStore } from '../stores/screenSizeStore';
 import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
+import { getCachedImage, setCachedImage, setImageLoading, setImageFailed, getCacheStats } from '../utils/sharedImageCache';
 // Import optimized brush effects
 import { 
   renderPaintbrushOptimized, 
@@ -116,33 +117,36 @@ export const useCanvasRendering = (
   const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
     const normalizedSrc = normalizeImagePath(src);
     
+    // Check shared cache first
+    const sharedCacheResult = getCachedImage(normalizedSrc);
+    
+    if (sharedCacheResult.image) {
+      console.log(`🎯 Found in shared cache: "${normalizedSrc}"`);
+      // Also store in local cache for consistency
+      imageCache.current.set(normalizedSrc, sharedCacheResult.image);
+      return sharedCacheResult.image;
+    }
+    
+    if (sharedCacheResult.hasFailed) {
+      console.log(`🚫 Previously failed in shared cache: "${normalizedSrc}"`);
+      failedImages.current.add(normalizedSrc);
+      return null;
+    }
+    
+    if (sharedCacheResult.isLoading) {
+      console.log(`⏳ Already loading in shared cache: "${normalizedSrc}"`);
+      return null;
+    }
+    
     // Add detailed cache lookup logging with FULL paths
     console.log(`🔍 Cache lookup for FULL PATH: "${normalizedSrc}"`);
-    console.log(`📦 Cache has ${imageCache.current.size} images:`, 
-      Array.from(imageCache.current.keys()));
+    const cacheStats = getCacheStats();
+    console.log(`📦 Shared cache has ${cacheStats.cached} images, local cache has ${imageCache.current.size} images`);
     
-    // Return cached image if available
+    // Return cached image if available in local cache
     if (imageCache.current.has(normalizedSrc)) {
       console.log(`✨ Cache HIT for FULL PATH: "${normalizedSrc}"`);
       return imageCache.current.get(normalizedSrc)!;
-    }
-    
-    // Check alternative key formats for cache validation
-    const alternativeKeys = [
-      src, // Original src
-      src.replace(/\\/g, '/'), // Forward slashes
-      encodeURIComponent(src), // URL encoded
-      decodeURIComponent(src) // URL decoded
-    ];
-    
-    for (const altKey of alternativeKeys) {
-      if (imageCache.current.has(altKey) && altKey !== normalizedSrc) {
-        console.log(`✨ Cache HIT with alternative key: ${altKey.slice(-20)} -> ${normalizedSrc.slice(-20)}`);
-        const img = imageCache.current.get(altKey)!;
-        // Store under normalized key as well
-        imageCache.current.set(normalizedSrc, img);
-        return img;
-      }
     }
     
     console.log(`❌ Cache MISS for FULL PATH: "${normalizedSrc}"`);
@@ -161,6 +165,7 @@ export const useCanvasRendering = (
     
     console.log(`📥 Starting load for FULL PATH: "${normalizedSrc}"`);
     loadingImages.current.add(normalizedSrc);
+    setImageLoading(normalizedSrc); // Mark in shared cache too
     
     try {
       const img = new Image();
@@ -178,6 +183,7 @@ export const useCanvasRendering = (
           clearTimeout(timeoutId);
           // Cache the loaded image with normalized key
           imageCache.current.set(normalizedSrc, img);
+          setCachedImage(normalizedSrc, img); // Add to shared cache
           loadingImages.current.delete(normalizedSrc);
           console.log(`✅ Regular Image cached FULL PATH: "${normalizedSrc}"`);
           resolve(img);
@@ -187,6 +193,7 @@ export const useCanvasRendering = (
           clearTimeout(timeoutId);
           loadingImages.current.delete(normalizedSrc);
           failedImages.current.add(normalizedSrc); // Mark as failed to prevent retries
+          setImageFailed(normalizedSrc, error); // Mark as failed in shared cache
           console.error(`❌ img.onerror for FULL PATH: "${normalizedSrc}"`, error);
           reject(new Error(`Failed to load image: ${normalizedSrc}`));
         };
@@ -221,6 +228,7 @@ export const useCanvasRendering = (
               img.onload = () => {
                 clearTimeout(timeoutId);
                 imageCache.current.set(normalizedSrc, img);
+                setCachedImage(normalizedSrc, img); // Add to shared cache
                 loadingImages.current.delete(normalizedSrc);
                 URL.revokeObjectURL(url);
                 console.log(`✅ SVG Image cached FULL PATH: "${normalizedSrc}"`);
@@ -232,6 +240,7 @@ export const useCanvasRendering = (
                 clearTimeout(timeoutId);
                 loadingImages.current.delete(normalizedSrc);
                 failedImages.current.add(normalizedSrc);
+                setImageFailed(normalizedSrc, error); // Mark as failed in shared cache
                 URL.revokeObjectURL(url);
                 console.error(`❌ SVG img.onerror for FULL PATH: "${normalizedSrc}"`, error);
                 reject(new Error(`Failed to load SVG image: ${normalizedSrc}`));
@@ -244,6 +253,7 @@ export const useCanvasRendering = (
               clearTimeout(timeoutId);
               loadingImages.current.delete(normalizedSrc);
               failedImages.current.add(normalizedSrc);
+              setImageFailed(normalizedSrc, error); // Mark as failed in shared cache
               console.error(`❌ SVG FETCH failed for FULL PATH: "${normalizedSrc}"`, error);
               reject(error);
             });

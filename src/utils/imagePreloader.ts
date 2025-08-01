@@ -4,6 +4,7 @@
  */
 
 import { iconRegistry } from './iconRegistry';
+import { setCachedImage, setImageLoading, setImageFailed, getCachedImage, getCacheStats } from './sharedImageCache';
 
 const PRELOAD_TIMEOUT = 10000; // 10 seconds timeout per image
 const MAX_CONCURRENT_LOADS = 8; // Load up to 8 images concurrently
@@ -18,14 +19,33 @@ interface PreloadResult {
  * Preloads a single image with timeout and proper error handling
  */
 async function preloadImage(path: string): Promise<PreloadResult> {
+  // Check if already cached
+  const cached = getCachedImage(path);
+  if (cached.image) {
+    console.log(`🎯 Already cached: ${path}`);
+    return { path, success: true };
+  }
+  if (cached.hasFailed) {
+    console.log(`❌ Previously failed: ${path}`);
+    return { path, success: false, error: 'previously_failed' };
+  }
+  if (cached.isLoading) {
+    console.log(`⏳ Already loading: ${path}`);
+    return { path, success: false, error: 'already_loading' };
+  }
+
   return new Promise((resolve) => {
     const img = new Image();
     let resolved = false;
+    
+    // Mark as loading in shared cache
+    setImageLoading(path);
     
     // Set up timeout
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
+        setImageFailed(path, 'timeout');
         console.warn(`⏰ Image preload timeout: ${path}`);
         resolve({ path, success: false, error: 'timeout' });
       }
@@ -35,7 +55,8 @@ async function preloadImage(path: string): Promise<PreloadResult> {
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
-        console.log(`✅ Preloaded: ${path}`);
+        setCachedImage(path, img); // Add to shared cache
+        console.log(`✅ Preloaded and cached: ${path}`);
         resolve({ path, success: true });
       }
     };
@@ -44,6 +65,7 @@ async function preloadImage(path: string): Promise<PreloadResult> {
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
+        setImageFailed(path, error);
         console.warn(`❌ Failed to preload: ${path}`, error);
         resolve({ path, success: false, error: 'load_error' });
       }
@@ -101,6 +123,10 @@ export async function preloadStampImages(): Promise<{
     ...summary,
     successRate: `${Math.round((summary.success / summary.total) * 100)}%`
   });
+  
+  // Log cache stats after preload
+  const cacheStats = getCacheStats();
+  console.log(`📊 Cache after preload:`, cacheStats);
   
   if (summary.failed > 0) {
     console.warn('⚠️ Some stamp images failed to preload:', summary.failedPaths);
