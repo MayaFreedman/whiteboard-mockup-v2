@@ -50,7 +50,10 @@ export const Canvas: React.FC = () => {
   const { activeTool } = toolStore;
   const { userId } = useUser();
   const { startBatch, endBatch } = useActionBatching({ batchTimeout: 100, maxBatchSize: 50 });
-  const { activeWhiteboardSize } = useScreenSizeStore();
+  const { activeWhiteboardSize, userScreenSizes } = useScreenSizeStore();
+  
+  // Only show grey overlay when there are multiple users
+  const hasMultipleUsers = Object.keys(userScreenSizes).length > 1;
   
   // Initialize screen size sync
   useScreenSizeSync();

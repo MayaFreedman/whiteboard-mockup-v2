@@ -23,7 +23,7 @@ const calculateUsableScreenSize = () => {
   const toolbarHeight = 60; // Approximate toolbar height
   return {
     width: window.innerWidth,
-    height: window.innerHeight - toolbarHeight
+    height: Math.max(window.innerHeight - toolbarHeight, 400) // Ensure minimum height
   };
 };
 
@@ -70,7 +70,7 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
     const sizes = Object.values(userScreenSizes);
     
     if (sizes.length === 0) {
-      // No other users, use current screen size
+      // No other users, use current screen size (full whiteboard)
       const currentSize = calculateUsableScreenSize();
       set({
         minimumScreenSize: currentSize,
