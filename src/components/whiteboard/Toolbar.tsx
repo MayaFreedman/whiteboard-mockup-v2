@@ -31,8 +31,20 @@ import {
   Pentagon,
   Diamond,
   ChevronDown,
-  Stamp
+  Stamp,
+  Trash2
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog';
 
 interface ToolItem {
   id: string;
@@ -145,11 +157,13 @@ const ColorButton: React.FC<{
 );
 
 /**
- * Renders action buttons (undo, redo) using the undo/redo hook
+ * Renders action buttons (undo, redo, clear canvas) using the undo/redo hook
  */
 const ActionButtons: React.FC = () => {
   const { userId } = useUser();
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
+  const { clearCanvas } = useWhiteboardStore();
+  const [showClearDialog, setShowClearDialog] = useState(false);
   
   const handleUndo = () => {
     console.log('🎯 Toolbar undo clicked for user:', userId);
@@ -159,6 +173,11 @@ const ActionButtons: React.FC = () => {
   const handleRedo = () => {
     console.log('🎯 Toolbar redo clicked for user:', userId);
     redo(userId);
+  };
+
+  const handleClearCanvas = () => {
+    clearCanvas();
+    setShowClearDialog(false);
   };
 
   // Add keyboard shortcuts
@@ -197,6 +216,36 @@ const ActionButtons: React.FC = () => {
       >
         <Redo className="w-4 h-4" />
       </Button>
+      
+      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+        <AlertDialogTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            title="Clear Canvas"
+            className="text-destructive hover:text-destructive"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear Canvas</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to clear the entire canvas? This action cannot be undone and will remove all drawings, shapes, and text.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleClearCanvas}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Clear Canvas
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
@@ -253,7 +302,7 @@ export const Toolbar: React.FC = () => {
       {/* Scrollable Content Container */}
       <div 
         className="overflow-x-auto scrollbar-hide"
-        style={{ paddingRight: isMobile ? '16px' : '120px' }}
+        style={{ paddingRight: isMobile ? '16px' : '150px' }}
       >
         <style>{`
           .scrollbar-hide {
