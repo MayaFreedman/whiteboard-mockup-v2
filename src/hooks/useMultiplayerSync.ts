@@ -305,7 +305,8 @@ export const useMultiplayerSync = () => {
 
     return () => {
       console.log('🧹 Cleaning up message-based sync for room:', room.id)
-      room.removeAllListeners('broadcast')
+      // Only remove the specific broadcast handler we added, not all listeners
+      room.onMessage('broadcast', () => {}) // Replace with empty handler instead of removing all
       
       if (stateRequestTimeoutRef.current) {
         clearTimeout(stateRequestTimeoutRef.current)
