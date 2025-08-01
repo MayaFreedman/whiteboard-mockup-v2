@@ -891,15 +891,25 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           
         case 'UPDATE_OBJECT':
           if (action.payload.id && action.payload.updates) {
-            set((state) => ({
-              objects: {
-                ...state.objects,
-                [action.payload.id]: {
-                  ...state.objects[action.payload.id],
-                  ...action.payload.updates,
+            set((state) => {
+              const existingObject = state.objects[action.payload.id];
+              if (!existingObject) {
+                console.warn('🚨 Attempting to update non-existent object in batch:', action.payload.id);
+                // If object doesn't exist, we can't safely update it, skip this action
+                return state;
+              }
+              
+              return {
+                objects: {
+                  ...state.objects,
+                  [action.payload.id]: {
+                    ...existingObject,
+                    ...action.payload.updates,
+                    updatedAt: Date.now(),
+                  },
                 },
-              },
-            }));
+              };
+            });
           }
           break;
           
