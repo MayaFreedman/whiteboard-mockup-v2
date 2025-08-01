@@ -81,14 +81,14 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       // Set up room event listeners for occupancy tracking
       const room = newServerInstance.server.room
       if (room) {
-        // Listen for participant events
+        // Re-register participant events for context updates (handlers already exist in server)
         room.onMessage('participantJoined', (participant: any) => {
-          console.log('👥 Participant joined:', participant)
+          console.log('👥 [CONTEXT] Participant joined:', participant)
           setConnectedUserCount(prev => prev + 1)
         })
 
         room.onMessage('participantLeft', (data: any) => {
-          console.log('👥 Participant left:', data)
+          console.log('👥 [CONTEXT] Participant left:', data)
           setConnectedUserCount(prev => Math.max(0, prev - 1))
         })
 
