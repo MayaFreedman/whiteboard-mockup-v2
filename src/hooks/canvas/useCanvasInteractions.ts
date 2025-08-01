@@ -103,7 +103,6 @@ export const useCanvasInteractions = () => {
    */
   const cleanupBatching = useCallback(() => {
     if (currentBatchIdRef.current) {
-      console.log('🎯 Cleaning up batch:', currentBatchIdRef.current.slice(0, 8));
       endBatch();
       currentBatchIdRef.current = null;
     }
@@ -123,7 +122,6 @@ export const useCanvasInteractions = () => {
    */
   const setDoubleClickProtection = useCallback((isProtected: boolean) => {
     doubleClickProtectionRef.current = isProtected;
-    console.log('🛡️ Double-click protection set to:', isProtected);
   }, []);
 
   /**
@@ -131,7 +129,6 @@ export const useCanvasInteractions = () => {
    */
   const setEditingState = useCallback((isEditing: boolean) => {
     isEditingTextRef.current = isEditing;
-    console.log('✏️ Text editing state set to:', isEditing);
   }, []);
 
   /**
@@ -564,7 +561,7 @@ export const useCanvasInteractions = () => {
       return;
     }
 
-    console.log('🖱️ Pointer down:', { tool: activeTool, coords, userId: userId.slice(0, 8), protection: doubleClickProtectionRef.current, editing: isEditingTextRef.current });
+    console.log('🖱️ Pointer down:', { tool: activeTool, coords });
 
     // BLOCK TEXT TOOL if currently editing any text
     if (activeTool === 'text' && isEditingTextRef.current) {
@@ -589,12 +586,7 @@ export const useCanvasInteractions = () => {
         const stampObject = createStampObject(coords.x, coords.y, stampSize);
         
         const objectId = whiteboardStore.addObject(stampObject, userId);
-        console.log('🖼️ Created stamp object:', objectId.slice(0, 8), {
-          size: stampSize * 10,
-          sticker: toolStore.toolSettings.selectedSticker,
-          coords,
-          userId: userId.slice(0, 8)
-        });
+        console.log('🖼️ Created stamp:', objectId.slice(0, 8));
         
         if (redrawCanvasRef.current) {
           redrawCanvasRef.current();
@@ -740,7 +732,7 @@ export const useCanvasInteractions = () => {
           brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
         
-        console.log('✏️ Started drawing with batch:', currentBatchIdRef.current?.slice(0, 8), 'at:', coords, 'for user:', userId.slice(0, 8));
+        console.log('✏️ Started drawing at:', coords);
         break;
       }
 
@@ -768,7 +760,7 @@ export const useCanvasInteractions = () => {
           opacity: toolStore.toolSettings.opacity
         };
         
-        console.log('🔷 Started shape drawing:', activeTool, coords, 'for user:', userId.slice(0, 8));
+        console.log('🔷 Started shape:', activeTool);
         break;
       }
 
@@ -778,7 +770,7 @@ export const useCanvasInteractions = () => {
         
         handleEraserStart(coords, findObjectAt, redrawCanvasRef.current || undefined);
         
-        console.log('🧹 Started erasing:', { mode: toolStore.toolSettings.eraserMode, coords, userId: userId.slice(0, 8) });
+        console.log('🧹 Started erasing');
         break;
       }
 
@@ -946,7 +938,7 @@ export const useCanvasInteractions = () => {
   const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const activeTool = toolStore.activeTool;
 
-    console.log('🖱️ Pointer up:', { tool: activeTool, wasDrawing: isDrawingRef.current, wasDragging: isDraggingRef.current, batchActive: !!currentBatchIdRef.current, userId: userId.slice(0, 8) });
+    console.log('🖱️ Pointer up:', { tool: activeTool, drawing: isDrawingRef.current });
 
     switch (activeTool) {
       case 'select': {
@@ -1089,10 +1081,7 @@ export const useCanvasInteractions = () => {
           }
 
           const objectId = whiteboardStore.addObject(drawingObject, userId);
-          console.log('✏️ Created smooth drawing object:', objectId.slice(0, 8), {
-            pointCount: finalSmoothPath.length,
-            userId: userId.slice(0, 8)
-          });
+          console.log('✏️ Created drawing object:', objectId.slice(0, 8));
           
           // Force immediate redraw after object creation
           if (redrawCanvasRef.current) {
