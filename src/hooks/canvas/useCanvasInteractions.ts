@@ -1030,6 +1030,9 @@ export const useCanvasInteractions = () => {
           const width = Math.abs(preview.endX - preview.startX);
           const height = Math.abs(preview.endY - preview.startY);
           
+          // Clear preview IMMEDIATELY before creating final object
+          currentShapePreviewRef.current = null;
+          
           if (width > 10 && height > 10) {
             const textObject = createTextObject(
               Math.min(preview.startX, preview.endX),
@@ -1043,8 +1046,7 @@ export const useCanvasInteractions = () => {
             console.log('📝 Created text object via drag:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
           }
           
-          currentShapePreviewRef.current = null;
-          
+          // Force immediate redraw after object creation
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
@@ -1061,6 +1063,10 @@ export const useCanvasInteractions = () => {
         if (isDrawingRef.current && pathBuilderRef.current && pathStartRef.current) {
           const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
           
+          // Clear preview IMMEDIATELY before creating final object to prevent flickering
+          currentDrawingPreviewRef.current = null;
+          pathBuilderRef.current = null;
+          
           const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
             type: 'path',
             x: pathStartRef.current.x,
@@ -1075,23 +1081,20 @@ export const useCanvasInteractions = () => {
             }
           };
 
-          const objectId = whiteboardStore.addObject(drawingObject, userId);
-          console.log('✏️ Created smooth drawing object, ending batch:', currentBatchIdRef.current?.slice(0, 8), objectId.slice(0, 8), {
-            pointCount: pathBuilderRef.current.getPointCount(),
-            pathLength: finalSmoothPath.length,
-            userId: userId.slice(0, 8)
-          });
-          
-          // END BATCH for drawing
+          // END BATCH before adding final object to prevent batch interference
           if (currentBatchIdRef.current) {
             endBatch();
             currentBatchIdRef.current = null;
             drawingObjectIdRef.current = null;
           }
+
+          const objectId = whiteboardStore.addObject(drawingObject, userId);
+          console.log('✏️ Created smooth drawing object:', objectId.slice(0, 8), {
+            pointCount: finalSmoothPath.length,
+            userId: userId.slice(0, 8)
+          });
           
-          currentDrawingPreviewRef.current = null;
-          pathBuilderRef.current = null;
-          
+          // Force immediate redraw after object creation
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
@@ -1112,6 +1115,9 @@ export const useCanvasInteractions = () => {
           const width = Math.abs(preview.endX - preview.startX);
           const height = Math.abs(preview.endY - preview.startY);
           
+          // Clear preview IMMEDIATELY before creating final object
+          currentShapePreviewRef.current = null;
+          
           if (width > 5 && height > 5) {
             const shapeObject = createShapeObject(
               activeTool,
@@ -1125,14 +1131,12 @@ export const useCanvasInteractions = () => {
             );
 
             if (shapeObject) {
-              // NOW WITH USER ID
               const objectId = whiteboardStore.addObject(shapeObject, userId);
               console.log('🔷 Created shape object:', activeTool, objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
             }
           }
           
-          currentShapePreviewRef.current = null;
-          
+          // Force immediate redraw after object creation
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
