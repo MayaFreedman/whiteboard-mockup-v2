@@ -57,11 +57,12 @@ export const useMultiplayerSync = () => {
    * Request initial state from other users (simplified for room join only)
    */
   const requestInitialState = () => {
-    if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
+    if (!isReadyToSend() || hasReceivedInitialStateRef.current || hasRequestedStateRef.current) {
       return
     }
 
     console.log('📤 Sending initial state request...')
+    hasRequestedStateRef.current = true
     setIsWaitingForInitialState(true)
     
     try {
@@ -167,8 +168,8 @@ export const useMultiplayerSync = () => {
         }
       }
       
-      // Handle screen size updates (ignore own messages)
-      if (message.type === 'screen_size_update' && message.userId && message.screenSize && message.userId !== userId) {
+      // Handle screen size updates
+      if (message.type === 'screen_size_update' && message.userId && message.screenSize) {
         console.log('📥 Received screen size update from:', message.userId, message.screenSize)
         updateUserScreenSize(message.userId, message.screenSize)
       }

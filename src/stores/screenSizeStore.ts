@@ -70,8 +70,7 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
       };
     });
     
-    // Recalculate minimum after local update (since we no longer receive our own broadcasts)
-    get().recalculateMinimumSize();
+    // Don't recalculate for local updates - wait for broadcast response
   },
 
   removeUser: (userId: string) => {
@@ -100,12 +99,9 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
     const { userScreenSizes } = get();
     const sizes = Object.values(userScreenSizes);
     
-    console.log('📏 Recalculating minimum size:', { userCount: sizes.length, sizes });
-    
     if (sizes.length === 0) {
       // No other users, use current screen size (full whiteboard)
       const currentSize = calculateUsableScreenSize();
-      console.log('📏 Using current screen size (no other users):', currentSize);
       set({
         minimumScreenSize: currentSize,
         activeWhiteboardSize: currentSize
@@ -118,8 +114,6 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
     const minHeight = Math.min(...sizes.map(s => s.height));
     
     const newMinimumSize = { width: minWidth, height: minHeight };
-    
-    console.log('📏 Setting new minimum size:', newMinimumSize);
     
     set({
       minimumScreenSize: newMinimumSize,
