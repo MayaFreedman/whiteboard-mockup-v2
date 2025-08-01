@@ -114,6 +114,12 @@ export const useMultiplayerSync = () => {
           if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
             console.log('🎯 Applying', Object.keys(message.state.objects).length, 'objects from state response')
             Object.values(message.state.objects).forEach((obj: any) => {
+              // Validate object has required properties before adding
+              if (!obj.type || !obj.x || !obj.y) {
+                console.warn('🚨 Skipping invalid object from multiplayer sync:', obj)
+                return
+              }
+              
               whiteboardStore.addObject({
                 ...obj,
                 createdAt: obj.createdAt || Date.now(),
