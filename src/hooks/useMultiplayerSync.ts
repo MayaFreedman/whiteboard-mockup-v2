@@ -20,11 +20,6 @@ const shouldSyncAction = (action: WhiteboardAction, whiteboardStore: any): boole
     }
   }
   
-  // Always sync VIEWPORT_RESIZE actions
-  if (action.type === 'VIEWPORT_RESIZE') {
-    return true
-  }
-  
   return !localOnlyActions.includes(action.type)
 }
 
@@ -51,7 +46,7 @@ export const useMultiplayerSync = () => {
     }
   }
 
-  const { serverInstance, isConnected, sendWhiteboardAction, connectedUserCount } = multiplayerContext
+  const { serverInstance, isConnected, sendWhiteboardAction } = multiplayerContext
 
   // Improved readiness check with detailed logging
   const isReadyToSend = () => {
@@ -145,11 +140,6 @@ export const useMultiplayerSync = () => {
     console.log('🔄 Setting up message-based sync for room:', room.id)
 
     const handleBroadcastMessage = (message: any) => {
-      // Filter out viewport sync messages - they're handled by useViewportSync
-      if (message.type === 'viewport_sync') {
-        return
-      }
-      
       console.log('📥 Received broadcast message:', {
         type: message.type,
         hasAction: !!message.action,
@@ -162,7 +152,7 @@ export const useMultiplayerSync = () => {
       if (message.type === 'request_state') {
         console.log('🔄 Received state request from:', message.requesterId)
         
-        // Only respond if we're not the requester
+        // Only respond if we're not the requester AND we have objects to share
         if (message.requesterId !== room.sessionId) {
           const currentState = whiteboardStore.getStateSnapshot()
           const hasObjectsToShare = Object.keys(currentState.objects).length > 0
@@ -171,15 +161,19 @@ export const useMultiplayerSync = () => {
             isRequester: message.requesterId === room.sessionId,
             hasObjects: hasObjectsToShare,
             objectCount: Object.keys(currentState.objects).length,
-            willRespond: true // Always respond, even with empty state
+            willRespond: hasObjectsToShare
           })
           
-          console.log('📤 Responding to state request with', Object.keys(currentState.objects).length, 'objects')
-          
-          // Always respond - even with empty state to unblock infinite loading
-          setTimeout(() => {
-            serverInstance.sendStateResponse(message.requesterId, currentState)
-          }, Math.random() * 300 + 100) // 100-400ms random delay
+          if (hasObjectsToShare) {
+            console.log('📤 Responding to state request with', Object.keys(currentState.objects).length, 'objects')
+            
+            // Increased random delay to better avoid conflicts
+            setTimeout(() => {
+              serverInstance.sendStateResponse(message.requesterId, currentState)
+            }, Math.random() * 300 + 100) // 100-400ms random delay
+          } else {
+            console.log('🔄 Not responding to state request - no objects to share')
+          }
         } else {
           console.log('🔄 Not responding to state request - we are the requester')
         }
@@ -207,11 +201,8 @@ export const useMultiplayerSync = () => {
             stateRequestTimeoutRef.current = undefined
           }
           
-          // Apply the received state - handle both empty and populated states
-          const objectCount = message.state?.objects ? Object.keys(message.state.objects).length : 0
-          console.log('🔄 Processing received state with', objectCount, 'objects')
-          
-          if (objectCount > 0) {
+          // Apply the received state with improved object conversion
+          if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
             console.log('🔄 Converting and applying received objects...')
             
             // Convert objects to actions and apply them
@@ -236,8 +227,6 @@ export const useMultiplayerSync = () => {
               whiteboardStore.batchUpdate(actions)
               console.log('✅ Successfully applied initial state with', actions.length, 'objects')
             }
-          } else {
-            console.log('✅ Received empty state - continuing without objects')
           }
           
           // Apply viewport if provided
@@ -290,7 +279,12 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
     console.log('✅ Message handlers set up for room:', room.id)
 
-    // Message handlers are set up - state request decisions handled by connectedUserCount effect
+    // Start state request process if we haven't received initial state yet
+    if (!hasReceivedInitialStateRef.current) {
+      console.log('🔄 Starting initial state request process...')
+      stateRequestAttemptsRef.current = 0
+      requestInitialState()
+    }
 
     // Process any queued actions now that we're connected
     processActionQueue()
@@ -312,12 +306,6 @@ export const useMultiplayerSync = () => {
 
     const unsubscribe = useWhiteboardStore.subscribe(
       (state) => {
-        // Don't sync actions during batch operations to prevent infinite loops
-        if (state.isBatchingRemoteActions) {
-          console.log('🔄 Skipping sync during batch operation');
-          return;
-        }
-        
         if (state.lastAction && !sentActionIdsRef.current.has(state.lastAction.id)) {
           console.log('📤 New local action detected:', {
             type: state.lastAction.type,
@@ -380,22 +368,6 @@ export const useMultiplayerSync = () => {
       }
     }
   }, [isConnected])
-
-  // Re-evaluate state request when user count changes (for late joiners)
-  useEffect(() => {
-    if (isConnected && isReadyToSend() && !hasReceivedInitialStateRef.current) {
-      if (connectedUserCount > 1) {
-        console.log('👥 User count changed to', connectedUserCount, '- requesting initial state from other users')
-        setIsWaitingForInitialState(true)
-        stateRequestAttemptsRef.current = 0
-        requestInitialState()
-      } else if (connectedUserCount === 1) {
-        console.log('👥 Confirmed alone in room (count: 1) - no state request needed')
-        hasReceivedInitialStateRef.current = true
-        setIsWaitingForInitialState(false)
-      }
-    }
-  }, [connectedUserCount, isConnected])
 
   return {
     isConnected,

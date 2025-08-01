@@ -195,16 +195,6 @@ export interface SyncRedoAction extends BaseAction {
   };
 }
 
-export interface ViewportResizeAction extends BaseAction {
-  type: 'VIEWPORT_RESIZE';
-  payload: {
-    screenSize: {
-      width: number;
-      height: number;
-    };
-  };
-}
-
 export type WhiteboardAction = 
   | AddObjectAction
   | UpdateObjectAction
@@ -220,8 +210,7 @@ export type WhiteboardAction =
   |DeleteObjectsInAreaAction
   | ErasePathAction
   | SyncUndoAction
-  | SyncRedoAction
-  | ViewportResizeAction;
+  | SyncRedoAction;
 
 // Text-specific interfaces for better type safety
 export interface TextData {

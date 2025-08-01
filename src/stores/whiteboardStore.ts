@@ -27,18 +27,6 @@ export interface WhiteboardStore {
   // Track object relationships for conflict resolution
   objectRelationships: Map<string, { originalId?: string; segmentIds?: string[] }>;
 
-  // Batch processing flag to prevent sync loops
-  isBatchingRemoteActions: boolean;
-
-  // Track all user screen sizes for global minimum calculation
-  userScreenSizes: Map<string, { width: number; height: number }>;
-  
-  // Screen size management
-  updateUserScreenSize: (userId: string, width: number, height: number) => void;
-  removeUserScreenSize: (userId: string) => void;
-  calculateMinimumScreenSize: (userScreenSizes?: Map<string, { width: number; height: number }>) => { width: number; height: number };
-  updateCanvasToMinimumSize: () => void;
-
   // Action recording
   recordAction: (action: WhiteboardAction) => void;
 
@@ -125,8 +113,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     x: 0,
     y: 0,
     zoom: 1,
-    canvasWidth: window.innerWidth,
-    canvasHeight: window.innerHeight,
   },
   settings: {
     gridVisible: false,
@@ -142,12 +128,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   userActionHistories: new Map(),
   userHistoryIndices: new Map(),
   objectRelationships: new Map(),
-
-  // Initialize batch processing flag
-  isBatchingRemoteActions: false,
-
-  // Initialize user screen sizes tracking
-  userScreenSizes: new Map(),
 
   // Initialize currentBatch
   currentBatch: {
@@ -845,14 +825,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         }
         break;
         
-      case 'VIEWPORT_RESIZE':
-        // Update the user's screen size using the proper minimum calculation logic
-        if (action.payload?.screenSize && action.userId) {
-          const incomingSize = action.payload.screenSize;
-          console.log('📥 Processing VIEWPORT_RESIZE action for user:', action.userId, incomingSize);
-          get().updateUserScreenSize(action.userId, incomingSize.width, incomingSize.height);
-        }
-        break;
         
       default:
         console.log('🔄 Unknown action type for remote application:', action.type);
@@ -882,50 +854,27 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     // Apply batch of actions without triggering sync
     console.log('🔄 Applying batch update:', actions.length, 'actions');
     
-    // Set batch flag to prevent sync loops with timeout protection
-    set((state) => ({ ...state, isBatchingRemoteActions: true }));
-    
-    try {
-      // Apply all actions in a single state update to prevent multiple subscription triggers
-      set((state) => {
-        const updatedObjects = { ...state.objects };
-        
-        actions.forEach(action => {
-          switch (action.type) {
-            case 'ADD_OBJECT':
-              if (action.payload.object) {
-                updatedObjects[action.payload.object.id] = action.payload.object;
-              }
-              break;
-            case 'UPDATE_OBJECT':
-              if (action.payload.id && action.payload.updates && updatedObjects[action.payload.id]) {
-                updatedObjects[action.payload.id] = {
-                  ...updatedObjects[action.payload.id],
+    // Apply each action directly without setting lastAction
+    actions.forEach(action => {
+      switch (action.type) {
+        case 'UPDATE_OBJECT':
+          if (action.payload.id && action.payload.updates) {
+            set((state) => ({
+              objects: {
+                ...state.objects,
+                [action.payload.id]: {
+                  ...state.objects[action.payload.id],
                   ...action.payload.updates,
-                };
-              }
-              break;
-            case 'DELETE_OBJECT':
-              if (action.payload.id) {
-                delete updatedObjects[action.payload.id];
-              }
-              break;
-            default:
-              console.warn('Unhandled action type in batchUpdate:', action.type);
+                },
+              },
+            }));
           }
-        });
-        
-        return {
-          ...state,
-          objects: updatedObjects,
-        };
-      });
-    } finally {
-      // Ensure batch flag is always cleared, even if there's an error
-      setTimeout(() => {
-        set((state) => ({ ...state, isBatchingRemoteActions: false }));
-      }, 0);
-    }
+          break;
+        // Add other action types as needed
+        default:
+          console.warn('Unhandled action type in batchUpdate:', action.type);
+      }
+    });
   },
   updateLocalUserHistoryIndex: (userId, index) => {
     set((state) => {
@@ -944,100 +893,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
   getObjectRelationship: (objectId) => {
     return get().objectRelationships.get(objectId);
-  },
-
-  // Screen size management methods
-  updateUserScreenSize: (userId, width, height) => {
-    set((state) => {
-      // Calculate current minimum BEFORE updating
-      const currentMinSize = get().calculateMinimumScreenSize(state.userScreenSizes);
-      
-      const newUserScreenSizes = new Map(state.userScreenSizes);
-      newUserScreenSizes.set(userId, { width, height });
-      
-      // Calculate new minimum AFTER updating
-      const newMinSize = get().calculateMinimumScreenSize(newUserScreenSizes);
-      
-      // Only update canvas if the minimum actually changed
-      if (currentMinSize.width !== newMinSize.width || currentMinSize.height !== newMinSize.height) {
-        const currentViewport = state.viewport;
-        console.log('📐 Canvas resized to new minimum:', { 
-          from: { width: currentMinSize.width, height: currentMinSize.height },
-          to: { width: newMinSize.width, height: newMinSize.height },
-          reason: `Minimum changed when user ${userId} resized`
-        });
-        
-        return {
-          ...state,
-          userScreenSizes: newUserScreenSizes,
-          viewport: {
-            ...currentViewport,
-            canvasWidth: newMinSize.width,
-            canvasHeight: newMinSize.height
-          }
-        };
-      } else {
-        console.log('📐 Screen size updated but minimum unchanged, no canvas resize needed');
-        return {
-          ...state,
-          userScreenSizes: newUserScreenSizes
-        };
-      }
-    });
-  },
-
-  removeUserScreenSize: (userId) => {
-    set((state) => {
-      const newUserScreenSizes = new Map(state.userScreenSizes);
-      newUserScreenSizes.delete(userId);
-      
-      // Recalculate minimum without this user
-      if (newUserScreenSizes.size > 0) {
-        const screenSizes = Array.from(newUserScreenSizes.values());
-        const minWidth = Math.min(...screenSizes.map(size => size.width));
-        const minHeight = Math.min(...screenSizes.map(size => size.height));
-        const minSize = { width: minWidth, height: minHeight };
-        
-        const currentViewport = state.viewport;
-        console.log('📐 User disconnected, updating canvas to new minimum size:', minSize);
-        
-        return {
-          ...state,
-          userScreenSizes: newUserScreenSizes,
-          viewport: {
-            ...currentViewport,
-            canvasWidth: minSize.width,
-            canvasHeight: minSize.height
-          }
-        };
-      }
-      
-      return { ...state, userScreenSizes: newUserScreenSizes };
-    });
-  },
-
-  calculateMinimumScreenSize: (userScreenSizes) => {
-    const screenSizes = Array.from((userScreenSizes || get().userScreenSizes).values());
-    
-    if (screenSizes.length === 0) {
-      return { width: window.innerWidth, height: window.innerHeight };
-    }
-    
-    const minWidth = Math.min(...screenSizes.map(size => size.width));
-    const minHeight = Math.min(...screenSizes.map(size => size.height));
-    
-    return { width: minWidth, height: minHeight };
-  },
-
-  updateCanvasToMinimumSize: () => {
-    const minSize = get().calculateMinimumScreenSize();
-    set((state) => ({
-      viewport: {
-        ...state.viewport,
-        canvasWidth: minSize.width,
-        canvasHeight: minSize.height
-      }
-    }));
   },
 }));
 

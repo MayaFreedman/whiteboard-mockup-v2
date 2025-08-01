@@ -4,13 +4,11 @@ import { ServerClass } from '../server'
 import { WhiteboardAction } from '../types/whiteboard'
 
 interface User {
-  sessionId: string
-  id?: string  // Keep for backward compatibility
+  id: string
   name?: string
   color?: string
   cursor?: { x: number; y: number }
   isActive?: boolean
-  isModerator?: boolean
 }
 
 interface MultiplayerContextType {
@@ -18,7 +16,6 @@ interface MultiplayerContextType {
   isConnected: boolean
   roomId: string | null
   connectedUsers: User[]
-  connectedUserCount: number
   connectionError: string | null
   isAutoConnecting: boolean
   connect: (roomId: string, isModerator?: boolean) => Promise<void>
@@ -41,7 +38,6 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   const [isConnected, setIsConnected] = useState(false)
   const [roomId, setRoomId] = useState<string | null>(null)
   const [connectedUsers, setConnectedUsers] = useState<User[]>([])
-  const [connectedUserCount, setConnectedUserCount] = useState(0)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [isAutoConnecting, setIsAutoConnecting] = useState(false)
 
@@ -79,57 +75,6 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setRoomId(targetRoomId)
       setIsConnected(true)
       setConnectionError(null)
-
-      // Set up room event listeners for occupancy tracking
-      const room = newServerInstance.server.room
-      if (room) {
-        console.log('👥 Setting up participant tracking for room:', room.id)
-        
-        // Initialize with current user
-        setConnectedUsers([{ sessionId: room.sessionId, isModerator }])
-        setConnectedUserCount(1)
-        
-        // Set up participant tracking handlers
-        console.log('📝 Setting up participantJoined handler with state updates...')
-        room.onMessage('participantJoined', (player: any) => {
-          console.log('🎉 RECEIVED participantJoined message in context:', player)
-          
-          setConnectedUsers(prev => {
-            // Check if user already exists
-            if (prev.some(user => user.sessionId === player.id)) {
-              console.log('User already in list, skipping')
-              return prev
-            }
-            
-            const newUser: User = {
-              sessionId: player.id,
-              isModerator: player.moderator || false
-            }
-            
-            console.log('Adding new user to connected users:', newUser)
-            return [...prev, newUser]
-          })
-          
-          setConnectedUserCount(prev => prev + 1)
-        })
-        
-        console.log('📝 Setting up participantLeft handler with state updates...')
-        room.onMessage('participantLeft', (data: any) => {
-          console.log('🚪 RECEIVED participantLeft message in context:', data)
-          
-          if (data.playerLeft) {
-            setConnectedUsers(prev => {
-              const filtered = prev.filter(user => user.sessionId !== data.playerLeft.id)
-              console.log('Removed user from connected users, new list:', filtered)
-              return filtered
-            })
-            
-            setConnectedUserCount(prev => Math.max(1, prev - 1)) // Never go below 1
-          }
-        })
-        
-        console.log('✅ Message handlers overridden with state updates')
-      }
 
       console.log('✅ Connection successful!')
     } catch (error) {
@@ -171,7 +116,6 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     setIsConnected(false)
     setRoomId(null)
     setConnectedUsers([])
-    setConnectedUserCount(0)
     setConnectionError(null)
     console.log('🔌 Disconnected from room')
   }, [serverInstance])
@@ -219,7 +163,6 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     isConnected,
     roomId,
     connectedUsers,
-    connectedUserCount,
     connectionError,
     isAutoConnecting,
     connect,

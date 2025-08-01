@@ -86,22 +86,12 @@ const processImageFile = (file: File): Promise<{ dataUrl: string; preview: strin
     }
     
     const img = new Image();
-    let blobUrl: string | null = null;
-    
-    const cleanup = () => {
-      if (blobUrl) {
-        URL.revokeObjectURL(blobUrl);
-        blobUrl = null;
-      }
-    };
-    
     img.onload = () => {
       try {
         // Create main stamp canvas
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         if (!ctx) {
-          cleanup();
           reject(new Error('Failed to create canvas context'));
           return;
         }
@@ -128,7 +118,6 @@ const processImageFile = (file: File): Promise<{ dataUrl: string; preview: strin
         const thumbCanvas = document.createElement('canvas');
         const thumbCtx = thumbCanvas.getContext('2d');
         if (!thumbCtx) {
-          cleanup();
           reject(new Error('Failed to create thumbnail canvas context'));
           return;
         }
@@ -149,27 +138,14 @@ const processImageFile = (file: File): Promise<{ dataUrl: string; preview: strin
         // Calculate approximate size of processed image
         const size = Math.round(dataUrl.length * 0.75); // Base64 overhead approximation
         
-        // Cleanup memory
-        canvas.width = 1;
-        canvas.height = 1;
-        thumbCanvas.width = 1;
-        thumbCanvas.height = 1;
-        cleanup();
-        
         resolve({ dataUrl, preview, size });
       } catch (error) {
-        cleanup();
         reject(new Error('Failed to process image'));
       }
     };
     
-    img.onerror = () => {
-      cleanup();
-      reject(new Error('Failed to load image file'));
-    };
-    
-    blobUrl = URL.createObjectURL(file);
-    img.src = blobUrl;
+    img.onerror = () => reject(new Error('Failed to load image file'));
+    img.src = URL.createObjectURL(file);
   });
 };
 

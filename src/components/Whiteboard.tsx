@@ -7,7 +7,6 @@ import { SidebarProvider, SidebarInset } from './ui/sidebar';
 import { ConnectionStatus } from './ConnectionStatus';
 import { InitialStateLoader } from './InitialStateLoader';
 import { useMultiplayerSync } from '../hooks/useMultiplayerSync';
-import { useUserConnectionEvents } from '../hooks/useUserConnectionEvents';
 
 /**
  * Main whiteboard application component
@@ -16,15 +15,24 @@ import { useUserConnectionEvents } from '../hooks/useUserConnectionEvents';
 export const Whiteboard: React.FC = () => {
   // Initialize multiplayer sync and get loading state
   const { isWaitingForInitialState } = useMultiplayerSync();
-  
-  // Handle user connection events for screen size cleanup
-  useUserConnectionEvents();
-  
   const [showLoader, setShowLoader] = useState(false);
 
-  // Show loader only when actually waiting for initial state from other users
+  // Show loader briefly when waiting for initial state, then proceed to blank state
   useEffect(() => {
-    setShowLoader(isWaitingForInitialState);
+    let timeout: NodeJS.Timeout;
+    
+    if (isWaitingForInitialState) {
+      setShowLoader(true);
+      timeout = setTimeout(() => {
+        setShowLoader(false);
+      }, 3000); // 3 seconds - much shorter
+    } else {
+      setShowLoader(false);
+    }
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
   }, [isWaitingForInitialState]);
 
   return (

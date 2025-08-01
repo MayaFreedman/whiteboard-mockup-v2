@@ -72,18 +72,7 @@ export class ServerClass {
               state: room.state ? "has state" : "no state",
             });
 
-            // CRITICAL: Register participant handlers FIRST before any other setup
-            console.log("📝 Registering participantJoined handler IMMEDIATELY...");
-            room.onMessage("participantJoined", (player: any) => {
-              console.log("🎉 RECEIVED participantJoined in server.ts:", player);
-            });
-            
-            console.log("📝 Registering participantLeft handler IMMEDIATELY...");
-            room.onMessage("participantLeft", (data: any) => {
-              console.log("🚪 RECEIVED participantLeft in server.ts:", data);
-            });
-
-            // Set up detailed event logging AFTER critical handlers
+            // Set up detailed event logging BEFORE clearing timeout
             console.log("📡 Setting up room event listeners...");
 
             room.onStateChange.once((state: any) => {
@@ -169,6 +158,10 @@ export class ServerClass {
 
       this.server.room = tempRoom;
       console.log("🎯 All setup complete, connection established");
+      
+      // Request initial state after successful connection
+      console.log("🔄 Requesting initial state from existing users...");
+      this.requestInitialState();
       
     } catch (error) {
       console.error("💥 Failed to connect to Colyseus server:", error);
@@ -258,7 +251,12 @@ export class ServerClass {
   }
 
   sendEvent(payload: any) {
-    console.log("📡 Attempting to send event:", payload);
+    console.log("📡 Attempting to send event:", {
+      type: payload.type,
+      hasAction: !!payload.action,
+      actionId: payload.action?.id,
+      actionType: payload.action?.type,
+    });
 
     if (!this.server.room) {
       console.error("❌ Cannot send event: room not connected");
