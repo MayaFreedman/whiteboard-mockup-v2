@@ -1121,10 +1121,7 @@ export const useCanvasRendering = (
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         console.log('📐 Canvas size changed, triggering redraw');
-        // Use a small delay to allow the canvas to finish resizing
-        setTimeout(() => {
-          redrawCanvas();
-        }, 10);
+        redrawCanvas();
       }
     });
 
