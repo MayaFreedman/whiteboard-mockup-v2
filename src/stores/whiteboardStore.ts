@@ -875,56 +875,31 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     console.log('🔄 Applying batch update:', actions.length, 'actions');
     console.log('🔄 Action types in batch:', actions.map(a => a.type).join(', '));
     
-    // Apply each action directly - for ADD_OBJECT ensure it's properly synced
+    // Apply each action directly without setting lastAction
     actions.forEach(action => {
       switch (action.type) {
         case 'ADD_OBJECT':
           if (action.payload.object) {
-            console.log('📦 Adding object in batch:', action.payload.object.id.slice(0, 8), 'type:', action.payload.object.type);
-            set((state) => {
-              const newObjects = { ...state.objects };
-              // Check if object already exists to prevent duplicates
-              if (newObjects[action.payload.object.id]) {
-                console.log('⚠️ Object already exists, skipping add:', action.payload.object.id.slice(0, 8));
-                return state;
-              }
-              newObjects[action.payload.object.id] = action.payload.object;
-              return { objects: newObjects };
-            });
+            set((state) => ({
+              objects: {
+                ...state.objects,
+                [action.payload.object.id]: action.payload.object,
+              },
+            }));
           }
           break;
           
         case 'UPDATE_OBJECT':
           if (action.payload.id && action.payload.updates) {
-            set((state) => {
-              const existingObject = state.objects[action.payload.id];
-              if (!existingObject) {
-                console.warn('🚨 Attempting to update non-existent object in batch:', action.payload.id);
-                console.log('🔍 Current objects on this side:', Object.keys(state.objects).length, 'objects:', Object.keys(state.objects).map(id => id.slice(0, 8)));
-                console.log('🔍 Missing object details - ID:', action.payload.id, 'Update keys:', Object.keys(action.payload.updates || {}));
-                
-                // CRITICAL BUG: Object exists in UI but not in store! 
-                // This suggests a state sync issue - DON'T CREATE DUPLICATES
-                console.error('🐛 CRITICAL: Object missing from store but may exist in UI - this is a state sync bug!');
-                console.log('🐛 All current object IDs:', Object.keys(state.objects));
-                console.log('🐛 Looking for object ID:', action.payload.id);
-                console.log('🐛 Object exists check:', !!state.objects[action.payload.id]);
-                
-                // Skip the update rather than create duplicates
-                return state;
-              }
-              
-              return {
-                objects: {
-                  ...state.objects,
-                  [action.payload.id]: {
-                    ...existingObject,
-                    ...action.payload.updates,
-                    updatedAt: Date.now(),
-                  },
+            set((state) => ({
+              objects: {
+                ...state.objects,
+                [action.payload.id]: {
+                  ...state.objects[action.payload.id],
+                  ...action.payload.updates,
                 },
-              };
-            });
+              },
+            }));
           }
           break;
           

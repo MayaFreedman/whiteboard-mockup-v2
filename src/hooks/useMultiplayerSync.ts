@@ -114,12 +114,6 @@ export const useMultiplayerSync = () => {
           if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
             console.log('🎯 Applying', Object.keys(message.state.objects).length, 'objects from state response')
             Object.values(message.state.objects).forEach((obj: any) => {
-              // Validate object has required properties before adding
-              if (!obj.type || !obj.x || !obj.y) {
-                console.warn('🚨 Skipping invalid object from multiplayer sync:', obj)
-                return
-              }
-              
               whiteboardStore.addObject({
                 ...obj,
                 createdAt: obj.createdAt || Date.now(),
@@ -148,14 +142,6 @@ export const useMultiplayerSync = () => {
           // Handle BATCH_UPDATE actions specially
           if (action.type === 'BATCH_UPDATE') {
             console.log('🔄 Processing remote BATCH_UPDATE directly:', action.id?.slice(0, 8), 'with', action.payload.actions?.length, 'nested actions')
-            // Log first few actions to understand batch content
-            if (action.payload.actions && action.payload.actions.length > 0) {
-              console.log('🔍 First 3 actions in batch:', action.payload.actions.slice(0, 3).map(a => ({
-                type: a.type,
-                objectId: a.type === 'ADD_OBJECT' ? a.payload.object?.id?.slice(0, 8) : 
-                         a.type === 'UPDATE_OBJECT' || a.type === 'DELETE_OBJECT' ? a.payload.id?.slice(0, 8) : 'unknown'
-              })));
-            }
             if (action.payload.actions && Array.isArray(action.payload.actions)) {
               whiteboardStore.batchUpdate(action.payload.actions)
               sentActionIdsRef.current.add(action.id)

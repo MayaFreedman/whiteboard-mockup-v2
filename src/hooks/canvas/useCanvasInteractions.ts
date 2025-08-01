@@ -36,7 +36,7 @@ export const useCanvasInteractions = () => {
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const pathStartRef = useRef<{ x: number; y: number } | null>(null);
-  const redrawCanvasRef = useRef<((immediate?: boolean, source?: string) => void) | null>(null);
+  const redrawCanvasRef = useRef<(() => void) | null>(null);
   const doubleClickProtectionRef = useRef(false);
   const isEditingTextRef = useRef(false);
   
@@ -114,7 +114,7 @@ export const useCanvasInteractions = () => {
   /**
    * Sets the redraw canvas function (called by Canvas component)
    */
-  const setRedrawCanvas = useCallback((redrawFn: (immediate?: boolean, source?: string) => void) => {
+  const setRedrawCanvas = useCallback((redrawFn: () => void) => {
     redrawCanvasRef.current = redrawFn;
   }, []);
 
@@ -1082,11 +1082,6 @@ export const useCanvasInteractions = () => {
             userId: userId.slice(0, 8)
           });
           
-          // Force immediate canvas redraw after adding object
-          if (redrawCanvasRef.current) {
-            redrawCanvasRef.current(true, 'drawing-object-added');
-          }
-          
           // END BATCH for drawing
           if (currentBatchIdRef.current) {
             endBatch();
@@ -1096,6 +1091,10 @@ export const useCanvasInteractions = () => {
           
           currentDrawingPreviewRef.current = null;
           pathBuilderRef.current = null;
+          
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
         }
         break;
       }
