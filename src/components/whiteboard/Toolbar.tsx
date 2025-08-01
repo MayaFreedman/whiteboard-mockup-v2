@@ -79,14 +79,14 @@ const useResponsiveBreakpoint = (activeColorPalette: string) => {
      * Checks if current screen width is below the responsive breakpoint
      */
     const checkMobile = () => {
-      const breakpoint = activeColorPalette === 'basic' ? 950 : 1100;
+      const breakpoint = 950; // Use consistent breakpoint for all palettes
       setIsMobile(window.innerWidth < breakpoint);
     };
 
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, [activeColorPalette]);
+  }, []);
 
   return isMobile;
 };
