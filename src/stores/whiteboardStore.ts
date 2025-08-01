@@ -902,37 +902,15 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 console.warn('🚨 Attempting to update non-existent object in batch:', action.payload.id);
                 console.log('🔍 Current objects on this side:', Object.keys(state.objects).length, 'objects:', Object.keys(state.objects).map(id => id.slice(0, 8)));
                 console.log('🔍 Missing object details - ID:', action.payload.id, 'Update keys:', Object.keys(action.payload.updates || {}));
-                console.log('🔍 Update values:', action.payload.updates);
                 
-                // If this looks like a substantial object update (has position, type, etc), try to reconstruct it
-                const updates = action.payload.updates || {};
-                if (updates.x !== undefined && updates.y !== undefined && updates.type) {
-                  console.log('🔧 Attempting to reconstruct missing object from update data');
-                  const reconstructedObject = {
-                    id: action.payload.id,
-                    type: updates.type,
-                    x: updates.x,
-                    y: updates.y,
-                    width: updates.width || 0,
-                    height: updates.height || 0,
-                    stroke: updates.stroke || '#000000',
-                    strokeWidth: updates.strokeWidth || 1,
-                    fill: updates.fill || 'none',
-                    opacity: updates.opacity || 1,
-                    createdAt: updates.createdAt || Date.now(),
-                    updatedAt: Date.now(),
-                    data: updates.data || {}
-                  };
-                  
-                  return {
-                    objects: {
-                      ...state.objects,
-                      [action.payload.id]: reconstructedObject,
-                    },
-                  };
-                }
+                // CRITICAL BUG: Object exists in UI but not in store! 
+                // This suggests a state sync issue - DON'T CREATE DUPLICATES
+                console.error('🐛 CRITICAL: Object missing from store but may exist in UI - this is a state sync bug!');
+                console.log('🐛 All current object IDs:', Object.keys(state.objects));
+                console.log('🐛 Looking for object ID:', action.payload.id);
+                console.log('🐛 Object exists check:', !!state.objects[action.payload.id]);
                 
-                // If object doesn't exist and we can't reconstruct it, skip this action
+                // Skip the update rather than create duplicates
                 return state;
               }
               
