@@ -164,11 +164,11 @@ export const useMultiplayerSync = () => {
       }
     }
 
-    room.onMessage('broadcast', handleBroadcastMessage)
+    const messageHandler = room.onMessage('broadcast', handleBroadcastMessage)
 
     return () => {
-      // Proper cleanup - remove the specific handler
-      room.off('broadcast', handleBroadcastMessage)
+      // Proper cleanup - remove the message handler
+      messageHandler.clear()
     }
   }, [serverInstance, isConnected, whiteboardStore, userId])
 
