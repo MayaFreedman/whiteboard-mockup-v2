@@ -1127,13 +1127,18 @@ export const useCanvasInteractions = () => {
             timestamp: Date.now()
           });
           
-          // Force immediate redraw after object creation
+          // Force immediate redraw after object creation with small delay to ensure store state is updated
           console.log('🎨 TRIGGERING REDRAW:', {
             hasRedrawFn: !!redrawCanvasRef.current,
             timestamp: Date.now()
           });
           if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
+            // Use setTimeout to ensure Zustand state is fully updated before redraw
+            setTimeout(() => {
+              if (redrawCanvasRef.current) {
+                redrawCanvasRef.current();
+              }
+            }, 0);
           }
           console.log('🎨 DRAWING COMPLETION END:', {
             objectId: objectId.slice(0, 8),
