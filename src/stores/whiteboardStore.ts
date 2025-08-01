@@ -938,7 +938,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
               console.log('🎨 Processing batched ERASE_PATH with brush metadata:', {
                 originalId: originalObjectId.slice(0, 8),
                 brushType: originalObjectMetadata.brushType,
-                segmentCount: resultingSegments.length
+                segmentCount: resultingSegments.length,
+                segmentDetails: resultingSegments.map(s => ({ id: s.id.slice(0, 8), pointCount: s.points.length }))
               });
               
               set((state) => {
@@ -1013,6 +1014,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         default:
           console.warn('Unhandled action type in batchUpdate:', action.type);
       }
+    });
+    
+    // Log final state after batch processing
+    const finalState = get();
+    console.log('🎨 Batch update complete - final object count:', Object.keys(finalState.objects).length, {
+      objectIds: Object.keys(finalState.objects).map(id => id.slice(0, 8)),
+      objectTypes: Object.values(finalState.objects).map(obj => obj.type)
     });
     
     // Signal that a batch update occurred to trigger canvas redraw
