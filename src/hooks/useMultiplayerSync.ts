@@ -57,12 +57,11 @@ export const useMultiplayerSync = () => {
    * Request initial state from other users (simplified for room join only)
    */
   const requestInitialState = () => {
-    if (!isReadyToSend() || hasReceivedInitialStateRef.current || hasRequestedStateRef.current) {
+    if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
       return
     }
 
     console.log('📤 Sending initial state request...')
-    hasRequestedStateRef.current = true
     setIsWaitingForInitialState(true)
     
     try {
