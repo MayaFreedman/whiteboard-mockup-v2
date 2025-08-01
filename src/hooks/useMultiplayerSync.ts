@@ -3,15 +3,16 @@ import { useWhiteboardStore } from '../stores/whiteboardStore'
 import { useUser } from '../contexts/UserContext'
 import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
+import { useStateSync } from './multiplayer/useStateSync'
+import { useStateRequester } from './multiplayer/useStateRequester'
+import { useMessageHandlers } from './multiplayer/useMessageHandlers'
 
 /**
  * Determines if an action should be synchronized across multiplayer clients
- * Selection-related actions are kept local to each user
  */
 const shouldSyncAction = (action: WhiteboardAction, whiteboardStore: any): boolean => {
   const localOnlyActions = ['SELECT_OBJECTS', 'CLEAR_SELECTION']
   
-  // Don't sync individual UPDATE_OBJECT actions during any active batch operation
   if (action.type === 'UPDATE_OBJECT') {
     const currentBatch = whiteboardStore.getState().currentBatch
     if (currentBatch.id) {
@@ -27,9 +28,6 @@ export const useMultiplayerSync = () => {
   const whiteboardStore = useWhiteboardStore()
   const { userId } = useUser()
   const sentActionIdsRef = useRef<Set<string>>(new Set())
-  const hasReceivedInitialStateRef = useRef(false)
-  const hasEverBeenInRoomRef = useRef(false)
-  const hasRequestedStateRef = useRef(false)
   const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
 
   // If no multiplayer context, return null values (graceful degradation)
@@ -43,118 +41,22 @@ export const useMultiplayerSync = () => {
   }
 
   const { serverInstance, isConnected, sendWhiteboardAction, connectedUserCount } = multiplayerContext
+  const sessionId = serverInstance?.server?.room?.sessionId
 
-  /**
-   * Checks if the connection is ready to send messages
-   */
-  const isReadyToSend = () => {
-    return !!serverInstance && !!serverInstance.server?.room && isConnected
-  }
+  // Initialize state sync hooks
+  const stateSync = useStateSync(serverInstance, isConnected, sessionId)
+  const { hasReceivedInitialStateRef } = useStateRequester(
+    serverInstance, 
+    isConnected, 
+    connectedUserCount, 
+    setIsWaitingForInitialState
+  )
 
-  /**
-   * Request initial state from other users (simplified for room join only)
-   */
-  const requestInitialState = () => {
-    if (!isReadyToSend() || hasReceivedInitialStateRef.current || hasRequestedStateRef.current) {
-      return
-    }
-
-    console.log('📤 Sending initial state request...')
-    hasRequestedStateRef.current = true
-    setIsWaitingForInitialState(true)
-    
-    try {
-      serverInstance.requestInitialState()
-    } catch (error) {
-      console.error('❌ Failed to send state request:', error)
-      hasReceivedInitialStateRef.current = true
-      hasRequestedStateRef.current = false
-      setIsWaitingForInitialState(false)
-    }
-  }
-
-  /**
-   * Set up message-based sync when connection is ready
-   */
-  useEffect(() => {
-    if (!isReadyToSend()) {
-      return
-    }
-
-    const room = serverInstance.server.room
-    
-    const handleBroadcastMessage = (message: any) => {
-      // Handle state request messages
-      if (message.type === 'request_state') {
-        console.log('📥 Received state request from:', message.requesterId)
-        if (message.requesterId !== room.sessionId) {
-          const currentState = whiteboardStore.getStateSnapshot()
-          const hasObjectsToShare = Object.keys(currentState.objects).length > 0
-          console.log('📤 Sending state response with objects:', Object.keys(currentState.objects).length)
-          
-          // Always respond, even with empty state (so requester knows they got a response)
-          setTimeout(() => {
-            serverInstance.sendStateResponse(message.requesterId, currentState)
-          }, Math.random() * 300 + 100)
-        }
-        return
-      }
-      
-      // Handle state response messages
-      if (message.type === 'state_response') {
-        console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length)
-        if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
-          console.log('✅ State response is for us, applying state')
-          hasReceivedInitialStateRef.current = true
-          setIsWaitingForInitialState(false)
-          
-          // Apply received state directly using addObject for each object
-          if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
-            console.log('🎯 Applying', Object.keys(message.state.objects).length, 'objects from state response')
-            Object.values(message.state.objects).forEach((obj: any) => {
-              whiteboardStore.addObject({
-                ...obj,
-                createdAt: obj.createdAt || Date.now(),
-                updatedAt: obj.updatedAt || Date.now(),
-                data: obj.data || {}
-              })
-            })
-          }
-          
-          if (message.state?.viewport) {
-            whiteboardStore.setViewport(message.state.viewport)
-          }
-          
-          if (message.state?.settings) {
-            whiteboardStore.setSettings(message.state.settings)
-          }
-        }
-        return
-      }
-      
-      // Handle whiteboard actions
-      if (message.type === 'whiteboard_action' && message.action) {
-        const action: WhiteboardAction = message.action
-        
-        if (!sentActionIdsRef.current.has(action.id)) {
-          whiteboardStore.applyRemoteAction(action)
-        }
-      }
-      
-      // Handle state sync
-      if (message.type === 'state_sync' && message.data) {
-        if (message.data.actions && Array.isArray(message.data.actions)) {
-          whiteboardStore.batchUpdate(message.data.actions)
-        }
-      }
-    }
-
-    room.onMessage('broadcast', handleBroadcastMessage)
-
-    return () => {
-      room.onMessage('broadcast', () => {})
-    }
-  }, [serverInstance, isConnected, sendWhiteboardAction, whiteboardStore, userId, connectedUserCount])
+  // Set up message handlers
+  useMessageHandlers(serverInstance, isConnected, sentActionIdsRef.current, {
+    onStateRequest: stateSync.onStateRequest,
+    onStateResponse: stateSync.onStateResponse
+  })
 
   /**
    * Send local actions to other clients (real-time sync)
@@ -168,7 +70,7 @@ export const useMultiplayerSync = () => {
             return
           }
           
-          if (isReadyToSend()) {
+          if (serverInstance && serverInstance.server?.room && isConnected) {
             try {
               sendWhiteboardAction(state.lastAction)
               sentActionIdsRef.current.add(state.lastAction.id)
@@ -190,45 +92,11 @@ export const useMultiplayerSync = () => {
     return unsubscribe
   }, [sendWhiteboardAction])
 
-  /**
-   * Request initial state when user count changes (room join scenario)
-   */
-  useEffect(() => {
-    if (!isReadyToSend()) return
-    
-    console.log('🔄 connectedUserCount changed:', connectedUserCount, 'hasReceived:', hasReceivedInitialStateRef.current, 'hasEverBeenInRoom:', hasEverBeenInRoomRef.current, 'hasRequested:', hasRequestedStateRef.current)
-    
-    // Only request state if:
-    // 1. We haven't received initial state yet
-    // 2. There are other users (count > 1) 
-    // 3. We haven't been in room before (this is our first time seeing multiple users)
-    // 4. We haven't already requested state
-    if (!hasReceivedInitialStateRef.current && connectedUserCount > 1 && !hasEverBeenInRoomRef.current && !hasRequestedStateRef.current) {
-      console.log('📤 Requesting initial state - new user joining')
-      hasEverBeenInRoomRef.current = true // Mark that we've now been in a room with others
-      // Small delay to ensure room is fully initialized
-      setTimeout(() => {
-        requestInitialState()
-      }, 100)
-    }
-  }, [connectedUserCount, isConnected, serverInstance])
-
-  /**
-   * Reset state sync flags when disconnecting
-   */
-  useEffect(() => {
-    if (!isConnected) {
-      hasReceivedInitialStateRef.current = false
-      hasEverBeenInRoomRef.current = false
-      hasRequestedStateRef.current = false
-      setIsWaitingForInitialState(false)
-    }
-  }, [isConnected])
 
   return {
     isConnected,
     serverInstance,
     sendWhiteboardAction,
-    isWaitingForInitialState,
+    isWaitingForInitialState: stateSync.isWaitingForInitialState,
   }
 }
