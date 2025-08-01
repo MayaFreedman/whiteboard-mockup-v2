@@ -116,14 +116,14 @@ export const useCanvasRendering = (
   const getOrLoadImage = useCallback(async (src: string): Promise<HTMLImageElement | null> => {
     const normalizedSrc = normalizeImagePath(src);
     
-    // Add detailed cache lookup logging
-    console.log(`🔍 Cache lookup for: "${normalizedSrc.slice(-30)}"`);
+    // Add detailed cache lookup logging with FULL paths
+    console.log(`🔍 Cache lookup for FULL PATH: "${normalizedSrc}"`);
     console.log(`📦 Cache has ${imageCache.current.size} images:`, 
-      Array.from(imageCache.current.keys()).map(k => k.slice(-20)));
+      Array.from(imageCache.current.keys()));
     
     // Return cached image if available
     if (imageCache.current.has(normalizedSrc)) {
-      console.log(`✨ Cache HIT for: ${normalizedSrc.slice(-20)}`);
+      console.log(`✨ Cache HIT for FULL PATH: "${normalizedSrc}"`);
       return imageCache.current.get(normalizedSrc)!;
     }
     
