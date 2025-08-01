@@ -44,6 +44,8 @@ export const useScreenSizeSync = () => {
 
     const newSize = calculateUsableScreenSize();
     
+    console.log('📏 Window resized, updating screen size:', newSize);
+    
     // Update local store without triggering recalculation
     updateLocalUserScreenSize(userId, newSize);
     
