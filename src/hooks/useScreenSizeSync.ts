@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useScreenSizeStore } from '../stores/screenSizeStore';
 import { useUser } from '../contexts/UserContext';
 import { useMultiplayer } from './useMultiplayer';
@@ -19,16 +19,24 @@ export const useScreenSizeSync = () => {
     };
   }, []);
 
+  const broadcastTimeoutRef = useRef<number | null>(null);
+
   const broadcastScreenSize = useCallback((size: { width: number; height: number }) => {
     if (!multiplayer?.isConnected || !userId) return;
 
-    // Send screen size update via multiplayer
-    multiplayer.serverInstance?.server?.room?.send('broadcast', {
-      type: 'screen_size_update',
-      userId: userId,
-      screenSize: size,
-      timestamp: Date.now()
-    });
+    // Debounce broadcasts to prevent spam
+    if (broadcastTimeoutRef.current) {
+      window.clearTimeout(broadcastTimeoutRef.current);
+    }
+
+    broadcastTimeoutRef.current = window.setTimeout(() => {
+      multiplayer.serverInstance?.server?.room?.send('broadcast', {
+        type: 'screen_size_update',
+        userId: userId,
+        screenSize: size,
+        timestamp: Date.now()
+      });
+    }, 100); // 100ms debounce
   }, [multiplayer, userId]);
 
   const handleWindowResize = useCallback(() => {
@@ -53,6 +61,9 @@ export const useScreenSizeSync = () => {
     
     return () => {
       window.removeEventListener('resize', handleWindowResize);
+      if (broadcastTimeoutRef.current) {
+        window.clearTimeout(broadcastTimeoutRef.current);
+      }
     };
   }, [handleWindowResize]);
 

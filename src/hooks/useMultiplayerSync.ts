@@ -168,8 +168,8 @@ export const useMultiplayerSync = () => {
         }
       }
       
-      // Handle screen size updates
-      if (message.type === 'screen_size_update' && message.userId && message.screenSize) {
+      // Handle screen size updates (ignore own messages)
+      if (message.type === 'screen_size_update' && message.userId && message.screenSize && message.userId !== userId) {
         console.log('📥 Received screen size update from:', message.userId, message.screenSize)
         updateUserScreenSize(message.userId, message.screenSize)
       }
