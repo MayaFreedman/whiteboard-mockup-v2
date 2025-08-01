@@ -460,6 +460,8 @@ export const useCanvasRendering = (
           const normalizedSrc = normalizeImagePath(imageSrc);
           const cachedImage = imageCache.current.get(normalizedSrc);
           
+          console.log(`🎯 Render lookup for: "${normalizedSrc.slice(-30)}" - Found: ${!!cachedImage}`);
+          
           if (cachedImage) {
             // Image is ready, render it
             ctx.drawImage(
@@ -470,25 +472,28 @@ export const useCanvasRendering = (
               Math.round(obj.height)
             );
           } else {
-            // Load image asynchronously and trigger redraw when ready
-            getOrLoadImage(imageSrc).then(() => {
+            // Load image asynchronously using normalized src for consistency
+            getOrLoadImage(normalizedSrc).then(() => {
               // Only redraw if canvas still exists
               if (canvas) {
-                redrawCanvas(false, `image-loaded:${imageSrc.slice(-20)}`);
+                redrawCanvas(false, `image-loaded:${normalizedSrc.slice(-20)}`);
               }
             }).catch(error => {
               console.warn('Failed to load image for rendering:', error);
               
               // If it's a custom stamp and we have a fallback, try loading that ONCE
-              if (fallbackSrc && !imageCache.current.has(normalizeImagePath(fallbackSrc)) && !failedImages.current.has(normalizeImagePath(fallbackSrc))) {
-                getOrLoadImage(fallbackSrc).then(() => {
-                  if (canvas) {
-                    redrawCanvas(false, `fallback-loaded:${fallbackSrc.slice(-20)}`);
-                  }
-                }).catch(fallbackError => {
-                  console.error('Failed to load fallback image:', fallbackError);
-                  // Don't trigger more redraws here - fallback failed permanently
-                });
+              if (fallbackSrc) {
+                const normalizedFallbackSrc = normalizeImagePath(fallbackSrc);
+                if (!imageCache.current.has(normalizedFallbackSrc) && !failedImages.current.has(normalizedFallbackSrc)) {
+                  getOrLoadImage(normalizedFallbackSrc).then(() => {
+                    if (canvas) {
+                      redrawCanvas(false, `fallback-loaded:${normalizedFallbackSrc.slice(-20)}`);
+                    }
+                  }).catch(fallbackError => {
+                    console.error('Failed to load fallback image:', fallbackError);
+                    // Don't trigger more redraws here - fallback failed permanently
+                  });
+                }
               }
             });
             
