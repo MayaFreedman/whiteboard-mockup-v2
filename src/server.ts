@@ -107,32 +107,7 @@ export class ServerClass {
               });
             });
 
-            // Register critical message handlers immediately
-            console.log("🔧 Registering message handlers immediately...");
-            
-            // Handle participant events (critical timing)
-            room.onMessage("participantJoined", (participant: any) => {
-              console.log("👥 [SERVER] Participant joined:", participant);
-            });
-            
-            room.onMessage("participantLeft", (data: any) => {
-              console.log("👥 [SERVER] Participant left:", data);
-            });
-            
-            // Handle server-generated messages
-            room.onMessage("__playground_message_types", (message: any) => {
-              console.log("🎮 [SERVER] Playground message:", message);
-            });
-            
-            room.onMessage("ping", (message: any) => {
-              console.log("🏓 [SERVER] Ping received:", message);
-            });
-
-            room.onMessage("broadcast", (message: any) => {
-              console.log("📨 Broadcast message received:", message);
-            });
-
-            console.log("✅ Critical message handlers registered");
+            console.log("✅ Room setup complete - message handlers will be managed by MultiplayerContext");
 
             room.onError((code: any, message: any) => {
               console.error("❌ Room error occurred:", { code, message });

@@ -78,10 +78,12 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setIsConnected(true)
       setConnectionError(null)
 
-      // Set up room event listeners for occupancy tracking
+      // Set up ALL message handlers in one place to avoid conflicts
       const room = newServerInstance.server.room
       if (room) {
-        // Re-register participant events for context updates (handlers already exist in server)
+        console.log('🔧 [CONTEXT] Registering ALL message handlers...')
+        
+        // Handle participant events
         room.onMessage('participantJoined', (participant: any) => {
           console.log('👥 [CONTEXT] Participant joined:', participant)
           setConnectedUserCount(prev => prev + 1)
@@ -92,6 +94,15 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
           setConnectedUserCount(prev => Math.max(0, prev - 1))
         })
 
+        // Handle server-generated messages that cause warnings
+        room.onMessage('ping', (message: any) => {
+          console.log('🏓 [CONTEXT] Ping received:', message)
+        })
+        
+        room.onMessage('__playground_message_types', (message: any) => {
+          console.log('🎮 [CONTEXT] Playground message:', message)
+        })
+
         // Listen for default room state to get initial player count
         room.onMessage('defaultRoomState', (state: any) => {
           if (state?.players) {
@@ -100,6 +111,8 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
             setConnectedUserCount(playerCount)
           }
         })
+        
+        console.log('✅ [CONTEXT] All message handlers registered')
       }
 
       console.log('✅ Connection successful!')
