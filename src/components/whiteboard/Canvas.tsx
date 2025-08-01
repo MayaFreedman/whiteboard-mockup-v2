@@ -603,14 +603,6 @@ export const Canvas: React.FC = () => {
     }
   }, [whiteboardStore.lastBatchUpdateTime, redrawCanvas]);
 
-  // Watch for whiteboard size changes and recenter viewport
-  useEffect(() => {
-    console.log('📏 Whiteboard size changed, recentering viewport:', activeWhiteboardSize);
-    // Reset viewport to center when canvas size changes
-    whiteboardStore.setViewport({ x: 0, y: 0, zoom: 1 });
-    redrawCanvas();
-  }, [activeWhiteboardSize.width, activeWhiteboardSize.height, whiteboardStore, redrawCanvas]);
-
   /**
    * Handles mouse down events on the canvas
    * @param event - Mouse event
