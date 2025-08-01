@@ -603,6 +603,12 @@ export const Canvas: React.FC = () => {
     }
   }, [whiteboardStore.lastBatchUpdateTime, redrawCanvas]);
 
+  // Reset viewport when screen size changes to recenter canvas
+  useEffect(() => {
+    whiteboardStore.resetViewport();
+    redrawCanvas();
+  }, [activeWhiteboardSize, whiteboardStore, redrawCanvas]);
+
   /**
    * Handles mouse down events on the canvas
    * @param event - Mouse event
