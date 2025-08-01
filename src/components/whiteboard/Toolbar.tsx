@@ -92,26 +92,6 @@ const useResponsiveBreakpoint = (activeColorPalette: string) => {
 };
 
 /**
- * Hook to calculate dynamic right padding for the scrollable container
- * @param actionButtonsRef - Reference to the action buttons element
- * @param isMobile - Boolean indicating if screen is mobile
- */
-const useActionButtonsWidth = (actionButtonsRef: React.RefObject<HTMLDivElement>, isMobile: boolean) => {
-  const [rightPadding, setRightPadding] = useState<number>(120);
-
-  useEffect(() => {
-    if (actionButtonsRef.current && !isMobile) {
-      const width = actionButtonsRef.current.offsetWidth;
-      setRightPadding(width + 32); // Add 32px for spacing (16px on each side)
-    } else {
-      setRightPadding(16); // Default padding for mobile
-    }
-  }, [isMobile]);
-
-  return rightPadding;
-};
-
-/**
  * Hook to update CSS custom property for toolbar height
  * @param toolbarRef - Reference to the toolbar element
  * @param activeTool - Current active tool (triggers recalculation)
@@ -236,9 +216,7 @@ export const Toolbar: React.FC = () => {
   } = useToolStore();
   
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const actionButtonsRef = useRef<HTMLDivElement>(null);
   const isMobile = useResponsiveBreakpoint(activeColorPalette);
-  const rightPadding = useActionButtonsWidth(actionButtonsRef, isMobile);
   
   // Update CSS custom property for toolbar height
   useToolbarHeight(toolbarRef, activeTool);
@@ -268,17 +246,14 @@ export const Toolbar: React.FC = () => {
   return (
     <div ref={toolbarRef} className="bg-card border-b border-company-light-pink/20 relative">
       {/* Desktop Action Buttons - Fixed to the right */}
-      <div 
-        ref={actionButtonsRef}
-        className={`absolute right-4 top-0 h-full items-center gap-2 z-10 ${isMobile ? 'hidden' : 'flex'}`}
-      >
+      <div className={`absolute right-4 top-0 h-full items-center gap-2 z-10 ${isMobile ? 'hidden' : 'flex'}`}>
         <ActionButtons />
       </div>
 
       {/* Scrollable Content Container */}
       <div 
         className="overflow-x-auto scrollbar-hide"
-        style={{ paddingRight: `${rightPadding}px` }}
+        style={{ paddingRight: isMobile ? '16px' : '120px' }}
       >
         <style>{`
           .scrollbar-hide {
