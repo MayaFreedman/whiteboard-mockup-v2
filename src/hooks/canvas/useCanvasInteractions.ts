@@ -213,12 +213,15 @@ export const useCanvasInteractions = () => {
     // Check if this is a custom stamp (base64 data URL)
     const isCustomStamp = selectedSticker.startsWith('data:');
     
-    // For multiplayer compatibility, store custom stamps differently
+    // For multiplayer compatibility, store custom stamps with fallback handling
     const stampData = isCustomStamp ? {
-      // Store custom stamp reference instead of full base64 data
-      customStampId: selectedSticker, // This will be resolved locally on each client
+      // Store custom stamp reference with metadata for multiplayer sync
+      customStampId: selectedSticker,
       isCustomStamp: true,
-      alt: 'Custom stamp'
+      alt: 'Custom stamp',
+      // Add fallback for clients that don't have this custom stamp
+      fallbackSrc: '/icons/emotions/happy.svg',
+      fallbackAlt: 'Fallback stamp (custom stamp not available)'
     } : {
       src: selectedSticker,
       alt: 'Stamp icon'
@@ -576,6 +579,12 @@ export const useCanvasInteractions = () => {
       }
 
       case 'stamp': {
+        // Validate that a stamp is selected before proceeding
+        if (!toolStore.toolSettings.selectedSticker) {
+          console.warn('🖼️ No stamp selected, ignoring click');
+          return;
+        }
+        
         const stampSize = toolStore.toolSettings.strokeWidth || 5;
         const stampObject = createStampObject(coords.x, coords.y, stampSize);
         

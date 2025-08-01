@@ -379,13 +379,16 @@ export const useCanvasRendering = (
       case 'image': {
         const imageData = obj.data as any;
         let imageSrc: string | null = null;
+        let fallbackSrc: string | null = null;
         
-        // Handle custom stamps vs regular stamps
+        // Handle custom stamps vs regular stamps with fallback
         if (imageData?.isCustomStamp && imageData?.customStampId) {
-          // For custom stamps, use the customStampId directly as src
+          // For custom stamps, try the customStampId first
           imageSrc = imageData.customStampId;
+          // Use fallback if available, otherwise default fallback
+          fallbackSrc = imageData?.fallbackSrc || '/icons/emotions/happy.svg';
         } else if (imageData?.src) {
-          // For regular stamps, use src
+          // For regular stamps, use src directly
           imageSrc = imageData.src;
         }
         
@@ -393,7 +396,7 @@ export const useCanvasRendering = (
           const cachedImage = imageCache.current.get(imageSrc);
           
           if (cachedImage) {
-            // Draw immediately from cache - no blinking!
+            // Image is ready, render it
             ctx.drawImage(
               cachedImage, 
               Math.round(obj.x), 
@@ -409,8 +412,33 @@ export const useCanvasRendering = (
                 redrawCanvas();
               }
             }).catch(error => {
-              console.warn('Failed to load image for rendering:', error);
+              console.warn('Failed to load image for rendering:', error, 'Trying fallback...');
+              
+              // If it's a custom stamp and we have a fallback, try loading that
+              if (fallbackSrc && !imageCache.current.has(fallbackSrc)) {
+                getOrLoadImage(fallbackSrc).then(() => {
+                  if (canvas) {
+                    redrawCanvas();
+                  }
+                }).catch(fallbackError => {
+                  console.error('Failed to load fallback image:', fallbackError);
+                });
+              }
             });
+            
+            // If we have a fallback and the main image failed, try rendering the fallback
+            if (fallbackSrc && imageCache.current.has(fallbackSrc)) {
+              const fallbackImage = imageCache.current.get(fallbackSrc)!;
+              ctx.globalAlpha = 0.7; // Slightly transparent to indicate fallback
+              ctx.drawImage(
+                fallbackImage, 
+                Math.round(obj.x), 
+                Math.round(obj.y), 
+                Math.round(obj.width), 
+                Math.round(obj.height)
+              );
+              ctx.globalAlpha = 1;
+            }
           }
         }
         break;
