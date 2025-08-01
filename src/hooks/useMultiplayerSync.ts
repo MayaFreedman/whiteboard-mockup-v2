@@ -211,11 +211,8 @@ export const useMultiplayerSync = () => {
       setTimeout(() => {
         requestInitialState()
       }, 100)
-    } else if (connectedUserCount <= 1) {
-      // If we're alone, mark as received to stop waiting
-      hasReceivedInitialStateRef.current = true
-      setIsWaitingForInitialState(false)
     }
+    // Note: We don't set hasReceived=true when alone - let it stay false until we actually receive state
   }, [connectedUserCount, isConnected, serverInstance])
 
   /**
