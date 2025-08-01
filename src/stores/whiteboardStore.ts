@@ -413,6 +413,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   clearCanvas: (userId = 'local') => {
     const state = get();
     
+    // Don't record action if canvas is already empty
+    if (Object.keys(state.objects).length === 0) {
+      console.log('🗑️ Canvas already empty, skipping clear action');
+      return;
+    }
+    
     const action: WhiteboardAction = {
       type: 'CLEAR_CANVAS',
       payload: {},
