@@ -607,7 +607,7 @@ export const Canvas: React.FC = () => {
   useEffect(() => {
     whiteboardStore.resetViewport();
     redrawCanvas();
-  }, [activeWhiteboardSize, whiteboardStore, redrawCanvas]);
+  }, [activeWhiteboardSize]); // Only depend on activeWhiteboardSize
 
   /**
    * Handles mouse down events on the canvas
