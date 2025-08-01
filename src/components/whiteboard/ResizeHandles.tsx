@@ -90,6 +90,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
         newBounds.height = 10;
       }
       
+      console.log('🔄 Manual resize:', { objectId, handleId, newBounds, oldBounds: startBounds });
       onResize(objectId, newBounds);
     };
     

@@ -150,6 +150,7 @@ export const Canvas: React.FC = () => {
 
   // Handle resize for selected objects
   const handleResize = (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
+    console.log('🎯 Canvas handleResize called:', { objectId, newBounds, objectType: objects[objectId]?.type });
     updateObject(objectId, newBounds);
     redrawCanvas();
   };

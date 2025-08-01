@@ -28,6 +28,12 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
 
   // Auto-resize text object to fit content
   const updateTextBounds = (textObject: any, updatedData: TextData) => {
+    console.log('📏 Auto-calculating text bounds:', { 
+      objectId: selectedObjectId, 
+      content: updatedData.content, 
+      fontSize: updatedData.fontSize,
+      currentBounds: { width: textObject.width, height: textObject.height }
+    });
     const content = updatedData.content || 'Double-click to edit';
     const metrics = measureText(
       content,
@@ -42,6 +48,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
     const newWidth = Math.max(metrics.width + padding, 100); // Minimum 100px width
     const newHeight = Math.max(metrics.height + padding, updatedData.fontSize + padding);
     
+    console.log('📏 New text bounds calculated:', { newWidth, newHeight, metricsWidth: metrics.width, metricsHeight: metrics.height });
     return { width: newWidth, height: newHeight };
   };
 
@@ -55,6 +62,13 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
     if (shouldUpdateBounds) {
       // Calculate new bounds based on updated text properties
       const newBounds = updateTextBounds(obj, updatedData);
+      
+      console.log('📝 Text property change triggering bounds update:', { 
+        property, 
+        value, 
+        newBounds, 
+        currentBounds: { width: obj.width, height: obj.height }
+      });
       
       updateObject(selectedObjectId, { 
         data: updatedData,
