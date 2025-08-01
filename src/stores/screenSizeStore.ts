@@ -70,7 +70,8 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
       };
     });
     
-    // Don't recalculate for local updates - wait for broadcast response
+    // Recalculate minimum after local update (since we no longer receive our own broadcasts)
+    get().recalculateMinimumSize();
   },
 
   removeUser: (userId: string) => {
