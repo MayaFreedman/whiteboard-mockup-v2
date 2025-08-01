@@ -667,20 +667,18 @@ export const Canvas: React.FC = () => {
   return (
     <div 
       ref={containerRef}
-      className="w-full h-full relative bg-muted/10 overflow-hidden"
+      className="w-full h-full relative bg-muted/20 overflow-hidden"
       tabIndex={0}
       style={{ outline: 'none' }}
     >
-      {/* Whiteboard area with subtle styling */}
+      {/* Whiteboard area with elegant styling */}
       <div 
         className="absolute top-0 left-0 bg-background"
         style={{
           width: activeWhiteboardSize.width,
           height: activeWhiteboardSize.height,
-          boxShadow: hasMultipleUsers 
-            ? '0 4px 20px -2px hsl(var(--border) / 0.3), 0 0 0 1px hsl(var(--border) / 0.2)' 
-            : 'none',
-          borderRadius: hasMultipleUsers ? '8px' : '0px'
+          boxShadow: '0 8px 32px -4px hsl(var(--foreground) / 0.08), 0 2px 8px -2px hsl(var(--foreground) / 0.04), 0 0 0 1px hsl(var(--border) / 0.1)',
+          borderRadius: hasMultipleUsers ? '12px' : '4px'
         }}
       >
         <canvas
@@ -692,7 +690,7 @@ export const Canvas: React.FC = () => {
             cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
             touchAction: 'none', // Prevent default touch behaviors
             backgroundColor: 'hsl(var(--background))',
-            borderRadius: hasMultipleUsers ? '8px' : '0px'
+            borderRadius: hasMultipleUsers ? '12px' : '4px'
           }}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
@@ -702,23 +700,24 @@ export const Canvas: React.FC = () => {
         />
       </div>
       
-      {/* Grey overlay for non-whiteboard areas - only show in multiplayer */}
+      {/* Enhanced non-whiteboard areas - only show in multiplayer */}
       {hasMultipleUsers && (
         <>
           {/* Right side overlay */}
           <div 
-            className="absolute top-0 bg-muted/40 pointer-events-none"
+            className="absolute top-0 pointer-events-none"
             style={{
               left: activeWhiteboardSize.width,
               right: 0,
               height: '100%',
+              background: 'linear-gradient(90deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--muted) / 0.5) 100%)',
               backgroundImage: `
                 repeating-linear-gradient(
                   45deg,
                   transparent,
-                  transparent 20px,
-                  hsl(var(--border) / 0.1) 20px,
-                  hsl(var(--border) / 0.1) 40px
+                  transparent 30px,
+                  hsl(var(--border) / 0.05) 30px,
+                  hsl(var(--border) / 0.05) 32px
                 )
               `
             }}
@@ -726,18 +725,40 @@ export const Canvas: React.FC = () => {
           
           {/* Bottom overlay */}
           <div 
-            className="absolute left-0 bg-muted/40 pointer-events-none"
+            className="absolute left-0 pointer-events-none"
             style={{
               top: activeWhiteboardSize.height,
               bottom: 0,
               width: '100%',
+              background: 'linear-gradient(180deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--muted) / 0.5) 100%)',
+              backgroundImage: `
+                repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 30px,
+                  hsl(var(--border) / 0.05) 30px,
+                  hsl(var(--border) / 0.05) 32px
+                )
+              `
+            }}
+          />
+          
+          {/* Corner overlay where right and bottom meet */}
+          <div 
+            className="absolute pointer-events-none"
+            style={{
+              left: activeWhiteboardSize.width,
+              top: activeWhiteboardSize.height,
+              right: 0,
+              bottom: 0,
+              background: 'hsl(var(--muted) / 0.6)',
               backgroundImage: `
                 repeating-linear-gradient(
                   45deg,
                   transparent,
                   transparent 20px,
-                  hsl(var(--border) / 0.1) 20px,
-                  hsl(var(--border) / 0.1) 40px
+                  hsl(var(--border) / 0.08) 20px,
+                  hsl(var(--border) / 0.08) 22px
                 )
               `
             }}
