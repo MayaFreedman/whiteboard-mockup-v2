@@ -13,6 +13,7 @@ interface ScreenSizeState {
   
   // Actions
   updateUserScreenSize: (userId: string, size: { width: number; height: number }) => void;
+  updateLocalUserScreenSize: (userId: string, size: { width: number; height: number }) => void;
   removeUser: (userId: string) => void;
   recalculateMinimumSize: () => void;
   setActiveWhiteboardSize: (size: { width: number; height: number }) => void;
@@ -33,6 +34,7 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
   activeWhiteboardSize: calculateUsableScreenSize(),
 
   updateUserScreenSize: (userId: string, size: { width: number; height: number }) => {
+    console.log('📏 Remote screen size update:', userId, size);
     set((state) => {
       const newUserScreenSizes = {
         ...state.userScreenSizes,
@@ -47,8 +49,27 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
       };
     });
     
-    // Recalculate minimum after update
+    // Recalculate minimum after remote update
     get().recalculateMinimumSize();
+  },
+
+  updateLocalUserScreenSize: (userId: string, size: { width: number; height: number }) => {
+    console.log('📏 Local screen size update:', userId, size);
+    set((state) => {
+      const newUserScreenSizes = {
+        ...state.userScreenSizes,
+        [userId]: {
+          ...size,
+          timestamp: Date.now()
+        }
+      };
+      
+      return {
+        userScreenSizes: newUserScreenSizes
+      };
+    });
+    
+    // Don't recalculate for local updates - wait for broadcast response
   },
 
   removeUser: (userId: string) => {
