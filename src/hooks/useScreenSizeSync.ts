@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useScreenSizeStore } from '../stores/screenSizeStore';
 import { useUser } from '../contexts/UserContext';
 import { useMultiplayer } from './useMultiplayer';
@@ -10,6 +10,9 @@ export const useScreenSizeSync = () => {
   const { updateLocalUserScreenSize, recalculateMinimumSize, clearAllSizes } = useScreenSizeStore();
   const { userId } = useUser();
   const multiplayer = useMultiplayer();
+  
+  // Track last sent size to prevent duplicates
+  const lastSentSizeRef = useRef<{ width: number; height: number } | null>(null);
 
   const calculateUsableScreenSize = useCallback(() => {
     const toolbarHeight = 60; // Approximate toolbar height
@@ -22,6 +25,12 @@ export const useScreenSizeSync = () => {
   const broadcastScreenSize = useCallback((size: { width: number; height: number }) => {
     if (!multiplayer?.isConnected || !userId) return;
 
+    // Check if size has actually changed
+    const lastSent = lastSentSizeRef.current;
+    if (lastSent && lastSent.width === size.width && lastSent.height === size.height) {
+      return; // Don't send duplicate
+    }
+
     // Send screen size update via multiplayer
     multiplayer.serverInstance?.server?.room?.send('broadcast', {
       type: 'screen_size_update',
@@ -29,22 +38,25 @@ export const useScreenSizeSync = () => {
       screenSize: size,
       timestamp: Date.now()
     });
+    
+    // Track last sent size
+    lastSentSizeRef.current = size;
   }, [multiplayer, userId]);
-
-  const handleWindowResize = useCallback(() => {
-    if (!userId) return;
-
-    const newSize = calculateUsableScreenSize();
-    
-    // Update local store without triggering recalculation
-    updateLocalUserScreenSize(userId, newSize);
-    
-    // Broadcast to other users
-    broadcastScreenSize(newSize);
-  }, [userId, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize]);
 
   // Handle initial screen size on mount and window resize
   useEffect(() => {
+    if (!userId) return;
+
+    const handleWindowResize = () => {
+      const newSize = calculateUsableScreenSize();
+      
+      // Update local store without triggering recalculation
+      updateLocalUserScreenSize(userId, newSize);
+      
+      // Broadcast to other users
+      broadcastScreenSize(newSize);
+    };
+
     // Set initial screen size
     handleWindowResize();
 
@@ -54,7 +66,7 @@ export const useScreenSizeSync = () => {
     return () => {
       window.removeEventListener('resize', handleWindowResize);
     };
-  }, [handleWindowResize]);
+  }, [userId]); // Only depend on userId
 
   // Send screen size when user connects to multiplayer
   useEffect(() => {
@@ -63,7 +75,7 @@ export const useScreenSizeSync = () => {
       updateLocalUserScreenSize(userId, currentSize);
       broadcastScreenSize(currentSize);
     }
-  }, [multiplayer?.isConnected, userId, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize]);
+  }, [multiplayer?.isConnected, userId]); // Only depend on connection state and userId
 
   // Handle user departures - cleanup screen sizes and recalculate
   useEffect(() => {
@@ -87,7 +99,7 @@ export const useScreenSizeSync = () => {
         }, 50);
       }
     }
-  }, [multiplayer?.connectedUserCount, multiplayer?.isConnected, userId, clearAllSizes, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize]);
+  }, [multiplayer?.connectedUserCount, multiplayer?.isConnected, userId]); // Only depend on primitive values
 
   return {
     broadcastScreenSize
