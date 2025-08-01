@@ -88,11 +88,10 @@ export const useMultiplayerSync = () => {
           const hasObjectsToShare = Object.keys(currentState.objects).length > 0
           console.log('📤 Sending state response with objects:', Object.keys(currentState.objects).length)
           
-          if (hasObjectsToShare) {
-            setTimeout(() => {
-              serverInstance.sendStateResponse(message.requesterId, currentState)
-            }, Math.random() * 300 + 100)
-          }
+          // Always respond, even with empty state (so requester knows they got a response)
+          setTimeout(() => {
+            serverInstance.sendStateResponse(message.requesterId, currentState)
+          }, Math.random() * 300 + 100)
         }
         return
       }
@@ -105,26 +104,17 @@ export const useMultiplayerSync = () => {
           hasReceivedInitialStateRef.current = true
           setIsWaitingForInitialState(false)
           
-          // Apply received state
+          // Apply received state directly using addObject for each object
           if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
-            const actions: WhiteboardAction[] = Object.values(message.state.objects).map((obj: any) => ({
-              type: 'ADD_OBJECT',
-              payload: { 
-                object: {
-                  ...obj,
-                  createdAt: obj.createdAt || Date.now(),
-                  updatedAt: obj.updatedAt || Date.now(),
-                  data: obj.data || {}
-                }
-              },
-              timestamp: obj.createdAt || Date.now(),
-              id: `sync-${obj.id}`,
-              userId: 'sync'
-            }))
-            
-            if (actions.length > 0) {
-              whiteboardStore.batchUpdate(actions)
-            }
+            console.log('🎯 Applying', Object.keys(message.state.objects).length, 'objects from state response')
+            Object.values(message.state.objects).forEach((obj: any) => {
+              whiteboardStore.addObject({
+                ...obj,
+                createdAt: obj.createdAt || Date.now(),
+                updatedAt: obj.updatedAt || Date.now(),
+                data: obj.data || {}
+              })
+            })
           }
           
           if (message.state?.viewport) {
