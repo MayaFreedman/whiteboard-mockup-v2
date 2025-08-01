@@ -671,14 +671,19 @@ export const Canvas: React.FC = () => {
       tabIndex={0}
       style={{ outline: 'none' }}
     >
-      {/* Whiteboard area with elegant styling - centered */}
+      {/* Whiteboard area with elegant styling - centered only when smaller than container */}
       <div 
         className="absolute bg-background"
         style={{
           width: activeWhiteboardSize.width,
           height: activeWhiteboardSize.height,
-          left: `calc(50% - ${activeWhiteboardSize.width / 2}px)`,
-          top: `calc(50% - ${activeWhiteboardSize.height / 2}px)`,
+          // Only center if whiteboard is smaller than container
+          left: containerRef.current && activeWhiteboardSize.width < containerRef.current.offsetWidth 
+            ? `calc(50% - ${activeWhiteboardSize.width / 2}px)` 
+            : 0,
+          top: containerRef.current && activeWhiteboardSize.height < containerRef.current.offsetHeight 
+            ? `calc(50% - ${activeWhiteboardSize.height / 2}px)` 
+            : 0,
           boxShadow: '0 8px 32px -4px hsl(var(--foreground) / 0.08), 0 2px 8px -2px hsl(var(--foreground) / 0.04), 0 0 0 1px hsl(var(--border) / 0.1)',
           borderRadius: hasMultipleUsers ? '12px' : '4px'
         }}
