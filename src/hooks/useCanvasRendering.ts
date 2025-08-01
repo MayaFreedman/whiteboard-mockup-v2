@@ -126,6 +126,7 @@ export const useCanvasRendering = (
           // Cache the loaded image
           imageCache.current.set(src, img);
           loadingImages.current.delete(src);
+          console.log(`✅ Regular Image cached: ${src.slice(-20)}`);
           resolve(img);
         };
         
@@ -147,10 +148,19 @@ export const useCanvasRendering = (
               
               // Clean up blob URL after image loads
               img.onload = () => {
-                imageCache.current.set(src, img);
+                imageCache.current.set(src, img); // Cache using original src, not blob URL
                 loadingImages.current.delete(src);
                 URL.revokeObjectURL(url);
+                console.log(`✅ SVG Image cached: ${src.slice(-20)}`);
                 resolve(img);
+              };
+              
+              img.onerror = () => {
+                loadingImages.current.delete(src);
+                failedImages.current.add(src);
+                URL.revokeObjectURL(url);
+                console.warn('Failed to load SVG image:', src);
+                reject(new Error(`Failed to load SVG image: ${src}`));
               };
             })
             .catch(error => {
