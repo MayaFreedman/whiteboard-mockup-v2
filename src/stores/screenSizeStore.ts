@@ -15,6 +15,7 @@ interface ScreenSizeState {
   updateUserScreenSize: (userId: string, size: { width: number; height: number }) => void;
   updateLocalUserScreenSize: (userId: string, size: { width: number; height: number }) => void;
   removeUser: (userId: string) => void;
+  clearAllSizes: () => void;
   recalculateMinimumSize: () => void;
   setActiveWhiteboardSize: (size: { width: number; height: number }) => void;
 }
@@ -83,6 +84,14 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
     });
     
     // Recalculate minimum after removal
+    get().recalculateMinimumSize();
+  },
+
+  clearAllSizes: () => {
+    console.log('📏 Clearing all screen sizes for fresh recalculation');
+    set({ userScreenSizes: {} });
+    
+    // Recalculate minimum after clearing (will use current screen size)
     get().recalculateMinimumSize();
   },
 
