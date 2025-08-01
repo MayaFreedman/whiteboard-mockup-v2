@@ -46,7 +46,7 @@ export const Whiteboard: React.FC = () => {
           </div>
           
           {/* Canvas Area - Takes remaining space */}
-          <SidebarInset className="w-full">
+          <SidebarInset className="w-full h-full m-0 p-0" style={{ minHeight: 'auto' }}>
             <Canvas />
           </SidebarInset>
         </div>
