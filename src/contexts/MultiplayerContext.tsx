@@ -82,26 +82,36 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       const room = newServerInstance.server.room
       if (room) {
         console.log('🔧 [CONTEXT] Registering ALL message handlers...')
+        console.log('🔍 [CONTEXT] Room object details:', {
+          roomId: room.roomId,
+          sessionId: room.sessionId,
+          hasOnMessage: typeof room.onMessage === 'function',
+          roomObjectId: room.constructor.name
+        })
         
         // Handle participant events
         room.onMessage('participantJoined', (participant: any) => {
           console.log('👥 [CONTEXT] Participant joined:', participant)
           setConnectedUserCount(prev => prev + 1)
         })
+        console.log('✅ [CONTEXT] participantJoined handler registered')
 
         room.onMessage('participantLeft', (data: any) => {
           console.log('👥 [CONTEXT] Participant left:', data)
           setConnectedUserCount(prev => Math.max(0, prev - 1))
         })
+        console.log('✅ [CONTEXT] participantLeft handler registered')
 
         // Handle server-generated messages that cause warnings
         room.onMessage('ping', (message: any) => {
           console.log('🏓 [CONTEXT] Ping received:', message)
         })
+        console.log('✅ [CONTEXT] ping handler registered')
         
         room.onMessage('__playground_message_types', (message: any) => {
           console.log('🎮 [CONTEXT] Playground message:', message)
         })
+        console.log('✅ [CONTEXT] __playground_message_types handler registered')
 
         // Listen for default room state to get initial player count
         room.onMessage('defaultRoomState', (state: any) => {
@@ -111,8 +121,16 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
             setConnectedUserCount(playerCount)
           }
         })
+        console.log('✅ [CONTEXT] defaultRoomState handler registered')
         
         console.log('✅ [CONTEXT] All message handlers registered')
+        
+        // Debug: Check if handlers are actually there
+        setTimeout(() => {
+          console.log('🔍 [CONTEXT] Checking handlers after 1 second...')
+          console.log('🔍 [CONTEXT] Room still exists:', !!newServerInstance.server.room)
+          console.log('🔍 [CONTEXT] Same room object:', newServerInstance.server.room === room)
+        }, 1000)
       }
 
       console.log('✅ Connection successful!')

@@ -276,8 +276,16 @@ export const useMultiplayerSync = () => {
     }
 
     // Set up message handler
+    console.log('🔍 [SYNC] Room object details:', {
+      roomId: room.id,
+      sessionId: room.sessionId,
+      hasOnMessage: typeof room.onMessage === 'function',
+      roomObjectId: room.constructor.name,
+      sameAsServerRoom: room === serverInstance.server.room
+    })
+    
     room.onMessage('broadcast', handleBroadcastMessage)
-    console.log('✅ Message handlers set up for room:', room.id)
+    console.log('✅ [SYNC] broadcast handler registered for room:', room.id)
 
     // Only request initial state if there are other users in the room
     if (!hasReceivedInitialStateRef.current) {
