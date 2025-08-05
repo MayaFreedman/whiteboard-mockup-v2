@@ -515,10 +515,21 @@ export const useCanvasInteractions = () => {
 
   // Add document-level mouseup listener to catch releases outside canvas
   useEffect(() => {
-    const handleDocumentMouseUp = () => {
+    const handleDocumentMouseUp = (event: MouseEvent) => {
+      // Only handle if we're actually drawing or dragging something on the canvas
       if (isDrawingRef.current || isDraggingRef.current) {
-        console.log('🖱️ Document mouse up - ending current interaction');
+        console.log('🖱️ Document mouse up - ending current interaction', {
+          target: event.target,
+          drawing: isDrawingRef.current,
+          dragging: isDraggingRef.current
+        });
         endCurrentDrawing();
+      } else {
+        console.log('🖱️ Document mouse up - ignoring (not drawing/dragging)', {
+          target: event.target,
+          drawing: isDrawingRef.current,
+          dragging: isDraggingRef.current
+        });
       }
     };
 
