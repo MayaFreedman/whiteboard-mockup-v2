@@ -7,7 +7,7 @@ import { useToolSelection } from '../../hooks/useToolSelection';
 import { useUser } from '../../contexts/UserContext';
 import { useActionBatching } from '../../hooks/useActionBatching';
 import { useScreenSizeStore } from '../../stores/screenSizeStore';
-import { useScreenSizeSync } from '../../hooks/useScreenSizeSync';
+
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
 import { measureText } from '../../utils/textMeasurement';
@@ -55,8 +55,7 @@ export const Canvas: React.FC = () => {
   // Only show grey overlay when there are multiple users
   const hasMultipleUsers = Object.keys(userScreenSizes).length > 1;
   
-  // Initialize screen size sync
-  useScreenSizeSync();
+  // Screen size sync is now handled by singleton MultiplayerProvider
   
   // Text editing state
   const [editingTextId, setEditingTextId] = useState<string | null>(null);

@@ -1,7 +1,10 @@
 
-import React, { createContext, useState, useCallback, useEffect, ReactNode } from 'react'
+import React, { createContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react'
 import { ServerClass } from '../server'
 import { WhiteboardAction } from '../types/whiteboard'
+import { useWhiteboardStore } from '../stores/whiteboardStore'
+import { useScreenSizeStore } from '../stores/screenSizeStore'
+import { useUser } from './UserContext'
 
 interface User {
   id: string
@@ -19,6 +22,7 @@ interface MultiplayerContextType {
   connectedUserCount: number
   connectionError: string | null
   isAutoConnecting: boolean
+  isWaitingForInitialState: boolean
   connect: (roomId: string, isModerator?: boolean) => Promise<void>
   disconnect: () => void
   sendWhiteboardAction: (action: WhiteboardAction) => void
@@ -42,6 +46,20 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   const [connectedUserCount, setConnectedUserCount] = useState(0)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [isAutoConnecting, setIsAutoConnecting] = useState(false)
+  const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
+  
+  // Singleton refs to prevent multiple instances
+  const syncInitializedRef = useRef(false)
+  const screenSyncInitializedRef = useRef(false)
+  const sentActionIdsRef = useRef<Set<string>>(new Set())
+  const hasReceivedInitialStateRef = useRef(false)
+  const hasEverBeenInRoomRef = useRef(false)
+  const hasRequestedStateRef = useRef(false)
+  
+  // Get stores and user context
+  const whiteboardStore = useWhiteboardStore()
+  const { updateUserScreenSize, updateLocalUserScreenSize, clearAllSizes } = useScreenSizeStore()
+  const { userId } = useUser()
 
   // Auto-connection logic
   useEffect(() => {
@@ -61,20 +79,82 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     }
   }, [isConnected, serverInstance])
 
+  // Helper functions
+  const shouldSyncAction = (action: WhiteboardAction): boolean => {
+    const localOnlyActions = ['SELECT_OBJECTS', 'CLEAR_SELECTION']
+    
+    if (action.type === 'UPDATE_OBJECT') {
+      const currentBatch = whiteboardStore.getState().currentBatch
+      if (currentBatch.id) {
+        return false
+      }
+    }
+    
+    return !localOnlyActions.includes(action.type)
+  }
+
+  const isReadyToSend = () => {
+    return !!serverInstance && !!serverInstance.server?.room && isConnected
+  }
+
+  const requestInitialState = () => {
+    if (!isReadyToSend() || hasReceivedInitialStateRef.current || hasRequestedStateRef.current) {
+      return
+    }
+
+    console.log('📤 [Singleton] Sending initial state request...')
+    hasRequestedStateRef.current = true
+    setIsWaitingForInitialState(true)
+    
+    try {
+      serverInstance.requestInitialState()
+    } catch (error) {
+      console.error('❌ Failed to send state request:', error)
+      hasReceivedInitialStateRef.current = true
+      hasRequestedStateRef.current = false
+      setIsWaitingForInitialState(false)
+    }
+  }
+
+  const calculateUsableScreenSize = useCallback(() => {
+    const toolbarHeight = 60
+    return {
+      width: window.innerWidth,
+      height: window.innerHeight - toolbarHeight
+    }
+  }, [])
+
+  const broadcastScreenSize = useCallback((size: { width: number; height: number }) => {
+    if (!isConnected || !userId || !isReadyToSend()) return
+
+    serverInstance.server?.room?.send('broadcast', {
+      type: 'screen_size_update',
+      userId: userId,
+      screenSize: size,
+      timestamp: Date.now()
+    })
+  }, [isConnected, userId, serverInstance])
+
+  const handleWindowResize = useCallback(() => {
+    if (!userId || !screenSyncInitializedRef.current) return
+
+    const newSize = calculateUsableScreenSize()
+    updateLocalUserScreenSize(userId, newSize)
+    broadcastScreenSize(newSize)
+  }, [userId, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize])
+
   /**
-   * Registers message handlers for multiplayer room events
+   * Registers message handlers for multiplayer room events (singleton)
    */
   const registerMessageHandlers = (room: any) => {
+    console.log('🔄 [Singleton] Registering message handlers')
+    
     room.onMessage('participantJoined', (participant: any) => {
       setConnectedUserCount(prev => prev + 1)
-      // Screen size will be handled when the new participant broadcasts their size
     })
 
     room.onMessage('participantLeft', (data: any) => {
       setConnectedUserCount(prev => Math.max(0, prev - 1))
-      // Note: We can't directly remove users from screen size store here 
-      // because we don't have the userId. The store will clean up stale entries
-      // when screen sizes become outdated
     })
 
     room.onMessage('ping', () => {
@@ -91,6 +171,105 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
         setConnectedUserCount(playerCount)
       }
     })
+
+    // Singleton multiplayer sync message handler
+    room.onMessage('broadcast', (message: any) => {
+      if (message.type === 'request_state') {
+        console.log('📥 [Singleton] Received state request from:', message.requesterId)
+        if (message.requesterId !== room.sessionId) {
+          const currentState = whiteboardStore.getStateSnapshot()
+          console.log('📤 [Singleton] Sending state response with objects:', Object.keys(currentState.objects).length)
+          
+          setTimeout(() => {
+            serverInstance.sendStateResponse(message.requesterId, currentState)
+          }, Math.random() * 300 + 100)
+        }
+        return
+      }
+      
+      if (message.type === 'state_response') {
+        console.log('📥 [Singleton] Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length)
+        
+        if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
+          console.log('✅ [Singleton] Applying initial state')
+          
+          hasReceivedInitialStateRef.current = true
+          setIsWaitingForInitialState(false)
+          
+          whiteboardStore.clearObjects()
+          
+          if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
+            Object.values(message.state.objects).forEach((obj: any) => {
+              const addAction: WhiteboardAction = {
+                id: `sync-${obj.id}`,
+                type: 'ADD_OBJECT',
+                userId: obj.userId || 'unknown',
+                timestamp: obj.createdAt || Date.now(),
+                payload: {
+                  object: {
+                    ...obj,
+                    createdAt: obj.createdAt || Date.now(),
+                    updatedAt: obj.updatedAt || Date.now(),
+                    data: obj.data || {}
+                  }
+                }
+              }
+              whiteboardStore.applyRemoteAction(addAction)
+            })
+          }
+          
+          if (message.state?.viewport) {
+            whiteboardStore.setViewport(message.state.viewport)
+          }
+          
+          if (message.state?.settings) {
+            whiteboardStore.setSettings(message.state.settings)
+          }
+          
+          if (message.state?.actionHistory && message.state?.userActionHistories) {
+            whiteboardStore.restoreHistoryState({
+              actionHistory: message.state.actionHistory,
+              userActionHistories: message.state.userActionHistories,
+              userHistoryIndices: message.state.userHistoryIndices || {},
+              currentHistoryIndex: message.state.currentHistoryIndex || 0,
+              objectRelationships: message.state.objectRelationships || {}
+            })
+          }
+        } else if (message.requesterId === room.sessionId && hasReceivedInitialStateRef.current) {
+          console.log('⚠️ [Singleton] Ignoring duplicate state response')
+        }
+        return
+      }
+      
+      if (message.type === 'whiteboard_action' && message.action) {
+        const action: WhiteboardAction = message.action
+        
+        if (!sentActionIdsRef.current.has(action.id)) {
+          if (action.type === 'BATCH_UPDATE') {
+            if (action.payload.actions && Array.isArray(action.payload.actions)) {
+              whiteboardStore.batchUpdate(action.payload.actions)
+              sentActionIdsRef.current.add(action.id)
+            }
+          } else {
+            whiteboardStore.applyRemoteAction(action)
+            sentActionIdsRef.current.add(action.id)
+          }
+        }
+      }
+      
+      if (message.type === 'state_sync' && message.data) {
+        if (message.data.actions && Array.isArray(message.data.actions)) {
+          whiteboardStore.batchUpdate(message.data.actions)
+        }
+      }
+      
+      if (message.type === 'screen_size_update' && message.userId && message.screenSize) {
+        console.log('📥 [Singleton] Received screen size update from:', message.userId, message.screenSize)
+        if (message.userId !== userId) {
+          updateUserScreenSize(message.userId, message.screenSize)
+        }
+      }
+    })
   }
 
   const connect = useCallback(async (targetRoomId: string, isModerator: boolean = false) => {
@@ -105,10 +284,11 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setIsConnected(true)
       setConnectionError(null)
 
-      // Register message handlers
+      // Register message handlers (singleton)
       const room = newServerInstance.server.room
       if (room) {
         registerMessageHandlers(room)
+        syncInitializedRef.current = true
       }
     } catch (error) {
       console.error('❌ Connection failed:', error)
@@ -149,6 +329,15 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     setConnectedUsers([])
     setConnectedUserCount(0)
     setConnectionError(null)
+    setIsWaitingForInitialState(false)
+    
+    // Reset singleton flags
+    syncInitializedRef.current = false
+    screenSyncInitializedRef.current = false
+    hasReceivedInitialStateRef.current = false
+    hasEverBeenInRoomRef.current = false
+    hasRequestedStateRef.current = false
+    sentActionIdsRef.current.clear()
   }, [serverInstance])
 
   /**
@@ -188,6 +377,92 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     }
   }, [serverInstance, isConnected])
 
+  // Singleton multiplayer sync effects
+  useEffect(() => {
+    if (!syncInitializedRef.current || !isConnected) return
+
+    const unsubscribe = useWhiteboardStore.subscribe((state) => {
+      if (state.lastAction && !sentActionIdsRef.current.has(state.lastAction.id)) {
+        if (!shouldSyncAction(state.lastAction)) {
+          return
+        }
+        
+        if (isReadyToSend()) {
+          try {
+            sendWhiteboardAction(state.lastAction)
+            sentActionIdsRef.current.add(state.lastAction.id)
+            
+            if (sentActionIdsRef.current.size > 1000) {
+              const idsArray = Array.from(sentActionIdsRef.current)
+              const idsToKeep = idsArray.slice(-500)
+              sentActionIdsRef.current = new Set(idsToKeep)
+            }
+          } catch (error) {
+            console.error('❌ Failed to send action:', state.lastAction.id, error)
+          }
+        }
+      }
+    })
+
+    return unsubscribe
+  }, [syncInitializedRef.current, isConnected, sendWhiteboardAction])
+
+  // Singleton screen size sync effects
+  useEffect(() => {
+    if (!isConnected || !userId) return
+    
+    if (!screenSyncInitializedRef.current) {
+      console.log('🔄 [Singleton] Initializing screen size sync')
+      screenSyncInitializedRef.current = true
+      
+      // Set initial screen size
+      handleWindowResize()
+      
+      // Listen for window resize events
+      window.addEventListener('resize', handleWindowResize)
+      
+      return () => {
+        window.removeEventListener('resize', handleWindowResize)
+        screenSyncInitializedRef.current = false
+      }
+    }
+  }, [isConnected, userId, handleWindowResize])
+
+  // Handle user count changes for initial state requests
+  useEffect(() => {
+    if (!isReadyToSend() || !syncInitializedRef.current) return
+    
+    console.log('🔄 [Singleton] connectedUserCount changed:', connectedUserCount)
+    
+    if (!hasReceivedInitialStateRef.current && connectedUserCount > 1 && !hasEverBeenInRoomRef.current && !hasRequestedStateRef.current) {
+      console.log('📤 [Singleton] Requesting initial state - new user joining')
+      hasEverBeenInRoomRef.current = true
+      
+      setTimeout(() => {
+        requestInitialState()
+      }, 100)
+    }
+  }, [connectedUserCount, isConnected, syncInitializedRef.current])
+
+  // Handle screen size changes for user departures
+  useEffect(() => {
+    if (!isConnected || !userId || !screenSyncInitializedRef.current) return
+    
+    if (connectedUserCount <= 1) {
+      console.log('📏 [Singleton] Switching to single-player mode')
+      clearAllSizes()
+    } else if (connectedUserCount > 1) {
+      console.log('📏 [Singleton] User departure detected, refreshing screen sizes')
+      clearAllSizes()
+      
+      setTimeout(() => {
+        const currentSize = calculateUsableScreenSize()
+        updateLocalUserScreenSize(userId, currentSize)
+        broadcastScreenSize(currentSize)
+      }, 50)
+    }
+  }, [connectedUserCount, isConnected, userId, screenSyncInitializedRef.current, clearAllSizes, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize])
+
   const value: MultiplayerContextType = {
     serverInstance,
     isConnected,
@@ -196,6 +471,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     connectedUserCount,
     connectionError,
     isAutoConnecting,
+    isWaitingForInitialState,
     connect,
     disconnect,
     sendWhiteboardAction,
