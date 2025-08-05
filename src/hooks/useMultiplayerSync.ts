@@ -83,7 +83,12 @@ export const useMultiplayerSync = () => {
     }
 
     const room = serverInstance.server.room
-    console.log('🔌 Adding broadcast message listener')
+    
+    // Prevent multiple handler registrations
+    if (!room) {
+      console.warn('⚠️ Room not available for message handler setup')
+      return
+    }
     
     const handleBroadcastMessage = (message: any) => {
       // Handle state request messages
@@ -141,11 +146,8 @@ export const useMultiplayerSync = () => {
           }
           
           if (message.state?.viewport) {
+            console.log('🎯 Applying viewport state')
             whiteboardStore.setViewport(message.state.viewport)
-          }
-          
-          if (message.state?.settings) {
-            whiteboardStore.setSettings(message.state.settings)
           }
           
           // Apply history state if available
@@ -196,10 +198,12 @@ export const useMultiplayerSync = () => {
       }
     }
 
+    console.log('🔌 Adding broadcast message listener')
     room.onMessage('broadcast', handleBroadcastMessage)
 
     return () => {
       console.log('🔌 Removing broadcast message listener')
+      // Properly remove the specific message handler
       room.off('broadcast', handleBroadcastMessage)
     }
   }, [serverInstance, isConnected, whiteboardStore, updateUserScreenSize])
