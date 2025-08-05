@@ -31,6 +31,7 @@ export const useMultiplayerSync = () => {
   const sentActionIdsRef = useRef<Set<string>>(new Set())
   const hasReceivedInitialStateRef = useRef(false)
   const hasRequestedStateRef = useRef(false)
+  const userJoinTimeRef = useRef<number | null>(null)
   const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
 
   // If no multiplayer context, return null values (graceful degradation)
@@ -51,6 +52,25 @@ export const useMultiplayerSync = () => {
   const isReadyToSend = useCallback(() => {
     return !!serverInstance && !!serverInstance.server?.room && isConnected
   }, [serverInstance, isConnected])
+
+  /**
+   * Checks if user has existing whiteboard content (not genuinely new)
+   */
+  const hasExistingContent = useCallback(() => {
+    const state = whiteboardStore.getState()
+    return Object.keys(state.objects).length > 0 || state.actionHistory.length > 0
+  }, [whiteboardStore])
+
+  /**
+   * Checks if user is genuinely new to the room
+   */
+  const isGenuinelyNewUser = useCallback(() => {
+    const now = Date.now()
+    const joinTime = userJoinTimeRef.current
+    
+    // User is new if they joined recently (within last 5 seconds) AND have no existing content
+    return joinTime && (now - joinTime < 5000) && !hasExistingContent()
+  }, [hasExistingContent])
 
   /**
    * Request initial state from other users (only on first connection)
@@ -237,18 +257,32 @@ export const useMultiplayerSync = () => {
   }, [sendWhiteboardAction, isReadyToSend, whiteboardStore])
 
   /**
-   * Request initial state only on first connection establishment
+   * Track when user joins the room for the first time
+   */
+  useEffect(() => {
+    if (isConnected && !userJoinTimeRef.current) {
+      userJoinTimeRef.current = Date.now()
+      console.log('👋 User joined room at:', userJoinTimeRef.current)
+    }
+  }, [isConnected])
+
+  /**
+   * Request initial state only for genuinely new users
    */
   useEffect(() => {
     if (isConnected && connectedUserCount > 1 && !hasReceivedInitialStateRef.current && !hasRequestedStateRef.current) {
-      console.log('🔄 New connection with other users - requesting initial state')
-      
-      // Small delay to ensure room is fully initialized
-      setTimeout(() => {
-        requestInitialState()
-      }, 100)
+      if (isGenuinelyNewUser()) {
+        console.log('🔄 Genuinely new user detected - requesting initial state')
+        
+        // Small delay to ensure room is fully initialized
+        setTimeout(() => {
+          requestInitialState()
+        }, 100)
+      } else {
+        console.log('⏭️ Existing user detected - skipping initial state request')
+      }
     }
-  }, [isConnected, connectedUserCount])
+  }, [isConnected, connectedUserCount, isGenuinelyNewUser])
 
   /**
    * Reset state sync flags when disconnecting
@@ -257,6 +291,7 @@ export const useMultiplayerSync = () => {
     if (!isConnected) {
       hasReceivedInitialStateRef.current = false
       hasRequestedStateRef.current = false
+      userJoinTimeRef.current = null
       setIsWaitingForInitialState(false)
     }
   }, [isConnected])
