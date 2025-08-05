@@ -186,6 +186,8 @@ export const useMultiplayerSync = () => {
             }
           } else {
             whiteboardStore.applyRemoteAction(action)
+            // Mark action as processed to prevent duplicate processing
+            sentActionIdsRef.current.add(action.id)
           }
         }
       }
