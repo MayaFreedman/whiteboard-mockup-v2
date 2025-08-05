@@ -883,7 +883,7 @@ export const Canvas: React.FC = () => {
             fontSmooth: 'antialiased',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
-            caretColor: 'transparent', // Hide cursor to prevent phantom cursor effect
+            caretColor: toolStore.toolSettings.strokeColor || '#000000', // Ensure cursor is visible and matches text color
             WebkitTextSizeAdjust: '100%',
             boxSizing: 'border-box',
             background: 'transparent', // Match canvas text - no background
