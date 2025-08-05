@@ -62,19 +62,15 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   }, [isConnected, serverInstance])
 
   /**
-   * Registers message handlers for multiplayer room events
+   * Registers message handlers for multiplayer room events (once per connection)
    */
-  const registerMessageHandlers = (room: any) => {
+  const registerMessageHandlers = useCallback((room: any) => {
     room.onMessage('participantJoined', (participant: any) => {
       setConnectedUserCount(prev => prev + 1)
-      // Screen size will be handled when the new participant broadcasts their size
     })
 
     room.onMessage('participantLeft', (data: any) => {
       setConnectedUserCount(prev => Math.max(0, prev - 1))
-      // Note: We can't directly remove users from screen size store here 
-      // because we don't have the userId. The store will clean up stale entries
-      // when screen sizes become outdated
     })
 
     room.onMessage('ping', () => {
@@ -91,7 +87,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
         setConnectedUserCount(playerCount)
       }
     })
-  }
+  }, [])
 
   const connect = useCallback(async (targetRoomId: string, isModerator: boolean = false) => {
     try {
@@ -105,7 +101,7 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       setIsConnected(true)
       setConnectionError(null)
 
-      // Register message handlers
+      // Register message handlers once per connection
       const room = newServerInstance.server.room
       if (room) {
         registerMessageHandlers(room)

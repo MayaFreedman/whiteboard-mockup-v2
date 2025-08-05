@@ -29,6 +29,9 @@ const calculateUsableScreenSize = () => {
   };
 };
 
+// Debounce function for batching updates
+let recalculateTimeout: NodeJS.Timeout | null = null;
+
 export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
   userScreenSizes: {},
   minimumScreenSize: calculateUsableScreenSize(),
@@ -50,8 +53,13 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
       };
     });
     
-    // Recalculate minimum after remote update
-    get().recalculateMinimumSize();
+    // Debounced recalculation to prevent cascading updates
+    if (recalculateTimeout) {
+      clearTimeout(recalculateTimeout);
+    }
+    recalculateTimeout = setTimeout(() => {
+      get().recalculateMinimumSize();
+    }, 50);
   },
 
   updateLocalUserScreenSize: (userId: string, size: { width: number; height: number }) => {
@@ -83,29 +91,38 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
       };
     });
     
-    // Recalculate minimum after removal
-    get().recalculateMinimumSize();
+    // Debounced recalculation
+    if (recalculateTimeout) {
+      clearTimeout(recalculateTimeout);
+    }
+    recalculateTimeout = setTimeout(() => {
+      get().recalculateMinimumSize();
+    }, 50);
   },
 
   clearAllSizes: () => {
     console.log('📏 Clearing all screen sizes for fresh recalculation');
     set({ userScreenSizes: {} });
     
-    // Recalculate minimum after clearing (will use current screen size)
+    // Immediate recalculation after clearing
     get().recalculateMinimumSize();
   },
 
   recalculateMinimumSize: () => {
-    const { userScreenSizes } = get();
+    const { userScreenSizes, activeWhiteboardSize } = get();
     const sizes = Object.values(userScreenSizes);
     
     if (sizes.length === 0) {
       // No other users, use current screen size (full whiteboard)
       const currentSize = calculateUsableScreenSize();
-      set({
-        minimumScreenSize: currentSize,
-        activeWhiteboardSize: currentSize
-      });
+      
+      // Only update if size actually changed to prevent unnecessary re-renders
+      if (activeWhiteboardSize.width !== currentSize.width || activeWhiteboardSize.height !== currentSize.height) {
+        set({
+          minimumScreenSize: currentSize,
+          activeWhiteboardSize: currentSize
+        });
+      }
       return;
     }
     
@@ -115,10 +132,13 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
     
     const newMinimumSize = { width: minWidth, height: minHeight };
     
-    set({
-      minimumScreenSize: newMinimumSize,
-      activeWhiteboardSize: newMinimumSize
-    });
+    // Only update if size actually changed
+    if (activeWhiteboardSize.width !== newMinimumSize.width || activeWhiteboardSize.height !== newMinimumSize.height) {
+      set({
+        minimumScreenSize: newMinimumSize,
+        activeWhiteboardSize: newMinimumSize
+      });
+    }
   },
 
   setActiveWhiteboardSize: (size: { width: number; height: number }) => {
