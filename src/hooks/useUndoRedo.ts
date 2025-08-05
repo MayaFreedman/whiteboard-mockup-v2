@@ -27,8 +27,14 @@ export const useUndoRedo = (): UndoRedoManager => {
       case 'ADD_OBJECT': {
         // Check if the object still exists and hasn't been modified by others
         const objectExists = store.checkObjectExists(action.payload.object.id);
+        console.log('🔍 Validating ADD_OBJECT undo:', {
+          actionObjectId: action.payload.object.id,
+          objectExists,
+          currentObjects: Object.keys(store.getState().objects)
+        });
+        
         if (!objectExists) {
-          return { canUndo: false, reason: 'Object was deleted by another user' };
+          return { canUndo: false, reason: 'Object was already deleted or never existed in current state' };
         }
         return { canUndo: true };
       }
@@ -460,6 +466,14 @@ export const useUndoRedo = (): UndoRedoManager => {
     }
     
     console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
+    
+    // Validate the action can be undone (check for conflicts)
+    const validation = validateActionForUndo(actionToUndo);
+    if (!validation.canUndo) {
+      console.warn('⚠️ Cannot undo action - validation failed:', validation.reason);
+      // TODO: Show user notification about conflict
+      return;
+    }
     
     // Create the undo state change with conflict detection
     const result = createUndoStateChange(actionToUndo, state);
