@@ -174,15 +174,20 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
 
     // Singleton multiplayer sync message handler
     room.onMessage('broadcast', (message: any) => {
+      console.log('📨 [Singleton] Received broadcast message:', message.type, 'from session:', message.requesterId || 'unknown')
+      
       if (message.type === 'request_state') {
-        console.log('📥 [Singleton] Received state request from:', message.requesterId)
+        console.log('📥 [Singleton] Received state request from:', message.requesterId, 'current session:', room.sessionId)
         if (message.requesterId !== room.sessionId) {
           const currentState = whiteboardStore.getStateSnapshot()
-          console.log('📤 [Singleton] Sending state response with objects:', Object.keys(currentState.objects).length)
+          console.log('📤 [Singleton] Sending state response with objects:', Object.keys(currentState.objects).length, 'viewport:', currentState.viewport, 'actionCount:', currentState.actionCount)
           
           setTimeout(() => {
+            console.log('⏰ [Singleton] Actually sending state response now')
             serverInstance.sendStateResponse(message.requesterId, currentState)
           }, Math.random() * 300 + 100)
+        } else {
+          console.log('🔄 [Singleton] Ignoring state request from self')
         }
         return
       }
@@ -191,15 +196,17 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
         console.log('📥 [Singleton] Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length)
         
         if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
-          console.log('✅ [Singleton] Applying initial state')
+          console.log('✅ [Singleton] Applying initial state - clearing existing objects first')
           
           hasReceivedInitialStateRef.current = true
           setIsWaitingForInitialState(false)
           
           whiteboardStore.clearObjects()
+          console.log('🧹 [Singleton] Cleared existing objects')
           
           if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
-            Object.values(message.state.objects).forEach((obj: any) => {
+            console.log('🔄 [Singleton] Adding', Object.keys(message.state.objects).length, 'objects to whiteboard')
+            Object.values(message.state.objects).forEach((obj: any, index: number) => {
               const addAction: WhiteboardAction = {
                 id: `sync-${obj.id}`,
                 type: 'ADD_OBJECT',
@@ -214,19 +221,26 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
                   }
                 }
               }
+              console.log('📦 [Singleton] Adding object', index + 1, '/', Object.keys(message.state.objects).length, '- ID:', obj.id, 'Type:', obj.type)
               whiteboardStore.applyRemoteAction(addAction)
             })
+            console.log('✅ [Singleton] Finished adding all objects')
+          } else {
+            console.log('📭 [Singleton] No objects to add from state response')
           }
           
           if (message.state?.viewport) {
+            console.log('📐 [Singleton] Setting viewport:', message.state.viewport)
             whiteboardStore.setViewport(message.state.viewport)
           }
           
           if (message.state?.settings) {
+            console.log('⚙️ [Singleton] Setting whiteboard settings:', message.state.settings)
             whiteboardStore.setSettings(message.state.settings)
           }
           
           if (message.state?.actionHistory && message.state?.userActionHistories) {
+            console.log('📚 [Singleton] Restoring action history with', message.state.actionHistory.length, 'actions')
             whiteboardStore.restoreHistoryState({
               actionHistory: message.state.actionHistory,
               userActionHistories: message.state.userActionHistories,
@@ -235,6 +249,8 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
               objectRelationships: message.state.objectRelationships || {}
             })
           }
+          
+          console.log('🎯 [Singleton] Initial state application complete')
         } else if (message.requesterId === room.sessionId && hasReceivedInitialStateRef.current) {
           console.log('⚠️ [Singleton] Ignoring duplicate state response')
         }
@@ -293,11 +309,13 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
         // Check if we need to request initial state immediately after connection
         // Only request if there are other users already in the room
         setTimeout(() => {
-          const currentPlayerCount = Object.keys(room.state?.players || {}).length
-          if (currentPlayerCount > 1 && !hasReceivedInitialStateRef.current && !hasRequestedStateRef.current) {
-            console.log('📤 [Singleton] Requesting initial state - joining existing room with', currentPlayerCount, 'users')
+          console.log('🔍 [Singleton] Checking initial state request - connectedUserCount:', connectedUserCount, 'hasReceived:', hasReceivedInitialStateRef.current, 'hasRequested:', hasRequestedStateRef.current)
+          if (connectedUserCount > 1 && !hasReceivedInitialStateRef.current && !hasRequestedStateRef.current) {
+            console.log('📤 [Singleton] Requesting initial state - joining existing room with', connectedUserCount, 'users')
             hasEverBeenInRoomRef.current = true
             requestInitialState()
+          } else {
+            console.log('🔍 [Singleton] Skipping initial state request - conditions not met')
           }
         }, 200)
       }
