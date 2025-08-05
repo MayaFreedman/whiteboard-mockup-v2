@@ -250,12 +250,6 @@ export const Toolbar: React.FC = () => {
     updateToolSettings({ strokeColor: color });
   };
 
-  /**
-   * Handles custom color button click - opens color picker
-   */
-  const handleCustomColorClick = () => {
-    colorPickerRef.current?.click();
-  };
 
   /**
    * Handles custom color selection from color picker
@@ -364,9 +358,9 @@ export const Toolbar: React.FC = () => {
                   const isRainbow = color === 'rainbow-gradient';
                   return (
                     <div key={`custom-${color}`} className="relative">
+                      {/* Rainbow gradient button or solid color button as visual background */}
                       {isRainbow ? (
-                        <button
-                          onClick={handleCustomColorClick}
+                        <div
                           className={`w-6 h-6 rounded border-2 transition-all duration-200 hover:scale-110 relative ${
                             toolSettings.strokeColor === color 
                               ? 'border-ring ring-2 ring-ring ring-offset-2' 
@@ -381,18 +375,22 @@ export const Toolbar: React.FC = () => {
                         <ColorButton
                           color={color}
                           isSelected={toolSettings.strokeColor === color}
-                          onClick={handleCustomColorClick}
+                          onClick={() => {}}
                         />
                       )}
+                      
+                      {/* Plus badge */}
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold border border-background">
                         +
                       </div>
+                      
+                      {/* Interactive color input covering the entire area */}
                       <input
                         ref={colorPickerRef}
                         type="color"
                         value={isRainbow ? '#ff0000' : color}
                         onChange={handleCustomColorChange}
-                        className="absolute opacity-0 pointer-events-none w-full h-full"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         aria-label="Custom color picker"
                       />
                     </div>
