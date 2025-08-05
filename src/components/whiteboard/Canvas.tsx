@@ -231,13 +231,17 @@ export const Canvas: React.FC = () => {
   const handleDoubleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     
-    console.log('🖱️ Double-click detected - setting protection flag');
+    console.log('🖱️ Double-click detected - setting protection flag and clearing text interaction state');
     setIsHandlingDoubleClick(true);
     
     // Clear any existing timeout
     if (doubleClickTimeoutRef.current) {
       clearTimeout(doubleClickTimeoutRef.current);
     }
+    
+    // CRITICAL: Clear any residual text interaction state from previous single clicks
+    // This prevents phantom text editor from appearing when clicking on empty space
+    interactions.clearTextInteractionState();
     
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;

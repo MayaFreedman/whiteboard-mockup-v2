@@ -1231,6 +1231,36 @@ export const useCanvasInteractions = () => {
     return selectionBoxRef.current;
   }, []);
 
+  /**
+   * Clears all text interaction state to prevent phantom text editor
+   */
+  const clearTextInteractionState = useCallback(() => {
+    console.log('🧹 Clearing text interaction state to prevent phantom editor');
+    
+    // Clear text click timer
+    if (textClickTimerRef.current) {
+      clearTimeout(textClickTimerRef.current);
+      textClickTimerRef.current = null;
+    }
+    
+    // Clear text click position
+    textClickStartPosRef.current = null;
+    
+    // Clear shape preview if it's a text preview
+    if (currentShapePreviewRef.current?.type === 'text') {
+      currentShapePreviewRef.current = null;
+    }
+    
+    // Reset any drawing state that might be related to text
+    if (toolStore.activeTool === 'text') {
+      isDrawingRef.current = false;
+      lastPointRef.current = null;
+      pathStartRef.current = null;
+    }
+    
+    console.log('🧹 Text interaction state cleared');
+  }, [toolStore.activeTool]);
+
   return {
     handlePointerDown,
     handlePointerMove,
@@ -1244,6 +1274,7 @@ export const useCanvasInteractions = () => {
     setRedrawCanvas,
     setDoubleClickProtection,
     setEditingState,
-    setImmediateTextTrigger
+    setImmediateTextTrigger,
+    clearTextInteractionState
   };
 };
