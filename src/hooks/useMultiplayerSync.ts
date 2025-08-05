@@ -248,7 +248,7 @@ export const useMultiplayerSync = () => {
         requestInitialState()
       }, 100)
     }
-  }, [isConnected, connectedUserCount, requestInitialState])
+  }, [isConnected, connectedUserCount])
 
   /**
    * Reset state sync flags when disconnecting
