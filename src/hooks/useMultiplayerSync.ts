@@ -86,18 +86,24 @@ export const useMultiplayerSync = () => {
     const room = serverInstance.server.room
     
     const handleBroadcastMessage = (message: any) => {
-      // Handle state request messages
+      // Handle state request messages (only first responder should answer)
       if (message.type === 'request_state') {
         console.log('📥 Received state request from:', message.requesterId)
         if (message.requesterId !== room.sessionId) {
-          const currentState = whiteboardStore.getStateSnapshot()
-          const hasObjectsToShare = Object.keys(currentState.objects).length > 0
-          console.log('📤 Sending state response with objects:', Object.keys(currentState.objects).length)
+          // Only respond if we're the "primary" responder (smallest session ID)
+          const connectedSessions = Array.from(room.state.users?.keys() || [])
+          const shouldRespond = connectedSessions.sort()[0] === room.sessionId
           
-          // Always respond, even with empty state (so requester knows they got a response)
-          setTimeout(() => {
-            serverInstance.sendStateResponse(message.requesterId, currentState)
-          }, Math.random() * 300 + 100)
+          if (shouldRespond) {
+            const currentState = whiteboardStore.getStateSnapshot()
+            console.log('📤 Primary responder sending state with objects:', Object.keys(currentState.objects).length)
+            
+            setTimeout(() => {
+              serverInstance.sendStateResponse(message.requesterId, currentState)
+            }, Math.random() * 300 + 100)
+          } else {
+            console.log('🔄 Not primary responder, skipping state response')
+          }
         }
         return
       }
@@ -194,10 +200,14 @@ export const useMultiplayerSync = () => {
         }
       }
       
-      // Handle screen size updates
+      // Handle screen size updates (filter out our own messages)
       if (message.type === 'screen_size_update' && message.userId && message.screenSize) {
-        console.log('📥 Received screen size update from:', message.userId, message.screenSize)
-        updateUserScreenSize(message.userId, message.screenSize)
+        if (message.userId !== userId) {
+          console.log('📥 Received screen size update from:', message.userId, message.screenSize)
+          updateUserScreenSize(message.userId, message.screenSize)
+        } else {
+          console.log('🔄 Ignoring own screen size update')
+        }
       }
     }
 
