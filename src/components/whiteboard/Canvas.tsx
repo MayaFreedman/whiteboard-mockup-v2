@@ -831,7 +831,7 @@ export const Canvas: React.FC = () => {
             textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
             textAlign: objects[editingTextId]?.data?.textAlign || 'left',
             color: 'transparent', // Make the text invisible
-            caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
+            caretColor: objects[editingTextId]?.data?.text ? (objects[editingTextId]?.stroke || '#000000') : 'transparent', // Only show cursor if there's actual text content
             zIndex: 1000,
             lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
             padding: '0', // Remove default textarea padding since we handle it with positioning
@@ -889,7 +889,7 @@ export const Canvas: React.FC = () => {
             fontSmooth: 'antialiased',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
-            caretColor: toolStore.toolSettings.strokeColor || '#000000', // Ensure cursor is visible and matches text color
+            caretColor: immediateTextContent ? (toolStore.toolSettings.strokeColor || '#000000') : 'transparent', // Only show cursor if there's text content
             WebkitTextSizeAdjust: '100%',
             boxSizing: 'border-box',
             background: 'transparent', // Match canvas text - no background
