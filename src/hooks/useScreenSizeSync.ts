@@ -53,11 +53,8 @@ export const useScreenSizeSync = () => {
     broadcastScreenSize(newSize);
   }, [userId, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize]);
 
-  // Handle initial screen size and window resize (consolidated)
+  // Handle window resize events only
   useEffect(() => {
-    // Set initial screen size
-    handleWindowResize();
-
     // Listen for window resize events
     window.addEventListener('resize', handleWindowResize);
     
@@ -66,9 +63,18 @@ export const useScreenSizeSync = () => {
     };
   }, [handleWindowResize]);
 
-  // Handle multiplayer connection state changes (consolidated)
+  // Handle initial screen size and multiplayer connection state changes
   useEffect(() => {
-    if (!multiplayer?.isConnected || !userId) {
+    if (!userId) {
+      return;
+    }
+
+    // Set initial screen size when user is available
+    const initialSize = calculateUsableScreenSize();
+    updateLocalUserScreenSize(userId, initialSize);
+
+    // Handle multiplayer-specific logic
+    if (!multiplayer?.isConnected) {
       return;
     }
 
@@ -81,9 +87,7 @@ export const useScreenSizeSync = () => {
     } else {
       // Multi-player mode - broadcast current size
       console.log('📏 Multi-player mode - broadcasting screen size');
-      const currentSize = calculateUsableScreenSize();
-      updateLocalUserScreenSize(userId, currentSize);
-      broadcastScreenSize(currentSize);
+      broadcastScreenSize(initialSize);
     }
   }, [multiplayer?.isConnected, multiplayer?.connectedUserCount, userId, clearAllSizes, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize]);
 
