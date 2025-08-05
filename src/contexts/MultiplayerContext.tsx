@@ -289,6 +289,17 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
       if (room) {
         registerMessageHandlers(room)
         syncInitializedRef.current = true
+        
+        // Check if we need to request initial state immediately after connection
+        // Only request if there are other users already in the room
+        setTimeout(() => {
+          const currentPlayerCount = Object.keys(room.state?.players || {}).length
+          if (currentPlayerCount > 1 && !hasReceivedInitialStateRef.current && !hasRequestedStateRef.current) {
+            console.log('📤 [Singleton] Requesting initial state - joining existing room with', currentPlayerCount, 'users')
+            hasEverBeenInRoomRef.current = true
+            requestInitialState()
+          }
+        }, 200)
       }
     } catch (error) {
       console.error('❌ Connection failed:', error)
@@ -428,20 +439,14 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
     }
   }, [isConnected, userId, handleWindowResize])
 
-  // Handle user count changes for initial state requests
+  // Handle user count changes - only for logging, initial state is now handled at connection time
   useEffect(() => {
     if (!isReadyToSend() || !syncInitializedRef.current) return
     
     console.log('🔄 [Singleton] connectedUserCount changed:', connectedUserCount)
     
-    if (!hasReceivedInitialStateRef.current && connectedUserCount > 1 && !hasEverBeenInRoomRef.current && !hasRequestedStateRef.current) {
-      console.log('📤 [Singleton] Requesting initial state - new user joining')
-      hasEverBeenInRoomRef.current = true
-      
-      setTimeout(() => {
-        requestInitialState()
-      }, 100)
-    }
+    // Initial state requests are now handled in the connect function
+    // This effect is kept for logging and potential future use
   }, [connectedUserCount, isConnected, syncInitializedRef.current])
 
   // Handle screen size changes for user departures
