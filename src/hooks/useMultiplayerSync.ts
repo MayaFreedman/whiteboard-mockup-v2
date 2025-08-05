@@ -12,6 +12,11 @@ import { useScreenSizeStore } from '../stores/screenSizeStore'
 const shouldSyncAction = (action: WhiteboardAction, whiteboardStore: any): boolean => {
   const localOnlyActions = ['SELECT_OBJECTS', 'CLEAR_SELECTION']
   
+  // Don't sync SYNC_ actions to prevent infinite loops
+  if (action.type.startsWith('SYNC_')) {
+    return false
+  }
+  
   // Don't sync individual UPDATE_OBJECT actions during any active batch operation
   if (action.type === 'UPDATE_OBJECT') {
     const currentBatch = whiteboardStore.getState().currentBatch
