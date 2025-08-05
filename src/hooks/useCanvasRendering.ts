@@ -953,6 +953,10 @@ export const useCanvasRendering = (
   // Throttle canvas redraws to improve performance during drawing
   const lastRedrawTime = useRef<number>(0);
   const REDRAW_THROTTLE_MS = 16; // 60fps throttling
+  
+  // Enhanced debouncing for initialization phase to reduce redundant redraws
+  const initPhaseDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const INIT_DEBOUNCE_MS = 100; // Longer debounce during rapid state changes
 
   const redrawCanvas = useCallback((immediate = false, source = 'unknown') => {
     if (!canvas) return;
@@ -971,19 +975,42 @@ export const useCanvasRendering = (
     const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
     const shouldRedrawImmediately = immediate || hasDrawingPreview;
     
-    // If immediate redraw is requested, drawing preview exists (drawing is active), or enough time has passed, redraw now
+    // Detect rapid state changes (likely initialization) by checking for multiple redraws within short time
+    const isRapidStateChange = now - lastRedrawTime.current < 200 && !shouldRedrawImmediately;
+    
+    if (isRapidStateChange) {
+      // During rapid state changes, use longer debouncing to batch redraws
+      if (initPhaseDebounceRef.current) {
+        clearTimeout(initPhaseDebounceRef.current);
+      }
+      
+      initPhaseDebounceRef.current = setTimeout(() => {
+        initPhaseDebounceRef.current = null;
+        lastRedrawTime.current = Date.now();
+        console.log('🎨 Executing batched redraw after initialization phase');
+        performRedraw();
+      }, INIT_DEBOUNCE_MS);
+      
+      return;
+    }
+    
+    // Normal throttling for regular operation
     if (shouldRedrawImmediately || now - lastRedrawTime.current >= REDRAW_THROTTLE_MS) {
       lastRedrawTime.current = now;
       
-      // Clear any pending timeout
+      // Clear any pending timeouts
       if (redrawTimeoutRef.current) {
         window.clearTimeout(redrawTimeoutRef.current);
         redrawTimeoutRef.current = null;
       }
+      if (initPhaseDebounceRef.current) {
+        clearTimeout(initPhaseDebounceRef.current);
+        initPhaseDebounceRef.current = null;
+      }
       
       performRedraw();
     } else {
-      // Throttle the redraw only during active drawing - schedule it for later if not already scheduled
+      // Schedule normal throttled redraw
       if (!redrawTimeoutRef.current) {
         const timeUntilNextRedraw = REDRAW_THROTTLE_MS - (now - lastRedrawTime.current);
         
@@ -1105,6 +1132,9 @@ export const useCanvasRendering = (
     return () => {
       if (redrawTimeoutRef.current) {
         window.clearTimeout(redrawTimeoutRef.current);
+      }
+      if (initPhaseDebounceRef.current) {
+        clearTimeout(initPhaseDebounceRef.current);
       }
     };
   }, []);
