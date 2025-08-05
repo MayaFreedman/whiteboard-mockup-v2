@@ -427,6 +427,44 @@ export const useUndoRedo = (): UndoRedoManager => {
     }
   }, []);
 
+  /**
+   * Applies undo state changes using proper store methods instead of direct state mutation
+   */
+  const applyUndoStateChange = useCallback((stateChange: Partial<WhiteboardState>, originalAction: WhiteboardAction) => {
+    // Handle object changes properly by using store methods
+    if (stateChange.objects) {
+      const currentObjects = store.getState().objects;
+      const newObjects = stateChange.objects;
+      
+      // Find objects that were deleted (exist in current but not in new)
+      Object.keys(currentObjects).forEach(id => {
+        if (!(id in newObjects)) {
+          store.deleteObject(id, originalAction.userId);
+        }
+      });
+      
+      // Find objects that were added or updated (exist in new but not current, or different)
+      Object.entries(newObjects).forEach(([id, obj]) => {
+        const currentObj = currentObjects[id];
+        if (!currentObj) {
+          // Object was added
+          store.addObject(obj, originalAction.userId);
+        } else if (JSON.stringify(currentObj) !== JSON.stringify(obj)) {
+          // Object was updated
+          store.updateObject(id, obj, originalAction.userId);
+        }
+      });
+    }
+    
+    // Apply other state changes directly
+    const otherChanges = { ...stateChange };
+    delete otherChanges.objects;
+    
+    if (Object.keys(otherChanges).length > 0) {
+      store.applyStateChange(otherChanges);
+    }
+  }, [store]);
+
   const undo = useCallback((userId: string) => {
     const state = store.getState();
     const userHistory = state.userActionHistories.get(userId) || [];
@@ -469,8 +507,8 @@ export const useUndoRedo = (): UndoRedoManager => {
     // Update the user's history index ONLY for the local user
     store.updateLocalUserHistoryIndex(userId, currentIndex - 1);
     
-    // Apply the state change directly (local only)
-    store.applyStateChange(result.stateChange);
+    // Apply the state change using proper store methods (local only)
+    applyUndoStateChange(result.stateChange, actionToUndo);
     
     // Send sync action to other clients if multiplayer is connected
     // IMPORTANT: Use the ORIGINAL user's ID in the SYNC action
@@ -538,8 +576,8 @@ export const useUndoRedo = (): UndoRedoManager => {
     // Update the user's history index ONLY for the local user
     store.updateLocalUserHistoryIndex(userId, nextIndex);
     
-    // Apply the state change directly (local only)
-    store.applyStateChange(result.stateChange);
+    // Apply the state change using proper store methods (local only)
+    applyUndoStateChange(result.stateChange, actionToRedo);
     
     // Send sync action to other clients if multiplayer is connected
     // IMPORTANT: Use the ORIGINAL user's ID in the SYNC action
