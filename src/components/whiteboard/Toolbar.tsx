@@ -265,6 +265,7 @@ export const Toolbar: React.FC = () => {
     const newColor = event.target.value;
     setPaletteCustomColor(activeColorPalette, newColor);
     updateToolSettings({ strokeColor: newColor });
+    // Don't close the picker - let user click outside to close it naturally
   };
 
   /**
@@ -366,7 +367,7 @@ export const Toolbar: React.FC = () => {
                       {isRainbow ? (
                         <button
                           onClick={handleCustomColorClick}
-                          className={`w-6 h-6 rounded-full border-2 transition-all duration-200 hover:scale-110 relative ${
+                          className={`w-6 h-6 rounded border-2 transition-all duration-200 hover:scale-110 relative ${
                             toolSettings.strokeColor === color 
                               ? 'border-ring ring-2 ring-ring ring-offset-2' 
                               : 'border-border hover:border-ring'
@@ -391,7 +392,7 @@ export const Toolbar: React.FC = () => {
                         type="color"
                         value={isRainbow ? '#ff0000' : color}
                         onChange={handleCustomColorChange}
-                        className="absolute opacity-0 pointer-events-none"
+                        className="absolute opacity-0 pointer-events-none w-full h-full"
                         aria-label="Custom color picker"
                       />
                     </div>
