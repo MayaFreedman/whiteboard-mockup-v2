@@ -83,6 +83,7 @@ export const useMultiplayerSync = () => {
     }
 
     const room = serverInstance.server.room
+    console.log('🔌 Adding broadcast message listener')
     
     const handleBroadcastMessage = (message: any) => {
       // Handle state request messages
@@ -198,7 +199,8 @@ export const useMultiplayerSync = () => {
     room.onMessage('broadcast', handleBroadcastMessage)
 
     return () => {
-      room.onMessage('broadcast', () => {})
+      console.log('🔌 Removing broadcast message listener')
+      room.off('broadcast', handleBroadcastMessage)
     }
   }, [serverInstance, isConnected, whiteboardStore, updateUserScreenSize])
 
