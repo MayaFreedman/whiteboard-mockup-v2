@@ -86,24 +86,17 @@ export const useMultiplayerSync = () => {
     const room = serverInstance.server.room
     
     const handleBroadcastMessage = (message: any) => {
-      // Handle state request messages (only first responder should answer)
+      // Handle state request messages
       if (message.type === 'request_state') {
         console.log('📥 Received state request from:', message.requesterId)
         if (message.requesterId !== room.sessionId) {
-          // Only respond if we're the "primary" responder (smallest session ID)
-          const connectedSessions = Array.from(room.state.users?.keys() || [])
-          const shouldRespond = connectedSessions.sort()[0] === room.sessionId
+          const currentState = whiteboardStore.getStateSnapshot()
+          console.log('📤 Sending state response with objects:', Object.keys(currentState.objects).length)
           
-          if (shouldRespond) {
-            const currentState = whiteboardStore.getStateSnapshot()
-            console.log('📤 Primary responder sending state with objects:', Object.keys(currentState.objects).length)
-            
-            setTimeout(() => {
-              serverInstance.sendStateResponse(message.requesterId, currentState)
-            }, Math.random() * 300 + 100)
-          } else {
-            console.log('🔄 Not primary responder, skipping state response')
-          }
+          // Add random delay to spread out responses
+          setTimeout(() => {
+            serverInstance.sendStateResponse(message.requesterId, currentState)
+          }, Math.random() * 300 + 100)
         }
         return
       }
