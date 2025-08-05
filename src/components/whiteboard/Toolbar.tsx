@@ -228,16 +228,19 @@ export const Toolbar: React.FC = () => {
     toolSettings, 
     updateToolSettings, 
     getActiveColors,
-    activeColorPalette
+    activeColorPalette,
+    setPaletteCustomColor
   } = useToolStore();
   
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const colorPickerRef = useRef<HTMLInputElement>(null);
   const isMobile = useResponsiveBreakpoint(activeColorPalette);
   
   // Update CSS custom property for toolbar height
   useToolbarHeight(toolbarRef, activeTool);
 
   const allColors = getActiveColors();
+  const customColorIndex = allColors.length - 1;
 
   /**
    * Handles color selection and updates tool settings
@@ -245,6 +248,23 @@ export const Toolbar: React.FC = () => {
    */
   const handleColorSelect = (color: string) => {
     updateToolSettings({ strokeColor: color });
+  };
+
+  /**
+   * Handles custom color button click - opens color picker
+   */
+  const handleCustomColorClick = () => {
+    colorPickerRef.current?.click();
+  };
+
+  /**
+   * Handles custom color selection from color picker
+   * @param event - The input change event
+   */
+  const handleCustomColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = event.target.value;
+    setPaletteCustomColor(activeColorPalette, newColor);
+    updateToolSettings({ strokeColor: newColor });
   };
 
   /**
@@ -336,14 +356,41 @@ export const Toolbar: React.FC = () => {
               Colors:
             </span>
             <div className="flex gap-1 items-center">
-              {allColors.map((color) => (
-                <ColorButton
-                  key={color}
-                  color={color}
-                  isSelected={toolSettings.strokeColor === color}
-                  onClick={() => handleColorSelect(color)}
-                />
-              ))}
+              {allColors.map((color, index) => {
+                const isCustomColor = index === customColorIndex;
+                
+                if (isCustomColor) {
+                  return (
+                    <div key={`custom-${color}`} className="relative">
+                      <ColorButton
+                        color={color}
+                        isSelected={toolSettings.strokeColor === color}
+                        onClick={handleCustomColorClick}
+                      />
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold border border-background">
+                        +
+                      </div>
+                      <input
+                        ref={colorPickerRef}
+                        type="color"
+                        value={color}
+                        onChange={handleCustomColorChange}
+                        className="absolute opacity-0 pointer-events-none"
+                        aria-label="Custom color picker"
+                      />
+                    </div>
+                  );
+                }
+                
+                return (
+                  <ColorButton
+                    key={color}
+                    color={color}
+                    isSelected={toolSettings.strokeColor === color}
+                    onClick={() => handleColorSelect(color)}
+                  />
+                );
+              })}
             </div>
           </div>
 

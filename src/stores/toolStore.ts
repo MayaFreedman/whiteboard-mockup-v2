@@ -83,8 +83,10 @@ interface ToolStore {
   activeColorPalette: keyof ToolStore['colorPalettes'];
   customColors: string[];
   recentlyUsedColors: string[];
+  paletteCustomColors: Record<keyof ToolStore['colorPalettes'], string>;
   addCustomColor: (color: string) => void;
   setActiveColorPalette: (palette: keyof ToolStore['colorPalettes']) => void;
+  setPaletteCustomColor: (palette: keyof ToolStore['colorPalettes'], color: string) => void;
   getActiveColors: () => string[];
   updateRecentlyUsedColor: (color: string) => void;
   getMostRecentColors: (count: number) => string[];
@@ -184,6 +186,12 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   activeColorPalette: 'basic',
   customColors: [],
   recentlyUsedColors: [],
+  paletteCustomColors: {
+    basic: '#ff6b35',
+    vibrant: '#8b5cf6', 
+    pastel: '#fbbf24',
+    professional: '#3b82f6'
+  },
 
   setActiveTool: (tool) => {
     console.log('🔧 Setting active tool:', tool);
@@ -293,9 +301,24 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     }));
   },
 
+  setPaletteCustomColor: (palette, color) => {
+    console.log('🎨 Setting custom color for palette:', palette, color);
+    
+    set((state) => ({
+      paletteCustomColors: {
+        ...state.paletteCustomColors,
+        [palette]: color
+      },
+      stateVersion: state.stateVersion + 1,
+      lastStateUpdate: Date.now()
+    }));
+  },
+
   getActiveColors: () => {
     const state = get();
-    return state.colorPalettes[state.activeColorPalette];
+    const paletteColors = state.colorPalettes[state.activeColorPalette];
+    const customColor = state.paletteCustomColors[state.activeColorPalette];
+    return [...paletteColors, customColor];
   },
 
   getToolStateSnapshot: () => {
