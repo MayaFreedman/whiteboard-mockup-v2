@@ -1088,10 +1088,17 @@ export const useCanvasRendering = (
     });
   }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, getCurrentSelectionBox, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
 
-  // Auto-redraw when state changes
+  // Auto-redraw when state changes - with debugging
   useEffect(() => {
+    console.log('🎨 Canvas useEffect triggered - redrawing due to state change');
     redrawCanvas(false, 'state-change');
   }, [redrawCanvas]);
+  
+  // Debug: Track objects changes specifically
+  useEffect(() => {
+    console.log('🔍 Objects dependency changed - triggering redraw. Object count:', Object.keys(objects).length);
+    console.log('🔍 Current object IDs:', Object.keys(objects));
+  }, [objects]);
 
   // Cleanup throttle timeout on unmount
   useEffect(() => {

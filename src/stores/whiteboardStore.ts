@@ -1081,7 +1081,17 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     });
   },
   applyStateChange: (stateChange) => {
+    console.log('🔄 applyStateChange called with:', {
+      objectsKeys: stateChange.objects ? Object.keys(stateChange.objects) : 'unchanged',
+      selectedObjectIds: stateChange.selectedObjectIds
+    });
+    
+    const prevObjects = get().objects;
+    
     set((state) => ({ ...state, ...stateChange }));
+    
+    const newObjects = get().objects;
+    console.log('🔄 State change applied - objects reference changed:', prevObjects !== newObjects);
   },
   
   restoreHistoryState: (historyState: {

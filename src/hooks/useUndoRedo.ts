@@ -438,6 +438,9 @@ export const useUndoRedo = (): UndoRedoManager => {
       canUndo: currentIndex >= 0
     });
     
+    // Log current objects state before undo
+    console.log('🔍 Objects before undo:', Object.keys(state.objects));
+    
     if (currentIndex < 0 || currentIndex >= userHistory.length) {
       console.log('↶ Cannot undo: invalid index');
       return;
@@ -469,8 +472,26 @@ export const useUndoRedo = (): UndoRedoManager => {
     // Update the user's history index ONLY for the local user
     store.updateLocalUserHistoryIndex(userId, currentIndex - 1);
     
+    // Log what state change is being applied
+    console.log('🔍 Applying undo state change:', {
+      objectsKeys: result.stateChange.objects ? Object.keys(result.stateChange.objects) : 'unchanged',
+      selectedObjectIds: result.stateChange.selectedObjectIds
+    });
+    
     // Apply the state change directly (local only)
     store.applyStateChange(result.stateChange);
+    
+    // Log objects state after undo
+    const newState = store.getState();
+    console.log('🔍 Objects after undo:', Object.keys(newState.objects));
+    
+    // Force canvas redraw after undo to ensure visual update
+    // This is needed because newly synced users might not have proper React dependency tracking
+    setTimeout(() => {
+      console.log('🎨 Forcing canvas redraw after undo operation');
+      // Trigger a state change that React will detect
+      store.setViewport({ ...newState.viewport });
+    }, 10);
     
     // Send sync action to other clients if multiplayer is connected
     // IMPORTANT: Use the ORIGINAL user's ID in the SYNC action
