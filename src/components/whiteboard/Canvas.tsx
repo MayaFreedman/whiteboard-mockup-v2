@@ -315,12 +315,6 @@ export const Canvas: React.FC = () => {
       }
     } else {
       console.log('🖱️ No text object found at double-click position');
-      // Early return - don't set up text editing if no text object was found
-      doubleClickTimeoutRef.current = setTimeout(() => {
-        console.log('🖱️ Clearing double-click protection flag');
-        setIsHandlingDoubleClick(false);
-      }, 200);
-      return;
     }
     
     // Reset protection flag after a shorter delay - reduced to 200ms
@@ -831,7 +825,7 @@ export const Canvas: React.FC = () => {
             textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
             textAlign: objects[editingTextId]?.data?.textAlign || 'left',
             color: 'transparent', // Make the text invisible
-            caretColor: objects[editingTextId]?.data?.text ? (objects[editingTextId]?.stroke || '#000000') : 'transparent', // Only show cursor if there's actual text content
+            caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
             zIndex: 1000,
             lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
             padding: '0', // Remove default textarea padding since we handle it with positioning
@@ -889,7 +883,7 @@ export const Canvas: React.FC = () => {
             fontSmooth: 'antialiased',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
-            caretColor: immediateTextContent ? (toolStore.toolSettings.strokeColor || '#000000') : 'transparent', // Only show cursor if there's text content
+            caretColor: toolStore.toolSettings.strokeColor || '#000000', // Ensure cursor is visible and matches text color
             WebkitTextSizeAdjust: '100%',
             boxSizing: 'border-box',
             background: 'transparent', // Match canvas text - no background
