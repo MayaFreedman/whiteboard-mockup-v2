@@ -34,14 +34,23 @@ export const DynamicToolSettings: React.FC = () => {
     if (activeTool !== 'stamp') return [];
     
     if (selectedCategory === 'all') {
-      // Get all icons including custom stamps
-      return getAllCategories().flatMap(category => 
-        getIconsByCategoryWithCustom(category).map(icon => ({
+      // Use getAllIcons to get all icons without duplicates
+      const { getAllIcons } = require('../../../utils/iconRegistry');
+      const allIcons = getAllIcons();
+      
+      // Deduplicate by URL to ensure no duplicates
+      const seen = new Set();
+      return allIcons
+        .filter(icon => {
+          if (seen.has(icon.path)) return false;
+          seen.add(icon.path);
+          return true;
+        })
+        .map(icon => ({
           name: icon.name,
           url: icon.path,
-          preview: icon.path // Use the actual SVG/image path as preview for OpenMoji, dataURL for custom
-        }))
-      );
+          preview: icon.path
+        }));
     }
     
     // Filter icons by category (including custom)
