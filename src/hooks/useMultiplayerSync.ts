@@ -84,6 +84,12 @@ export const useMultiplayerSync = () => {
 
     const room = serverInstance.server.room
     
+    // Prevent multiple handler registrations
+    if (!room) {
+      console.warn('⚠️ Room not available for message handler setup')
+      return
+    }
+    
     const handleBroadcastMessage = (message: any) => {
       // Handle state request messages
       if (message.type === 'request_state') {
