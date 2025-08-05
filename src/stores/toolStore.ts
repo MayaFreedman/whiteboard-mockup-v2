@@ -187,10 +187,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   customColors: [],
   recentlyUsedColors: [],
   paletteCustomColors: {
-    basic: '#ff6b35',
-    vibrant: '#8b5cf6', 
-    pastel: '#fbbf24',
-    professional: '#3b82f6'
+    basic: '#ff0000',      // Red
+    vibrant: '#ffa500',    // Orange  
+    pastel: '#ffff00',     // Yellow
+    professional: '#8a2be2' // Blue Violet
   },
 
   setActiveTool: (tool) => {
