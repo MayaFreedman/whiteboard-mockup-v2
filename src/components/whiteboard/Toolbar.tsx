@@ -360,20 +360,36 @@ export const Toolbar: React.FC = () => {
                 const isCustomColor = index === customColorIndex;
                 
                 if (isCustomColor) {
+                  const isRainbow = color === 'rainbow-gradient';
                   return (
                     <div key={`custom-${color}`} className="relative">
-                      <ColorButton
-                        color={color}
-                        isSelected={toolSettings.strokeColor === color}
-                        onClick={handleCustomColorClick}
-                      />
+                      {isRainbow ? (
+                        <button
+                          onClick={handleCustomColorClick}
+                          className={`w-6 h-6 rounded-full border-2 transition-all duration-200 hover:scale-110 relative ${
+                            toolSettings.strokeColor === color 
+                              ? 'border-ring ring-2 ring-ring ring-offset-2' 
+                              : 'border-border hover:border-ring'
+                          }`}
+                          style={{
+                            background: 'linear-gradient(45deg, #ff0000, #ff8800, #ffff00, #88ff00, #00ff88, #0088ff, #8800ff, #ff0088)'
+                          }}
+                          title="Custom color (click to change)"
+                        />
+                      ) : (
+                        <ColorButton
+                          color={color}
+                          isSelected={toolSettings.strokeColor === color}
+                          onClick={handleCustomColorClick}
+                        />
+                      )}
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold border border-background">
                         +
                       </div>
                       <input
                         ref={colorPickerRef}
                         type="color"
-                        value={color}
+                        value={isRainbow ? '#ff0000' : color}
                         onChange={handleCustomColorChange}
                         className="absolute opacity-0 pointer-events-none"
                         aria-label="Custom color picker"
