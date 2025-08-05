@@ -91,9 +91,10 @@ export const useMultiplayerSync = () => {
         console.log('📥 Received state request from:', message.requesterId)
         if (message.requesterId !== room.sessionId) {
           const currentState = whiteboardStore.getStateSnapshot()
+          const hasObjectsToShare = Object.keys(currentState.objects).length > 0
           console.log('📤 Sending state response with objects:', Object.keys(currentState.objects).length)
           
-          // Add random delay to spread out responses
+          // Always respond, even with empty state (so requester knows they got a response)
           setTimeout(() => {
             serverInstance.sendStateResponse(message.requesterId, currentState)
           }, Math.random() * 300 + 100)
@@ -193,14 +194,10 @@ export const useMultiplayerSync = () => {
         }
       }
       
-      // Handle screen size updates (filter out our own messages)
+      // Handle screen size updates
       if (message.type === 'screen_size_update' && message.userId && message.screenSize) {
-        if (message.userId !== userId) {
-          console.log('📥 Received screen size update from:', message.userId, message.screenSize)
-          updateUserScreenSize(message.userId, message.screenSize)
-        } else {
-          console.log('🔄 Ignoring own screen size update')
-        }
+        console.log('📥 Received screen size update from:', message.userId, message.screenSize)
+        updateUserScreenSize(message.userId, message.screenSize)
       }
     }
 
