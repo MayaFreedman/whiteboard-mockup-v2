@@ -115,28 +115,28 @@ export const useMultiplayerSync = () => {
           // Clear any existing objects first to prevent duplicates
           whiteboardStore.clearObjects()
           
-          // Apply received state using the same code path as regular multiplayer
+          // Apply received state using batch update to prevent multiple redraws
           if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
-            console.log('🎯 Applying', Object.keys(message.state.objects).length, 'objects from state response')
-            Object.values(message.state.objects).forEach((obj: any) => {
-              // Create an ADD_OBJECT action with the original object data to preserve IDs
-              const addAction: WhiteboardAction = {
-                id: `sync-${obj.id}`,
-                type: 'ADD_OBJECT',
-                userId: obj.userId || 'unknown',
-                timestamp: obj.createdAt || Date.now(),
-                payload: {
-                  object: {
-                    ...obj,
-                    createdAt: obj.createdAt || Date.now(),
-                    updatedAt: obj.updatedAt || Date.now(),
-                    data: obj.data || {}
-                  }
+            console.log('🎯 Batching', Object.keys(message.state.objects).length, 'objects from state response')
+            
+            // Create all ADD_OBJECT actions for batch processing
+            const addActions: WhiteboardAction[] = Object.values(message.state.objects).map((obj: any) => ({
+              id: `sync-${obj.id}`,
+              type: 'ADD_OBJECT',
+              userId: obj.userId || 'unknown',
+              timestamp: obj.createdAt || Date.now(),
+              payload: {
+                object: {
+                  ...obj,
+                  createdAt: obj.createdAt || Date.now(),
+                  updatedAt: obj.updatedAt || Date.now(),
+                  data: obj.data || {}
                 }
               }
-              
-              whiteboardStore.applyRemoteAction(addAction)
-            })
+            }))
+            
+            // Apply all objects in a single batch update to trigger only one redraw
+            whiteboardStore.batchUpdate(addActions)
           }
           
           if (message.state?.viewport) {
