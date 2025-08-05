@@ -952,7 +952,7 @@ export const useCanvasRendering = (
 
   // Throttle canvas redraws to improve performance during drawing
   const lastRedrawTime = useRef<number>(0);
-  const REDRAW_THROTTLE_MS = 16; // 60fps throttling
+  const REDRAW_THROTTLE_MS = 16; // 60fps throttling for smooth interactions
 
   const redrawCanvas = useCallback((immediate = false, source = 'unknown') => {
     if (!canvas) return;
