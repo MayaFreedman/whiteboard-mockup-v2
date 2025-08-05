@@ -91,6 +91,13 @@ export interface WhiteboardStore {
   batchUpdate: (actions: WhiteboardAction[]) => void;
   updateLocalUserHistoryIndex: (userId: string, index: number) => void;
   applyStateChange: (stateChange: any) => void;
+  restoreHistoryState: (historyState: {
+    actionHistory: WhiteboardAction[];
+    userActionHistories: Record<string, WhiteboardAction[]>;
+    userHistoryIndices: Record<string, number>;
+    currentHistoryIndex: number;
+    objectRelationships: Record<string, { originalId?: string; segmentIds?: string[] }>;
+  }) => void;
   
   // Conflict detection utilities
   checkObjectExists: (objectId: string) => boolean;
@@ -624,12 +631,35 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   getState: () => get(),
   getStateSnapshot: () => {
     const state = get()
+    
+    // Convert Maps to plain objects for serialization
+    const userActionHistoriesObj: Record<string, WhiteboardAction[]> = {}
+    state.userActionHistories.forEach((value, key) => {
+      userActionHistoriesObj[key] = value
+    })
+    
+    const userHistoryIndicesObj: Record<string, number> = {}
+    state.userHistoryIndices.forEach((value, key) => {
+      userHistoryIndicesObj[key] = value
+    })
+    
+    const objectRelationshipsObj: Record<string, { originalId?: string; segmentIds?: string[] }> = {}
+    state.objectRelationships.forEach((value, key) => {
+      objectRelationshipsObj[key] = value
+    })
+    
     return {
       objects: { ...state.objects }, // Create a clean copy
       viewport: { ...state.viewport },
       settings: { ...state.settings },
       actionCount: state.actionHistory.length,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      // Include undo-redo state for sync
+      actionHistory: [...state.actionHistory],
+      userActionHistories: userActionHistoriesObj,
+      userHistoryIndices: userHistoryIndicesObj,
+      currentHistoryIndex: state.currentHistoryIndex,
+      objectRelationships: objectRelationshipsObj
     }
   },
   getActionsSince: (timestamp) => {
@@ -1052,6 +1082,45 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
   applyStateChange: (stateChange) => {
     set((state) => ({ ...state, ...stateChange }));
+  },
+  
+  restoreHistoryState: (historyState: {
+    actionHistory: WhiteboardAction[];
+    userActionHistories: Record<string, WhiteboardAction[]>;
+    userHistoryIndices: Record<string, number>;
+    currentHistoryIndex: number;
+    objectRelationships: Record<string, { originalId?: string; segmentIds?: string[] }>;
+  }) => {
+    console.log('🔄 Restoring history state:', {
+      actionHistoryLength: historyState.actionHistory.length,
+      userCount: Object.keys(historyState.userActionHistories).length,
+      currentIndex: historyState.currentHistoryIndex
+    });
+    
+    // Convert plain objects back to Maps
+    const userActionHistoriesMap = new Map<string, WhiteboardAction[]>();
+    Object.entries(historyState.userActionHistories).forEach(([key, value]) => {
+      userActionHistoriesMap.set(key, value);
+    });
+    
+    const userHistoryIndicesMap = new Map<string, number>();
+    Object.entries(historyState.userHistoryIndices).forEach(([key, value]) => {
+      userHistoryIndicesMap.set(key, value);
+    });
+    
+    const objectRelationshipsMap = new Map<string, { originalId?: string; segmentIds?: string[] }>();
+    Object.entries(historyState.objectRelationships).forEach(([key, value]) => {
+      objectRelationshipsMap.set(key, value);
+    });
+    
+    set((state) => ({
+      ...state,
+      actionHistory: historyState.actionHistory,
+      userActionHistories: userActionHistoriesMap,
+      userHistoryIndices: userHistoryIndicesMap,
+      currentHistoryIndex: historyState.currentHistoryIndex,
+      objectRelationships: objectRelationshipsMap
+    }));
   },
   
   // Conflict detection utilities

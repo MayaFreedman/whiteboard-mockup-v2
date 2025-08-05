@@ -104,7 +104,7 @@ export const useMultiplayerSync = () => {
       
       // Handle state response messages
       if (message.type === 'state_response') {
-        console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length)
+        console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length, 'hasHistory:', !!(message.state?.actionHistory))
         
         // Only apply if this response is for us AND we haven't already applied initial state
         if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
@@ -136,6 +136,18 @@ export const useMultiplayerSync = () => {
           
           if (message.state?.settings) {
             whiteboardStore.setSettings(message.state.settings)
+          }
+          
+          // Apply history state if available
+          if (message.state?.actionHistory && message.state?.userActionHistories) {
+            console.log('🔄 Applying history state with', message.state.actionHistory.length, 'actions')
+            whiteboardStore.restoreHistoryState({
+              actionHistory: message.state.actionHistory,
+              userActionHistories: message.state.userActionHistories,
+              userHistoryIndices: message.state.userHistoryIndices || {},
+              currentHistoryIndex: message.state.currentHistoryIndex || 0,
+              objectRelationships: message.state.objectRelationships || {}
+            })
           }
         } else if (message.requesterId === room.sessionId && hasReceivedInitialStateRef.current) {
           console.log('⚠️ Ignoring duplicate state response - already received initial state')
