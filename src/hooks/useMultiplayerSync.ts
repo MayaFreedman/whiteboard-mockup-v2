@@ -117,16 +117,28 @@ export const useMultiplayerSync = () => {
           // Clear any existing objects first to prevent duplicates
           whiteboardStore.clearObjects()
           
-          // Apply received state
+          // Apply received state using the same code path as regular multiplayer
           if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
-            console.log('🎯 Applying', Object.keys(message.state.objects).length, 'objects from state response')
+            console.log('🎯 Applying', Object.keys(message.state.objects).length, 'objects from state response using applyRemoteAction')
             Object.values(message.state.objects).forEach((obj: any) => {
-              whiteboardStore.addObject({
-                ...obj,
-                createdAt: obj.createdAt || Date.now(),
-                updatedAt: obj.updatedAt || Date.now(),
-                data: obj.data || {}
-              })
+              // Create an ADD_OBJECT action with the original object data to preserve IDs
+              const addAction: WhiteboardAction = {
+                id: `sync-${obj.id}`, // Unique sync action ID
+                type: 'ADD_OBJECT',
+                userId: obj.userId || 'unknown',
+                timestamp: obj.createdAt || Date.now(),
+                payload: {
+                  object: {
+                    ...obj,
+                    createdAt: obj.createdAt || Date.now(),
+                    updatedAt: obj.updatedAt || Date.now(),
+                    data: obj.data || {}
+                  }
+                }
+              }
+              
+              // Use applyRemoteAction to preserve IDs and use the same code path
+              whiteboardStore.applyRemoteAction(addAction)
             })
           }
           
