@@ -315,6 +315,12 @@ export const Canvas: React.FC = () => {
       }
     } else {
       console.log('🖱️ No text object found at double-click position');
+      // Early return - don't set up text editing if no text object was found
+      doubleClickTimeoutRef.current = setTimeout(() => {
+        console.log('🖱️ Clearing double-click protection flag');
+        setIsHandlingDoubleClick(false);
+      }, 200);
+      return;
     }
     
     // Reset protection flag after a shorter delay - reduced to 200ms
