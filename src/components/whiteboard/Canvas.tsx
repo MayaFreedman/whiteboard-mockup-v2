@@ -286,41 +286,35 @@ export const Canvas: React.FC = () => {
       return isInBounds;
     });
     
-    if (!textObject) {
-      console.log('🖱️ No text object found at double-click position - exiting early');
-      // Reset protection flag immediately since we're not doing anything
-      doubleClickTimeoutRef.current = setTimeout(() => {
-        console.log('🖱️ Clearing double-click protection flag (early exit)');
-        setIsHandlingDoubleClick(false);
-      }, 200);
-      return; // Early return prevents any text editor setup
-    }
-
-    const [objectId, obj] = textObject;
-    console.log('🖱️ Found text object to edit:', objectId.slice(0, 8));
-    
-    setEditingTextId(objectId);
-    
-    // Calculate exact text position using canvas metrics
-    const position = calculateTextPosition(obj, canvasRef.current);
-    if (position) {
-      setTextEditorPosition(position);
-    }
-    
-    // Only clear text if it's the placeholder text, otherwise keep the existing text
-    const currentContent = obj.data?.content || '';
-    const isPlaceholderText = currentContent === 'Double-click to edit' || currentContent.trim() === '';
-    setEditingText(isPlaceholderText ? '' : currentContent);
-    
-    // Set cursor to end of text after a short delay to ensure textarea is rendered
-    if (!isPlaceholderText) {
-      setTimeout(() => {
-        if (textareaRef.current) {
-          const textLength = currentContent.length;
-          textareaRef.current.setSelectionRange(textLength, textLength);
-          textareaRef.current.focus();
-        }
-      }, 0);
+    if (textObject) {
+      const [objectId, obj] = textObject;
+      console.log('🖱️ Found text object to edit:', objectId.slice(0, 8));
+      
+      setEditingTextId(objectId);
+      
+      // Calculate exact text position using canvas metrics
+      const position = calculateTextPosition(obj, canvasRef.current);
+      if (position) {
+        setTextEditorPosition(position);
+      }
+      
+      // Only clear text if it's the placeholder text, otherwise keep the existing text
+      const currentContent = obj.data?.content || '';
+      const isPlaceholderText = currentContent === 'Double-click to edit' || currentContent.trim() === '';
+      setEditingText(isPlaceholderText ? '' : currentContent);
+      
+      // Set cursor to end of text after a short delay to ensure textarea is rendered
+      if (!isPlaceholderText) {
+        setTimeout(() => {
+          if (textareaRef.current) {
+            const textLength = currentContent.length;
+            textareaRef.current.setSelectionRange(textLength, textLength);
+            textareaRef.current.focus();
+          }
+        }, 0);
+      }
+    } else {
+      console.log('🖱️ No text object found at double-click position');
     }
     
     // Reset protection flag after a shorter delay - reduced to 200ms
