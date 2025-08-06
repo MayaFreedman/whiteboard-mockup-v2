@@ -210,23 +210,44 @@ export const useCanvasInteractions = () => {
     // Check if this is a custom stamp (base64 data URL)
     const isCustomStamp = selectedSticker.startsWith('data:');
     
-    // For multiplayer compatibility, store custom stamps with fallback handling
-    const stampData = isCustomStamp ? {
-      // Store custom stamp reference with metadata for multiplayer sync
-      customStampId: selectedSticker,
-      isCustomStamp: true,
-      alt: 'Custom stamp',
-      // Add fallback for clients that don't have this custom stamp
-      fallbackSrc: '/icons/emotions/happy.svg',
-      fallbackAlt: 'Fallback stamp (custom stamp not available)'
-    } : {
+    let width = actualSize;
+    let height = actualSize;
+    
+    // For custom stamps, preserve aspect ratio by loading image synchronously
+    if (isCustomStamp) {
+      // Store the aspect ratio in the stamp data so it can be applied during rendering
+      const stampData = {
+        customStampId: selectedSticker,
+        isCustomStamp: true,
+        alt: 'Custom stamp',
+        preserveAspectRatio: true, // Flag to indicate aspect ratio should be preserved
+        fallbackSrc: '/icons/emotions/happy.svg',
+        fallbackAlt: 'Fallback stamp (custom stamp not available)'
+      };
+
+      return {
+        type: 'image',
+        x: x - actualSize / 2, // Center using original size for now
+        y: y - actualSize / 2,
+        width: actualSize, // Will be adjusted during rendering based on actual image
+        height: actualSize,
+        stroke: 'transparent',
+        fill: 'transparent',
+        strokeWidth: 0,
+        opacity: toolStore.toolSettings.opacity,
+        data: stampData
+      };
+    }
+    
+    // For regular stamps
+    const stampData = {
       src: selectedSticker,
       alt: 'Stamp icon'
     };
 
     return {
       type: 'image',
-      x: x - actualSize / 2, // Center the stamp on the click point
+      x: x - actualSize / 2,
       y: y - actualSize / 2,
       width: actualSize,
       height: actualSize,

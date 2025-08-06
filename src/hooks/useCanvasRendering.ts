@@ -489,13 +489,35 @@ export const useCanvasRendering = (
           const cachedImage = imageCache.current.get(normalizedSrc);
           
           if (cachedImage) {
+            // Calculate render dimensions
+            let renderWidth = obj.width;
+            let renderHeight = obj.height;
+            let renderX = obj.x;
+            let renderY = obj.y;
+            
+            // For custom stamps with aspect ratio preservation
+            if (imageData?.isCustomStamp && imageData?.preserveAspectRatio) {
+              const imageAspectRatio = cachedImage.naturalWidth / cachedImage.naturalHeight;
+              const objectAspectRatio = obj.width / obj.height;
+              
+              if (imageAspectRatio > objectAspectRatio) {
+                // Image is wider - fit to width
+                renderHeight = obj.width / imageAspectRatio;
+                renderY = obj.y + (obj.height - renderHeight) / 2;
+              } else {
+                // Image is taller - fit to height
+                renderWidth = obj.height * imageAspectRatio;
+                renderX = obj.x + (obj.width - renderWidth) / 2;
+              }
+            }
+            
             // Image is ready, render it
             ctx.drawImage(
               cachedImage, 
-              Math.round(obj.x), 
-              Math.round(obj.y), 
-              Math.round(obj.width), 
-              Math.round(obj.height)
+              Math.round(renderX), 
+              Math.round(renderY), 
+              Math.round(renderWidth), 
+              Math.round(renderHeight)
             );
           } else {
             // Load image asynchronously using normalized src for consistency
