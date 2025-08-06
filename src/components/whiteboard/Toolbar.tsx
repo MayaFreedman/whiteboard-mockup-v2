@@ -372,8 +372,12 @@ export const Toolbar: React.FC = () => {
                       clearTimeout(longPressTimer);
                     }
                     if (!isLongPress) {
-                      // Short click - select the color
-                      handleColorSelect(color);
+                      // Short click - if rainbow default, open picker, otherwise select color
+                      if (isRainbow) {
+                        colorPickerRef.current?.click();
+                      } else {
+                        handleColorSelect(color);
+                      }
                     }
                   };
 
