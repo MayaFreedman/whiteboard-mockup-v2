@@ -357,42 +357,59 @@ export const Toolbar: React.FC = () => {
                 if (isCustomColor) {
                   const isRainbow = color === 'rainbow-gradient';
                   return (
-                    <div key={`custom-color-slot`} className="relative w-6 h-6 flex-shrink-0">
-                      {/* Rainbow gradient button or solid color button as visual background */}
-                      {isRainbow ? (
-                        <div
-                          className={`w-6 h-6 rounded border-2 transition-all duration-200 hover:scale-110 relative ${
-                            toolSettings.strokeColor === color 
-                              ? 'border-ring ring-2 ring-ring ring-offset-2' 
-                              : 'border-border hover:border-ring'
-                          }`}
-                          style={{
-                            background: 'linear-gradient(45deg, #ff0000, #ff8800, #ffff00, #88ff00, #00ff88, #0088ff, #8800ff, #ff0088)'
-                          }}
-                          title="Custom color (click to change)"
-                        />
-                      ) : (
-                        <ColorButton
-                          color={color}
-                          isSelected={toolSettings.strokeColor === color}
-                          onClick={() => {}}
-                        />
-                      )}
-                      
-                      {/* Plus badge */}
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold border border-background">
-                        +
+                    <div key={`custom-color-slot`} className="relative w-6 h-6 flex-shrink-0 flex">
+                      {/* Left area - color selection (main button) */}
+                      <div className="flex-1 relative">
+                        {isRainbow ? (
+                          <button
+                            className={`w-full h-6 rounded-l border-2 border-r-0 transition-all duration-200 hover:scale-110 ${
+                              toolSettings.strokeColor === color 
+                                ? 'border-ring ring-2 ring-ring ring-offset-2' 
+                                : 'border-border hover:border-ring'
+                            }`}
+                            style={{
+                              background: 'linear-gradient(45deg, #ff0000, #ff8800, #ffff00, #88ff00, #00ff88, #0088ff, #8800ff, #ff0088)'
+                            }}
+                            onClick={() => handleColorSelect(color)}
+                            title="Select custom color"
+                          />
+                        ) : (
+                          <button
+                            className={`w-full h-6 rounded-l border-2 border-r-0 transition-all ${
+                              toolSettings.strokeColor === color 
+                                ? 'border-company-dark-blue scale-110' 
+                                : 'border-border hover:border-muted-foreground/50'
+                            }`}
+                            style={{ backgroundColor: color }}
+                            onClick={() => handleColorSelect(color)}
+                            title="Select custom color"
+                          />
+                        )}
                       </div>
                       
-                      {/* Interactive color input covering the entire area */}
-                      <input
-                        ref={colorPickerRef}
-                        type="color"
-                        value={isRainbow ? '#ff0000' : color}
-                        onChange={handleCustomColorChange}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        aria-label="Custom color picker"
-                      />
+                      {/* Right area - color picker */}
+                      <div className="relative w-3">
+                        <div className={`w-3 h-6 rounded-r border-2 border-l-0 bg-muted hover:bg-muted/80 transition-colors flex items-center justify-center ${
+                          toolSettings.strokeColor === color 
+                            ? 'border-company-dark-blue' 
+                            : 'border-border hover:border-muted-foreground/50'
+                        }`}>
+                          <div className="w-2 h-2 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-[8px] font-bold">
+                            +
+                          </div>
+                        </div>
+                        
+                        {/* Color picker input only covers the + area */}
+                        <input
+                          ref={colorPickerRef}
+                          type="color"
+                          value={isRainbow ? '#ff0000' : color}
+                          onChange={handleCustomColorChange}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          aria-label="Change custom color"
+                          title="Change custom color"
+                        />
+                      </div>
                     </div>
                   );
                 }
