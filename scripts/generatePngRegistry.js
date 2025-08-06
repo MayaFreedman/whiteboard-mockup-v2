@@ -58,7 +58,7 @@ const EXPLICIT_EMOJI_MAPPINGS = {
     '2728', '2B50',
   ],
 
-  // Professions (separated from people)
+  // Professions (separated from people) - ALL profession emojis
   'professions': [
     '1F468-200D-2695-FE0F', '1F469-200D-2695-FE0F', // Doctor
     '1F468-200D-2696-FE0F', '1F469-200D-2696-FE0F', // Judge  
@@ -76,17 +76,25 @@ const EXPLICIT_EMOJI_MAPPINGS = {
     '1F468-200D-1F52C', '1F469-200D-1F52C', // Scientist
     '1F468-200D-1F680', '1F469-200D-1F680', // Astronaut
     '1F468-200D-1F692', '1F469-200D-1F692', // Firefighter
-    '1F46E', '1F482', '1F575', '1F477', '1F481', '1F486', '1F487',
+    '1F46E', '1F482', '1F575', '1F477', '1F481', '1F486', '1F487', // Basic professions
+    // Add more profession patterns
+    '1F9D1-200D-2695-FE0F', '1F9D1-200D-2696-FE0F', '1F9D1-200D-2708-FE0F',
+    '1F9D1-200D-1F33E', '1F9D1-200D-1F373', '1F9D1-200D-1F393', '1F9D1-200D-1F3A4',
+    '1F9D1-200D-1F3A8', '1F9D1-200D-1F3EB', '1F9D1-200D-1F3ED', '1F9D1-200D-1F4BB',
+    '1F9D1-200D-1F4BC', '1F9D1-200D-1F527', '1F9D1-200D-1F52C', '1F9D1-200D-1F680',
+    '1F9D1-200D-1F692',
   ],
 
-  // Gestures & Body Parts (separated from people and objects) 
+  // Gestures & Body Parts (separated from people and objects) - ALL gesture emojis
   'gestures': [
     '1F44A', '1F44B', '1F44C', '1F44D', '1F44E', '1F44F', '1F450', '1F451',
     '1F452', '1F453', '1F454', '1F455', '1F456', '1F457', '1F458', '1F459',
     '1F45A', '1F45B', '1F45C', '1F45D', '1F45E', '1F45F', '1F590', '1F595',
     '1F596', '1F64A', '1F64B', '1F64C', '1F64D', '1F64E', '1F64F', '1F91A',
     '1F91B', '1F91C', '1F91D', '1F91E', '1F91F', '1F932', '1F918', '1F919',
-    '1F91A', '1F91B', '1F91C', '1F926', '1F937',
+    '1F91A', '1F91B', '1F91C', '1F926', '1F937', '1F930', '1F931', '1F933',
+    '1F938', '1F939', // People activities that are gesture-focused
+    '1F6B4', '1F6B5', '1F6B6', // Biking, walking activities (body movements)
   ],
 
   // Fantasy & Mythical (separated from people)
@@ -469,8 +477,13 @@ function categorizeEmoji(filename) {
   
   // Check explicit mappings first (highest priority) - these take precedence
   for (const [category, emojis] of Object.entries(EXPLICIT_EMOJI_MAPPINGS)) {
-    if (emojis.includes(baseFilename) || emojis.includes(baseFilename.split('-')[0])) {
-      return category;
+    for (const explicitEmoji of emojis) {
+      // Check both full filename and base codepoint
+      if (baseFilename === explicitEmoji || 
+          baseFilename.startsWith(explicitEmoji + '-') ||
+          baseFilename.split('-')[0] === explicitEmoji) {
+        return category;
+      }
     }
   }
   
