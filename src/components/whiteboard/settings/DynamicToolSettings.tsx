@@ -60,6 +60,22 @@ export const DynamicToolSettings: React.FC = () => {
       preview: icon.path // Use the actual SVG/image path as preview for OpenMoji, dataURL for custom
     }));
   }, [activeTool, selectedCategory, refreshKey]);
+
+  // Calculate optimal window config based on category size
+  const windowConfig = useMemo(() => {
+    const categorySize = stampItems.length;
+    
+    if (categorySize >= 2000) {
+      return { windowSize: 100, batchSize: 25 };
+    } else if (categorySize >= 500) {
+      return { windowSize: 150, batchSize: 50 };
+    } else if (categorySize >= 150) {
+      return { windowSize: 200, batchSize: 50 };
+    }
+    
+    // Small categories load everything immediately
+    return { windowSize: undefined, batchSize: undefined };
+  }, [stampItems.length]);
   
   // Memoize category change handler - now instant with progressive loading
   const handleCategoryChange = useCallback((category: string) => {
@@ -148,7 +164,7 @@ export const DynamicToolSettings: React.FC = () => {
             </div>
           </div>
           
-          {/* Progressive stamp grid with optimized loading */}
+          {/* Progressive stamp grid with virtual windowing for large categories */}
           <ProgressiveGridSelector
             label="Select Stamp"
             items={stampItems}
@@ -156,6 +172,8 @@ export const DynamicToolSettings: React.FC = () => {
             onChange={handleStampChange}
             showUpload={false}
             onCustomStampDeleted={handleCustomStampAdded}
+            windowSize={windowConfig.windowSize}
+            batchSize={windowConfig.batchSize}
           />
           
           {/* Custom stamp upload */}

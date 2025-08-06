@@ -13,6 +13,8 @@ interface GridSelectorProps {
   onChange: (value: string) => void;
   showUpload?: boolean;
   onCustomStampDeleted?: () => void;
+  windowSize?: number;
+  batchSize?: number;
 }
 
 export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
@@ -21,10 +23,13 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
   selectedValue,
   onChange,
   showUpload = false,
-  onCustomStampDeleted
+  onCustomStampDeleted,
+  windowSize,
+  batchSize
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+  const [currentWindowEnd, setCurrentWindowEnd] = useState<number>(windowSize || items.length);
   
   // Use lazy loading hook with intersection observer
   const { visibleItems, observeElement } = useLazyImageLoading({
@@ -32,8 +37,28 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
     rootMargin: '100px' // Load images 100px before they become visible
   });
   
-  // Memoize items to prevent unnecessary re-renders
-  const memoizedItems = useMemo(() => items, [JSON.stringify(items.map(item => item.url))]);
+  // Memoize windowed items to prevent unnecessary re-renders
+  const windowedItems = useMemo(() => {
+    const itemsToShow = windowSize ? items.slice(0, currentWindowEnd) : items;
+    return itemsToShow;
+  }, [items, currentWindowEnd, windowSize]);
+  
+  // Handle scroll to load more items
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (!windowSize || !batchSize) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+    
+    if (isNearBottom && currentWindowEnd < items.length) {
+      setCurrentWindowEnd(prev => Math.min(prev + batchSize, items.length));
+    }
+  }, [windowSize, batchSize, currentWindowEnd, items.length]);
+  
+  // Reset window when items change
+  useEffect(() => {
+    setCurrentWindowEnd(windowSize || items.length);
+  }, [items, windowSize]);
   
   // Handle image load complete
   const handleImageLoaded = useCallback((url: string) => {
@@ -66,8 +91,9 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
       <div 
         ref={containerRef}
         className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1 pt-2 pb-2 pr-2 pl-0"
+        onScroll={handleScroll}
       >
-        {memoizedItems.map((item, index) => {
+        {windowedItems.map((item, index) => {
           const shouldLoad = visibleItems.has(item.url);
           const isLoaded = loadedImages.has(item.url);
           const isCustomStamp = item.url.startsWith('data:');
@@ -131,6 +157,15 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
             </div>
           );
         })}
+        
+        {/* Show loading indicator when more items are available */}
+        {windowSize && currentWindowEnd < items.length && (
+          <div className="col-span-full flex justify-center py-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {currentWindowEnd} of {items.length} items • Scroll for more
+            </div>
+          </div>
+        )}
       </div>
       {showUpload && (
         <div className="mt-3">
