@@ -5,6 +5,7 @@ import { Upload, X } from 'lucide-react';
 import { Skeleton } from '../../ui/skeleton';
 import { removeCustomStamp } from '../../../utils/customStamps';
 import { toast } from 'sonner';
+import { preloadCategoryEmojis, getPngLoadingStatus } from '../../../utils/pngEmojiLoader';
 
 interface GridSelectorProps {
   label: string;
