@@ -357,7 +357,7 @@ export const Toolbar: React.FC = () => {
                 if (isCustomColor) {
                   const isRainbow = color === 'rainbow-gradient';
                   return (
-                    <div key={`custom-color-slot`} className="relative">
+                    <div key={`custom-color-slot`} className="relative w-6 h-6 flex-shrink-0">
                       {/* Rainbow gradient button or solid color button as visual background */}
                       {isRainbow ? (
                         <div
