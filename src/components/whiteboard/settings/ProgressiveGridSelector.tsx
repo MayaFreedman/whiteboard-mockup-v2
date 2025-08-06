@@ -31,17 +31,17 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [currentWindowEnd, setCurrentWindowEnd] = useState<number>(windowSize || items.length);
   
-  // Use lazy loading hook with intersection observer
-  const { visibleItems, observeElement } = useLazyImageLoading({
-    items: items.map(item => item.url),
-    rootMargin: '100px' // Load images 100px before they become visible
-  });
-  
   // Memoize windowed items to prevent unnecessary re-renders
   const windowedItems = useMemo(() => {
     const itemsToShow = windowSize ? items.slice(0, currentWindowEnd) : items;
     return itemsToShow;
   }, [items, currentWindowEnd, windowSize]);
+  
+  // Use lazy loading hook with intersection observer
+  const { visibleItems, observeElement } = useLazyImageLoading({
+    items: windowedItems.map(item => item.url),
+    rootMargin: '100px' // Load images 100px before they become visible
+  });
   
   // Handle scroll to load more items
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {

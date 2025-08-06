@@ -15,29 +15,162 @@ const CATEGORY_MAPPINGS = {
   // Emotions & Faces (1F600-1F64F)
   emotions: /^1F6[0-4][0-9A-F]/,
   
-  // People & Body (1F385, 1F3C0-1F3FF, 1F400-1F4FF with people)
-  people: /^1F(3[C-F][0-9A-F]|4[6-9][0-9A-F]|9[3-9][0-9A-F]|38[5-9])/,
+  // People & Body - More precise mapping
+  people: [
+    /^1F385/, // Santa Claus
+    /^1F46[0-9A-F]/, // People (1F460-1F46F)
+    /^1F47[0-9A-F]/, // People and fantasy (1F470-1F47F)
+    /^1F481/, // Information desk person
+    /^1F482/, // Guardsman
+    /^1F486/, // Face massage
+    /^1F487/, // Haircut
+    /^1F575/, // Detective (man in business suit levitating)
+    /^1F57A/, // Man dancing
+    /^1F590/, // Raised hand with fingers splayed
+    /^1F595/, // Middle finger
+    /^1F596/, // Vulcan salute
+    /^1F64[0-9A-F]/, // Gestures (1F640-1F64F)
+    /^1F6B[4-6]/, // People activities (1F6B4-1F6B6)
+    /^1F6C[0-1]/, // Bath, sleeping (1F6C0-1F6C1)
+    /^1F926/, // Face palm
+    /^1F930/, // Pregnant woman
+    /^1F931/, // Breast feeding
+    /^1F932/, // Palms up together
+    /^1F933/, // Selfie
+    /^1F934/, // Prince
+    /^1F935/, // Person in tuxedo
+    /^1F936/, // Mrs. Claus
+    /^1F937/, // Shrug
+    /^1F938/, // Person doing cartwheel
+    /^1F939/, // Person juggling
+    /^1F93A/, // Person fencing
+    /^1F93C/, // Wrestlers
+    /^1F93D/, // Water polo
+    /^1F93E/, // Handball
+    /^1F9B[0-3]/, // Hair types (1F9B0-1F9B3)
+    /^1F9D[0-9A-F]/, // People with various activities (1F9D0-1F9DF)
+    /^1F9DD/, // Elf
+    /^1F9DE/, // Genie
+    /^1F9DF/, // Zombie
+  ],
   
-  // Animals & Nature (1F300-1F5FF excluding people/objects)
-  'animals-nature': /^1F(3[0-5][0-9A-F]|40[0-6][0-9A-F]|41[0-9A-F]|42[0-9A-F]|43[0-9A-F])/,
+  // Animals & Nature (1F300-1F43F)
+  'animals-nature': [
+    /^1F3[0-2][0-9A-F]/, // Weather, landscapes (1F300-1F32F)
+    /^1F33[0-F]/, // Plants (1F330-1F33F)
+    /^1F40[0-9A-F]/, // Animals (1F400-1F40F)
+    /^1F41[0-9A-F]/, // Animals (1F410-1F41F)
+    /^1F42[0-9A-F]/, // Animals (1F420-1F42F)
+    /^1F43[0-9A-F]/, // Animals (1F430-1F43F)
+    /^1F54[A-F]/, // Dove, spider, web (1F54A-1F54F)
+    /^1F577/, // Spider
+    /^1F578/, // Spider web
+    /^1F98[0-9A-F]/, // Animals (1F980-1F98F)
+    /^1F99[0-9A-F]/, // Animals (1F990-1F99F)
+    /^1F9A[0-9A-F]/, // Animals (1F9A0-1F9AF)
+    /^1F9B[4-9A-F]/, // Animals (1F9B4-1F9BF)
+  ],
   
   // Food & Drink (1F32D-1F37F, 1F950-1F96F)
-  'food-drink': /^1F(32[D-F]|3[3-7][0-9A-F]|95[0-F]|96[0-F])/,
+  'food-drink': [
+    /^1F32[D-F]/, // Hot dog, taco, burrito (1F32D-1F32F)
+    /^1F34[4-9A-F]/, // Food items (1F344-1F34F)
+    /^1F35[0-9A-F]/, // Food items (1F350-1F35F)
+    /^1F36[0-9A-F]/, // Food items (1F360-1F36F)
+    /^1F37[0-9A-F]/, // Drinks (1F370-1F37F)
+    /^1F95[0-9A-F]/, // Food (1F950-1F95F)
+    /^1F96[0-9A-F]/, // Food (1F960-1F96F)
+    /^1F9C[0-9A-F]/, // Food (1F9C0-1F9CF)
+  ],
   
-  // Activities & Sports (1F3A0-1F3C3, 1F680-1F6C5)
-  activities: /^1F(3A[0-9A-F]|3B[0-9A-F]|68[0-9A-F]|69[0-9A-F]|6A[0-9A-F]|6B[0-9A-F]|6C[0-5])/,
+  // Activities & Sports - More precise
+  activities: [
+    /^1F38[0-9A-F]/, // Celebrations, events (1F380-1F38F)
+    /^1F39[0-9A-F]/, // Entertainment (1F390-1F39F)
+    /^1F3A[0-9A-F]/, // Entertainment, music (1F3A0-1F3AF)
+    /^1F3B[0-9A-F]/, // Music, arts (1F3B0-1F3BF)
+    /^1F3C[0-9A-F]/, // Sports (1F3C0-1F3CF)
+    /^1F3E[0-9A-F]/, // Buildings (1F3E0-1F3EF)
+    /^1F3F[0-9A-F]/, // Flags, buildings (1F3F0-1F3FF)
+    /^1F94[0-6]/, // Sports (1F940-1F946)
+    /^1F947/, // Sports medals (1F947)
+    /^1F948/, // Sports medals (1F948)
+    /^1F949/, // Sports medals (1F949)
+    /^1F94A/, // Boxing glove (1F94A)
+    /^1F94B/, // Martial arts uniform (1F94B)
+    /^1F94C/, // Curling stone (1F94C)
+    /^1F94D/, // Lacrosse (1F94D)
+    /^1F94E/, // Softball (1F94E)
+    /^1F94F/, // Flying disc (1F94F)
+    /^1F6F7/, // Sled (1F6F7)
+    /^1F6F8/, // Flying saucer (1F6F8)
+    /^1F945/, // Goal net (1F945)
+  ],
   
-  // Travel & Places (1F680-1F6FF, 1F700-1F77F)
-  'travel-places': /^1F(6[8-F][0-9A-F]|7[0-7][0-9A-F])/,
+  // Travel & Places (1F680-1F6FF)
+  'travel-places': [
+    /^1F68[0-9A-F]/, // Vehicles (1F680-1F68F)
+    /^1F69[0-9A-F]/, // Vehicles (1F690-1F69F)
+    /^1F6A[0-9A-F]/, // Transport signs (1F6A0-1F6AF)
+    /^1F6B[0-3]/, // Transport (1F6B0-1F6B3)
+    /^1F6B[7-9A-F]/, // Transport (1F6B7-1F6BF)
+    /^1F6C[2-5]/, // Transport (1F6C2-1F6C5)
+    /^1F6D[0-9A-F]/, // Transport (1F6D0-1F6DF)
+    /^1F6E[0-9A-F]/, // Transport (1F6E0-1F6EF)
+    /^1F6F[0-9A-F]/, // Transport (1F6F0-1F6FF)
+    /^1F9F[0-9A-F]/, // Various vehicles (1F9F0-1F9FF)
+  ],
   
-  // Objects & Symbols (1F4A0-1F4FF, 1F500-1F5FF)
-  objects: /^1F([4-5][A-F][0-9A-F]|52[0-9A-F]|53[0-9A-F]|54[0-9A-F]|55[0-9A-F]|56[0-9A-F]|57[0-9A-F]|58[0-9A-F]|59[0-9A-F]|5A[0-9A-F]|5B[0-9A-F]|5C[0-9A-F]|5D[0-9A-F]|5E[0-9A-F]|5F[0-9A-F])/,
+  // Objects & Symbols (1F4A0-1F5FF, various others)
+  objects: [
+    /^1F4[A-F][0-9A-F]/, // Objects (1F4A0-1F4FF)
+    /^1F50[0-9A-F]/, // Objects (1F500-1F50F)
+    /^1F51[0-9A-F]/, // Objects (1F510-1F51F)
+    /^1F52[0-9A-F]/, // Objects (1F520-1F52F)
+    /^1F53[0-9A-F]/, // Objects (1F530-1F53F)
+    /^1F56[0-9A-F]/, // Objects (1F560-1F56F)
+    /^1F57[0-9]/, // Clock faces (1F570-1F579)
+    /^1F576/, // Sunglasses
+    /^1F579/, // Joystick
+    /^1F587/, // Linked paperclips
+    /^1F58[A-D]/, // Pen, pencil (1F58A-1F58D)
+    /^1F590/, // Hand (moved to people above)
+    /^1F5A[4-5]/, // Printer, trackball (1F5A4-1F5A5)
+    /^1F5A8/, // Computer mouse (1F5A8)
+    /^1F5B[1-2]/, // File folders (1F5B1-1F5B2)
+    /^1F5BC/, // Frame with picture (1F5BC)
+    /^1F5C[2-4]/, // File cabinets (1F5C2-1F5C4)
+    /^1F5D[1-3]/, // File folders (1F5D1-1F5D3)
+    /^1F5DC/, // Compression (1F5DC)
+    /^1F5DD/, // Old key (1F5DD)
+    /^1F5DE/, // Rolled up newspaper (1F5DE)
+    /^1F5E[1-3]/, // Newspaper, calendar (1F5E1-1F5E3)
+    /^1F5E8/, // Left speech bubble (1F5E8)
+    /^1F5EF/, // Right anger bubble (1F5EF)
+    /^1F5F3/, // Ballot box (1F5F3)
+    /^1F5FA/, // World map (1F5FA)
+    /^1F5FB/, // Mount Fuji (1F5FB)
+    /^1F5FC/, // Tokyo Tower (1F5FC)
+    /^1F5FD/, // Statue of Liberty (1F5FD)
+    /^1F5FE/, // Silhouette of Japan (1F5FE)
+    /^1F5FF/, // Moyai (1F5FF)
+    /^1F97[0-9A-F]/, // Various objects (1F970-1F97F)
+  ],
   
   // Country Flags (1F1E6-1F1FF combinations)
   flags: /^1F1[E-F][0-9A-F](-1F1[E-F][0-9A-F])?$/,
   
-  // Math & Symbols (2000-2BFF)
-  symbols: /^(2[0-9A-F][0-9A-F][0-9A-F]|00[0-9A-F][0-9A-F])/,
+  // Math & Symbols (2000-2BFF, various)
+  symbols: [
+    /^(2[0-9A-F][0-9A-F][0-9A-F]|00[0-9A-F][0-9A-F])/,
+    /^1F19[0-9A-F]/, // Squared symbols (1F190-1F19F)
+    /^1F20[0-9A-F]/, // Squared symbols (1F200-1F20F)
+    /^1F21[0-9A-F]/, // Squared symbols (1F210-1F21F)
+    /^1F22[0-9A-F]/, // Squared symbols (1F220-1F22F)
+    /^1F23[0-9A-F]/, // Squared symbols (1F230-1F23F)
+    /^1F25[0-9A-F]/, // Transport symbols (1F250-1F25F)
+    /^1F30[0-9A-F]/, // Miscellaneous symbols (overlaps removed)
+  ],
 };
 
 // Enhanced Unicode name database
@@ -296,30 +429,22 @@ function categorizeEmoji(filename) {
   // Get the primary codepoint for categorization
   const primaryCodepoint = baseFilename.split('-')[0];
   
-  // Check each category
-  for (const [category, pattern] of Object.entries(CATEGORY_MAPPINGS)) {
-    if (pattern.test(primaryCodepoint)) {
-      return category;
+  // Check each category with array support
+  for (const [category, patterns] of Object.entries(CATEGORY_MAPPINGS)) {
+    if (Array.isArray(patterns)) {
+      // Check each pattern in the array
+      for (const pattern of patterns) {
+        if (pattern.test(primaryCodepoint)) {
+          return category;
+        }
+      }
+    } else {
+      // Single pattern
+      if (patterns.test(primaryCodepoint)) {
+        return category;
+      }
     }
   }
-  
-  // Fallback categorization based on Unicode blocks
-  const code = primaryCodepoint.toUpperCase();
-  if (code.startsWith('1F6')) {
-    if (code >= '1F600' && code <= '1F64F') return 'emotions';
-    if (code >= '1F680' && code <= '1F6FF') return 'travel-places';
-  }
-  if (code.startsWith('1F3')) {
-    if (code >= '1F300' && code <= '1F34F') return 'animals-nature';
-    if (code >= '1F350' && code <= '1F37F') return 'food-drink';
-    if (code >= '1F380' && code <= '1F3CF') return 'activities';
-    if (code >= '1F3D0' && code <= '1F3FF') return 'people';
-  }
-  if (code.startsWith('1F4')) return 'objects';
-  if (code.startsWith('1F5')) return 'objects';
-  if (code.startsWith('1F9')) return 'people';
-  if (code.startsWith('26') || code.startsWith('27') || code.startsWith('2B')) return 'symbols';
-  if (code.startsWith('1F1')) return 'flags';
   
   return 'objects'; // Default fallback
 }
