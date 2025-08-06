@@ -17,7 +17,7 @@ interface LoadResult {
 /**
  * Loads a single PNG image with caching
  */
-async function loadPngImage(path: string): Promise<LoadResult> {
+export async function loadPngImage(path: string): Promise<LoadResult> {
   // Check shared cache first
   const cached = getCachedImage(path);
   if (cached.image) {

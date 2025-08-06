@@ -5,7 +5,7 @@ import { toolsConfig, simpleToolsConfig, ToolConfig, ToolSettingConfig } from '.
 import { ToolSettingCard } from './ToolSettingCard';
 import { SliderSetting } from './SliderSetting';
 import { BadgeSelector } from './BadgeSelector';
-import { GridSelector } from './GridSelector';
+import { ProgressiveGridSelector } from './ProgressiveGridSelector';
 import { SelectSetting } from './SelectSetting';
 import { ToggleButtonGroup } from './ToggleButtonGroup';
 import { EraserSettings } from '../EraserSettings';
@@ -14,7 +14,7 @@ import { TextPropertiesPanel } from '../TextPropertiesPanel';
 import { StampPropertiesPanel } from '../StampPropertiesPanel';
 import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName, getAllIcons } from '../../../utils/iconRegistry';
 import { CustomStampUpload } from './CustomStampUpload';
-import { preloadCategoryEmojis } from '../../../utils/pngEmojiLoader';
+// Removed preloadCategoryEmojis import - now using progressive loading
 
 export const DynamicToolSettings: React.FC = () => {
   const { activeTool, toolSettings, updateToolSettings } = useToolStore();
@@ -61,20 +61,11 @@ export const DynamicToolSettings: React.FC = () => {
     }));
   }, [activeTool, selectedCategory, refreshKey]);
   
-  // Memoize category change handler to prevent re-renders
-  const handleCategoryChange = useCallback(async (category: string) => {
+  // Memoize category change handler - now instant with progressive loading
+  const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
-    
-    // Preload images for the selected category
-    if (category !== 'all' && category !== 'custom') {
-      const categoryIcons = getIconsByCategoryWithCustom(category);
-      const paths = categoryIcons.map(icon => icon.path);
-      
-      if (paths.length > 0) {
-        console.log(`🎯 Preloading ${paths.length} images for category: ${category}`);
-        preloadCategoryEmojis(paths).catch(console.error);
-      }
-    }
+    // No preloading needed - images load progressively as they become visible
+    console.log(`🎯 Switched to category: ${category} (progressive loading enabled)`);
   }, []);
   
   // Memoize stamp selection handler
@@ -157,14 +148,14 @@ export const DynamicToolSettings: React.FC = () => {
             </div>
           </div>
           
-          {/* Stamp grid with memoized items */}
-          <GridSelector
+          {/* Progressive stamp grid with optimized loading */}
+          <ProgressiveGridSelector
             label="Select Stamp"
             items={stampItems}
             selectedValue={toolSettings.selectedSticker || ''}
             onChange={handleStampChange}
             showUpload={false}
-            onCustomStampDeleted={handleCustomStampAdded} // Reuse the refresh callback
+            onCustomStampDeleted={handleCustomStampAdded}
           />
           
           {/* Custom stamp upload */}
@@ -275,7 +266,7 @@ const ToolSettingRenderer: React.FC<ToolSettingRendererProps> = ({
       }
       
       return (
-        <GridSelector
+        <ProgressiveGridSelector
           label={setting.label}
           items={setting.gridItems!}
           selectedValue={toolSettings[setting.key] || setting.gridItems![0].url}
