@@ -3,7 +3,7 @@
  * Scans all SVG files and creates IconInfo entries
  */
 
-import { IconInfo } from './iconRegistry';
+import { IconInfo } from '../types/icons';
 import { getEmojiData, generateFallbackEmojiData } from './emojiDatabase';
 
 // Simulate directory scanning (in a real app, this would scan the actual directory)

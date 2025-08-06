@@ -6,13 +6,7 @@
 
 import { getCustomStamps, CustomStamp } from './customStamps';
 import { generateIconRegistry } from './emojiAutoGenerator';
-
-export interface IconInfo {
-  name: string;
-  category: string;
-  path: string;
-  preview: string; // Path to preview image or emoji character
-}
+import { IconInfo } from '../types/icons';
 
 // Auto-generated icon registry from emoji directory
 export const iconRegistry: IconInfo[] = generateIconRegistry();
