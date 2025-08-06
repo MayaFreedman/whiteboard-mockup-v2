@@ -156,6 +156,8 @@ const CATEGORY_MAPPINGS = {
     /^1F99[0-9A-F]/, // Animals (1F990-1F99F)
     /^1F9A[0-9A-F]/, // Animals (1F9A0-1F9AF)
     /^1F9B[4-9A-F]/, // Animals (1F9B4-1F9BF)
+    /^1F9C[8-9A-F]/, // Jellyfish, sloth, etc (1F9C8-1F9CF)
+    /^1F54[A-F]/, // Additional animals
   ],
 
   // Plants & Nature (plants only) - ~80 emojis
@@ -190,13 +192,13 @@ const CATEGORY_MAPPINGS = {
     /^1F9F[0-9A-F]/, // Various vehicles (1F9F0-1F9FF)
   ],
   
-  // Objects (remaining objects) - ~100 emojis
+  // Objects (remaining objects, excluding animals) - ~100 emojis
   objects: [
-    /^1F4[A-9][0-9A-F]/, // General objects (excluding tech/office)
+    /^1F4[A-9][0-9A-F]/, // General objects (excluding tech/office/animals)
     /^1F53[0-9A-F]/, // Objects (1F530-1F53F)
     /^1F56[0-9A-F]/, // Objects (1F560-1F56F)
     /^1F57[0-9]/, // Clock faces (1F570-1F579)
-    /^1F97[0-9A-F]/, // Various objects (1F970-1F97F)
+    /^1F97[0-9A-F]/, // Various objects (1F970-1F97F, excluding animals)
   ],
   
   // Country Flags - ~200 emojis
@@ -477,8 +479,20 @@ function categorizeEmoji(filename) {
   // Get the primary codepoint for categorization
   const primaryCodepoint = baseFilename.split('-')[0];
   
-  // Check category patterns
+  // ANIMALS FIRST - Prioritize animal categorization to prevent them going to objects
+  const animalPatterns = CATEGORY_MAPPINGS.animals;
+  if (Array.isArray(animalPatterns)) {
+    for (const pattern of animalPatterns) {
+      if (pattern.test(primaryCodepoint)) {
+        return 'animals';
+      }
+    }
+  }
+  
+  // Check other category patterns (excluding animals to avoid double-checking)
   for (const [category, patterns] of Object.entries(CATEGORY_MAPPINGS)) {
+    if (category === 'animals') continue; // Already checked above
+    
     if (Array.isArray(patterns)) {
       // Check each pattern in the array
       for (const pattern of patterns) {
