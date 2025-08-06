@@ -1,6 +1,6 @@
 /**
  * Auto-generated PNG emoji registry
- * Generated from 3755 PNG files on 2025-08-06T20:22:30.171Z
+ * Generated from 3755 PNG files on 2025-08-06T20:23:11.899Z
  * 
  * Categories: objects, flags, animals-nature, food-drink, activities, people, emotions, travel-places, symbols
  * DO NOT EDIT MANUALLY - Run 'node scripts/generatePngRegistry.js' to regenerate
@@ -22646,4 +22646,4 @@ export const CATEGORY_STATS = {
   "symbols": 158
 };
 export const TOTAL_EMOJIS = 3755;
-export const GENERATED_AT = "2025-08-06T20:22:30.174Z";
+export const GENERATED_AT = "2025-08-06T20:23:11.904Z";
