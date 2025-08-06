@@ -406,11 +406,6 @@ export const Toolbar: React.FC = () => {
                         title="Click to select, hold to change custom color"
                       />
                       
-                      {/* Plus badge */}
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold border border-background pointer-events-none">
-                        +
-                      </div>
-                      
                       {/* Hidden color input */}
                       <input
                         ref={colorPickerRef}
