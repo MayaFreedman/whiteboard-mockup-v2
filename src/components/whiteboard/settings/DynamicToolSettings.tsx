@@ -14,6 +14,7 @@ import { TextPropertiesPanel } from '../TextPropertiesPanel';
 import { StampPropertiesPanel } from '../StampPropertiesPanel';
 import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName, getAllIcons } from '../../../utils/iconRegistry';
 import { CustomStampUpload } from './CustomStampUpload';
+import { preloadCategoryEmojis } from '../../../utils/pngEmojiLoader';
 
 export const DynamicToolSettings: React.FC = () => {
   const { activeTool, toolSettings, updateToolSettings } = useToolStore();
@@ -61,8 +62,19 @@ export const DynamicToolSettings: React.FC = () => {
   }, [activeTool, selectedCategory, refreshKey]);
   
   // Memoize category change handler to prevent re-renders
-  const handleCategoryChange = useCallback((category: string) => {
+  const handleCategoryChange = useCallback(async (category: string) => {
     setSelectedCategory(category);
+    
+    // Preload images for the selected category
+    if (category !== 'all' && category !== 'custom') {
+      const categoryIcons = getIconsByCategoryWithCustom(category);
+      const paths = categoryIcons.map(icon => icon.path);
+      
+      if (paths.length > 0) {
+        console.log(`🎯 Preloading ${paths.length} images for category: ${category}`);
+        preloadCategoryEmojis(paths).catch(console.error);
+      }
+    }
   }, []);
   
   // Memoize stamp selection handler
