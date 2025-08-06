@@ -135,13 +135,11 @@ const CATEGORY_MAPPINGS = {
   // Emotions & Faces (1F600-1F64F) - ~100 emojis
   emotions: /^1F6[0-4][0-9A-F]/,
   
-  // Core People (basic humans, families) - ~150 emojis  
+  // Core People (basic humans, families) - RESTRICTED to basic people only
   people: [
-    /^1F46[0-9A-F]/, // People (1F460-1F46F)
-    /^1F6B[4-6]/, // People activities (1F6B4-1F6B6)
-    /^1F930/, /^1F931/, /^1F933/, /^1F938/, /^1F939/, // Core people activities
-    /^1F9B[0-3]/, // Hair types (1F9B0-1F9B3)
-    /^1F9D[0-9A-F]/, // People with various activities (1F9D0-1F9DF)
+    /^1F46[6-9]/, // Basic people (1F466-1F469) - boy, girl, man, woman
+    /^1F9B[0-3]/, // Hair types (1F9B0-1F9B3) 
+    /^1F9D[1-9]/, // People with various activities but basic ones only (1F9D1-1F9D9)
   ],
   
   // Animals (core animals only) - ~120 emojis
@@ -469,7 +467,7 @@ function categorizeEmoji(filename) {
     return 'flags';
   }
   
-  // Check explicit mappings first (highest priority)
+  // Check explicit mappings first (highest priority) - these take precedence
   for (const [category, emojis] of Object.entries(EXPLICIT_EMOJI_MAPPINGS)) {
     if (emojis.includes(baseFilename) || emojis.includes(baseFilename.split('-')[0])) {
       return category;
@@ -479,7 +477,12 @@ function categorizeEmoji(filename) {
   // Get the primary codepoint for categorization
   const primaryCodepoint = baseFilename.split('-')[0];
   
-  // ANIMALS FIRST - Prioritize animal categorization to prevent them going to objects
+  // Special case for emotions - check first to avoid overlap with people
+  if (CATEGORY_MAPPINGS.emotions.test(primaryCodepoint)) {
+    return 'emotions';
+  }
+  
+  // ANIMALS FIRST - Prioritize animal categorization
   const animalPatterns = CATEGORY_MAPPINGS.animals;
   if (Array.isArray(animalPatterns)) {
     for (const pattern of animalPatterns) {
@@ -489,19 +492,22 @@ function categorizeEmoji(filename) {
     }
   }
   
-  // Check other category patterns (excluding animals to avoid double-checking)
-  for (const [category, patterns] of Object.entries(CATEGORY_MAPPINGS)) {
-    if (category === 'animals') continue; // Already checked above
+  // Check other category patterns in priority order (excluding ones already checked)
+  const priorityOrder = ['vehicles', 'nature', 'food-drink', 'places', 'technology', 'tools', 'office', 'flags', 'symbols', 'people', 'objects'];
+  
+  for (const category of priorityOrder) {
+    if (category === 'emotions' || category === 'animals') continue; // Already checked
+    
+    const patterns = CATEGORY_MAPPINGS[category];
+    if (!patterns) continue;
     
     if (Array.isArray(patterns)) {
-      // Check each pattern in the array
       for (const pattern of patterns) {
         if (pattern.test(primaryCodepoint)) {
           return category;
         }
       }
     } else {
-      // Single pattern
       if (patterns.test(primaryCodepoint)) {
         return category;
       }
