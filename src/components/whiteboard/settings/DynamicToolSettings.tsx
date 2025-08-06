@@ -12,7 +12,7 @@ import { EraserSettings } from '../EraserSettings';
 import { ShapePropertiesPanel } from '../ShapePropertiesPanel';
 import { TextPropertiesPanel } from '../TextPropertiesPanel';
 import { StampPropertiesPanel } from '../StampPropertiesPanel';
-import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName } from '../../../utils/iconRegistry';
+import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName, getAllIcons } from '../../../utils/iconRegistry';
 import { CustomStampUpload } from './CustomStampUpload';
 
 export const DynamicToolSettings: React.FC = () => {
@@ -35,7 +35,6 @@ export const DynamicToolSettings: React.FC = () => {
     
     if (selectedCategory === 'all') {
       // Use getAllIcons to get all icons without duplicates
-      const { getAllIcons } = require('../../../utils/iconRegistry');
       const allIcons = getAllIcons();
       
       // Deduplicate by URL to ensure no duplicates
