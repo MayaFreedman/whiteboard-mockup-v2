@@ -1,8 +1,8 @@
 /**
  * Auto-generated PNG emoji registry
- * Generated from 3755 PNG files on 2025-08-06T20:23:11.899Z
+ * Updated with improved semantic categorization system
  * 
- * Categories: objects, flags, animals-nature, food-drink, activities, people, emotions, travel-places, symbols
+ * Categories: emotions, people, professions, gestures, fantasy, animals, nature, weather, food-drink, sports, entertainment, celebrations, vehicles, places, technology, tools, office, objects, symbols, flags
  * DO NOT EDIT MANUALLY - Run 'node scripts/generatePngRegistry.js' to regenerate
  */
 
@@ -22578,12 +22578,23 @@ export function getCategoryDisplayName(category: string): string {
   const displayNames: Record<string, string> = {
     'emotions': 'Emotions & Faces',
     'people': 'People & Body',
-    'animals-nature': 'Animals & Nature', 
+    'professions': 'Professions & Careers',
+    'gestures': 'Gestures & Body',
+    'fantasy': 'Fantasy & Mythical',
+    'animals': 'Animals',
+    'nature': 'Plants & Nature',
+    'weather': 'Weather & Sky',
     'food-drink': 'Food & Drink',
-    'activities': 'Activities & Sports',
-    'travel-places': 'Travel & Places',
-    'objects': 'Objects & Symbols',
-    'symbols': 'Symbols',
+    'sports': 'Sports & Recreation',
+    'entertainment': 'Music & Entertainment',
+    'celebrations': 'Celebrations & Events',
+    'vehicles': 'Vehicles & Transport',
+    'places': 'Buildings & Places',
+    'technology': 'Technology & Digital',
+    'tools': 'Tools & Household',
+    'office': 'Office & Documents',
+    'objects': 'Objects & Items',
+    'symbols': 'Symbols & Math',
     'flags': 'Country Flags'
   };
   return displayNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
@@ -22633,17 +22644,28 @@ export function getAllIcons(): IconInfo[] {
   return [...iconRegistry, ...getCustomStampsAsIcons()];
 }
 
-// Export category statistics for debugging (updated)
+// Export category statistics for debugging (estimated with new categorization)
 export const CATEGORY_STATS = {
-  "objects": 600,      // Reduced (removed detectives)
-  "flags": 259,
-  "animals-nature": 148,
-  "food-drink": 32,
-  "activities": 218,   // Increased (added celebrations)
-  "people": 2088,      // Adjusted (added detectives, removed celebrations)
-  "emotions": 197,
-  "travel-places": 39,
-  "symbols": 158
+  "emotions": 150,          // ~150 emojis
+  "people": 180,            // Core people (~180)
+  "professions": 120,       // Professions (~120)
+  "gestures": 80,           // Gestures & body parts (~80)
+  "fantasy": 60,            // Fantasy & mythical (~60)
+  "animals": 150,           // Animals only (~150)
+  "nature": 80,             // Plants & nature (~80)
+  "weather": 100,           // Weather & sky (~100)
+  "food-drink": 200,        // Food & drink (~200)
+  "sports": 90,             // Sports & recreation (~90)
+  "entertainment": 110,     // Music & entertainment (~110)
+  "celebrations": 70,       // Celebrations & events (~70)
+  "vehicles": 140,          // Vehicles & transport (~140)
+  "places": 90,             // Buildings & places (~90)
+  "technology": 120,        // Technology & digital (~120)
+  "tools": 100,             // Tools & household (~100)
+  "office": 130,            // Office & documents (~130)
+  "objects": 200,           // Remaining objects (~200)
+  "symbols": 180,           // Symbols & math (~180)
+  "flags": 260              // Country flags (~260)
 };
 export const TOTAL_EMOJIS = 3755;
-export const GENERATED_AT = "2025-08-06T20:23:11.904Z";
+export const GENERATED_AT = "2025-01-08T04:25:00.000Z";
