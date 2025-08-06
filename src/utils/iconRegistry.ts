@@ -22578,24 +22578,25 @@ export function getCategoryDisplayName(category: string): string {
   const displayNames: Record<string, string> = {
     'emotions': 'Emotions & Faces',
     'people': 'People & Body',
-    'professions': 'Professions & Careers',
-    'gestures': 'Gestures & Body',
+    'professions': 'Professions',
+    'gestures': 'Gestures',
     'fantasy': 'Fantasy & Mythical',
     'animals': 'Animals',
     'nature': 'Plants & Nature',
     'weather': 'Weather & Sky',
     'food-drink': 'Food & Drink',
-    'sports': 'Sports & Recreation',
-    'entertainment': 'Music & Entertainment',
-    'celebrations': 'Celebrations & Events',
+    'sports': 'Sports',
+    'entertainment': 'Entertainment',
+    'celebrations': 'Celebrations',
     'vehicles': 'Vehicles & Transport',
     'places': 'Buildings & Places',
-    'technology': 'Technology & Digital',
-    'tools': 'Tools & Household',
+    'technology': 'Technology',
+    'tools': 'Tools & Hardware',
     'office': 'Office & Documents',
     'objects': 'Objects & Items',
     'symbols': 'Symbols & Math',
-    'flags': 'Country Flags'
+    'flags': 'Flags & Countries',
+    'custom': 'Custom Stamps'
   };
   return displayNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
 }
