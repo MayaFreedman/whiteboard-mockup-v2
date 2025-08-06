@@ -41,49 +41,23 @@ export const DynamicToolSettings: React.FC = () => {
       const seen = new Set();
       return allIcons
         .filter(icon => {
-          const key = 'dataUrl' in icon ? icon.dataUrl : icon.path;
-          if (seen.has(key)) return false;
-          seen.add(key);
+          if (seen.has(icon.path)) return false;
+          seen.add(icon.path);
           return true;
         })
-        .map(icon => {
-          if ('dataUrl' in icon) {
-            // CustomStamp
-            return {
-              name: icon.name,
-              url: icon.dataUrl,
-              preview: icon.preview
-            };
-          } else {
-            // IconInfo
-            return {
-              name: icon.name,
-              url: icon.path,
-              preview: icon.path
-            };
-          }
-        });
-    }
-    
-    // Filter icons by category (including custom)
-    return getIconsByCategoryWithCustom(selectedCategory).map(icon => {
-      // Handle custom stamps vs regular icons
-      if ('dataUrl' in icon) {
-        // CustomStamp
-        return {
-          name: icon.name,
-          url: icon.dataUrl,
-          preview: icon.preview
-        };
-      } else {
-        // IconInfo
-        return {
+        .map(icon => ({
           name: icon.name,
           url: icon.path,
           preview: icon.path
-        };
-      }
-    });
+        }));
+    }
+    
+    // Filter icons by category (including custom)
+    return getIconsByCategoryWithCustom(selectedCategory).map(icon => ({
+      name: icon.name,
+      url: icon.path,
+      preview: icon.path // Use the actual SVG/image path as preview for OpenMoji, dataURL for custom
+    }));
   }, [activeTool, selectedCategory, refreshKey]);
   
   // Memoize category change handler to prevent re-renders
