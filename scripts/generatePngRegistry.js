@@ -200,7 +200,7 @@ const CATEGORY_MAPPINGS = {
   
   // Objects (remaining objects, excluding animals) - ~100 emojis
   objects: [
-    /^1F4[A-9][0-9A-F]/, // General objects (excluding tech/office/animals)
+    /^1F4[4-9A-F][0-9A-F]/, // General objects (excluding tech/office/animals) - fixed regex
     /^1F53[0-9A-F]/, // Objects (1F530-1F53F)
     /^1F56[0-9A-F]/, // Objects (1F560-1F56F)
     /^1F57[0-9]/, // Clock faces (1F570-1F579)
