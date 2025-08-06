@@ -114,7 +114,7 @@ const processImageFile = (file: File): Promise<{ dataUrl: string; preview: strin
         ctx.drawImage(img, 0, 0, width, height);
         const dataUrl = canvas.toDataURL('image/png', 0.9);
         
-        // Create thumbnail
+        // Create thumbnail - preserve aspect ratio
         const thumbCanvas = document.createElement('canvas');
         const thumbCtx = thumbCanvas.getContext('2d');
         if (!thumbCtx) {
@@ -122,17 +122,24 @@ const processImageFile = (file: File): Promise<{ dataUrl: string; preview: strin
           return;
         }
         
-        const thumbSize = Math.min(width, height, THUMBNAIL_SIZE);
-        thumbCanvas.width = thumbSize;
-        thumbCanvas.height = thumbSize;
+        // Calculate thumbnail dimensions preserving aspect ratio
+        let thumbWidth = width;
+        let thumbHeight = height;
         
-        // Center the image in thumbnail
-        const offsetX = (thumbSize - width * (thumbSize / Math.max(width, height))) / 2;
-        const offsetY = (thumbSize - height * (thumbSize / Math.max(width, height))) / 2;
-        const scaledWidth = width * (thumbSize / Math.max(width, height));
-        const scaledHeight = height * (thumbSize / Math.max(width, height));
+        if (width > THUMBNAIL_SIZE || height > THUMBNAIL_SIZE) {
+          if (width > height) {
+            thumbHeight = Math.round((height * THUMBNAIL_SIZE) / width);
+            thumbWidth = THUMBNAIL_SIZE;
+          } else {
+            thumbWidth = Math.round((width * THUMBNAIL_SIZE) / height);
+            thumbHeight = THUMBNAIL_SIZE;
+          }
+        }
         
-        thumbCtx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+        thumbCanvas.width = thumbWidth;
+        thumbCanvas.height = thumbHeight;
+        
+        thumbCtx.drawImage(img, 0, 0, thumbWidth, thumbHeight);
         const preview = thumbCanvas.toDataURL('image/png', 0.8);
         
         // Calculate approximate size of processed image
