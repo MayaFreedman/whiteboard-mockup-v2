@@ -6,6 +6,7 @@
  */
 
 import { getCustomStamps, CustomStamp } from './customStamps';
+import { generateIconRegistry } from './emojiAutoGenerator';
 
 export interface IconInfo {
   name: string;
@@ -14,15 +15,8 @@ export interface IconInfo {
   preview: string; // Path to preview image or emoji character
 }
 
-// Use only authentic OpenMoji files from the user's collection
-export const iconRegistry: IconInfo[] = [
-  // Emotions - using correct Unicode codepoints
-  {
-    name: "Grinning Face",
-    category: "emotions",
-    path: "/emojis/openmoji-svg-color (1)/1F600.svg",
-    preview: "😀",
-  },
+// Auto-generated icon registry from emoji directory
+export const iconRegistry: IconInfo[] = generateIconRegistry();
   {
     name: "Beaming Face",
     category: "emotions", 
