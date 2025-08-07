@@ -41,6 +41,8 @@ export const StampGridItem: React.FC<StampGridItemProps> = ({
     if (!hasVariants) {
       onSelect(currentUrl);
     } else {
+      // Select the current emoji AND show skin tone picker
+      onSelect(currentUrl);
       setShowSkinTonePicker(true);
     }
   };
