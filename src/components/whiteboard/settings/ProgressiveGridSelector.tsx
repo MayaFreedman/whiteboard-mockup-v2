@@ -5,6 +5,7 @@ import { Skeleton } from '../../ui/skeleton';
 import { removeCustomStamp } from '../../../utils/customStamps';
 import { toast } from 'sonner';
 import { useLazyImageLoading } from '../../../hooks/useLazyImageLoading';
+import { StampGridItem } from './StampGridItem';
 
 interface GridSelectorProps {
   label: string;
@@ -108,41 +109,12 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
                 }
               }}
             >
-              <button
-                className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden flex items-center justify-center ${
-                  selectedValue === item.url
-                    ? 'border-primary ring-2 ring-primary/20'
-                    : 'border-border hover:border-primary'
-                }`}
-                onClick={() => onChange(item.url)}
-                title={item.name}
-              >
-                {/* Show skeleton if image should load but hasn't loaded yet */}
-                {shouldLoad && !isLoaded && (
-                  <Skeleton className="w-full h-full absolute inset-0" />
-                )}
-                
-                {/* Only render image if it should be loaded */}
-                {shouldLoad && (
-                  <img 
-                    src={item.preview} 
-                    alt={item.name}
-                    className={`w-full h-full object-contain p-2 transition-opacity duration-200 ${
-                      isLoaded ? 'opacity-100' : 'opacity-0'
-                    }`}
-                    onLoad={() => handleImageLoaded(item.url)}
-                    onError={() => handleImageError(item.url)}
-                    loading="lazy"
-                  />
-                )}
-                
-                {/* Placeholder for items not yet visible */}
-                {!shouldLoad && (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <div className="w-8 h-8 bg-muted-foreground/20 rounded animate-pulse" />
-                  </div>
-                )}
-              </button>
+              <StampGridItem
+                item={item}
+                isSelected={selectedValue === item.url}
+                onSelect={onChange}
+                onImageLoad={() => handleImageLoaded(item.url)}
+              />
               
               {/* Delete button for custom stamps */}
               {isCustomStamp && (

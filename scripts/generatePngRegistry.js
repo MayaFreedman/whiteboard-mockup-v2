@@ -793,6 +793,31 @@ function generatePreview(filename) {
   }
 }
 
+// Skin tone detection
+function extractBaseEmoji(filename) {
+  // Remove skin tone modifiers (1F3FB-1F3FF) to get base emoji
+  return filename.replace(/-1F3F[B-F]/g, '').replace('.png', '');
+}
+
+function hasSkinToneModifier(filename) {
+  return /-1F3F[B-F]/.test(filename);
+}
+
+function getSkinToneFromFilename(filename) {
+  const match = filename.match(/-1F3F([B-F])/);
+  if (!match) return null;
+  
+  const toneMap = {
+    'B': 'light',
+    'C': 'medium-light', 
+    'D': 'medium',
+    'E': 'medium-dark',
+    'F': 'dark'
+  };
+  
+  return toneMap[match[1]] || null;
+}
+
 async function generateRegistry() {
   const pngDir = path.join(__dirname, '../public/png-emojis');
   
@@ -807,17 +832,60 @@ async function generateRegistry() {
   
   console.log(`📁 Found ${files.length} PNG emoji files`);
   
-  const icons = files.map(filename => {
-    const category = categorizeEmoji(filename);
-    const name = generateName(filename);
-    const preview = generatePreview(filename);
+  // Group files by base emoji to identify skin tone variants
+  const emojiGroups = {};
+  files.forEach(filename => {
+    const baseEmoji = extractBaseEmoji(filename);
+    if (!emojiGroups[baseEmoji]) {
+      emojiGroups[baseEmoji] = [];
+    }
+    emojiGroups[baseEmoji].push(filename);
+  });
+  
+  // Generate icons, only showing base emojis (neutral/yellow tone)
+  const icons = [];
+  const skinToneEmojiMap = new Map();
+  
+  Object.entries(emojiGroups).forEach(([baseEmoji, variants]) => {
+    // Find the base emoji (without skin tone modifier)
+    const baseFile = variants.find(v => !hasSkinToneModifier(v));
+    if (!baseFile) return; // Skip if no base emoji found
     
-    return {
+    const category = categorizeEmoji(baseFile);
+    const name = generateName(baseFile);
+    const preview = generatePreview(baseFile);
+    
+    // Check if this emoji has skin tone variants
+    const skinToneVariants = variants.filter(v => hasSkinToneModifier(v));
+    const hasSkinTones = skinToneVariants.length > 0;
+    
+    const iconInfo = {
       name,
       category,
-      path: `/png-emojis/${filename}`,
-      preview
+      path: `/png-emojis/${baseFile}`,
+      preview,
+      hasSkinTones,
+      baseEmoji,
+      ...(hasSkinTones && { 
+        skinToneVariants: skinToneVariants.map(v => `/png-emojis/${v}`)
+      })
     };
+    
+    icons.push(iconInfo);
+    
+    // Store mapping for quick lookup
+    if (hasSkinTones) {
+      skinToneEmojiMap.set(baseEmoji, {
+        base: `/png-emojis/${baseFile}`,
+        variants: skinToneVariants.reduce((acc, variant) => {
+          const tone = getSkinToneFromFilename(variant);
+          if (tone) {
+            acc[tone] = `/png-emojis/${variant}`;
+          }
+          return acc;
+        }, {})
+      });
+    }
   });
   
   // Group by category for stats
@@ -849,15 +917,21 @@ export interface IconInfo {
   category: string;
   path: string;
   preview: string;
+  hasSkinTones?: boolean;
+  skinToneVariants?: string[];
+  baseEmoji?: string;
 }
 
-// Auto-generated PNG emoji registry (${files.length} emojis)
+// Auto-generated PNG emoji registry (${icons.length} emojis)
 export const iconRegistry: IconInfo[] = [
 ${icons.map(icon => `  {
     name: "${icon.name.replace(/"/g, '\\"')}",
     category: "${icon.category}",
     path: "${icon.path}",
-    preview: "${icon.preview}",
+    preview: "${icon.preview}",${icon.hasSkinTones ? `
+    hasSkinTones: true,
+    baseEmoji: "${icon.baseEmoji}",
+    skinToneVariants: ${JSON.stringify(icon.skinToneVariants)},` : ''}
   }`).join(',\n')}
 ];
 
@@ -913,6 +987,24 @@ export function getCategoryDisplayName(category: string): string {
 }
 
 /**
+ * Get skin tone variants for an emoji
+ */
+export function getSkinToneVariants(baseEmojiPath: string): string[] {
+  const baseEmoji = baseEmojiPath.split('/').pop()?.replace('.png', '') || '';
+  const emoji = iconRegistry.find(icon => icon.baseEmoji === baseEmoji);
+  return emoji?.skinToneVariants || [];
+}
+
+/**
+ * Check if emoji has skin tone variants
+ */
+export function hasSkinToneVariants(emojiPath: string): boolean {
+  const baseEmoji = emojiPath.split('/').pop()?.replace('.png', '') || '';
+  const emoji = iconRegistry.find(icon => icon.baseEmoji === baseEmoji);
+  return emoji?.hasSkinTones || false;
+}
+
+/**
  * Get custom stamps as icons
  */
 export function getCustomStampsAsIcons(): IconInfo[] {
@@ -960,6 +1052,13 @@ export function getAllIcons(): IconInfo[] {
 export const CATEGORY_STATS = ${JSON.stringify(categoryStats, null, 2)};
 export const TOTAL_EMOJIS = ${files.length};
 export const GENERATED_AT = "${new Date().toISOString()}";
+
+// Skin tone mapping for quick lookup
+export const SKIN_TONE_MAP = new Map([
+${Array.from(skinToneEmojiMap.entries()).map(([baseEmoji, data]) => 
+  `  ["${baseEmoji}", ${JSON.stringify(data)}]`
+).join(',\n')}
+]);
 `;
 
   // Write the generated file
