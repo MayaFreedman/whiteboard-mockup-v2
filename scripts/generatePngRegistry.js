@@ -138,88 +138,235 @@ const EXPLICIT_EMOJI_MAPPINGS = {
   ],
 };
 
-// Optimized category mappings with balanced sizes
-const CATEGORY_MAPPINGS = {
-  // Emotions & Faces (1F600-1F64F) - ~100 emojis
-  emotions: /^1F6[0-4][0-9A-F]/,
+// Unicode-based category system using precise range mappings
+const UNICODE_CATEGORY_RANGES = {
+  // Emotions & Faces - Unicode Block: Emoticons (1F600-1F64F)
+  emotions: {
+    ranges: [
+      { start: 0x1F600, end: 0x1F64F }, // Emoticons block
+      { start: 0x1F970, end: 0x1F978 }, // Additional faces
+      { start: 0x1F60E, end: 0x1F60E }, // Sunglasses face
+    ]
+  },
   
-  // Core People (basic humans, families) - RESTRICTED to basic people only
-  people: [
-    /^1F46[6-9]/, // Basic people (1F466-1F469) - boy, girl, man, woman
-    /^1F9B[0-3]/, // Hair types (1F9B0-1F9B3) 
-    /^1F9D[1-9]/, // People with various activities but basic ones only (1F9D1-1F9D9)
-  ],
+  // Core People - Basic humans only, excluding professions/gestures
+  people: {
+    ranges: [
+      { start: 0x1F466, end: 0x1F469 }, // Basic people: boy, girl, man, woman
+      { start: 0x1F474, end: 0x1F476 }, // Older people, baby
+      { start: 0x1F9B0, end: 0x1F9B3 }, // Hair components
+      { start: 0x1F9D1, end: 0x1F9DD }, // Person, adults (excluding professions)
+    ],
+    exclude: [
+      // Exclude profession sequences (handled separately)
+      /200D/, // ZWJ sequences for professions
+    ]
+  },
   
-  // Animals (core animals only) - ~120 emojis
-  animals: [
-    /^1F40[0-9A-F]/, // Animals (1F400-1F40F)
-    /^1F41[0-9A-F]/, // Animals (1F410-1F41F)
-    /^1F42[0-9A-F]/, // Animals (1F420-1F42F)
-    /^1F43[0-9A-F]/, // Animals (1F430-1F43F)
-    /^1F54[A-F]/, // Dove, spider, web (1F54A-1F54F)
-    /^1F577/, /^1F578/, // Spider, spider web
-    /^1F98[0-9A-F]/, // Animals (1F980-1F98F)
-    /^1F99[0-9A-F]/, // Animals (1F990-1F99F)
-    /^1F9A[0-9A-F]/, // Animals (1F9A0-1F9AF)
-    /^1F9B[4-9A-F]/, // Animals (1F9B4-1F9BF)
-    /^1F9C[8-9A-F]/, // Jellyfish, sloth, etc (1F9C8-1F9CF)
-    /^1F54[A-F]/, // Additional animals
-  ],
+  // Animals & Nature Creatures
+  animals: {
+    ranges: [
+      { start: 0x1F400, end: 0x1F43F }, // Main animals block
+      { start: 0x1F54A, end: 0x1F54F }, // Dove, spider
+      { start: 0x1F577, end: 0x1F578 }, // Spider, spider web
+      { start: 0x1F980, end: 0x1F9AE }, // Additional animals (crab to guide dog)
+      { start: 0x1F9B4, end: 0x1F9BA }, // Animals (bone to safety vest)
+      { start: 0x1F9C8, end: 0x1F9CB }, // Firecracker to bubble tea (animals part)
+    ]
+  },
 
-  // Plants & Nature (plants only) - ~80 emojis
-  nature: [
-    /^1F33[0-F]/, // Plants (1F330-1F33F)
-    /^1F34[0-3]/, // Natural food items (1F340-1F343)
-  ],
+  // Plants & Nature (botanical)
+  nature: {
+    ranges: [
+      { start: 0x1F330, end: 0x1F335 }, // Trees and plants
+      { start: 0x1F337, end: 0x1F343 }, // Flowers and leaves
+      { start: 0x1F490, end: 0x1F490 }, // Bouquet
+      { start: 0x2618, end: 0x2618 },   // Shamrock
+      { start: 0x1F33E, end: 0x1F33F }, // Wheat, herbs
+    ]
+  },
   
-  // Food & Drink - ~150 emojis
-  'food-drink': [
-    /^1F32[D-F]/, // Hot dog, taco, burrito (1F32D-1F32F)
-    /^1F34[4-9A-F]/, // Food items (1F344-1F34F)
-    /^1F35[0-9A-F]/, // Food items (1F350-1F35F)
-    /^1F36[0-9A-F]/, // Food items (1F360-1F36F)
-    /^1F37[0-9A-F]/, // Drinks (1F370-1F37F)
-    /^1F95[0-9A-F]/, // Food (1F950-1F95F)
-    /^1F96[0-9A-F]/, // Food (1F960-1F96F)
-    /^1F9C[0-9A-F]/, // Food (1F9C0-1F9CF)
-  ],
+  // Food & Drink
+  'food-drink': {
+    ranges: [
+      { start: 0x1F32D, end: 0x1F32F }, // Hot dog, taco, burrito
+      { start: 0x1F344, end: 0x1F37F }, // Food items (mushroom to baby bottle)
+      { start: 0x1F950, end: 0x1F96F }, // Additional food (croissant to cut of meat)
+      { start: 0x1F9C0, end: 0x1F9C7 }, // Cheese and other food
+    ],
+    exclude: [
+      // Exclude non-food items that fall in these ranges
+      { start: 0x1F345, end: 0x1F345 }, // Don't exclude anything specific yet
+    ]
+  },
   
-  // Vehicles & Transport - ~120 emojis
-  vehicles: [
-    /^1F68[0-9A-F]/, // Vehicles (1F680-1F68F)
-    /^1F69[0-9A-F]/, // Vehicles (1F690-1F69F)
-    /^1F6A[0-9A-F]/, // Transport signs (1F6A0-1F6AF)
-    /^1F6B[0-3]/, // Transport (1F6B0-1F6B3)
-    /^1F6B[7-9A-F]/, // Transport (1F6B7-1F6BF)
-    /^1F6C[2-5]/, // Transport (1F6C2-1F6C5)
-    /^1F6D[0-9A-F]/, // Transport (1F6D0-1F6DF)
-    /^1F6E[0-9A-F]/, // Transport (1F6E0-1F6EF)
-    /^1F6F[0-9A-F]/, // Transport (1F6F0-1F6FF)
-    /^1F9F[0-9A-F]/, // Various vehicles (1F9F0-1F9FF)
-  ],
+  // Vehicles & Transportation
+  vehicles: {
+    ranges: [
+      { start: 0x1F680, end: 0x1F6C5 }, // All transport (rocket to left luggage)
+      { start: 0x1F6D0, end: 0x1F6FC }, // Transport continuation
+      { start: 0x1F9F3, end: 0x1F9FA }, // Luggage, razor, etc. (some transport)
+      { start: 0x2708, end: 0x2709 },   // Airplane, envelope
+      { start: 0x26F4, end: 0x26F5 },   // Ferry, sailboat
+    ],
+    exclude: [
+      { start: 0x1F6C6, end: 0x1F6CF }, // Exclude non-transport items
+    ]
+  },
   
-  // Objects (remaining objects, excluding animals) - ~100 emojis
-  objects: [
-    /^1F4[4-9A-F][0-9A-F]/, // General objects (excluding tech/office/animals) - fixed regex
-    /^1F53[0-9A-F]/, // Objects (1F530-1F53F)
-    /^1F56[0-9A-F]/, // Objects (1F560-1F56F)
-    /^1F57[0-9]/, // Clock faces (1F570-1F579)
-    /^1F97[0-9A-F]/, // Various objects (1F970-1F97F, excluding animals)
-  ],
+  // Technology & Office Objects
+  technology: {
+    ranges: [
+      { start: 0x1F4BB, end: 0x1F4FC }, // Computer to videocassette
+      { start: 0x1F50A, end: 0x1F50F }, // Loud speaker to right pointing magnifying glass
+      { start: 0x1F510, end: 0x1F516 }, // Closed lock to bookmark
+      { start: 0x1F4F7, end: 0x1F4FC }, // Camera to videocassette
+      { start: 0x260E, end: 0x260F },   // Telephone
+    ]
+  },
+
+  // Office & Documents
+  office: {
+    ranges: [
+      { start: 0x1F4C0, end: 0x1F4EA }, // DVD to closed mailbox
+      { start: 0x1F4EB, end: 0x1F4F6 }, // Open mailbox to antenna bars
+      { start: 0x1F5B1, end: 0x1F5BC }, // Three button mouse to framed picture
+      { start: 0x1F5C2, end: 0x1F5C4 }, // Card index dividers to file cabinet
+      { start: 0x1F5D1, end: 0x1F5DB }, // Wastebasket to old personal computer
+      { start: 0x1F5DC, end: 0x1F5DE }, // Compression to rolled-up newspaper
+      { start: 0x1F5E1, end: 0x1F5E3 }, // Dagger to speaking head
+      { start: 0x1F5E8, end: 0x1F5E8 }, // Left speech bubble
+      { start: 0x1F5EF, end: 0x1F5F3 }, // Right anger bubble to ballot box
+      { start: 0x2702, end: 0x2709 },   // Scissors to envelope
+      { start: 0x1F4CE, end: 0x1F4CF }, // Paperclip to straight ruler
+    ]
+  },
+
+  // Tools & Household Items
+  tools: {
+    ranges: [
+      { start: 0x1F527, end: 0x1F52B }, // Wrench to pistol
+      { start: 0x1F52C, end: 0x1F52F }, // Microscope to dotted six-pointed star
+      { start: 0x1F6AA, end: 0x1F6B2 }, // Door to bicycle
+      { start: 0x1F6BD, end: 0x1F6BF }, // Toilet to shower
+      { start: 0x1F6C0, end: 0x1F6C1 }, // Bath to bathtub
+      { start: 0x1F9F0, end: 0x1F9F2 }, // Toolbox to magnet
+      { start: 0x2692, end: 0x2694 },   // Hammer and pick to crossed swords
+      { start: 0x26CF, end: 0x26D1 },   // Pick to rescue worker's helmet
+    ]
+  },
+
+  // Activities & Sports
+  sports: {
+    ranges: [
+      { start: 0x1F3C0, end: 0x1F3CF }, // Basketball to cricket game
+      { start: 0x1F93A, end: 0x1F94F }, // Fencer to flying disc
+      { start: 0x1F6B4, end: 0x1F6B6 }, // Biking, walking (activity-focused)
+      { start: 0x26BD, end: 0x26BE },   // Soccer ball to baseball
+      { start: 0x26F3, end: 0x26F3 },   // Flag in hole (golf)
+    ]
+  },
+
+  // Entertainment & Games
+  entertainment: {
+    ranges: [
+      { start: 0x1F3A0, end: 0x1F3BF }, // Carousel horse to ski and ski boot
+      { start: 0x1F39E, end: 0x1F39F }, // Film frames to admission tickets
+      { start: 0x1F3AF, end: 0x1F3AF }, // Direct hit
+      { start: 0x1F579, end: 0x1F579 }, // Joystick
+      { start: 0x2660, end: 0x2663 },   // Card suits
+      { start: 0x1F0CF, end: 0x1F0CF }, // Playing card black joker
+    ]
+  },
+
+  // Celebrations & Events
+  celebrations: {
+    ranges: [
+      { start: 0x1F380, end: 0x1F393 }, // Ribbon to graduation cap
+      { start: 0x1F396, end: 0x1F397 }, // Military medal to reminder ribbon
+      { start: 0x1F973, end: 0x1F973 }, // Partying face
+      { start: 0x1F389, end: 0x1F38A }, // Party popper to confetti ball
+    ]
+  },
+
+  // Weather & Sky
+  weather: {
+    ranges: [
+      { start: 0x1F300, end: 0x1F321 }, // Cyclone to thermometer
+      { start: 0x1F324, end: 0x1F32C }, // Sun behind small cloud to wind face
+      { start: 0x2600, end: 0x2604 },   // Sun to comet
+      { start: 0x26C4, end: 0x26C5 },   // Snowman without snow to sun behind cloud
+      { start: 0x26C8, end: 0x26C8 },   // Thunder cloud and rain
+      { start: 0x2728, end: 0x2728 },   // Sparkles
+      { start: 0x2B50, end: 0x2B50 },   // Star
+    ]
+  },
+
+  // Professions (ZWJ sequences)
+  professions: {
+    ranges: [
+      // These are handled specially as they contain ZWJ sequences
+      { start: 0x1F468, end: 0x1F469 }, // Base people for professions
+      { start: 0x1F9D1, end: 0x1F9D1 }, // Person for professions
+    ],
+    requiresZWJ: true, // Special handling for profession sequences
+  },
+
+  // Gestures & Body Parts
+  gestures: {
+    ranges: [
+      { start: 0x1F44A, end: 0x1F45F }, // Fisted hand to running shoe
+      { start: 0x1F590, end: 0x1F596 }, // Raised hand to vulcan salute
+      { start: 0x1F64A, end: 0x1F64F }, // Speak-no-evil monkey to folded hands
+      { start: 0x1F91A, end: 0x1F932 }, // Raised back of hand to palms up together
+      { start: 0x1F6B4, end: 0x1F6B6 }, // Person biking to person walking
+      { start: 0x1F926, end: 0x1F926 }, // Face palm
+      { start: 0x1F937, end: 0x1F939 }, // Shrug to person juggling
+    ]
+  },
+
+  // Fantasy & Mythical
+  fantasy: {
+    ranges: [
+      { start: 0x1F470, end: 0x1F473 }, // Bride to person wearing turban
+      { start: 0x1F477, end: 0x1F47F }, // Construction worker to imp
+      { start: 0x1F9DD, end: 0x1F9E6 }, // Elf to socks
+      { start: 0x1F934, end: 0x1F935 }, // Prince to person in tuxedo
+    ]
+  },
+
+  // Objects (general items not in other categories)
+  objects: {
+    ranges: [
+      { start: 0x1F4A0, end: 0x1F4B9 }, // Diamond shape to chart increasing
+      { start: 0x1F530, end: 0x1F567 }, // Japanese symbol to 12 o'clock
+      { start: 0x1F570, end: 0x1F573 }, // Mantelpiece clock to hole
+      { start: 0x1F97B, end: 0x1F97F }, // Sari to flat shoe (excluding animals)
+    ]
+  },
   
-  // Country Flags - ~200 emojis
-  flags: /^1F1[E-F][0-9A-F](-1F1[E-F][0-9A-F])?$/,
+  // Country Flags (Regional Indicator Symbols)
+  flags: {
+    ranges: [
+      { start: 0x1F1E6, end: 0x1F1FF }, // Regional indicator symbols
+    ],
+    requiresPair: true, // Flags need two regional indicators
+  },
   
-  // Symbols & Math - ~150 emojis
-  symbols: [
-    /^(2[0-9A-F][0-9A-F][0-9A-F]|00[0-9A-F][0-9A-F])/,
-    /^1F19[0-9A-F]/, // Squared symbols (1F190-1F19F)
-    /^1F20[0-9A-F]/, // Squared symbols (1F200-1F20F)
-    /^1F21[0-9A-F]/, // Squared symbols (1F210-1F21F)
-    /^1F22[0-9A-F]/, // Squared symbols (1F220-1F22F)
-    /^1F23[0-9A-F]/, // Squared symbols (1F230-1F23F)
-    /^1F25[0-9A-F]/, // Transport symbols (1F250-1F25F)
-  ],
+  // Symbols & Math
+  symbols: {
+    ranges: [
+      { start: 0x2000, end: 0x2BFF },   // General symbols, punctuation, misc
+      { start: 0x1F170, end: 0x1F251 }, // Enclosed alphanumeric supplement
+      { start: 0x1F300, end: 0x1F5FF },   // Misc symbols (excluding those categorized above)
+      { start: 0x25A0, end: 0x25FF },   // Geometric shapes
+      { start: 0x2190, end: 0x21FF },   // Arrows
+    ],
+    exclude: [
+      // Exclude ranges already categorized above
+      { start: 0x1F300, end: 0x1F5FF }, // Most of these are handled by other categories
+    ]
+  },
 };
 
 // Enhanced Unicode name database
@@ -467,6 +614,39 @@ const UNICODE_NAMES = {
   '1F1EA-1F1F8': 'Spain Flag',
 };
 
+// Helper function to convert hex string to number
+function hexToNumber(hexString) {
+  return parseInt(hexString, 16);
+}
+
+// Helper function to check if a codepoint falls within a range
+function isInRange(codepoint, range) {
+  const num = hexToNumber(codepoint);
+  return num >= range.start && num <= range.end;
+}
+
+// Helper function to check if emoji is a profession (contains ZWJ sequence)
+function isProfession(filename) {
+  return filename.includes('200D') && (
+    filename.includes('2695') || // Medical symbol
+    filename.includes('2696') || // Scales of justice  
+    filename.includes('2708') || // Airplane
+    filename.includes('1F33E') || // Sheaf of rice (farmer)
+    filename.includes('1F373') || // Cooking
+    filename.includes('1F393') || // Graduation cap
+    filename.includes('1F3A4') || // Microphone
+    filename.includes('1F3A8') || // Artist palette
+    filename.includes('1F3EB') || // School
+    filename.includes('1F3ED') || // Factory
+    filename.includes('1F4BB') || // Computer
+    filename.includes('1F4BC') || // Briefcase
+    filename.includes('1F527') || // Wrench
+    filename.includes('1F52C') || // Microscope
+    filename.includes('1F680') || // Rocket
+    filename.includes('1F692')    // Fire engine
+  );
+}
+
 function categorizeEmoji(filename) {
   const baseFilename = filename.replace('.png', '');
   
@@ -487,47 +667,53 @@ function categorizeEmoji(filename) {
     }
   }
   
+  // Special handling for professions (ZWJ sequences)
+  if (isProfession(baseFilename)) {
+    return 'professions';
+  }
+  
   // Get the primary codepoint for categorization
   const primaryCodepoint = baseFilename.split('-')[0];
   
-  // Special case for emotions - check first to avoid overlap with people
-  if (CATEGORY_MAPPINGS.emotions.test(primaryCodepoint)) {
-    return 'emotions';
-  }
-  
-  // ANIMALS FIRST - Prioritize animal categorization
-  const animalPatterns = CATEGORY_MAPPINGS.animals;
-  if (Array.isArray(animalPatterns)) {
-    for (const pattern of animalPatterns) {
-      if (pattern.test(primaryCodepoint)) {
-        return 'animals';
+  // Check Unicode range mappings
+  for (const [category, config] of Object.entries(UNICODE_CATEGORY_RANGES)) {
+    // Special handling for flags (need two regional indicators)
+    if (category === 'flags' && config.requiresPair) {
+      if (baseFilename.includes('-') && baseFilename.match(/^1F1[E-F][0-9A-F]-1F1[E-F][0-9A-F]$/)) {
+        return 'flags';
       }
+      continue;
     }
-  }
-  
-  // Check other category patterns in priority order (excluding ones already checked)
-  const priorityOrder = ['vehicles', 'nature', 'food-drink', 'places', 'technology', 'tools', 'office', 'flags', 'symbols', 'people', 'objects'];
-  
-  for (const category of priorityOrder) {
-    if (category === 'emotions' || category === 'animals') continue; // Already checked
     
-    const patterns = CATEGORY_MAPPINGS[category];
-    if (!patterns) continue;
+    // Special handling for professions (already handled above)
+    if (category === 'professions' && config.requiresZWJ) {
+      continue; // Already handled in isProfession()
+    }
     
-    if (Array.isArray(patterns)) {
-      for (const pattern of patterns) {
-        if (pattern.test(primaryCodepoint)) {
-          return category;
+    // Check if codepoint falls within any range for this category
+    for (const range of config.ranges) {
+      if (isInRange(primaryCodepoint, range)) {
+        // Check exclusions if they exist
+        if (config.exclude) {
+          let shouldExclude = false;
+          for (const excludePattern of config.exclude) {
+            if (excludePattern.test && excludePattern.test(baseFilename)) {
+              shouldExclude = true;
+              break;
+            } else if (excludePattern.start && isInRange(primaryCodepoint, excludePattern)) {
+              shouldExclude = true;
+              break;
+            }
+          }
+          if (shouldExclude) continue;
         }
-      }
-    } else {
-      if (patterns.test(primaryCodepoint)) {
+        
         return category;
       }
     }
   }
   
-  return 'objects'; // Default fallback
+  return 'symbols'; // Default fallback for unmatched emojis
 }
 
 function generateName(filename) {
@@ -785,4 +971,5 @@ export const GENERATED_AT = "${new Date().toISOString()}";
   console.log('🔄 Registry updated! Restart your dev server to see changes.');
 }
 
+// Auto-run the generator
 generateRegistry().catch(console.error);
