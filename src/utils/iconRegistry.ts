@@ -1,6 +1,6 @@
 /**
  * Auto-generated PNG emoji registry
- * Generated from 3755 PNG files on 2025-08-07T15:04:56.741Z
+ * Generated from 3755 PNG files on 2025-08-07T15:09:57.306Z
  * 
  * Categories: symbols, weather, nature, entertainment, tools, office, vehicles, food-drink, celebrations, sports, places, animals, gestures, people, professions, fantasy, objects, technology, emotions
  * DO NOT EDIT MANUALLY - Run 'node scripts/generatePngRegistry.js' to regenerate
@@ -10835,7 +10835,7 @@ export const CATEGORY_STATS = {
   "emotions": 92
 };
 export const TOTAL_EMOJIS = 3755;
-export const GENERATED_AT = "2025-08-07T15:04:56.742Z";
+export const GENERATED_AT = "2025-08-07T15:09:57.307Z";
 
 // Skin tone mapping for quick lookup
 export const SKIN_TONE_MAP = new Map([
