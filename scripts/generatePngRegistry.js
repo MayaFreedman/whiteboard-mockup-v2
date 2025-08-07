@@ -345,13 +345,13 @@ const UNICODE_CATEGORY_RANGES = {
     ]
   },
   
-  // Country Flags (Regional Indicator Symbols)
-  flags: {
-    ranges: [
-      { start: 0x1F1E6, end: 0x1F1FF }, // Regional indicator symbols
-    ],
-    requiresPair: true, // Flags need two regional indicators
-  },
+  // Country Flags (Regional Indicator Symbols) - EXCLUDED
+  // flags: {
+  //   ranges: [
+  //     { start: 0x1F1E6, end: 0x1F1FF }, // Regional indicator symbols
+  //   ],
+  //   requiresPair: true, // Flags need two regional indicators
+  // },
   
   // Symbols & Math
   symbols: {
@@ -647,12 +647,26 @@ function isProfession(filename) {
   );
 }
 
+// Helper function to check if emoji is a flag
+function isFlag(filename) {
+  const baseFilename = filename.replace('.png', '');
+  
+  // Check for flag combinations (two regional indicators)
+  if (baseFilename.includes('-') && baseFilename.match(/^1F1[E-F][0-9A-F]-1F1[E-F][0-9A-F]$/)) {
+    return true;
+  }
+  
+  // Check for individual regional indicator symbols
+  const match = baseFilename.match(/^1F1[E-F][0-9A-F]$/);
+  return !!match;
+}
+
 function categorizeEmoji(filename) {
   const baseFilename = filename.replace('.png', '');
   
-  // Handle flag combinations (two regional indicators)
-  if (baseFilename.includes('-') && baseFilename.match(/^1F1[E-F][0-9A-F]-1F1[E-F][0-9A-F]$/)) {
-    return 'flags';
+  // SKIP ALL FLAGS
+  if (isFlag(filename)) {
+    return null; // This will cause the emoji to be filtered out
   }
   
   // Check explicit mappings first (highest priority) - these take precedence
@@ -852,6 +866,8 @@ async function generateRegistry() {
     if (!baseFile) return; // Skip if no base emoji found
     
     const category = categorizeEmoji(baseFile);
+    if (!category) return; // Skip if emoji is filtered out (like flags)
+    
     const name = generateName(baseFile);
     const preview = generatePreview(baseFile);
     
