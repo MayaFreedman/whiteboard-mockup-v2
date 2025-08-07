@@ -38,7 +38,7 @@ export const StampGridItem: React.FC<StampGridItemProps> = ({
   const skinToneVariants = hasVariants ? getSkinToneVariants(item.url) : [];
 
   const handleClick = () => {
-    if (!hasVariants || hasSkinToneSelected) {
+    if (!hasVariants) {
       onSelect(currentUrl);
     } else {
       setShowSkinTonePicker(true);
@@ -46,9 +46,8 @@ export const StampGridItem: React.FC<StampGridItemProps> = ({
   };
 
   const handleDoubleClick = () => {
-    if (hasVariants && hasSkinToneSelected) {
-      setShowSkinTonePicker(true);
-    }
+    // Double click does the same as single click for consistency
+    handleClick();
   };
 
   const handleSkinToneSelect = (selectedPath: string) => {
@@ -75,7 +74,7 @@ export const StampGridItem: React.FC<StampGridItemProps> = ({
         onLoad={onImageLoad}
         loading="lazy"
       />
-      {hasVariants && !hasSkinToneSelected && (
+      {hasVariants && (
         <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background flex items-center justify-center">
           <div className="w-1 h-1 bg-primary-foreground rounded-full" />
         </div>
