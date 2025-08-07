@@ -1,9 +1,17 @@
 import React from 'react';
 import { SkinTonePicker } from './SkinTonePicker';
+import { iconRegistry } from '../../../utils/iconRegistry';
 
-// Temporary placeholder functions - will be replaced when registry is regenerated
-const hasSkinToneVariants = (path: string): boolean => false;
-const getSkinToneVariants = (path: string): string[] => [];
+// Functions to check skin tone variants from the registry
+const hasSkinToneVariants = (path: string): boolean => {
+  const item = iconRegistry.find(icon => icon.path === path);
+  return item?.hasSkinTones || false;
+};
+
+const getSkinToneVariants = (path: string): string[] => {
+  const item = iconRegistry.find(icon => icon.path === path);
+  return item?.skinToneVariants || [];
+};
 
 interface StampGridItemProps {
   item: {
