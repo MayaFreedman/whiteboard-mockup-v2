@@ -10,44 +10,94 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Enhanced semantic category system with explicit emoji mappings
+// FIXED: Enhanced semantic category system with explicit emoji mappings
+// Addresses categorization issues like religious buildings in "animals" and teddy bear in "vehicles"
 const EXPLICIT_EMOJI_MAPPINGS = {
-  // Celebrations & Events (extracted from activities) 
+  // Religious symbols and buildings (FIXED: no longer in "animals")
+  'religious': [
+    '1F54B', '1F54C', '1F54D', // Mosque, synagogue, menorah  
+    '1F6D0', '1F6D5', // Place of worship, Hindu temple
+    '26EA', '26CE', // Church, Ophiuchus
+    '1F52F', // Six-pointed star
+    '262A', '262B', '262C', // Star and crescent, orthodox cross, hammer and sickle
+    '2721', '2626', // Star of David, orthodox cross
+    '1F549', // Om symbol
+    '2638', '262F', // Wheel of dharma, yin yang
+  ],
+
+  // Toys and dolls (FIXED: teddy bear and similar items properly categorized)
+  'toys': [
+    '1F9F8', // Teddy bear (FIXED: was incorrectly in vehicles)
+    '1FA86', // Nesting dolls
+    '1F3B2', // Game die
+    '1F52E', // Crystal ball
+    '1F0CF', // Joker
+    '1F3AF', // Direct hit
+    '1F9E9', // Puzzle piece
+    '1FA70', '1FA71', '1FA72', // Ballet shoes, one-piece swimsuit, briefs
+  ],
+
+  // Clothing and accessories (separate from people/objects)
+  'clothing': [
+    '1F451', '1F452', '1F453', '1F454', '1F455', '1F456', '1F457', '1F458',
+    '1F459', '1F45A', '1F45B', '1F45C', '1F45D', '1F45E', '1F45F', // Basic clothing
+    '1F460', '1F461', '1F462', // Shoes
+    '1F576', // Sunglasses
+    '1F392', // School backpack
+    '1F45B', // Purse
+    '1F9E5', '1F9E6', '1F9E7', '1F9E8', '1F9E9', '1F9EA', // Socks to briefs
+    '1F97B', '1F97C', '1F97D', '1F97E', '1F97F', // Sari to flat shoe
+  ],
+
+  // Household items (FIXED: better separation from vehicles)
+  'household': [
+    '1F6CF', '1F6CB', // Bed, couch and lamp
+    '1F37D', // Fork and knife with plate
+    '1F9F4', '1F9F5', '1F9F6', '1F9F7', // Lotion bottle, thread, yarn, safety pin
+    '1F9FA', // Basket
+    '1F6BF', '1F6C0', '1F6C1', // Shower, bath, bathtub
+    '1F9FC', '1F9FD', '1F9FE', '1F9FF', // Soap, sponge, receipt, nazar amulet
+    '1FA91', '1FA92', '1FA93', // Chair, luggage, window
+    '1FAA0', '1FAA1', '1FAA2', '1FAA3', // Plunger, sewing needle, knot, bucket
+  ],
+
+  // Celebrations & Events
   'celebrations': [
     '1F380', '1F381', '1F382', '1F383', '1F384', '1F385', '1F386', '1F387', 
     '1F388', '1F389', '1F38A', '1F38B', '1F38C', '1F38D', '1F38E', '1F38F',
-    '1F390', '1F391', '1F392', '1F393', '1F396', '1F397', '1F936', // Santa moved here
+    '1F390', '1F391', '1F392', '1F393', '1F396', '1F397',
     '1F973', '1F972', // Party faces
+    '1F9E8', // Firecracker
   ],
   
-  // Sports & Recreation (separated from activities)
+  // Sports & Recreation
   'sports': [
     '1F3C0', '1F3C1', '1F3C2', '1F3C3', '1F3C4', '1F3C5', '1F3C6', '1F3C7',
     '1F3C8', '1F3C9', '1F3CA', '1F3CB', '1F3CC', '1F3CD', '1F3CE', '1F3CF',
     '1F940', '1F941', '1F942', '1F943', '1F944', '1F945', '1F947', '1F948', 
     '1F949', '1F94A', '1F94B', '1F94C', '1F94D', '1F94E', '1F94F', '1F93A',
-    '1F93C', '1F93D', '1F93E', '1F6F7', '1F6F8',
+    '1F93C', '1F93D', '1F93E', '26BD', '26BE', '26F3', // Soccer, baseball, golf
   ],
 
-  // Music & Entertainment (separated from activities)
+  // Music & Entertainment
   'entertainment': [
     '1F3A0', '1F3A1', '1F3A2', '1F3A3', '1F3A4', '1F3A5', '1F3A6', '1F3A7',
     '1F3A8', '1F3A9', '1F3AA', '1F3AB', '1F3AC', '1F3AD', '1F3AE', '1F3AF',
     '1F3B0', '1F3B1', '1F3B2', '1F3B3', '1F3B4', '1F3B5', '1F3B6', '1F3B7',
     '1F3B8', '1F3B9', '1F3BA', '1F3BB', '1F3BC', '1F3BD', '1F3BE', '1F3BF',
-    '1F39E', '1F39F', '1F579',
+    '1F39E', '1F39F', '1F579', '2660', '2663', '2665', '2666', // Cards
   ],
 
-  // Buildings & Places (moved from activities to travel-places)
+  // Buildings & Places (FIXED: religious buildings moved to religious category)
   'places': [
     '1F3E0', '1F3E1', '1F3E2', '1F3E3', '1F3E4', '1F3E5', '1F3E6', '1F3E7',
     '1F3E8', '1F3E9', '1F3EA', '1F3EB', '1F3EC', '1F3ED', '1F3EE', '1F3EF',
-    '1F3F0', '1F3F3', '1F3F4', '1F3F5', '1F3F7', '1F3F8', '1F3F9', '1F3FA',
-    '1F3FB', '1F3FC', '1F3FD', '1F3FE', '1F3FF', '1F5FA', '1F5FB', '1F5FC',
-    '1F5FD', '1F5FE', '1F5FF',
+    '1F3F0', '1F5FA', '1F5FB', '1F5FC', '1F5FD', '1F5FE', '1F5FF',
+    '1F6E4', '1F6E5', // Motorway, motor boat
+    '1F3D5', '1F3D6', '1F3D7', '1F3D8', '1F3D9', '1F3DA', '1F3DB', // National park to beach
   ],
 
-  // Weather (separated from animals-nature)
+  // Weather & Sky
   'weather': [
     '1F300', '1F301', '1F302', '1F303', '1F304', '1F305', '1F306', '1F307',
     '1F308', '1F309', '1F30A', '1F30B', '1F30C', '1F311', '1F312', '1F313',
@@ -55,10 +105,10 @@ const EXPLICIT_EMOJI_MAPPINGS = {
     '1F31C', '1F31D', '1F31E', '1F31F', '1F320', '1F321', '1F324', '1F325',
     '1F326', '1F327', '1F328', '1F329', '1F32A', '1F32B', '1F32C', '2600',
     '2601', '2602', '2603', '2604', '26C4', '26C5', '26C8', '26F0', '26F1',
-    '2728', '2B50',
+    '2728', '2B50', '1F31F', // Sparkles, star, glowing star
   ],
 
-  // Professions (separated from people) - ALL profession emojis
+  // Professions (ZWJ sequences)
   'professions': [
     '1F468-200D-2695-FE0F', '1F469-200D-2695-FE0F', // Doctor
     '1F468-200D-2696-FE0F', '1F469-200D-2696-FE0F', // Judge  
@@ -77,7 +127,7 @@ const EXPLICIT_EMOJI_MAPPINGS = {
     '1F468-200D-1F680', '1F469-200D-1F680', // Astronaut
     '1F468-200D-1F692', '1F469-200D-1F692', // Firefighter
     '1F46E', '1F482', '1F575', '1F477', '1F481', '1F486', '1F487', // Basic professions
-    // Add more profession patterns
+    // Person emojis with ZWJ sequences
     '1F9D1-200D-2695-FE0F', '1F9D1-200D-2696-FE0F', '1F9D1-200D-2708-FE0F',
     '1F9D1-200D-1F33E', '1F9D1-200D-1F373', '1F9D1-200D-1F393', '1F9D1-200D-1F3A4',
     '1F9D1-200D-1F3A8', '1F9D1-200D-1F3EB', '1F9D1-200D-1F3ED', '1F9D1-200D-1F4BB',
@@ -85,46 +135,48 @@ const EXPLICIT_EMOJI_MAPPINGS = {
     '1F9D1-200D-1F692',
   ],
 
-  // Gestures & Body Parts (separated from people and objects) - ALL gesture emojis
+  // Gestures & Body Parts  
   'gestures': [
-    '1F44A', '1F44B', '1F44C', '1F44D', '1F44E', '1F44F', '1F450', '1F451',
-    '1F452', '1F453', '1F454', '1F455', '1F456', '1F457', '1F458', '1F459',
-    '1F45A', '1F45B', '1F45C', '1F45D', '1F45E', '1F45F', '1F590', '1F595',
-    '1F596', '1F64A', '1F64B', '1F64C', '1F64D', '1F64E', '1F64F', '1F91A',
-    '1F91B', '1F91C', '1F91D', '1F91E', '1F91F', '1F932', '1F918', '1F919',
-    '1F91A', '1F91B', '1F91C', '1F926', '1F937', '1F930', '1F931', '1F933',
-    '1F938', '1F939', // People activities that are gesture-focused
-    '1F6B4', '1F6B5', '1F6B6', // Biking, walking activities (body movements)
+    '1F44A', '1F44B', '1F44C', '1F44D', '1F44E', '1F44F', '1F450', // Hands
+    '1F590', '1F595', '1F596', // Raised hand, middle finger, vulcan salute
+    '1F64A', '1F64B', '1F64C', '1F64D', '1F64E', '1F64F', // Monkey see/hear/speak
+    '1F91A', '1F91B', '1F91C', '1F91D', '1F91E', '1F91F', '1F932', // Hand gestures
+    '1F918', '1F919', '1F926', '1F937', '1F930', '1F931', '1F933', // More gestures
+    '1F9B5', '1F9B6', // Leg, foot
   ],
 
-  // Fantasy & Mythical (separated from people)
+  // Fantasy & Mythical
   'fantasy': [
-    '1F470', '1F471', '1F472', '1F473', '1F474', '1F475', '1F476', '1F477',
-    '1F478', '1F479', '1F47A', '1F47B', '1F47C', '1F47D', '1F47E', '1F47F',
-    '1F9DD', '1F9DE', '1F9DF', '1F9E0', '1F9E1', '1F9E2', '1F9E3', '1F9E4',
-    '1F9E5', '1F9E6', '1F934', '1F935', // Prince, person in tuxedo moved here
+    '1F470', '1F478', '1F479', '1F47A', '1F47B', '1F47C', '1F47D', '1F47E', '1F47F',
+    '1F9DD', '1F9DE', '1F9DF', '1F934', '1F935', // Elf, vampire, zombie, prince, person in tuxedo
+    '1F996', // T-Rex
+    '1F409', // Dragon
+    '1F984', // Unicorn
+    '1F9C4', // Mage
   ],
 
-  // Technology (separated from objects)
+  // Technology & Electronics
   'technology': [
-    '1F4BB', '1F4BC', '1F4BD', '1F4BE', '1F4BF', '1F4F0', '1F4F1', '1F4F2',
+    '1F4BB', '1F4BD', '1F4BE', '1F4BF', '1F4F0', '1F4F1', '1F4F2',
     '1F4F3', '1F4F4', '1F4F5', '1F4F6', '1F4F7', '1F4F8', '1F4F9', '1F4FA',
     '1F4FB', '1F4FC', '1F4FD', '1F4FE', '1F4FF', '1F50A', '1F50B', '1F50C',
     '1F50D', '1F50E', '1F50F', '1F510', '1F511', '1F512', '1F513', '1F514',
     '1F515', '1F516', '1F517', '1F518', '1F519', '1F51A', '1F51B', '1F51C',
-    '1F51D', '1F5A4', '1F5A5', '1F5A8', '1F576', '1F579',
+    '1F51D', '1F5A4', '1F5A5', '1F5A8', '1F576', '1F579', '260E', '2328',
   ],
 
-  // Tools & Household (separated from objects)
+  // Tools & Instruments
   'tools': [
-    '1F527', '1F528', '1F529', '1F52A', '1F52B', '1F52C', '1F52D', '1F52E',
-    '1F52F', '1F6AA', '1F6AB', '1F6AC', '1F6AD', '1F6AE', '1F6AF', '1F6B0',
-    '1F6B1', '1F6B2', '1F6B3', '1F6B7', '1F6B8', '1F6B9', '1F6BA', '1F6BB',
-    '1F6BC', '1F6BD', '1F6BE', '1F6BF', '1F6C0', '1F6C1', '1F6C2', '1F6C3',
-    '1F6C4', '1F6C5', '1F587', '1F58A', '1F58B', '1F58C', '1F58D',
+    '1F527', '1F528', '1F529', '1F52A', '1F52B', '1F52C', '1F52D',
+    '1F6E0', '1F6E1', // Hammer and wrench, shield
+    '2692', '2694', // Hammer and pick, crossed swords
+    '26CF', '26D1', '26D3', // Pick, rescue worker helmet, chains
+    '1F5E1', // Dagger
+    '1F9AF', // White cane
+    '1F9F0', '1F9F1', '1F9F2', // Toolbox, brick, magnet
   ],
 
-  // Office & Documents (separated from objects)
+  // Office & Documents
   'office': [
     '1F4C0', '1F4C1', '1F4C2', '1F4C3', '1F4C4', '1F4C5', '1F4C6', '1F4C7',
     '1F4C8', '1F4C9', '1F4CA', '1F4CB', '1F4CC', '1F4CD', '1F4CE', '1F4CF',
@@ -133,19 +185,18 @@ const EXPLICIT_EMOJI_MAPPINGS = {
     '1F4E0', '1F4E1', '1F4E2', '1F4E3', '1F4E4', '1F4E5', '1F4E6', '1F4E7',
     '1F4E8', '1F4E9', '1F4EA', '1F4EB', '1F4EC', '1F4ED', '1F4EE', '1F4EF',
     '1F5B1', '1F5B2', '1F5BC', '1F5C2', '1F5C3', '1F5C4', '1F5D1', '1F5D2',
-    '1F5D3', '1F5DC', '1F5DD', '1F5DE', '1F5E1', '1F5E2', '1F5E3', '1F5E8',
-    '1F5EF', '1F5F3',
+    '1F5D3', '1F5DC', '1F5DD', '1F5DE', '1F5E2', '1F5E3', '1F5E8', '1F5EF', '1F5F3',
+    '2702', '2709', // Scissors, envelope
   ],
 };
 
-// Unicode-based category system using precise range mappings
+// FIXED: Improved Unicode-based category system with precise, non-overlapping ranges
 const UNICODE_CATEGORY_RANGES = {
   // Emotions & Faces - Unicode Block: Emoticons (1F600-1F64F)
   emotions: {
     ranges: [
-      { start: 0x1F600, end: 0x1F64F }, // Emoticons block
+      { start: 0x1F600, end: 0x1F64F }, // Emoticons block  
       { start: 0x1F970, end: 0x1F978 }, // Additional faces
-      { start: 0x1F60E, end: 0x1F60E }, // Sunglasses face
     ]
   },
   
@@ -155,34 +206,37 @@ const UNICODE_CATEGORY_RANGES = {
       { start: 0x1F466, end: 0x1F469 }, // Basic people: boy, girl, man, woman
       { start: 0x1F474, end: 0x1F476 }, // Older people, baby
       { start: 0x1F9B0, end: 0x1F9B3 }, // Hair components
-      { start: 0x1F9D1, end: 0x1F9DD }, // Person, adults (excluding professions)
+      { start: 0x1F9D1, end: 0x1F9D2 }, // Person, adults (basic only)
     ],
     exclude: [
-      // Exclude profession sequences (handled separately)
       /200D/, // ZWJ sequences for professions
     ]
   },
   
-  // Animals & Nature Creatures
+  // FIXED: Animals & Nature Creatures (excluded religious buildings) 
   animals: {
     ranges: [
       { start: 0x1F400, end: 0x1F43F }, // Main animals block
-      { start: 0x1F54A, end: 0x1F54F }, // Dove, spider
       { start: 0x1F577, end: 0x1F578 }, // Spider, spider web
       { start: 0x1F980, end: 0x1F9AE }, // Additional animals (crab to guide dog)
-      { start: 0x1F9B4, end: 0x1F9BA }, // Animals (bone to safety vest)
-      { start: 0x1F9C8, end: 0x1F9CB }, // Firecracker to bubble tea (animals part)
+      { start: 0x1F9B4, end: 0x1F9BA }, // Bone to safety vest
+    ],
+    exclude: [
+      // FIXED: Exclude religious buildings that were incorrectly categorized
+      { start: 0x1F54B, end: 0x1F54D }, // Mosque, synagogue, menorah
+      { start: 0x1F6D0, end: 0x1F6D0 }, // Place of worship
+      { start: 0x1F6D5, end: 0x1F6D5 }, // Hindu temple
     ]
   },
 
-  // Plants & Nature (botanical)
+  // Plants & Nature (botanical only)
   nature: {
     ranges: [
       { start: 0x1F330, end: 0x1F335 }, // Trees and plants
-      { start: 0x1F337, end: 0x1F343 }, // Flowers and leaves
+      { start: 0x1F337, end: 0x1F343 }, // Flowers and leaves  
+      { start: 0x1F33E, end: 0x1F33F }, // Wheat, herbs
       { start: 0x1F490, end: 0x1F490 }, // Bouquet
       { start: 0x2618, end: 0x2618 },   // Shamrock
-      { start: 0x1F33E, end: 0x1F33F }, // Wheat, herbs
     ]
   },
   
@@ -193,178 +247,52 @@ const UNICODE_CATEGORY_RANGES = {
       { start: 0x1F344, end: 0x1F37F }, // Food items (mushroom to baby bottle)
       { start: 0x1F950, end: 0x1F96F }, // Additional food (croissant to cut of meat)
       { start: 0x1F9C0, end: 0x1F9C7 }, // Cheese and other food
-    ],
-    exclude: [
-      // Exclude non-food items that fall in these ranges
-      { start: 0x1F345, end: 0x1F345 }, // Don't exclude anything specific yet
     ]
   },
   
-  // Vehicles & Transportation
+  // FIXED: Vehicles & Transportation (excluded household items)
   vehicles: {
     ranges: [
-      { start: 0x1F680, end: 0x1F6C5 }, // All transport (rocket to left luggage)
-      { start: 0x1F6D0, end: 0x1F6FC }, // Transport continuation
-      { start: 0x1F9F3, end: 0x1F9FA }, // Luggage, razor, etc. (some transport)
-      { start: 0x2708, end: 0x2709 },   // Airplane, envelope
+      { start: 0x1F680, end: 0x1F6C5 }, // Transport vehicles
+      { start: 0x1F6D1, end: 0x1F6D2 }, // Stop sign, shopping cart
+      { start: 0x1F6F4, end: 0x1F6FC }, // Kick scooter to roller skate
+      { start: 0x2708, end: 0x2708 },   // Airplane
       { start: 0x26F4, end: 0x26F5 },   // Ferry, sailboat
     ],
     exclude: [
-      { start: 0x1F6C6, end: 0x1F6CF }, // Exclude non-transport items
-    ]
-  },
-  
-  // Technology & Office Objects
-  technology: {
-    ranges: [
-      { start: 0x1F4BB, end: 0x1F4FC }, // Computer to videocassette
-      { start: 0x1F50A, end: 0x1F50F }, // Loud speaker to right pointing magnifying glass
-      { start: 0x1F510, end: 0x1F516 }, // Closed lock to bookmark
-      { start: 0x1F4F7, end: 0x1F4FC }, // Camera to videocassette
-      { start: 0x260E, end: 0x260F },   // Telephone
+      // FIXED: Exclude household items that were incorrectly in vehicles
+      { start: 0x1F9F8, end: 0x1F9F8 }, // Teddy bear (moved to toys)
+      { start: 0x1F6CF, end: 0x1F6CF }, // Bed (moved to household)
+      { start: 0x1F6CB, end: 0x1F6CB }, // Couch and lamp (moved to household)
     ]
   },
 
-  // Office & Documents
-  office: {
-    ranges: [
-      { start: 0x1F4C0, end: 0x1F4EA }, // DVD to closed mailbox
-      { start: 0x1F4EB, end: 0x1F4F6 }, // Open mailbox to antenna bars
-      { start: 0x1F5B1, end: 0x1F5BC }, // Three button mouse to framed picture
-      { start: 0x1F5C2, end: 0x1F5C4 }, // Card index dividers to file cabinet
-      { start: 0x1F5D1, end: 0x1F5DB }, // Wastebasket to old personal computer
-      { start: 0x1F5DC, end: 0x1F5DE }, // Compression to rolled-up newspaper
-      { start: 0x1F5E1, end: 0x1F5E3 }, // Dagger to speaking head
-      { start: 0x1F5E8, end: 0x1F5E8 }, // Left speech bubble
-      { start: 0x1F5EF, end: 0x1F5F3 }, // Right anger bubble to ballot box
-      { start: 0x2702, end: 0x2709 },   // Scissors to envelope
-      { start: 0x1F4CE, end: 0x1F4CF }, // Paperclip to straight ruler
-    ]
-  },
-
-  // Tools & Household Items
-  tools: {
-    ranges: [
-      { start: 0x1F527, end: 0x1F52B }, // Wrench to pistol
-      { start: 0x1F52C, end: 0x1F52F }, // Microscope to dotted six-pointed star
-      { start: 0x1F6AA, end: 0x1F6B2 }, // Door to bicycle
-      { start: 0x1F6BD, end: 0x1F6BF }, // Toilet to shower
-      { start: 0x1F6C0, end: 0x1F6C1 }, // Bath to bathtub
-      { start: 0x1F9F0, end: 0x1F9F2 }, // Toolbox to magnet
-      { start: 0x2692, end: 0x2694 },   // Hammer and pick to crossed swords
-      { start: 0x26CF, end: 0x26D1 },   // Pick to rescue worker's helmet
-    ]
-  },
-
-  // Activities & Sports
-  sports: {
-    ranges: [
-      { start: 0x1F3C0, end: 0x1F3CF }, // Basketball to cricket game
-      { start: 0x1F93A, end: 0x1F94F }, // Fencer to flying disc
-      { start: 0x1F6B4, end: 0x1F6B6 }, // Biking, walking (activity-focused)
-      { start: 0x26BD, end: 0x26BE },   // Soccer ball to baseball
-      { start: 0x26F3, end: 0x26F3 },   // Flag in hole (golf)
-    ]
-  },
-
-  // Entertainment & Games
-  entertainment: {
-    ranges: [
-      { start: 0x1F3A0, end: 0x1F3BF }, // Carousel horse to ski and ski boot
-      { start: 0x1F39E, end: 0x1F39F }, // Film frames to admission tickets
-      { start: 0x1F3AF, end: 0x1F3AF }, // Direct hit
-      { start: 0x1F579, end: 0x1F579 }, // Joystick
-      { start: 0x2660, end: 0x2663 },   // Card suits
-      { start: 0x1F0CF, end: 0x1F0CF }, // Playing card black joker
-    ]
-  },
-
-  // Celebrations & Events
-  celebrations: {
-    ranges: [
-      { start: 0x1F380, end: 0x1F393 }, // Ribbon to graduation cap
-      { start: 0x1F396, end: 0x1F397 }, // Military medal to reminder ribbon
-      { start: 0x1F973, end: 0x1F973 }, // Partying face
-      { start: 0x1F389, end: 0x1F38A }, // Party popper to confetti ball
-    ]
-  },
-
-  // Weather & Sky
-  weather: {
-    ranges: [
-      { start: 0x1F300, end: 0x1F321 }, // Cyclone to thermometer
-      { start: 0x1F324, end: 0x1F32C }, // Sun behind small cloud to wind face
-      { start: 0x2600, end: 0x2604 },   // Sun to comet
-      { start: 0x26C4, end: 0x26C5 },   // Snowman without snow to sun behind cloud
-      { start: 0x26C8, end: 0x26C8 },   // Thunder cloud and rain
-      { start: 0x2728, end: 0x2728 },   // Sparkles
-      { start: 0x2B50, end: 0x2B50 },   // Star
-    ]
-  },
-
-  // Professions (ZWJ sequences)
-  professions: {
-    ranges: [
-      // These are handled specially as they contain ZWJ sequences
-      { start: 0x1F468, end: 0x1F469 }, // Base people for professions
-      { start: 0x1F9D1, end: 0x1F9D1 }, // Person for professions
-    ],
-    requiresZWJ: true, // Special handling for profession sequences
-  },
-
-  // Gestures & Body Parts
-  gestures: {
-    ranges: [
-      { start: 0x1F44A, end: 0x1F45F }, // Fisted hand to running shoe
-      { start: 0x1F590, end: 0x1F596 }, // Raised hand to vulcan salute
-      { start: 0x1F64A, end: 0x1F64F }, // Speak-no-evil monkey to folded hands
-      { start: 0x1F91A, end: 0x1F932 }, // Raised back of hand to palms up together
-      { start: 0x1F6B4, end: 0x1F6B6 }, // Person biking to person walking
-      { start: 0x1F926, end: 0x1F926 }, // Face palm
-      { start: 0x1F937, end: 0x1F939 }, // Shrug to person juggling
-    ]
-  },
-
-  // Fantasy & Mythical
-  fantasy: {
-    ranges: [
-      { start: 0x1F470, end: 0x1F473 }, // Bride to person wearing turban
-      { start: 0x1F477, end: 0x1F47F }, // Construction worker to imp
-      { start: 0x1F9DD, end: 0x1F9E6 }, // Elf to socks
-      { start: 0x1F934, end: 0x1F935 }, // Prince to person in tuxedo
-    ]
-  },
-
-  // Objects (general items not in other categories)
+  // Objects (general items) - FIXED: Better scoped
   objects: {
     ranges: [
       { start: 0x1F4A0, end: 0x1F4B9 }, // Diamond shape to chart increasing
       { start: 0x1F530, end: 0x1F567 }, // Japanese symbol to 12 o'clock
       { start: 0x1F570, end: 0x1F573 }, // Mantelpiece clock to hole
-      { start: 0x1F97B, end: 0x1F97F }, // Sari to flat shoe (excluding animals)
+      { start: 0x1F52E, end: 0x1F52F }, // Crystal ball, six-pointed star
+    ],
+    exclude: [
+      // Exclude items now in other specific categories
+      { start: 0x1F9F8, end: 0x1F9F8 }, // Teddy bear (toys)
     ]
   },
   
-  // Country Flags (Regional Indicator Symbols) - EXCLUDED
-  // flags: {
-  //   ranges: [
-  //     { start: 0x1F1E6, end: 0x1F1FF }, // Regional indicator symbols
-  //   ],
-  //   requiresPair: true, // Flags need two regional indicators
-  // },
-  
-  // Symbols & Math
+  // FIXED: Symbols & Math - more restricted scope
   symbols: {
     ranges: [
       { start: 0x2000, end: 0x2BFF },   // General symbols, punctuation, misc
-      { start: 0x1F170, end: 0x1F251 }, // Enclosed alphanumeric supplement
-      { start: 0x1F300, end: 0x1F5FF },   // Misc symbols (excluding those categorized above)
+      { start: 0x1F170, end: 0x1F251 }, // Enclosed alphanumeric supplement  
       { start: 0x25A0, end: 0x25FF },   // Geometric shapes
       { start: 0x2190, end: 0x21FF },   // Arrows
     ],
     exclude: [
-      // Exclude ranges already categorized above
-      { start: 0x1F300, end: 0x1F5FF }, // Most of these are handled by other categories
+      // Exclude specific ranges handled by other categories
+      { start: 0x2600, end: 0x26FF }, // Weather and misc symbols
+      { start: 0x2764, end: 0x2764 }, // Heart (emotions)
     ]
   },
 };
@@ -997,7 +925,12 @@ export function getCategoryDisplayName(category: string): string {
     'office': 'Office & Documents',
     'objects': 'Objects & Items',
     'symbols': 'Symbols & Math',
-    'flags': 'Country Flags'
+    'flags': 'Country Flags',
+    // NEW CATEGORIES (FIXED categorization)
+    'religious': 'Religious & Spiritual',
+    'toys': 'Toys & Games',
+    'clothing': 'Clothing & Accessories',
+    'household': 'Household Items'
   };
   return displayNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
 }
