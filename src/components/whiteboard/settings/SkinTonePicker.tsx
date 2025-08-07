@@ -62,9 +62,6 @@ export const SkinTonePicker: React.FC<SkinTonePickerProps> = ({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2" side="top">
         <div className="flex flex-col gap-1">
-          <div className="text-xs font-medium text-muted-foreground mb-1">
-            Choose skin tone:
-          </div>
           <div className="flex gap-1">
             {skinToneOptions.map((option) => (
               <Button
