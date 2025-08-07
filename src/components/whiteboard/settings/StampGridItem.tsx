@@ -72,7 +72,7 @@ export const StampGridItem: React.FC<StampGridItemProps> = ({
       <img
         src={currentUrl}
         alt={item.name}
-        className="w-full h-full object-contain p-1 transition-transform group-hover:scale-110"
+        className="w-full h-full object-contain p-1 transition-transform hover:scale-110"
         onLoad={onImageLoad}
         loading="lazy"
       />
