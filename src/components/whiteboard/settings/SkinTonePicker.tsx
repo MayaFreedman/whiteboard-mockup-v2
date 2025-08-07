@@ -9,14 +9,6 @@ interface SkinTonePickerProps {
   children: React.ReactNode;
 }
 
-const SKIN_TONE_COLORS = {
-  light: '#F5DEB3',
-  'medium-light': '#F5C99B', 
-  medium: '#E8B982',
-  'medium-dark': '#D29B6E',
-  dark: '#A0522D'
-};
-
 const SKIN_TONE_LABELS = {
   light: 'Light',
   'medium-light': 'Medium Light',
@@ -79,20 +71,16 @@ export const SkinTonePicker: React.FC<SkinTonePickerProps> = ({
                 key={option.tone}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-1 rounded-full hover:bg-secondary/80"
+                className="h-8 w-8 p-0 rounded-md hover:bg-secondary/80 overflow-hidden"
                 onClick={() => onSelect(option.path)}
                 title={option.label}
               >
-                {option.tone === 'default' ? (
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-yellow-200 to-yellow-400 border border-yellow-500/30" />
-                ) : (
-                  <div 
-                    className="w-5 h-5 rounded-full border border-border/30"
-                    style={{ 
-                      backgroundColor: SKIN_TONE_COLORS[option.tone as keyof typeof SKIN_TONE_COLORS]
-                    }}
-                  />
-                )}
+                <img
+                  src={option.path}
+                  alt={option.label}
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                />
               </Button>
             ))}
           </div>

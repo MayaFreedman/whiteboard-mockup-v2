@@ -40,6 +40,8 @@ export const StampGridItem: React.FC<StampGridItemProps> = ({
   };
 
   const handleSkinToneSelect = (selectedPath: string) => {
+    // Update the item's URL to the selected skin tone variant
+    const updatedItem = { ...item, url: selectedPath };
     onSelect(selectedPath);
   };
 
