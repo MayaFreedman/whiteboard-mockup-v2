@@ -12266,7 +12266,7 @@ export function getIconsByCategory(category: string): IconInfo[] {
  */
 export function getCategories(): string[] {
   const raw = Array.from(new Set(iconRegistry.map(icon => icon.category)));
-  const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
+  const priority = ['smileys-emotion', 'food-drink', 'animals-nature', 'people-body', 'symbols'];
   const withoutCustom = raw.filter(c => c !== 'custom' && c !== 'religion-culture');
   const ordered = [
     ...priority.filter(c => withoutCustom.includes(c)),
@@ -12355,7 +12355,7 @@ export function getIconsByCategoryWithCustom(category: string): IconInfo[] {
  */
 export function getAllIcons(): IconInfo[] {
   const all = [...iconRegistry, ...getCustomStampsAsIcons()];
-  const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
+  const priority = ['smileys-emotion', 'food-drink', 'animals-nature', 'people-body', 'symbols'];
   const getPrio = (c: string) => {
     const i = priority.indexOf(c);
     return i === -1 ? priority.length : i;
