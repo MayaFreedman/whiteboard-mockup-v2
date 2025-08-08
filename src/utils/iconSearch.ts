@@ -106,12 +106,13 @@ function expandQuery(tokens: string[]): { expanded: string[]; concept: string[];
   const add = (w: string) => {
     if (!w) return;
     set.add(w);
-    const s = singularize(w);
+    const NO_SINGULARIZE = new Set<string>(['tears']);
+    const s = NO_SINGULARIZE.has(w) ? null : singularize(w);
     if (s) set.add(s);
     const b = stem(w);
     if (b && b !== w) {
       set.add(b);
-      const s2 = singularize(b);
+      const s2 = NO_SINGULARIZE.has(b) ? null : singularize(b);
       if (s2) set.add(s2);
     }
   };
@@ -224,9 +225,10 @@ function scoreIcon(
 
     if (nameExact) { score += 16; strongHit = true; }
     if (keyExact) { score += 12; strongHit = true; }
-    if (!nameExact && nameStart) { score += 8; strongHit = true; }
-    if (!keyExact && keyStart) { score += 6; strongHit = true; }
-    // Avoid substring noise for short tokens like 'ice' in 'office'
+    const allowPrefix = t.length >= 4;
+    if (!nameExact && allowPrefix && nameStart) { score += 8; strongHit = true; }
+    if (!keyExact && allowPrefix && keyStart) { score += 6; strongHit = true; }
+    // Avoid substring noise for short tokens like 'ice' in 'office' or 'cry' in 'crystal'
     const allowSubstring = t.length >= 4;
     if (allowSubstring && !nameExact && !nameStart && nameSub) { score += 2; strongHit = true; }
     if (allowSubstring && !keyExact && !keyStart && keySub) { score += 2; strongHit = true; }
