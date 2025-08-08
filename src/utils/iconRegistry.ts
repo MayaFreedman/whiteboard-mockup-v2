@@ -16729,7 +16729,8 @@ export function getCustomStampsAsIcons(): IconInfo[] {
     name: stamp.name,
     category: 'custom',
     path: stamp.dataUrl,
-    preview: stamp.preview
+    preview: stamp.preview,
+    keywords: stamp.name.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
   }));
 }
 
