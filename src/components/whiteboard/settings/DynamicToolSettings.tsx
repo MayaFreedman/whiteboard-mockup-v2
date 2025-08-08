@@ -272,19 +272,6 @@ export const DynamicToolSettings: React.FC = () => {
               </div>
             )}
           </div>
-          {debouncedQuery && totalResults === 0 && <Alert>
-              <AlertDescription className="flex items-center justify-between gap-2">
-                {selectedCategory !== 'all' ? <>
-                    <span>No results for "{debouncedQuery}" in {getCategoryDisplayName(selectedCategory)}.</span>
-                    <Button size="sm" variant="secondary" onClick={() => handleCategoryChange('all')}>
-                      Search all icons
-                    </Button>
-                  </> : <>
-                    <span>No results for "{debouncedQuery}" across all icons.</span>
-                    
-                  </>}
-              </AlertDescription>
-            </Alert>}
           
         {/* Progressive stamp grid with virtual windowing for large categories */}
           {selectedCategory === 'custom' && displayedItems.length === 0 && !debouncedQuery ? <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">You haven't uploaded any custom stamps yet. Use the uploader below to add one!</div> : <ProgressiveGridSelector label="Select Stamp" items={displayedItems} selectedValue={toolSettings.selectedSticker || ''} onChange={handleStampChange} showUpload={false} onCustomStampDeleted={handleCustomStampAdded} windowSize={windowConfig.windowSize} batchSize={windowConfig.batchSize} />}
