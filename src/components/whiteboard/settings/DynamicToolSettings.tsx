@@ -165,7 +165,7 @@ export const DynamicToolSettings: React.FC = () => {
           {/* Category selector */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Category</label>
-            <TooltipProvider>
+            <TooltipProvider delayDuration={100}>
               <div className="flex flex-wrap gap-2">
                 {categories.map((category) => {
                   const IconComp = categoryIcons[category] || Circle;
