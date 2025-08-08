@@ -242,8 +242,8 @@ function scoreIcon(
     if (keyExact) { score += 6; strongHit = true; }
     if (!nameExact && nameStart) { score += 4; strongHit = true; }
     if (!keyExact && keyStart) { score += 4; strongHit = true; }
-    if (!nameExact && !nameStart && nameSub) { score += 1; strongHit = true; }
-    if (!keyExact && !keyStart && keySub) { score += 1; strongHit = true; }
+    // Intentionally avoid substring matches for expanded tokens to reduce false positives like
+    // 'rage' matching within 'beverage'.
 
     if (groupTokens.includes(t)) { score += 3; groupHit = true; }
     if (catTokens.includes(t)) { score += 1; categoryHit = true; }
