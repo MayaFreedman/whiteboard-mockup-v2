@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { Viewport } from '../types/viewport';
 import { WhiteboardAction, WhiteboardObject } from '../types/whiteboard';
-import { brushEffectCache } from '../utils/brushCache';
+import { brushEffectCache, precalculateSprayEffect, precalculateChalkEffect, pathToPointsForBrush } from '../utils/brushCache';
 
 export interface WhiteboardSettings {
   gridVisible: boolean;
@@ -346,6 +346,31 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         [id]: newObject,
       },
     }));
+
+    // Precompute and cache brush effects for spray/chalk paths to avoid render fallbacks
+    if (newObject.type === 'path' && newObject.data?.brushType && (newObject.data.brushType === 'spray' || newObject.data.brushType === 'chalk')) {
+      try {
+        const points = pathToPointsForBrush(newObject.data.path);
+        const baseSeed = points.length ? Math.floor(points[0].x * 1000 + points[0].y * 1000) : 12345;
+        const strokeWidth = newObject.strokeWidth || 2;
+        const strokeColor = newObject.stroke || '#000000';
+        const opacity = newObject.opacity || 1;
+        const effectData = newObject.data.brushType === 'spray'
+          ? precalculateSprayEffect(points, strokeWidth, baseSeed)
+          : precalculateChalkEffect(points, strokeWidth, baseSeed);
+        brushEffectCache.store(id, newObject.data.brushType, {
+          type: newObject.data.brushType,
+          points,
+          strokeWidth,
+          strokeColor,
+          opacity,
+          effectData
+        });
+        console.log('🗂️ Cached brush effect on add:', { id: id.slice(0,8), type: newObject.data.brushType, points: points.length, strokeWidth });
+      } catch (e) {
+        console.warn('⚠️ Failed to precompute brush effect on add:', e);
+      }
+    }
 
     get().recordAction(action);
     return id;
@@ -726,6 +751,32 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
               [action.payload.object.id]: action.payload.object,
             },
           }));
+
+          // Precompute cache for remote-added spray/chalk paths
+          const obj = action.payload.object as WhiteboardObject;
+          if (obj.type === 'path' && obj.data?.brushType && (obj.data.brushType === 'spray' || obj.data.brushType === 'chalk')) {
+            try {
+              const points = pathToPointsForBrush(obj.data.path);
+              const baseSeed = points.length ? Math.floor(points[0].x * 1000 + points[0].y * 1000) : 12345;
+              const strokeWidth = obj.strokeWidth || 2;
+              const strokeColor = obj.stroke || '#000000';
+              const opacity = obj.opacity || 1;
+              const effectData = obj.data.brushType === 'spray'
+                ? precalculateSprayEffect(points, strokeWidth, baseSeed)
+                : precalculateChalkEffect(points, strokeWidth, baseSeed);
+              brushEffectCache.store(obj.id, obj.data.brushType, {
+                type: obj.data.brushType,
+                points,
+                strokeWidth,
+                strokeColor,
+                opacity,
+                effectData
+              });
+              console.log('🗂️ Cached brush effect for remote ADD_OBJECT:', { id: obj.id.slice(0,8), type: obj.data.brushType, points: points.length, strokeWidth });
+            } catch (e) {
+              console.warn('⚠️ Failed to precompute brush effect for remote add:', e);
+            }
+          }
         }
         break;
         
@@ -825,6 +876,32 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                   brushType,
                   segmentCount: resultingSegments.length
                 });
+                
+                // Ensure original cache exists before transfer
+                const existing = brushEffectCache.get(originalObjectId, brushType);
+                if (!existing || !existing.effectData) {
+                  try {
+                    const points = pathToPointsForBrush(originalObject.data?.path || '');
+                    const baseSeed = points.length ? Math.floor(points[0].x * 1000 + points[0].y * 1000) : 12345;
+                    const strokeWidth = originalObject.strokeWidth || 2;
+                    const strokeColor = originalObject.stroke || '#000000';
+                    const opacity = originalObject.opacity || 1;
+                    const effectData = brushType === 'spray'
+                      ? precalculateSprayEffect(points, strokeWidth, baseSeed)
+                      : precalculateChalkEffect(points, strokeWidth, baseSeed);
+                    brushEffectCache.store(originalObjectId, brushType, {
+                      type: brushType,
+                      points,
+                      strokeWidth,
+                      strokeColor,
+                      opacity,
+                      effectData
+                    });
+                    console.log('🗂️ Cached original brush effect for remote ERASE_PATH:', { id: originalObjectId.slice(0,8), type: brushType, points: points.length, strokeWidth });
+                  } catch (e) {
+                    console.warn('⚠️ Failed to precompute original brush effect for remote erase:', e);
+                  }
+                }
                 
                 // Transfer brush effects to segments BEFORE clearing the original
                 brushEffectCache.transferToSegments(originalObjectId, brushType, resultingSegments);
@@ -930,6 +1007,32 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 [action.payload.object.id]: action.payload.object,
               },
             }));
+
+            // Precompute cache for batched remote ADD_OBJECT
+            const obj = action.payload.object as WhiteboardObject;
+            if (obj.type === 'path' && obj.data?.brushType && (obj.data.brushType === 'spray' || obj.data.brushType === 'chalk')) {
+              try {
+                const points = pathToPointsForBrush(obj.data.path);
+                const baseSeed = points.length ? Math.floor(points[0].x * 1000 + points[0].y * 1000) : 12345;
+                const strokeWidth = obj.strokeWidth || 2;
+                const strokeColor = obj.stroke || '#000000';
+                const opacity = obj.opacity || 1;
+                const effectData = obj.data.brushType === 'spray'
+                  ? precalculateSprayEffect(points, strokeWidth, baseSeed)
+                  : precalculateChalkEffect(points, strokeWidth, baseSeed);
+                brushEffectCache.store(obj.id, obj.data.brushType, {
+                  type: obj.data.brushType,
+                  points,
+                  strokeWidth,
+                  strokeColor,
+                  opacity,
+                  effectData
+                });
+                console.log('🗂️ Cached brush effect for batched ADD_OBJECT:', { id: obj.id.slice(0,8), type: obj.data.brushType, points: points.length, strokeWidth });
+              } catch (e) {
+                console.warn('⚠️ Failed to precompute brush effect for batched add:', e);
+              }
+            }
           }
           break;
           

@@ -7,7 +7,7 @@ import { doesPathIntersectEraserBatch, erasePointsFromPathBatch } from '../../ut
 import { pathToPoints } from '../../utils/path/pathConversion';
 import { nanoid } from 'nanoid';
 import { useEraserBatching } from './useEraserBatching';
-import { brushEffectCache } from '../../utils/brushCache';
+import { brushEffectCache, precalculateSprayEffect, precalculateChalkEffect, pathToPointsForBrush } from '../../utils/brushCache';
 
 /**
  * Hook for handling eraser logic with optimized action batching and brush effect preservation
