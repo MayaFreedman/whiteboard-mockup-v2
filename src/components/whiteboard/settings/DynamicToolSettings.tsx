@@ -203,16 +203,6 @@ export const DynamicToolSettings: React.FC = () => {
           strokeWidth: value
         })} valueFormatter={value => `${value * 10}px`} showValue={true} />
           
-        {/* Search input */}
-          <div className="space-y-2">
-            
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input ref={searchInputRef} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search emojis" className="pl-9" aria-label="Search emojis" />
-            </div>
-            {debouncedQuery && <div className="text-xs text-muted-foreground">Found {totalResults} result{totalResults === 1 ? '' : 's'}</div>}
-          </div>
-          
           {/* Category selector */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Category</label>
@@ -234,6 +224,15 @@ export const DynamicToolSettings: React.FC = () => {
               })}
               </div>
             </TooltipProvider>
+          </div>
+
+          {/* Search input */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input ref={searchInputRef} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search emojis" className="pl-9" aria-label="Search emojis" />
+            </div>
+            {debouncedQuery && <div className="text-xs text-muted-foreground">Found {totalResults} result{totalResults === 1 ? '' : 's'}</div>}
           </div>
           
         {/* Progressive stamp grid with virtual windowing for large categories */}
