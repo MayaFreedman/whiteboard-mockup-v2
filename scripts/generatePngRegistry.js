@@ -590,72 +590,145 @@ function isFlag(filename) {
 }
 
 function categorizeEmoji(filename) {
-  const baseFilename = filename.replace('.png', '');
-  
-  // SKIP ALL FLAGS
-  if (isFlag(filename)) {
-    return null; // This will cause the emoji to be filtered out
+  const baseFilename = filename.replace('.png', '').toUpperCase();
+
+  // Lazy-load and cache Unicode emoji index from scripts/data/emoji-test.txt
+  // Build a robust lookup map using official group/subgroup semantics
+  if (!categorizeEmoji._emojiIndexLoaded) {
+    try {
+      const dataPath = path.join(__dirname, './data/emoji-test.txt');
+      const raw = fs.readFileSync(dataPath, 'utf8');
+      const index = new Map();
+      let currentGroup = '';
+      let currentSubgroup = '';
+      raw.split(/\r?\n/).forEach((line) => {
+        if (line.startsWith('# group: ')) {
+          currentGroup = line.slice(9).trim();
+          return;
+        }
+        if (line.startsWith('# subgroup: ')) {
+          currentSubgroup = line.slice(12).trim();
+          return;
+        }
+        if (!line || line.startsWith('#')) return;
+        const parts = line.split(';');
+        if (parts.length < 2) return;
+        const codeStr = parts[0].trim().toUpperCase();
+        // Normalize to our filename key format (hyphen-separated hex, no FE0F)
+        const seq = codeStr.split(/\s+/).map((cp) => cp.toUpperCase()).join('-');
+        const noVS = seq.replace(/-FE0F/g, '');
+        const baseNoTone = noVS.replace(/-1F3F[B-F]/g, '');
+        // Extract human name (optional) after '#'
+        const hashIdx = line.indexOf('#');
+        let name = '';
+        if (hashIdx >= 0) {
+          const tail = line.slice(hashIdx + 1).trim();
+          const m = tail.match(/^[^ ]+\s+(?:E\d+\.\d+\s+)?(.+)$/);
+          if (m) name = m[1].trim();
+        }
+        const entry = { group: currentGroup, subgroup: currentSubgroup, name };
+        index.set(seq, entry);
+        index.set(noVS, entry);
+        index.set(baseNoTone, entry);
+      });
+      categorizeEmoji._emojiIndex = index;
+      categorizeEmoji._emojiIndexLoaded = true;
+    } catch (e) {
+      console.warn('⚠ Unicode emoji-test data not found, falling back to heuristics.', e?.message);
+      categorizeEmoji._emojiIndex = null;
+      categorizeEmoji._emojiIndexLoaded = true;
+    }
   }
-  
-  // Check explicit mappings first (highest priority) - these take precedence
+
+  // Helper: map Unicode group/subgroup to our 10 UI categories
+  const mapGroupToUI = (group, subgroup) => {
+    if (!group) return null;
+    if ((subgroup || '').includes('religion')) return 'religion-culture';
+    switch (group) {
+      case 'Smileys & Emotion': return 'smileys-emotion';
+      case 'People & Body': return 'people-body';
+      case 'Animals & Nature': return 'animals-nature';
+      case 'Food & Drink': return 'food-drink';
+      case 'Activities': return 'activities-events';
+      case 'Travel & Places': return 'travel-places';
+      case 'Objects': return 'objects-tools';
+      case 'Symbols': return 'symbols';
+      case 'Flags': return 'flags';
+      default: return null;
+    }
+  };
+
+  // Treat flags as their own category
+  if (isFlag(filename)) {
+    return 'flags';
+  }
+
+  // Try Unicode-based mapping first
+  const exactKey = baseFilename.replace(/-FE0F/g, '');
+  const skinlessKey = exactKey.replace(/-1F3F[B-F]/g, '');
+  const idx = categorizeEmoji._emojiIndex;
+  if (idx) {
+    const entry = idx.get(exactKey) || idx.get(skinlessKey);
+    const ui = entry ? mapGroupToUI(entry.group, entry.subgroup) : null;
+    if (ui) return ui;
+  }
+
+  // Fallback: explicit mappings (legacy)
   for (const [category, emojis] of Object.entries(EXPLICIT_EMOJI_MAPPINGS)) {
     for (const explicitEmoji of emojis) {
-      // Check both full filename and base codepoint
-      if (baseFilename === explicitEmoji || 
-          baseFilename.startsWith(explicitEmoji + '-') ||
-          baseFilename.split('-')[0] === explicitEmoji) {
-        return category;
+      if (
+        baseFilename === explicitEmoji ||
+        baseFilename.startsWith(explicitEmoji + '-') ||
+        baseFilename.split('-')[0] === explicitEmoji
+      ) {
+        const legacyMap = {
+          religious: 'religion-culture',
+          vehicles: 'travel-places',
+          sports: 'activities-events',
+          entertainment: 'activities-events',
+          weather: 'animals-nature',
+          toys: 'objects-tools',
+          clothing: 'objects-tools',
+          household: 'objects-tools',
+          technology: 'objects-tools',
+          tools: 'objects-tools',
+          office: 'objects-tools',
+          celebrations: 'activities-events',
+          places: 'travel-places',
+          animals: 'animals-nature',
+          nature: 'animals-nature',
+          emotions: 'smileys-emotion',
+          gestures: 'people-body',
+          fantasy: 'activities-events',
+          objects: 'objects-tools',
+          symbols: 'symbols'
+        };
+        return legacyMap[category] || 'symbols';
       }
     }
   }
-  
-  // Special handling for professions (ZWJ sequences)
-  if (isProfession(baseFilename)) {
-    return 'professions';
-  }
-  
-  // Get the primary codepoint for categorization
+
+  // Fallback: legacy Unicode ranges
   const primaryCodepoint = baseFilename.split('-')[0];
-  
-  // Check Unicode range mappings
   for (const [category, config] of Object.entries(UNICODE_CATEGORY_RANGES)) {
-    // Special handling for flags (need two regional indicators)
-    if (category === 'flags' && config.requiresPair) {
-      if (baseFilename.includes('-') && baseFilename.match(/^1F1[E-F][0-9A-F]-1F1[E-F][0-9A-F]$/)) {
-        return 'flags';
-      }
-      continue;
-    }
-    
-    // Special handling for professions (already handled above)
-    if (category === 'professions' && config.requiresZWJ) {
-      continue; // Already handled in isProfession()
-    }
-    
-    // Check if codepoint falls within any range for this category
     for (const range of config.ranges) {
       if (isInRange(primaryCodepoint, range)) {
-        // Check exclusions if they exist
-        if (config.exclude) {
-          let shouldExclude = false;
-          for (const excludePattern of config.exclude) {
-            if (excludePattern.test && excludePattern.test(baseFilename)) {
-              shouldExclude = true;
-              break;
-            } else if (excludePattern.start && isInRange(primaryCodepoint, excludePattern)) {
-              shouldExclude = true;
-              break;
-            }
-          }
-          if (shouldExclude) continue;
-        }
-        
-        return category;
+        const legacyMap = {
+          emotions: 'smileys-emotion',
+          people: 'people-body',
+          animals: 'animals-nature',
+          nature: 'animals-nature',
+          'food-drink': 'food-drink',
+          vehicles: 'travel-places',
+          objects: 'objects-tools',
+          symbols: 'symbols'
+        };
+        return legacyMap[category] || 'symbols';
       }
     }
   }
-  
-  return 'symbols'; // Default fallback for unmatched emojis
+
+  return 'symbols';
 }
 
 function generateName(filename) {
@@ -906,31 +979,17 @@ export function getCategories(): string[] {
  */
 export function getCategoryDisplayName(category: string): string {
   const displayNames: Record<string, string> = {
-    'emotions': 'Emotions & Faces',
-    'people': 'People & Body',
-    'professions': 'Professions & Careers',
-    'gestures': 'Gestures & Body',
-    'fantasy': 'Fantasy & Mythical',
-    'animals': 'Animals',
-    'nature': 'Plants & Nature',
-    'weather': 'Weather & Sky',
+    'smileys-emotion': 'Smileys & Emotion',
+    'people-body': 'People & Body',
+    'animals-nature': 'Animals & Nature',
     'food-drink': 'Food & Drink',
-    'sports': 'Sports & Recreation',
-    'entertainment': 'Music & Entertainment',
-    'celebrations': 'Celebrations & Events',
-    'vehicles': 'Vehicles & Transport',
-    'places': 'Buildings & Places',
-    'technology': 'Technology & Digital',
-    'tools': 'Tools & Household',
-    'office': 'Office & Documents',
-    'objects': 'Objects & Items',
-    'symbols': 'Symbols & Math',
-    'flags': 'Country Flags',
-    // NEW CATEGORIES (FIXED categorization)
-    'religious': 'Religious & Spiritual',
-    'toys': 'Toys & Games',
-    'clothing': 'Clothing & Accessories',
-    'household': 'Household Items'
+    'activities-events': 'Activities & Events',
+    'travel-places': 'Travel & Places',
+    'objects-tools': 'Objects & Tools',
+    'symbols': 'Symbols',
+    'flags': 'Flags',
+    'religion-culture': 'Religion & Culture',
+    'custom': 'Custom'
   };
   return displayNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
 }
