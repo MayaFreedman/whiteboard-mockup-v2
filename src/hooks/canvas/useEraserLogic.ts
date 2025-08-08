@@ -110,8 +110,11 @@ export const useEraserLogic = () => {
             // Transfer brush effects to segments BEFORE clearing the original
             brushEffectCache.transferToSegments(id, brushType, segmentsWithIds);
             
-            // Now it's safe to remove the original cache entry
-            brushEffectCache.remove(id, brushType);
+            // Defer removal of the original cache entry to avoid a frame where the
+            // original object renders without its cached effects (causing a flash).
+            // The whiteboard store will remove the original cache atomically when
+            // it actually deletes the object during ERASE_PATH handling.
+            // brushEffectCache.remove(id, brushType);
           }
           
           // Mark object as processed in this stroke
@@ -282,7 +285,9 @@ export const useEraserLogic = () => {
         lastEraserProcessRef.current = now;
         
         if (redrawCanvas) {
-          redrawCanvas();
+          // Defer redraw to next frame to ensure state update has been applied,
+          // preventing a flash between removal and segment insertion.
+          requestAnimationFrame(() => redrawCanvas());
         }
       }
     }
