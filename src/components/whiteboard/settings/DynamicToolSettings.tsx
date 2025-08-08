@@ -177,6 +177,8 @@ export const DynamicToolSettings: React.FC = () => {
   // Handle custom stamp added
   const handleCustomStampAdded = useCallback(() => {
     setRefreshKey(prev => prev + 1); // Force refresh of categories and stamp items
+    // Switch to the Custom tab after a successful upload
+    setSelectedCategory('custom');
   }, []);
 
   // Show properties panel for selected objects (exact same logic as before)
