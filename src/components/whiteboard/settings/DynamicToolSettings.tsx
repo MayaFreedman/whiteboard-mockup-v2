@@ -149,6 +149,16 @@ export const DynamicToolSettings: React.FC = () => {
       batchSize: undefined
     } as const;
   }, [displayedItems.length]);
+  
+  // Custom stamp items (always available for the custom section)
+  const customStampItems = useMemo(() => {
+    if (activeTool !== 'stamp') return [];
+    return getIconsByCategoryWithCustom('custom').map(icon => ({
+      name: icon.name,
+      url: icon.path,
+      preview: icon.path
+    }));
+  }, [activeTool, refreshKey]);
 
   // Memoize category change handler - now instant with progressive loading
   const handleCategoryChange = useCallback((category: string) => {
@@ -237,6 +247,24 @@ export const DynamicToolSettings: React.FC = () => {
           
         {/* Progressive stamp grid with virtual windowing for large categories */}
           <ProgressiveGridSelector label="Select Stamp" items={displayedItems} selectedValue={toolSettings.selectedSticker || ''} onChange={handleStampChange} showUpload={false} onCustomStampDeleted={handleCustomStampAdded} windowSize={windowConfig.windowSize} batchSize={windowConfig.batchSize} />
+          
+          {/* Custom stamps section - always visible */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Custom Stamps</label>
+            {customStampItems.length > 0 ? (
+              <ProgressiveGridSelector
+                label="Your Custom Stamps"
+                items={customStampItems}
+                selectedValue={toolSettings.selectedSticker || ''}
+                onChange={handleStampChange}
+                onCustomStampDeleted={handleCustomStampAdded}
+              />
+            ) : (
+              <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                You haven't uploaded any custom stamps yet. Use the uploader below to add one.
+              </div>
+            )}
+          </div>
           
           {/* Custom stamp upload */}
           <CustomStampUpload onStampAdded={handleCustomStampAdded} />
