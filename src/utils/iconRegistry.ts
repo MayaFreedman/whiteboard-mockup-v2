@@ -13,7 +13,7 @@ export interface IconInfo {
   category: string;
   path: string;
   preview: string;
-  keywords: string[];
+  keywords?: string[];
   group?: string;
   subgroup?: string;
   hasSkinTones?: boolean;

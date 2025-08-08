@@ -28,12 +28,12 @@ function singularize(t: string): string | null {
 // Basic synonyms/intents map (kept tight to avoid over-expansion)
 const SYNONYMS: Record<string, string[]> = {
   heart: ['love', 'valentine', 'romance'],
-  smile: ['happy', 'grin', 'smiley', 'joy', 'lol', 'face'],
-  sad: ['frown', 'unhappy', 'cry', 'tear', 'sob', 'face'],
-  angry: ['mad', 'rage', 'annoyed', 'face'],
-  sick: ['ill', 'nausea', 'vomit', 'mask', 'face'],
+  smile: ['happy', 'grin', 'smiley', 'joy', 'lol'],
+  sad: ['frown', 'unhappy', 'cry', 'tear', 'sob'],
+  angry: ['mad', 'rage', 'annoyed'],
+  sick: ['ill', 'nausea', 'vomit', 'mask'],
   sleep: ['zzz', 'sleepy', 'snore', 'bed', 'night'],
-  laugh: ['haha', 'lol', 'rofl', 'face'],
+  laugh: ['haha', 'lol', 'rofl'],
   work: ['job', 'office', 'briefcase', 'suit', 'profession'],
   food: ['snack', 'meal', 'lunch', 'dinner', 'restaurant', 'drink'],
   coffee: ['espresso', 'latte', 'cup', 'cafe', 'drink'],
@@ -61,9 +61,22 @@ const GENERIC_TERMS = new Set<string>([
   'people','person','body','objects','tools','travel','places','activities','events',
 ]);
 
-function expandQuery(tokens: string[]): { expanded: string[]; concept: string[] } {
+// Tokens we should not promote when coming from expansions (avoid broad matches)
+const STOP_EXPANDED_TOKENS = new Set<string>(['flag', 'face', 'emoji', 'smiley', 'expression', 'emotion']);
+
+// Negative sentiment/meaning opposites to nudge down irrelevant results
+const NEGATIVE_SYNONYMS: Readonly<Record<string, string[]>> = Object.freeze({
+  happy: ['sad', 'angry', 'annoyed', 'frown', 'cry', 'tear', 'sob', 'sick', 'ill'],
+  smile: ['sad', 'angry', 'annoyed', 'frown', 'cry'],
+  laugh: ['sad', 'angry'],
+  sad: ['happy', 'smile', 'laugh', 'joy'],
+  angry: ['happy', 'smile', 'laugh', 'joy'],
+});
+
+function expandQuery(tokens: string[]): { expanded: string[]; concept: string[]; negative: string[] } {
   const set = new Set<string>();
   const conceptSet = new Set<string>();
+  const negativeSet = new Set<string>();
 
   const stem = (w: string): string | null => {
     if (w.length <= 3) return null;
@@ -98,11 +111,18 @@ function expandQuery(tokens: string[]): { expanded: string[]; concept: string[] 
       }
     });
 
+    // Negatives
+    const negVals = NEGATIVE_SYNONYMS[t];
+    if (negVals && negVals.length) {
+      negVals.forEach((nv) => tokenize(nv).forEach((tok) => negativeSet.add(tok)));
+    }
+
     // Concepts
     const conceptVals = SEARCH_CONCEPTS[t];
     if (conceptVals && conceptVals.length) {
       conceptVals.forEach((cv) => {
         tokenize(cv).forEach((tok) => {
+          if (STOP_EXPANDED_TOKENS.has(tok)) return; // avoid overly generic tokens
           add(tok);
           conceptSet.add(tok);
         });
@@ -110,7 +130,7 @@ function expandQuery(tokens: string[]): { expanded: string[]; concept: string[] 
     }
   });
 
-  return { expanded: Array.from(set), concept: Array.from(conceptSet) };
+  return { expanded: Array.from(set), concept: Array.from(conceptSet), negative: Array.from(negativeSet) };
 }
 
 function categoryTokens(category: string): string[] {
@@ -162,6 +182,7 @@ function scoreIcon(
   directTokens: string[],
   expandedTokens: string[],
   conceptTokens: string[],
+  negativeTokens: string[],
   stage: 1 | 2
 ): number {
   const { nameTokens, keywordTokens, groupTokens, catTokens, code, preview } = buildIndexFields(icon);
@@ -195,6 +216,8 @@ function scoreIcon(
   };
 
   const weighExpanded = (t: string) => {
+    if (STOP_EXPANDED_TOKENS.has(t)) return; // don't let generic tokens dominate
+
     const nameExact = nameTokens.includes(t);
     const keyExact = keywordTokens.includes(t);
     const nameStart = nameTokens.some((w) => w.startsWith(t));
@@ -231,6 +254,20 @@ function scoreIcon(
     }
   }
 
+  // Apply negative sentiment dampening
+  const hasNegative = negativeTokens.some((t) => nameTokens.includes(t) || keywordTokens.includes(t));
+  if (hasNegative) {
+    score -= 8;
+  }
+
+  // Suppress country flags unless query directly asks for flags
+  const isFlagCategory = icon.category === 'flags' || catTokens.includes('flags');
+  const hasDirectOverlap = directTokens.some((t) => nameTokens.includes(t) || keywordTokens.includes(t));
+  const directHasFlag = directTokens.includes('flag') || directTokens.includes('flags');
+  if (isFlagCategory && !hasDirectOverlap && !directHasFlag) {
+    return 0;
+  }
+
   // Gate: drop weak-only matches when query isn't generic
   const isGeneric = directTokens.some((t) => GENERIC_TERMS.has(t));
   if (score > 0 && !strongHit && !isGeneric) {
@@ -249,7 +286,7 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
   const q = normalize(query);
   if (!q) return [];
   const directTokens = tokenize(q);
-  const { expanded: qExpanded, concept: conceptTokens } = expandQuery(directTokens);
+  const { expanded: qExpanded, concept: conceptTokens, negative: negativeTokens } = expandQuery(directTokens);
 
   const source: IconInfo[] = options.category
     ? getIconsByCategoryWithCustom(options.category)
@@ -257,7 +294,7 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
 
   // Stage 1: direct-only
   let scored = source
-    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, [], conceptTokens, 1) }))
+    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, [], conceptTokens, negativeTokens, 1) }))
     .filter((x) => x.s > 0)
     .sort((a, b) => {
       if (b.s !== a.s) return b.s - a.s;
@@ -273,7 +310,7 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
 
   // Stage 2: broaden with expansions
   scored = source
-    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, qExpanded, conceptTokens, 2) }))
+    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, qExpanded, conceptTokens, negativeTokens, 2) }))
     .filter((x) => x.s > 0)
     .sort((a, b) => {
       if (b.s !== a.s) return b.s - a.s;
