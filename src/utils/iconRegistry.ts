@@ -14287,18 +14287,46 @@ export function getIconByPath(path: string): IconInfo | undefined {
 /**
  * Get icons by category
  */
+function remapCategory(icon: IconInfo): string {
+  let cat = icon.category;
+  const baseCode = icon.baseEmoji || icon.path.split('/').pop()?.replace('.png', '') || '';
+  const nameLower = (icon.name || '').toLowerCase();
+
+  // Break up Religion & Culture into Symbols, except folded hands (praying) -> People & Body
+  if (cat === 'religion-culture') {
+    if (baseCode.startsWith('1F64F') || nameLower.includes('folded hands') || nameLower.includes('pray')) {
+      cat = 'people-body';
+    } else {
+      cat = 'symbols';
+    }
+  }
+
+  // Hearts from Smileys & Emotion -> Symbols (standalone hearts only)
+  const isHeartish = /(^|\b)heart(s)?(\b|$)/i.test(icon.name || '');
+  const looksLikeFace = /(face|eyes|kiss|couple)/i.test(icon.name || '');
+  if (cat === 'smileys-emotion' && isHeartish && !looksLikeFace) {
+    cat = 'symbols';
+  }
+
+  return cat;
+}
+
 export function getIconsByCategory(category: string): IconInfo[] {
-  return iconRegistry.filter((icon) => icon.category === category);
+  return iconRegistry.filter((icon) => remapCategory(icon) === category);
 }
 
 /**
  * Get all available categories
  */
 export function getCategories(): string[] {
-  const categories = Array.from(
-    new Set(iconRegistry.map((icon) => icon.category))
-  );
-  return categories.sort();
+  const categories = Array.from(new Set(iconRegistry.map((icon) => remapCategory(icon))));
+  const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
+  const withoutCustom = categories.filter((c) => c !== 'custom');
+  const ordered = [
+    ...priority.filter((c) => withoutCustom.includes(c)),
+    ...withoutCustom.filter((c) => !priority.includes(c)).sort(),
+  ];
+  return ordered;
 }
 
 /**
@@ -14363,7 +14391,7 @@ export function getAllCategories(): string[] {
   const customStamps = getCustomStamps();
 
   if (customStamps.length > 0) {
-    return ["custom", ...standardCategories];
+    return [...standardCategories, 'custom'];
   }
 
   return standardCategories;
@@ -14383,7 +14411,21 @@ export function getIconsByCategoryWithCustom(category: string): IconInfo[] {
  * Get all icons including custom stamps
  */
 export function getAllIcons(): IconInfo[] {
-  return [...iconRegistry, ...getCustomStampsAsIcons()];
+  const all = [...iconRegistry, ...getCustomStampsAsIcons()];
+  const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
+  const getPrio = (c: string) => {
+    const i = priority.indexOf(c);
+    return i === -1 ? priority.length : i;
+  };
+  return all.slice().sort((a, b) => {
+    const ca = remapCategory(a);
+    const cb = remapCategory(b);
+    const pa = getPrio(ca);
+    const pb = getPrio(cb);
+    if (pa !== pb) return pa - pb;
+    if (ca !== cb) return ca.localeCompare(cb);
+    return a.name.localeCompare(b.name);
+  });
 }
 
 // Export category statistics for debugging

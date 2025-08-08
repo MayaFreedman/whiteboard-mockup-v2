@@ -643,7 +643,7 @@ function categorizeEmoji(filename) {
   // Helper: map Unicode group/subgroup to our 10 UI categories
   const mapGroupToUI = (group, subgroup) => {
     if (!group) return null;
-    if ((subgroup || '').includes('religion')) return 'religion-culture';
+    if ((subgroup || '').includes('religion')) return 'symbols';
     switch (group) {
       case 'Smileys & Emotion': return 'smileys-emotion';
       case 'People & Body': return 'people-body';
@@ -669,8 +669,25 @@ function categorizeEmoji(filename) {
   const idx = categorizeEmoji._emojiIndex;
   if (idx) {
     const entry = idx.get(exactKey) || idx.get(skinlessKey);
-    const ui = entry ? mapGroupToUI(entry.group, entry.subgroup) : null;
-    if (ui) return ui;
+    if (entry) {
+      let ui = mapGroupToUI(entry.group, entry.subgroup) || null;
+
+      // Override: break up religion & culture into Symbols, except folded hands ("praying") -> People & Body
+      const lowerName = (entry.name || '').toLowerCase();
+      const isFoldedHands = baseFilename.startsWith('1F64F') || lowerName.includes('folded hands') || lowerName.includes('pray');
+      if ((entry.subgroup || '').includes('religion')) {
+        ui = isFoldedHands ? 'people-body' : 'symbols';
+      }
+
+      // Override: standalone hearts from Smileys & Emotion -> Symbols
+      const isHeartish = /(^|\b)heart(s)?(\b|$)/i.test(entry.name || '');
+      const looksLikeFace = /(face|eyes|kiss|couple)/i.test(entry.name || '');
+      if (ui === 'smileys-emotion' && isHeartish && !looksLikeFace) {
+        ui = 'symbols';
+      }
+
+      if (ui) return ui;
+    }
   }
 
   // Fallback: explicit mappings (legacy)
@@ -970,8 +987,14 @@ export function getIconsByCategory(category: string): IconInfo[] {
  * Get all available categories
  */
 export function getCategories(): string[] {
-  const categories = Array.from(new Set(iconRegistry.map(icon => icon.category)));
-  return categories.sort();
+  const raw = Array.from(new Set(iconRegistry.map(icon => icon.category)));
+  const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
+  const withoutCustom = raw.filter(c => c !== 'custom' && c !== 'religion-culture');
+  const ordered = [
+    ...priority.filter(c => withoutCustom.includes(c)),
+    ...withoutCustom.filter(c => !priority.includes(c)).sort(),
+  ];
+  return ordered;
 }
 
 /**
@@ -1033,7 +1056,7 @@ export function getAllCategories(): string[] {
   const customStamps = getCustomStamps();
   
   if (customStamps.length > 0) {
-    return ['custom', ...standardCategories];
+    return [...standardCategories, 'custom'];
   }
   
   return standardCategories;
@@ -1053,7 +1076,19 @@ export function getIconsByCategoryWithCustom(category: string): IconInfo[] {
  * Get all icons including custom stamps
  */
 export function getAllIcons(): IconInfo[] {
-  return [...iconRegistry, ...getCustomStampsAsIcons()];
+  const all = [...iconRegistry, ...getCustomStampsAsIcons()];
+  const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
+  const getPrio = (c: string) => {
+    const i = priority.indexOf(c);
+    return i === -1 ? priority.length : i;
+  };
+  return all.slice().sort((a, b) => {
+    const pa = getPrio(a.category);
+    const pb = getPrio(b.category);
+    if (pa !== pb) return pa - pb;
+    if (a.category !== b.category) return a.category.localeCompare(b.category);
+    return a.name.localeCompare(b.name);
+  });
 }
 
 // Export category statistics for debugging
