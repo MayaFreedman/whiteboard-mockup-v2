@@ -1,12 +1,12 @@
 /**
  * Auto-generated PNG emoji registry
- * Generated from 3755 PNG files on 2025-08-08T14:01:53.368Z
- *
- * Categories: symbols, objects-tools, travel-places, food-drink, animals-nature, smileys-emotion, religion-culture, activities-events, flags, people-body
+ * Generated from 3755 PNG files on 2025-08-08T14:13:46.494Z
+ * 
+ * Categories: symbols, objects-tools, travel-places, food-drink, animals-nature, smileys-emotion, activities-events, flags, people-body
  * DO NOT EDIT MANUALLY - Run 'node scripts/generatePngRegistry.js' to regenerate
  */
 
-import { getCustomStamps, CustomStamp } from "./customStamps";
+import { getCustomStamps, CustomStamp } from './customStamps';
 
 export interface IconInfo {
   name: string;
@@ -136,13 +136,13 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 2626",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/2626.png",
     preview: "☦",
   },
   {
     name: "Emoji 2638",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/2638.png",
     preview: "☸",
   },
@@ -292,7 +292,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 2721",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/2721.png",
     preview: "✡",
   },
@@ -334,13 +334,13 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 2763",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/2763.png",
     preview: "❣",
   },
   {
     name: "Red Heart",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/2764.png",
     preview: "❤",
   },
@@ -2733,13 +2733,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🎅",
     hasSkinTones: true,
     baseEmoji: "1F385",
-    skinToneVariants: [
-      "/png-emojis/1F385-1F3FB.png",
-      "/png-emojis/1F385-1F3FC.png",
-      "/png-emojis/1F385-1F3FD.png",
-      "/png-emojis/1F385-1F3FE.png",
-      "/png-emojis/1F385-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F385-1F3FB.png","/png-emojis/1F385-1F3FC.png","/png-emojis/1F385-1F3FD.png","/png-emojis/1F385-1F3FE.png","/png-emojis/1F385-1F3FF.png"],
   },
   {
     name: "Emoji 1F386",
@@ -3072,13 +3066,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏂",
     hasSkinTones: true,
     baseEmoji: "1F3C2",
-    skinToneVariants: [
-      "/png-emojis/1F3C2-1F3FB.png",
-      "/png-emojis/1F3C2-1F3FC.png",
-      "/png-emojis/1F3C2-1F3FD.png",
-      "/png-emojis/1F3C2-1F3FE.png",
-      "/png-emojis/1F3C2-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C2-1F3FB.png","/png-emojis/1F3C2-1F3FC.png","/png-emojis/1F3C2-1F3FD.png","/png-emojis/1F3C2-1F3FE.png","/png-emojis/1F3C2-1F3FF.png"],
   },
   {
     name: "Person Running ♀️ ♀️ ♀️",
@@ -3087,13 +3075,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏃‍♀️‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F3C3-200D-2640-FE0F-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F3C3-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C3-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png"],
   },
   {
     name: "Person Running ♀️ ♀️",
@@ -3102,13 +3084,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏃‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F3C3-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F3C3-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F3C3-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F3C3-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F3C3-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F3C3-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C3-1F3FB-200D-2640-FE0F.png","/png-emojis/1F3C3-1F3FC-200D-2640-FE0F.png","/png-emojis/1F3C3-1F3FD-200D-2640-FE0F.png","/png-emojis/1F3C3-1F3FE-200D-2640-FE0F.png","/png-emojis/1F3C3-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Person Running ♂️ ♀️ ♀️",
@@ -3117,13 +3093,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏃‍♂️‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F3C3-200D-2642-FE0F-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F3C3-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C3-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png"],
   },
   {
     name: "Person Running ♂️ ♀️",
@@ -3132,13 +3102,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏃‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F3C3-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F3C3-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F3C3-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F3C3-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F3C3-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F3C3-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C3-1F3FB-200D-2642-FE0F.png","/png-emojis/1F3C3-1F3FC-200D-2642-FE0F.png","/png-emojis/1F3C3-1F3FD-200D-2642-FE0F.png","/png-emojis/1F3C3-1F3FE-200D-2642-FE0F.png","/png-emojis/1F3C3-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Person Running ♀️",
@@ -3147,13 +3111,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏃‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F3C3-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F3C3-1F3FB-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FC-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FD-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FE-200D-27A1-FE0F.png",
-      "/png-emojis/1F3C3-1F3FF-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C3-1F3FB-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FC-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FD-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FE-200D-27A1-FE0F.png","/png-emojis/1F3C3-1F3FF-200D-27A1-FE0F.png"],
   },
   {
     name: "Person Running",
@@ -3162,13 +3120,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏃",
     hasSkinTones: true,
     baseEmoji: "1F3C3",
-    skinToneVariants: [
-      "/png-emojis/1F3C3-1F3FB.png",
-      "/png-emojis/1F3C3-1F3FC.png",
-      "/png-emojis/1F3C3-1F3FD.png",
-      "/png-emojis/1F3C3-1F3FE.png",
-      "/png-emojis/1F3C3-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C3-1F3FB.png","/png-emojis/1F3C3-1F3FC.png","/png-emojis/1F3C3-1F3FD.png","/png-emojis/1F3C3-1F3FE.png","/png-emojis/1F3C3-1F3FF.png"],
   },
   {
     name: "Person Surfing ♀️ ♀️",
@@ -3177,13 +3129,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏄‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F3C4-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F3C4-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F3C4-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F3C4-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F3C4-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F3C4-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C4-1F3FB-200D-2640-FE0F.png","/png-emojis/1F3C4-1F3FC-200D-2640-FE0F.png","/png-emojis/1F3C4-1F3FD-200D-2640-FE0F.png","/png-emojis/1F3C4-1F3FE-200D-2640-FE0F.png","/png-emojis/1F3C4-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Person Surfing ♂️ ♀️",
@@ -3192,13 +3138,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏄‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F3C4-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F3C4-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F3C4-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F3C4-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F3C4-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F3C4-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C4-1F3FB-200D-2642-FE0F.png","/png-emojis/1F3C4-1F3FC-200D-2642-FE0F.png","/png-emojis/1F3C4-1F3FD-200D-2642-FE0F.png","/png-emojis/1F3C4-1F3FE-200D-2642-FE0F.png","/png-emojis/1F3C4-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Person Surfing",
@@ -3207,13 +3147,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏄",
     hasSkinTones: true,
     baseEmoji: "1F3C4",
-    skinToneVariants: [
-      "/png-emojis/1F3C4-1F3FB.png",
-      "/png-emojis/1F3C4-1F3FC.png",
-      "/png-emojis/1F3C4-1F3FD.png",
-      "/png-emojis/1F3C4-1F3FE.png",
-      "/png-emojis/1F3C4-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C4-1F3FB.png","/png-emojis/1F3C4-1F3FC.png","/png-emojis/1F3C4-1F3FD.png","/png-emojis/1F3C4-1F3FE.png","/png-emojis/1F3C4-1F3FF.png"],
   },
   {
     name: "Sports Medal",
@@ -3234,13 +3168,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏇",
     hasSkinTones: true,
     baseEmoji: "1F3C7",
-    skinToneVariants: [
-      "/png-emojis/1F3C7-1F3FB.png",
-      "/png-emojis/1F3C7-1F3FC.png",
-      "/png-emojis/1F3C7-1F3FD.png",
-      "/png-emojis/1F3C7-1F3FE.png",
-      "/png-emojis/1F3C7-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3C7-1F3FB.png","/png-emojis/1F3C7-1F3FC.png","/png-emojis/1F3C7-1F3FD.png","/png-emojis/1F3C7-1F3FE.png","/png-emojis/1F3C7-1F3FF.png"],
   },
   {
     name: "American Football",
@@ -3261,13 +3189,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏊‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F3CA-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F3CA-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F3CA-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F3CA-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F3CA-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F3CA-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3CA-1F3FB-200D-2640-FE0F.png","/png-emojis/1F3CA-1F3FC-200D-2640-FE0F.png","/png-emojis/1F3CA-1F3FD-200D-2640-FE0F.png","/png-emojis/1F3CA-1F3FE-200D-2640-FE0F.png","/png-emojis/1F3CA-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Person Swimming ♂️ ♀️",
@@ -3276,13 +3198,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏊‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F3CA-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F3CA-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F3CA-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F3CA-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F3CA-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F3CA-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3CA-1F3FB-200D-2642-FE0F.png","/png-emojis/1F3CA-1F3FC-200D-2642-FE0F.png","/png-emojis/1F3CA-1F3FD-200D-2642-FE0F.png","/png-emojis/1F3CA-1F3FE-200D-2642-FE0F.png","/png-emojis/1F3CA-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Person Swimming",
@@ -3291,13 +3207,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏊",
     hasSkinTones: true,
     baseEmoji: "1F3CA",
-    skinToneVariants: [
-      "/png-emojis/1F3CA-1F3FB.png",
-      "/png-emojis/1F3CA-1F3FC.png",
-      "/png-emojis/1F3CA-1F3FD.png",
-      "/png-emojis/1F3CA-1F3FE.png",
-      "/png-emojis/1F3CA-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3CA-1F3FB.png","/png-emojis/1F3CA-1F3FC.png","/png-emojis/1F3CA-1F3FD.png","/png-emojis/1F3CA-1F3FE.png","/png-emojis/1F3CA-1F3FF.png"],
   },
   {
     name: "Emoji 1F3CB",
@@ -3306,13 +3216,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏋",
     hasSkinTones: true,
     baseEmoji: "1F3CB",
-    skinToneVariants: [
-      "/png-emojis/1F3CB-1F3FB.png",
-      "/png-emojis/1F3CB-1F3FC.png",
-      "/png-emojis/1F3CB-1F3FD.png",
-      "/png-emojis/1F3CB-1F3FE.png",
-      "/png-emojis/1F3CB-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3CB-1F3FB.png","/png-emojis/1F3CB-1F3FC.png","/png-emojis/1F3CB-1F3FD.png","/png-emojis/1F3CB-1F3FE.png","/png-emojis/1F3CB-1F3FF.png"],
   },
   {
     name: "Emoji 1F3CB",
@@ -3333,13 +3237,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🏌",
     hasSkinTones: true,
     baseEmoji: "1F3CC",
-    skinToneVariants: [
-      "/png-emojis/1F3CC-1F3FB.png",
-      "/png-emojis/1F3CC-1F3FC.png",
-      "/png-emojis/1F3CC-1F3FD.png",
-      "/png-emojis/1F3CC-1F3FE.png",
-      "/png-emojis/1F3CC-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F3CC-1F3FB.png","/png-emojis/1F3CC-1F3FC.png","/png-emojis/1F3CC-1F3FD.png","/png-emojis/1F3CC-1F3FE.png","/png-emojis/1F3CC-1F3FF.png"],
   },
   {
     name: "Emoji 1F3CC",
@@ -4164,13 +4062,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👂",
     hasSkinTones: true,
     baseEmoji: "1F442",
-    skinToneVariants: [
-      "/png-emojis/1F442-1F3FB.png",
-      "/png-emojis/1F442-1F3FC.png",
-      "/png-emojis/1F442-1F3FD.png",
-      "/png-emojis/1F442-1F3FE.png",
-      "/png-emojis/1F442-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F442-1F3FB.png","/png-emojis/1F442-1F3FC.png","/png-emojis/1F442-1F3FD.png","/png-emojis/1F442-1F3FE.png","/png-emojis/1F442-1F3FF.png"],
   },
   {
     name: "Emoji 1F443",
@@ -4179,13 +4071,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👃",
     hasSkinTones: true,
     baseEmoji: "1F443",
-    skinToneVariants: [
-      "/png-emojis/1F443-1F3FB.png",
-      "/png-emojis/1F443-1F3FC.png",
-      "/png-emojis/1F443-1F3FD.png",
-      "/png-emojis/1F443-1F3FE.png",
-      "/png-emojis/1F443-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F443-1F3FB.png","/png-emojis/1F443-1F3FC.png","/png-emojis/1F443-1F3FD.png","/png-emojis/1F443-1F3FE.png","/png-emojis/1F443-1F3FF.png"],
   },
   {
     name: "Emoji 1F444",
@@ -4206,13 +4092,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👆",
     hasSkinTones: true,
     baseEmoji: "1F446",
-    skinToneVariants: [
-      "/png-emojis/1F446-1F3FB.png",
-      "/png-emojis/1F446-1F3FC.png",
-      "/png-emojis/1F446-1F3FD.png",
-      "/png-emojis/1F446-1F3FE.png",
-      "/png-emojis/1F446-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F446-1F3FB.png","/png-emojis/1F446-1F3FC.png","/png-emojis/1F446-1F3FD.png","/png-emojis/1F446-1F3FE.png","/png-emojis/1F446-1F3FF.png"],
   },
   {
     name: "Emoji 1F447",
@@ -4221,13 +4101,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👇",
     hasSkinTones: true,
     baseEmoji: "1F447",
-    skinToneVariants: [
-      "/png-emojis/1F447-1F3FB.png",
-      "/png-emojis/1F447-1F3FC.png",
-      "/png-emojis/1F447-1F3FD.png",
-      "/png-emojis/1F447-1F3FE.png",
-      "/png-emojis/1F447-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F447-1F3FB.png","/png-emojis/1F447-1F3FC.png","/png-emojis/1F447-1F3FD.png","/png-emojis/1F447-1F3FE.png","/png-emojis/1F447-1F3FF.png"],
   },
   {
     name: "Emoji 1F448",
@@ -4236,13 +4110,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👈",
     hasSkinTones: true,
     baseEmoji: "1F448",
-    skinToneVariants: [
-      "/png-emojis/1F448-1F3FB.png",
-      "/png-emojis/1F448-1F3FC.png",
-      "/png-emojis/1F448-1F3FD.png",
-      "/png-emojis/1F448-1F3FE.png",
-      "/png-emojis/1F448-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F448-1F3FB.png","/png-emojis/1F448-1F3FC.png","/png-emojis/1F448-1F3FD.png","/png-emojis/1F448-1F3FE.png","/png-emojis/1F448-1F3FF.png"],
   },
   {
     name: "Emoji 1F449",
@@ -4251,13 +4119,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👉",
     hasSkinTones: true,
     baseEmoji: "1F449",
-    skinToneVariants: [
-      "/png-emojis/1F449-1F3FB.png",
-      "/png-emojis/1F449-1F3FC.png",
-      "/png-emojis/1F449-1F3FD.png",
-      "/png-emojis/1F449-1F3FE.png",
-      "/png-emojis/1F449-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F449-1F3FB.png","/png-emojis/1F449-1F3FC.png","/png-emojis/1F449-1F3FD.png","/png-emojis/1F449-1F3FE.png","/png-emojis/1F449-1F3FF.png"],
   },
   {
     name: "Emoji 1F44A",
@@ -4266,13 +4128,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👊",
     hasSkinTones: true,
     baseEmoji: "1F44A",
-    skinToneVariants: [
-      "/png-emojis/1F44A-1F3FB.png",
-      "/png-emojis/1F44A-1F3FC.png",
-      "/png-emojis/1F44A-1F3FD.png",
-      "/png-emojis/1F44A-1F3FE.png",
-      "/png-emojis/1F44A-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F44A-1F3FB.png","/png-emojis/1F44A-1F3FC.png","/png-emojis/1F44A-1F3FD.png","/png-emojis/1F44A-1F3FE.png","/png-emojis/1F44A-1F3FF.png"],
   },
   {
     name: "Emoji 1F44B",
@@ -4281,13 +4137,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👋",
     hasSkinTones: true,
     baseEmoji: "1F44B",
-    skinToneVariants: [
-      "/png-emojis/1F44B-1F3FB.png",
-      "/png-emojis/1F44B-1F3FC.png",
-      "/png-emojis/1F44B-1F3FD.png",
-      "/png-emojis/1F44B-1F3FE.png",
-      "/png-emojis/1F44B-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F44B-1F3FB.png","/png-emojis/1F44B-1F3FC.png","/png-emojis/1F44B-1F3FD.png","/png-emojis/1F44B-1F3FE.png","/png-emojis/1F44B-1F3FF.png"],
   },
   {
     name: "Emoji 1F44C",
@@ -4296,13 +4146,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👌",
     hasSkinTones: true,
     baseEmoji: "1F44C",
-    skinToneVariants: [
-      "/png-emojis/1F44C-1F3FB.png",
-      "/png-emojis/1F44C-1F3FC.png",
-      "/png-emojis/1F44C-1F3FD.png",
-      "/png-emojis/1F44C-1F3FE.png",
-      "/png-emojis/1F44C-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F44C-1F3FB.png","/png-emojis/1F44C-1F3FC.png","/png-emojis/1F44C-1F3FD.png","/png-emojis/1F44C-1F3FE.png","/png-emojis/1F44C-1F3FF.png"],
   },
   {
     name: "Emoji 1F44D",
@@ -4311,13 +4155,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👍",
     hasSkinTones: true,
     baseEmoji: "1F44D",
-    skinToneVariants: [
-      "/png-emojis/1F44D-1F3FB.png",
-      "/png-emojis/1F44D-1F3FC.png",
-      "/png-emojis/1F44D-1F3FD.png",
-      "/png-emojis/1F44D-1F3FE.png",
-      "/png-emojis/1F44D-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F44D-1F3FB.png","/png-emojis/1F44D-1F3FC.png","/png-emojis/1F44D-1F3FD.png","/png-emojis/1F44D-1F3FE.png","/png-emojis/1F44D-1F3FF.png"],
   },
   {
     name: "Emoji 1F44E",
@@ -4326,13 +4164,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👎",
     hasSkinTones: true,
     baseEmoji: "1F44E",
-    skinToneVariants: [
-      "/png-emojis/1F44E-1F3FB.png",
-      "/png-emojis/1F44E-1F3FC.png",
-      "/png-emojis/1F44E-1F3FD.png",
-      "/png-emojis/1F44E-1F3FE.png",
-      "/png-emojis/1F44E-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F44E-1F3FB.png","/png-emojis/1F44E-1F3FC.png","/png-emojis/1F44E-1F3FD.png","/png-emojis/1F44E-1F3FE.png","/png-emojis/1F44E-1F3FF.png"],
   },
   {
     name: "Emoji 1F44F",
@@ -4341,13 +4173,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👏",
     hasSkinTones: true,
     baseEmoji: "1F44F",
-    skinToneVariants: [
-      "/png-emojis/1F44F-1F3FB.png",
-      "/png-emojis/1F44F-1F3FC.png",
-      "/png-emojis/1F44F-1F3FD.png",
-      "/png-emojis/1F44F-1F3FE.png",
-      "/png-emojis/1F44F-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F44F-1F3FB.png","/png-emojis/1F44F-1F3FC.png","/png-emojis/1F44F-1F3FD.png","/png-emojis/1F44F-1F3FE.png","/png-emojis/1F44F-1F3FF.png"],
   },
   {
     name: "Emoji 1F450",
@@ -4356,13 +4182,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👐",
     hasSkinTones: true,
     baseEmoji: "1F450",
-    skinToneVariants: [
-      "/png-emojis/1F450-1F3FB.png",
-      "/png-emojis/1F450-1F3FC.png",
-      "/png-emojis/1F450-1F3FD.png",
-      "/png-emojis/1F450-1F3FE.png",
-      "/png-emojis/1F450-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F450-1F3FB.png","/png-emojis/1F450-1F3FC.png","/png-emojis/1F450-1F3FD.png","/png-emojis/1F450-1F3FE.png","/png-emojis/1F450-1F3FF.png"],
   },
   {
     name: "Emoji 1F451",
@@ -4497,13 +4317,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👦",
     hasSkinTones: true,
     baseEmoji: "1F466",
-    skinToneVariants: [
-      "/png-emojis/1F466-1F3FB.png",
-      "/png-emojis/1F466-1F3FC.png",
-      "/png-emojis/1F466-1F3FD.png",
-      "/png-emojis/1F466-1F3FE.png",
-      "/png-emojis/1F466-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F466-1F3FB.png","/png-emojis/1F466-1F3FC.png","/png-emojis/1F466-1F3FD.png","/png-emojis/1F466-1F3FE.png","/png-emojis/1F466-1F3FF.png"],
   },
   {
     name: "Emoji 1F467",
@@ -4512,13 +4326,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👧",
     hasSkinTones: true,
     baseEmoji: "1F467",
-    skinToneVariants: [
-      "/png-emojis/1F467-1F3FB.png",
-      "/png-emojis/1F467-1F3FC.png",
-      "/png-emojis/1F467-1F3FD.png",
-      "/png-emojis/1F467-1F3FE.png",
-      "/png-emojis/1F467-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F467-1F3FB.png","/png-emojis/1F467-1F3FC.png","/png-emojis/1F467-1F3FD.png","/png-emojis/1F467-1F3FE.png","/png-emojis/1F467-1F3FF.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4527,13 +4335,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🌾",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F33E",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F33E.png",
-      "/png-emojis/1F468-1F3FC-200D-1F33E.png",
-      "/png-emojis/1F468-1F3FD-200D-1F33E.png",
-      "/png-emojis/1F468-1F3FE-200D-1F33E.png",
-      "/png-emojis/1F468-1F3FF-200D-1F33E.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F33E.png","/png-emojis/1F468-1F3FC-200D-1F33E.png","/png-emojis/1F468-1F3FD-200D-1F33E.png","/png-emojis/1F468-1F3FE-200D-1F33E.png","/png-emojis/1F468-1F3FF-200D-1F33E.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4542,13 +4344,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🍳",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F373",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F373.png",
-      "/png-emojis/1F468-1F3FC-200D-1F373.png",
-      "/png-emojis/1F468-1F3FD-200D-1F373.png",
-      "/png-emojis/1F468-1F3FE-200D-1F373.png",
-      "/png-emojis/1F468-1F3FF-200D-1F373.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F373.png","/png-emojis/1F468-1F3FC-200D-1F373.png","/png-emojis/1F468-1F3FD-200D-1F373.png","/png-emojis/1F468-1F3FE-200D-1F373.png","/png-emojis/1F468-1F3FF-200D-1F373.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4557,13 +4353,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🍼",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F37C",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F37C.png",
-      "/png-emojis/1F468-1F3FC-200D-1F37C.png",
-      "/png-emojis/1F468-1F3FD-200D-1F37C.png",
-      "/png-emojis/1F468-1F3FE-200D-1F37C.png",
-      "/png-emojis/1F468-1F3FF-200D-1F37C.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F37C.png","/png-emojis/1F468-1F3FC-200D-1F37C.png","/png-emojis/1F468-1F3FD-200D-1F37C.png","/png-emojis/1F468-1F3FE-200D-1F37C.png","/png-emojis/1F468-1F3FF-200D-1F37C.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4572,13 +4362,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🎓",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F393",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F393.png",
-      "/png-emojis/1F468-1F3FC-200D-1F393.png",
-      "/png-emojis/1F468-1F3FD-200D-1F393.png",
-      "/png-emojis/1F468-1F3FE-200D-1F393.png",
-      "/png-emojis/1F468-1F3FF-200D-1F393.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F393.png","/png-emojis/1F468-1F3FC-200D-1F393.png","/png-emojis/1F468-1F3FD-200D-1F393.png","/png-emojis/1F468-1F3FE-200D-1F393.png","/png-emojis/1F468-1F3FF-200D-1F393.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4587,13 +4371,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🎤",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F3A4",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F3A4.png",
-      "/png-emojis/1F468-1F3FC-200D-1F3A4.png",
-      "/png-emojis/1F468-1F3FD-200D-1F3A4.png",
-      "/png-emojis/1F468-1F3FE-200D-1F3A4.png",
-      "/png-emojis/1F468-1F3FF-200D-1F3A4.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F3A4.png","/png-emojis/1F468-1F3FC-200D-1F3A4.png","/png-emojis/1F468-1F3FD-200D-1F3A4.png","/png-emojis/1F468-1F3FE-200D-1F3A4.png","/png-emojis/1F468-1F3FF-200D-1F3A4.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4602,13 +4380,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🎨",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F3A8",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F3A8.png",
-      "/png-emojis/1F468-1F3FC-200D-1F3A8.png",
-      "/png-emojis/1F468-1F3FD-200D-1F3A8.png",
-      "/png-emojis/1F468-1F3FE-200D-1F3A8.png",
-      "/png-emojis/1F468-1F3FF-200D-1F3A8.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F3A8.png","/png-emojis/1F468-1F3FC-200D-1F3A8.png","/png-emojis/1F468-1F3FD-200D-1F3A8.png","/png-emojis/1F468-1F3FE-200D-1F3A8.png","/png-emojis/1F468-1F3FF-200D-1F3A8.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4617,13 +4389,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🏫",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F3EB",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F3EB.png",
-      "/png-emojis/1F468-1F3FC-200D-1F3EB.png",
-      "/png-emojis/1F468-1F3FD-200D-1F3EB.png",
-      "/png-emojis/1F468-1F3FE-200D-1F3EB.png",
-      "/png-emojis/1F468-1F3FF-200D-1F3EB.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F3EB.png","/png-emojis/1F468-1F3FC-200D-1F3EB.png","/png-emojis/1F468-1F3FD-200D-1F3EB.png","/png-emojis/1F468-1F3FE-200D-1F3EB.png","/png-emojis/1F468-1F3FF-200D-1F3EB.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4632,13 +4398,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🏭",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F3ED",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F3ED.png",
-      "/png-emojis/1F468-1F3FC-200D-1F3ED.png",
-      "/png-emojis/1F468-1F3FD-200D-1F3ED.png",
-      "/png-emojis/1F468-1F3FE-200D-1F3ED.png",
-      "/png-emojis/1F468-1F3FF-200D-1F3ED.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F3ED.png","/png-emojis/1F468-1F3FC-200D-1F3ED.png","/png-emojis/1F468-1F3FD-200D-1F3ED.png","/png-emojis/1F468-1F3FE-200D-1F3ED.png","/png-emojis/1F468-1F3FF-200D-1F3ED.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4647,13 +4407,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍💻",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F4BB",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F4BB.png",
-      "/png-emojis/1F468-1F3FC-200D-1F4BB.png",
-      "/png-emojis/1F468-1F3FD-200D-1F4BB.png",
-      "/png-emojis/1F468-1F3FE-200D-1F4BB.png",
-      "/png-emojis/1F468-1F3FF-200D-1F4BB.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F4BB.png","/png-emojis/1F468-1F3FC-200D-1F4BB.png","/png-emojis/1F468-1F3FD-200D-1F4BB.png","/png-emojis/1F468-1F3FE-200D-1F4BB.png","/png-emojis/1F468-1F3FF-200D-1F4BB.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4662,13 +4416,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍💼",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F4BC",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F4BC.png",
-      "/png-emojis/1F468-1F3FC-200D-1F4BC.png",
-      "/png-emojis/1F468-1F3FD-200D-1F4BC.png",
-      "/png-emojis/1F468-1F3FE-200D-1F4BC.png",
-      "/png-emojis/1F468-1F3FF-200D-1F4BC.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F4BC.png","/png-emojis/1F468-1F3FC-200D-1F4BC.png","/png-emojis/1F468-1F3FD-200D-1F4BC.png","/png-emojis/1F468-1F3FE-200D-1F4BC.png","/png-emojis/1F468-1F3FF-200D-1F4BC.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4677,13 +4425,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🔧",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F527",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F527.png",
-      "/png-emojis/1F468-1F3FC-200D-1F527.png",
-      "/png-emojis/1F468-1F3FD-200D-1F527.png",
-      "/png-emojis/1F468-1F3FE-200D-1F527.png",
-      "/png-emojis/1F468-1F3FF-200D-1F527.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F527.png","/png-emojis/1F468-1F3FC-200D-1F527.png","/png-emojis/1F468-1F3FD-200D-1F527.png","/png-emojis/1F468-1F3FE-200D-1F527.png","/png-emojis/1F468-1F3FF-200D-1F527.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4692,13 +4434,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🔬",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F52C",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F52C.png",
-      "/png-emojis/1F468-1F3FC-200D-1F52C.png",
-      "/png-emojis/1F468-1F3FD-200D-1F52C.png",
-      "/png-emojis/1F468-1F3FE-200D-1F52C.png",
-      "/png-emojis/1F468-1F3FF-200D-1F52C.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F52C.png","/png-emojis/1F468-1F3FC-200D-1F52C.png","/png-emojis/1F468-1F3FD-200D-1F52C.png","/png-emojis/1F468-1F3FE-200D-1F52C.png","/png-emojis/1F468-1F3FF-200D-1F52C.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4707,13 +4443,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🚀",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F680",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F680.png",
-      "/png-emojis/1F468-1F3FC-200D-1F680.png",
-      "/png-emojis/1F468-1F3FD-200D-1F680.png",
-      "/png-emojis/1F468-1F3FE-200D-1F680.png",
-      "/png-emojis/1F468-1F3FF-200D-1F680.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F680.png","/png-emojis/1F468-1F3FC-200D-1F680.png","/png-emojis/1F468-1F3FD-200D-1F680.png","/png-emojis/1F468-1F3FE-200D-1F680.png","/png-emojis/1F468-1F3FF-200D-1F680.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4722,13 +4452,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🚒",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F692",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F692.png",
-      "/png-emojis/1F468-1F3FC-200D-1F692.png",
-      "/png-emojis/1F468-1F3FD-200D-1F692.png",
-      "/png-emojis/1F468-1F3FE-200D-1F692.png",
-      "/png-emojis/1F468-1F3FF-200D-1F692.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F692.png","/png-emojis/1F468-1F3FC-200D-1F692.png","/png-emojis/1F468-1F3FD-200D-1F692.png","/png-emojis/1F468-1F3FE-200D-1F692.png","/png-emojis/1F468-1F3FF-200D-1F692.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4737,13 +4461,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦯‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9AF-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9AF-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FC-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FD-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FE-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FF-200D-1F9AF-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4752,13 +4470,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦯",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9AF",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9AF.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9AF.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9AF.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9AF.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9AF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9AF.png","/png-emojis/1F468-1F3FC-200D-1F9AF.png","/png-emojis/1F468-1F3FD-200D-1F9AF.png","/png-emojis/1F468-1F3FE-200D-1F9AF.png","/png-emojis/1F468-1F3FF-200D-1F9AF.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4767,13 +4479,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦰",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9B0",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9B0.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9B0.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9B0.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9B0.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9B0.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9B0.png","/png-emojis/1F468-1F3FC-200D-1F9B0.png","/png-emojis/1F468-1F3FD-200D-1F9B0.png","/png-emojis/1F468-1F3FE-200D-1F9B0.png","/png-emojis/1F468-1F3FF-200D-1F9B0.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4782,13 +4488,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦱",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9B1",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9B1.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9B1.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9B1.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9B1.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9B1.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9B1.png","/png-emojis/1F468-1F3FC-200D-1F9B1.png","/png-emojis/1F468-1F3FD-200D-1F9B1.png","/png-emojis/1F468-1F3FE-200D-1F9B1.png","/png-emojis/1F468-1F3FF-200D-1F9B1.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4797,13 +4497,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦲",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9B2",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9B2.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9B2.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9B2.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9B2.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9B2.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9B2.png","/png-emojis/1F468-1F3FC-200D-1F9B2.png","/png-emojis/1F468-1F3FD-200D-1F9B2.png","/png-emojis/1F468-1F3FE-200D-1F9B2.png","/png-emojis/1F468-1F3FF-200D-1F9B2.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4812,13 +4506,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦳",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9B3",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9B3.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9B3.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9B3.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9B3.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9B3.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9B3.png","/png-emojis/1F468-1F3FC-200D-1F9B3.png","/png-emojis/1F468-1F3FD-200D-1F9B3.png","/png-emojis/1F468-1F3FE-200D-1F9B3.png","/png-emojis/1F468-1F3FF-200D-1F9B3.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4827,13 +4515,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦼‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9BC-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9BC-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FC-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FD-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FE-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FF-200D-1F9BC-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4842,13 +4524,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦼",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9BC",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9BC.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9BC.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9BC.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9BC.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9BC.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9BC.png","/png-emojis/1F468-1F3FC-200D-1F9BC.png","/png-emojis/1F468-1F3FD-200D-1F9BC.png","/png-emojis/1F468-1F3FE-200D-1F9BC.png","/png-emojis/1F468-1F3FF-200D-1F9BC.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4857,13 +4533,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦽‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9BD-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9BD-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FC-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FD-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FE-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F468-1F3FF-200D-1F9BD-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4872,13 +4542,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍🦽",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-1F9BD",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-1F9BD.png",
-      "/png-emojis/1F468-1F3FC-200D-1F9BD.png",
-      "/png-emojis/1F468-1F3FD-200D-1F9BD.png",
-      "/png-emojis/1F468-1F3FE-200D-1F9BD.png",
-      "/png-emojis/1F468-1F3FF-200D-1F9BD.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-1F9BD.png","/png-emojis/1F468-1F3FC-200D-1F9BD.png","/png-emojis/1F468-1F3FD-200D-1F9BD.png","/png-emojis/1F468-1F3FE-200D-1F9BD.png","/png-emojis/1F468-1F3FF-200D-1F9BD.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4887,13 +4551,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍⚕️",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-2695-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-2695-FE0F.png",
-      "/png-emojis/1F468-1F3FC-200D-2695-FE0F.png",
-      "/png-emojis/1F468-1F3FD-200D-2695-FE0F.png",
-      "/png-emojis/1F468-1F3FE-200D-2695-FE0F.png",
-      "/png-emojis/1F468-1F3FF-200D-2695-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-2695-FE0F.png","/png-emojis/1F468-1F3FC-200D-2695-FE0F.png","/png-emojis/1F468-1F3FD-200D-2695-FE0F.png","/png-emojis/1F468-1F3FE-200D-2695-FE0F.png","/png-emojis/1F468-1F3FF-200D-2695-FE0F.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4902,13 +4560,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍⚖️",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-2696-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-2696-FE0F.png",
-      "/png-emojis/1F468-1F3FC-200D-2696-FE0F.png",
-      "/png-emojis/1F468-1F3FD-200D-2696-FE0F.png",
-      "/png-emojis/1F468-1F3FE-200D-2696-FE0F.png",
-      "/png-emojis/1F468-1F3FF-200D-2696-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-2696-FE0F.png","/png-emojis/1F468-1F3FC-200D-2696-FE0F.png","/png-emojis/1F468-1F3FD-200D-2696-FE0F.png","/png-emojis/1F468-1F3FE-200D-2696-FE0F.png","/png-emojis/1F468-1F3FF-200D-2696-FE0F.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4917,13 +4569,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍✈️",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-2708-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-2708-FE0F.png",
-      "/png-emojis/1F468-1F3FC-200D-2708-FE0F.png",
-      "/png-emojis/1F468-1F3FD-200D-2708-FE0F.png",
-      "/png-emojis/1F468-1F3FE-200D-2708-FE0F.png",
-      "/png-emojis/1F468-1F3FF-200D-2708-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-2708-FE0F.png","/png-emojis/1F468-1F3FC-200D-2708-FE0F.png","/png-emojis/1F468-1F3FD-200D-2708-FE0F.png","/png-emojis/1F468-1F3FE-200D-2708-FE0F.png","/png-emojis/1F468-1F3FF-200D-2708-FE0F.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4932,33 +4578,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍❤️‍👨",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-2764-FE0F-200D-1F468",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FF.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FF.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FF.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FF.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FF.png"],
   },
   {
     name: "Emoji 1F468",
@@ -4967,33 +4587,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨‍❤️‍💋‍👨",
     hasSkinTones: true,
     baseEmoji: "1F468-200D-2764-FE0F-200D-1F48B-200D-1F468",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png"],
   },
   {
     name: "Emoji 1F468",
@@ -5002,13 +4596,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👨",
     hasSkinTones: true,
     baseEmoji: "1F468",
-    skinToneVariants: [
-      "/png-emojis/1F468-1F3FB.png",
-      "/png-emojis/1F468-1F3FC.png",
-      "/png-emojis/1F468-1F3FD.png",
-      "/png-emojis/1F468-1F3FE.png",
-      "/png-emojis/1F468-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F468-1F3FB.png","/png-emojis/1F468-1F3FC.png","/png-emojis/1F468-1F3FD.png","/png-emojis/1F468-1F3FE.png","/png-emojis/1F468-1F3FF.png"],
   },
   {
     name: "Emoji 1F468",
@@ -5113,13 +4701,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🌾",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F33E",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F33E.png",
-      "/png-emojis/1F469-1F3FC-200D-1F33E.png",
-      "/png-emojis/1F469-1F3FD-200D-1F33E.png",
-      "/png-emojis/1F469-1F3FE-200D-1F33E.png",
-      "/png-emojis/1F469-1F3FF-200D-1F33E.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F33E.png","/png-emojis/1F469-1F3FC-200D-1F33E.png","/png-emojis/1F469-1F3FD-200D-1F33E.png","/png-emojis/1F469-1F3FE-200D-1F33E.png","/png-emojis/1F469-1F3FF-200D-1F33E.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5128,13 +4710,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🍳",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F373",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F373.png",
-      "/png-emojis/1F469-1F3FC-200D-1F373.png",
-      "/png-emojis/1F469-1F3FD-200D-1F373.png",
-      "/png-emojis/1F469-1F3FE-200D-1F373.png",
-      "/png-emojis/1F469-1F3FF-200D-1F373.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F373.png","/png-emojis/1F469-1F3FC-200D-1F373.png","/png-emojis/1F469-1F3FD-200D-1F373.png","/png-emojis/1F469-1F3FE-200D-1F373.png","/png-emojis/1F469-1F3FF-200D-1F373.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5143,13 +4719,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🍼",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F37C",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F37C.png",
-      "/png-emojis/1F469-1F3FC-200D-1F37C.png",
-      "/png-emojis/1F469-1F3FD-200D-1F37C.png",
-      "/png-emojis/1F469-1F3FE-200D-1F37C.png",
-      "/png-emojis/1F469-1F3FF-200D-1F37C.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F37C.png","/png-emojis/1F469-1F3FC-200D-1F37C.png","/png-emojis/1F469-1F3FD-200D-1F37C.png","/png-emojis/1F469-1F3FE-200D-1F37C.png","/png-emojis/1F469-1F3FF-200D-1F37C.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5158,13 +4728,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🎓",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F393",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F393.png",
-      "/png-emojis/1F469-1F3FC-200D-1F393.png",
-      "/png-emojis/1F469-1F3FD-200D-1F393.png",
-      "/png-emojis/1F469-1F3FE-200D-1F393.png",
-      "/png-emojis/1F469-1F3FF-200D-1F393.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F393.png","/png-emojis/1F469-1F3FC-200D-1F393.png","/png-emojis/1F469-1F3FD-200D-1F393.png","/png-emojis/1F469-1F3FE-200D-1F393.png","/png-emojis/1F469-1F3FF-200D-1F393.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5173,13 +4737,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🎤",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F3A4",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F3A4.png",
-      "/png-emojis/1F469-1F3FC-200D-1F3A4.png",
-      "/png-emojis/1F469-1F3FD-200D-1F3A4.png",
-      "/png-emojis/1F469-1F3FE-200D-1F3A4.png",
-      "/png-emojis/1F469-1F3FF-200D-1F3A4.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F3A4.png","/png-emojis/1F469-1F3FC-200D-1F3A4.png","/png-emojis/1F469-1F3FD-200D-1F3A4.png","/png-emojis/1F469-1F3FE-200D-1F3A4.png","/png-emojis/1F469-1F3FF-200D-1F3A4.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5188,13 +4746,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🎨",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F3A8",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F3A8.png",
-      "/png-emojis/1F469-1F3FC-200D-1F3A8.png",
-      "/png-emojis/1F469-1F3FD-200D-1F3A8.png",
-      "/png-emojis/1F469-1F3FE-200D-1F3A8.png",
-      "/png-emojis/1F469-1F3FF-200D-1F3A8.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F3A8.png","/png-emojis/1F469-1F3FC-200D-1F3A8.png","/png-emojis/1F469-1F3FD-200D-1F3A8.png","/png-emojis/1F469-1F3FE-200D-1F3A8.png","/png-emojis/1F469-1F3FF-200D-1F3A8.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5203,13 +4755,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🏫",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F3EB",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F3EB.png",
-      "/png-emojis/1F469-1F3FC-200D-1F3EB.png",
-      "/png-emojis/1F469-1F3FD-200D-1F3EB.png",
-      "/png-emojis/1F469-1F3FE-200D-1F3EB.png",
-      "/png-emojis/1F469-1F3FF-200D-1F3EB.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F3EB.png","/png-emojis/1F469-1F3FC-200D-1F3EB.png","/png-emojis/1F469-1F3FD-200D-1F3EB.png","/png-emojis/1F469-1F3FE-200D-1F3EB.png","/png-emojis/1F469-1F3FF-200D-1F3EB.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5218,13 +4764,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🏭",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F3ED",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F3ED.png",
-      "/png-emojis/1F469-1F3FC-200D-1F3ED.png",
-      "/png-emojis/1F469-1F3FD-200D-1F3ED.png",
-      "/png-emojis/1F469-1F3FE-200D-1F3ED.png",
-      "/png-emojis/1F469-1F3FF-200D-1F3ED.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F3ED.png","/png-emojis/1F469-1F3FC-200D-1F3ED.png","/png-emojis/1F469-1F3FD-200D-1F3ED.png","/png-emojis/1F469-1F3FE-200D-1F3ED.png","/png-emojis/1F469-1F3FF-200D-1F3ED.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5233,13 +4773,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍💻",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F4BB",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F4BB.png",
-      "/png-emojis/1F469-1F3FC-200D-1F4BB.png",
-      "/png-emojis/1F469-1F3FD-200D-1F4BB.png",
-      "/png-emojis/1F469-1F3FE-200D-1F4BB.png",
-      "/png-emojis/1F469-1F3FF-200D-1F4BB.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F4BB.png","/png-emojis/1F469-1F3FC-200D-1F4BB.png","/png-emojis/1F469-1F3FD-200D-1F4BB.png","/png-emojis/1F469-1F3FE-200D-1F4BB.png","/png-emojis/1F469-1F3FF-200D-1F4BB.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5248,13 +4782,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍💼",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F4BC",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F4BC.png",
-      "/png-emojis/1F469-1F3FC-200D-1F4BC.png",
-      "/png-emojis/1F469-1F3FD-200D-1F4BC.png",
-      "/png-emojis/1F469-1F3FE-200D-1F4BC.png",
-      "/png-emojis/1F469-1F3FF-200D-1F4BC.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F4BC.png","/png-emojis/1F469-1F3FC-200D-1F4BC.png","/png-emojis/1F469-1F3FD-200D-1F4BC.png","/png-emojis/1F469-1F3FE-200D-1F4BC.png","/png-emojis/1F469-1F3FF-200D-1F4BC.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5263,13 +4791,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🔧",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F527",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F527.png",
-      "/png-emojis/1F469-1F3FC-200D-1F527.png",
-      "/png-emojis/1F469-1F3FD-200D-1F527.png",
-      "/png-emojis/1F469-1F3FE-200D-1F527.png",
-      "/png-emojis/1F469-1F3FF-200D-1F527.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F527.png","/png-emojis/1F469-1F3FC-200D-1F527.png","/png-emojis/1F469-1F3FD-200D-1F527.png","/png-emojis/1F469-1F3FE-200D-1F527.png","/png-emojis/1F469-1F3FF-200D-1F527.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5278,13 +4800,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🔬",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F52C",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F52C.png",
-      "/png-emojis/1F469-1F3FC-200D-1F52C.png",
-      "/png-emojis/1F469-1F3FD-200D-1F52C.png",
-      "/png-emojis/1F469-1F3FE-200D-1F52C.png",
-      "/png-emojis/1F469-1F3FF-200D-1F52C.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F52C.png","/png-emojis/1F469-1F3FC-200D-1F52C.png","/png-emojis/1F469-1F3FD-200D-1F52C.png","/png-emojis/1F469-1F3FE-200D-1F52C.png","/png-emojis/1F469-1F3FF-200D-1F52C.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5293,13 +4809,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🚀",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F680",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F680.png",
-      "/png-emojis/1F469-1F3FC-200D-1F680.png",
-      "/png-emojis/1F469-1F3FD-200D-1F680.png",
-      "/png-emojis/1F469-1F3FE-200D-1F680.png",
-      "/png-emojis/1F469-1F3FF-200D-1F680.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F680.png","/png-emojis/1F469-1F3FC-200D-1F680.png","/png-emojis/1F469-1F3FD-200D-1F680.png","/png-emojis/1F469-1F3FE-200D-1F680.png","/png-emojis/1F469-1F3FF-200D-1F680.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5308,13 +4818,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🚒",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F692",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F692.png",
-      "/png-emojis/1F469-1F3FC-200D-1F692.png",
-      "/png-emojis/1F469-1F3FD-200D-1F692.png",
-      "/png-emojis/1F469-1F3FE-200D-1F692.png",
-      "/png-emojis/1F469-1F3FF-200D-1F692.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F692.png","/png-emojis/1F469-1F3FC-200D-1F692.png","/png-emojis/1F469-1F3FD-200D-1F692.png","/png-emojis/1F469-1F3FE-200D-1F692.png","/png-emojis/1F469-1F3FF-200D-1F692.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5323,13 +4827,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦯‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9AF-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9AF-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FC-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FD-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FE-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FF-200D-1F9AF-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5338,13 +4836,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦯",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9AF",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9AF.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9AF.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9AF.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9AF.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9AF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9AF.png","/png-emojis/1F469-1F3FC-200D-1F9AF.png","/png-emojis/1F469-1F3FD-200D-1F9AF.png","/png-emojis/1F469-1F3FE-200D-1F9AF.png","/png-emojis/1F469-1F3FF-200D-1F9AF.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5353,13 +4845,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦰",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9B0",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9B0.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9B0.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9B0.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9B0.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9B0.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9B0.png","/png-emojis/1F469-1F3FC-200D-1F9B0.png","/png-emojis/1F469-1F3FD-200D-1F9B0.png","/png-emojis/1F469-1F3FE-200D-1F9B0.png","/png-emojis/1F469-1F3FF-200D-1F9B0.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5368,13 +4854,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦱",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9B1",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9B1.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9B1.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9B1.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9B1.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9B1.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9B1.png","/png-emojis/1F469-1F3FC-200D-1F9B1.png","/png-emojis/1F469-1F3FD-200D-1F9B1.png","/png-emojis/1F469-1F3FE-200D-1F9B1.png","/png-emojis/1F469-1F3FF-200D-1F9B1.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5383,13 +4863,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦲",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9B2",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9B2.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9B2.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9B2.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9B2.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9B2.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9B2.png","/png-emojis/1F469-1F3FC-200D-1F9B2.png","/png-emojis/1F469-1F3FD-200D-1F9B2.png","/png-emojis/1F469-1F3FE-200D-1F9B2.png","/png-emojis/1F469-1F3FF-200D-1F9B2.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5398,13 +4872,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦳",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9B3",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9B3.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9B3.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9B3.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9B3.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9B3.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9B3.png","/png-emojis/1F469-1F3FC-200D-1F9B3.png","/png-emojis/1F469-1F3FD-200D-1F9B3.png","/png-emojis/1F469-1F3FE-200D-1F9B3.png","/png-emojis/1F469-1F3FF-200D-1F9B3.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5413,13 +4881,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦼‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9BC-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9BC-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FC-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FD-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FE-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FF-200D-1F9BC-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5428,13 +4890,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦼",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9BC",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9BC.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9BC.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9BC.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9BC.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9BC.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9BC.png","/png-emojis/1F469-1F3FC-200D-1F9BC.png","/png-emojis/1F469-1F3FD-200D-1F9BC.png","/png-emojis/1F469-1F3FE-200D-1F9BC.png","/png-emojis/1F469-1F3FF-200D-1F9BC.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5443,13 +4899,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦽‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9BD-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9BD-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FC-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FD-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FE-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F469-1F3FF-200D-1F9BD-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5458,13 +4908,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍🦽",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-1F9BD",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-1F9BD.png",
-      "/png-emojis/1F469-1F3FC-200D-1F9BD.png",
-      "/png-emojis/1F469-1F3FD-200D-1F9BD.png",
-      "/png-emojis/1F469-1F3FE-200D-1F9BD.png",
-      "/png-emojis/1F469-1F3FF-200D-1F9BD.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-1F9BD.png","/png-emojis/1F469-1F3FC-200D-1F9BD.png","/png-emojis/1F469-1F3FD-200D-1F9BD.png","/png-emojis/1F469-1F3FE-200D-1F9BD.png","/png-emojis/1F469-1F3FF-200D-1F9BD.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5473,13 +4917,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍⚕️",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-2695-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-2695-FE0F.png",
-      "/png-emojis/1F469-1F3FC-200D-2695-FE0F.png",
-      "/png-emojis/1F469-1F3FD-200D-2695-FE0F.png",
-      "/png-emojis/1F469-1F3FE-200D-2695-FE0F.png",
-      "/png-emojis/1F469-1F3FF-200D-2695-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-2695-FE0F.png","/png-emojis/1F469-1F3FC-200D-2695-FE0F.png","/png-emojis/1F469-1F3FD-200D-2695-FE0F.png","/png-emojis/1F469-1F3FE-200D-2695-FE0F.png","/png-emojis/1F469-1F3FF-200D-2695-FE0F.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5488,13 +4926,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍⚖️",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-2696-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-2696-FE0F.png",
-      "/png-emojis/1F469-1F3FC-200D-2696-FE0F.png",
-      "/png-emojis/1F469-1F3FD-200D-2696-FE0F.png",
-      "/png-emojis/1F469-1F3FE-200D-2696-FE0F.png",
-      "/png-emojis/1F469-1F3FF-200D-2696-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-2696-FE0F.png","/png-emojis/1F469-1F3FC-200D-2696-FE0F.png","/png-emojis/1F469-1F3FD-200D-2696-FE0F.png","/png-emojis/1F469-1F3FE-200D-2696-FE0F.png","/png-emojis/1F469-1F3FF-200D-2696-FE0F.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5503,13 +4935,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍✈️",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-2708-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-2708-FE0F.png",
-      "/png-emojis/1F469-1F3FC-200D-2708-FE0F.png",
-      "/png-emojis/1F469-1F3FD-200D-2708-FE0F.png",
-      "/png-emojis/1F469-1F3FE-200D-2708-FE0F.png",
-      "/png-emojis/1F469-1F3FF-200D-2708-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-2708-FE0F.png","/png-emojis/1F469-1F3FC-200D-2708-FE0F.png","/png-emojis/1F469-1F3FD-200D-2708-FE0F.png","/png-emojis/1F469-1F3FE-200D-2708-FE0F.png","/png-emojis/1F469-1F3FF-200D-2708-FE0F.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5518,33 +4944,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍❤️‍👨",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-2764-FE0F-200D-1F468",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FF.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FF.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FF.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FF.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FF.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5553,33 +4953,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍❤️‍👩",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-2764-FE0F-200D-1F469",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FF.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FF.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FF.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FF.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FF.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FF.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FF.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FF.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FF.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5588,33 +4962,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍❤️‍💋‍👨",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-2764-FE0F-200D-1F48B-200D-1F468",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5623,33 +4971,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩‍❤️‍💋‍👩",
     hasSkinTones: true,
     baseEmoji: "1F469-200D-2764-FE0F-200D-1F48B-200D-1F469",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FB.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FC.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FD.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FE.png","/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5658,13 +4980,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👩",
     hasSkinTones: true,
     baseEmoji: "1F469",
-    skinToneVariants: [
-      "/png-emojis/1F469-1F3FB.png",
-      "/png-emojis/1F469-1F3FC.png",
-      "/png-emojis/1F469-1F3FD.png",
-      "/png-emojis/1F469-1F3FE.png",
-      "/png-emojis/1F469-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F469-1F3FB.png","/png-emojis/1F469-1F3FC.png","/png-emojis/1F469-1F3FD.png","/png-emojis/1F469-1F3FE.png","/png-emojis/1F469-1F3FF.png"],
   },
   {
     name: "Emoji 1F469",
@@ -5745,13 +5061,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👫",
     hasSkinTones: true,
     baseEmoji: "1F46B",
-    skinToneVariants: [
-      "/png-emojis/1F46B-1F3FB.png",
-      "/png-emojis/1F46B-1F3FC.png",
-      "/png-emojis/1F46B-1F3FD.png",
-      "/png-emojis/1F46B-1F3FE.png",
-      "/png-emojis/1F46B-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F46B-1F3FB.png","/png-emojis/1F46B-1F3FC.png","/png-emojis/1F46B-1F3FD.png","/png-emojis/1F46B-1F3FE.png","/png-emojis/1F46B-1F3FF.png"],
   },
   {
     name: "Emoji 1F46C",
@@ -5760,13 +5070,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👬",
     hasSkinTones: true,
     baseEmoji: "1F46C",
-    skinToneVariants: [
-      "/png-emojis/1F46C-1F3FB.png",
-      "/png-emojis/1F46C-1F3FC.png",
-      "/png-emojis/1F46C-1F3FD.png",
-      "/png-emojis/1F46C-1F3FE.png",
-      "/png-emojis/1F46C-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F46C-1F3FB.png","/png-emojis/1F46C-1F3FC.png","/png-emojis/1F46C-1F3FD.png","/png-emojis/1F46C-1F3FE.png","/png-emojis/1F46C-1F3FF.png"],
   },
   {
     name: "Emoji 1F46D",
@@ -5775,13 +5079,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👭",
     hasSkinTones: true,
     baseEmoji: "1F46D",
-    skinToneVariants: [
-      "/png-emojis/1F46D-1F3FB.png",
-      "/png-emojis/1F46D-1F3FC.png",
-      "/png-emojis/1F46D-1F3FD.png",
-      "/png-emojis/1F46D-1F3FE.png",
-      "/png-emojis/1F46D-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F46D-1F3FB.png","/png-emojis/1F46D-1F3FC.png","/png-emojis/1F46D-1F3FD.png","/png-emojis/1F46D-1F3FE.png","/png-emojis/1F46D-1F3FF.png"],
   },
   {
     name: "Emoji 1F46E",
@@ -5790,13 +5088,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👮‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F46E-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F46E-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F46E-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F46E-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F46E-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F46E-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F46E-1F3FB-200D-2640-FE0F.png","/png-emojis/1F46E-1F3FC-200D-2640-FE0F.png","/png-emojis/1F46E-1F3FD-200D-2640-FE0F.png","/png-emojis/1F46E-1F3FE-200D-2640-FE0F.png","/png-emojis/1F46E-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F46E",
@@ -5805,13 +5097,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👮‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F46E-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F46E-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F46E-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F46E-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F46E-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F46E-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F46E-1F3FB-200D-2642-FE0F.png","/png-emojis/1F46E-1F3FC-200D-2642-FE0F.png","/png-emojis/1F46E-1F3FD-200D-2642-FE0F.png","/png-emojis/1F46E-1F3FE-200D-2642-FE0F.png","/png-emojis/1F46E-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F46E",
@@ -5820,13 +5106,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👮",
     hasSkinTones: true,
     baseEmoji: "1F46E",
-    skinToneVariants: [
-      "/png-emojis/1F46E-1F3FB.png",
-      "/png-emojis/1F46E-1F3FC.png",
-      "/png-emojis/1F46E-1F3FD.png",
-      "/png-emojis/1F46E-1F3FE.png",
-      "/png-emojis/1F46E-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F46E-1F3FB.png","/png-emojis/1F46E-1F3FC.png","/png-emojis/1F46E-1F3FD.png","/png-emojis/1F46E-1F3FE.png","/png-emojis/1F46E-1F3FF.png"],
   },
   {
     name: "Emoji 1F46F",
@@ -5853,13 +5133,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👰‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F470-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F470-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F470-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F470-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F470-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F470-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F470-1F3FB-200D-2640-FE0F.png","/png-emojis/1F470-1F3FC-200D-2640-FE0F.png","/png-emojis/1F470-1F3FD-200D-2640-FE0F.png","/png-emojis/1F470-1F3FE-200D-2640-FE0F.png","/png-emojis/1F470-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F470",
@@ -5868,13 +5142,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👰‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F470-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F470-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F470-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F470-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F470-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F470-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F470-1F3FB-200D-2642-FE0F.png","/png-emojis/1F470-1F3FC-200D-2642-FE0F.png","/png-emojis/1F470-1F3FD-200D-2642-FE0F.png","/png-emojis/1F470-1F3FE-200D-2642-FE0F.png","/png-emojis/1F470-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F470",
@@ -5883,13 +5151,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👰",
     hasSkinTones: true,
     baseEmoji: "1F470",
-    skinToneVariants: [
-      "/png-emojis/1F470-1F3FB.png",
-      "/png-emojis/1F470-1F3FC.png",
-      "/png-emojis/1F470-1F3FD.png",
-      "/png-emojis/1F470-1F3FE.png",
-      "/png-emojis/1F470-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F470-1F3FB.png","/png-emojis/1F470-1F3FC.png","/png-emojis/1F470-1F3FD.png","/png-emojis/1F470-1F3FE.png","/png-emojis/1F470-1F3FF.png"],
   },
   {
     name: "Emoji 1F471",
@@ -5898,13 +5160,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👱‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F471-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F471-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F471-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F471-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F471-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F471-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F471-1F3FB-200D-2640-FE0F.png","/png-emojis/1F471-1F3FC-200D-2640-FE0F.png","/png-emojis/1F471-1F3FD-200D-2640-FE0F.png","/png-emojis/1F471-1F3FE-200D-2640-FE0F.png","/png-emojis/1F471-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F471",
@@ -5913,13 +5169,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👱‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F471-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F471-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F471-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F471-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F471-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F471-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F471-1F3FB-200D-2642-FE0F.png","/png-emojis/1F471-1F3FC-200D-2642-FE0F.png","/png-emojis/1F471-1F3FD-200D-2642-FE0F.png","/png-emojis/1F471-1F3FE-200D-2642-FE0F.png","/png-emojis/1F471-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F471",
@@ -5928,13 +5178,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👱",
     hasSkinTones: true,
     baseEmoji: "1F471",
-    skinToneVariants: [
-      "/png-emojis/1F471-1F3FB.png",
-      "/png-emojis/1F471-1F3FC.png",
-      "/png-emojis/1F471-1F3FD.png",
-      "/png-emojis/1F471-1F3FE.png",
-      "/png-emojis/1F471-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F471-1F3FB.png","/png-emojis/1F471-1F3FC.png","/png-emojis/1F471-1F3FD.png","/png-emojis/1F471-1F3FE.png","/png-emojis/1F471-1F3FF.png"],
   },
   {
     name: "Emoji 1F472",
@@ -5943,13 +5187,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👲",
     hasSkinTones: true,
     baseEmoji: "1F472",
-    skinToneVariants: [
-      "/png-emojis/1F472-1F3FB.png",
-      "/png-emojis/1F472-1F3FC.png",
-      "/png-emojis/1F472-1F3FD.png",
-      "/png-emojis/1F472-1F3FE.png",
-      "/png-emojis/1F472-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F472-1F3FB.png","/png-emojis/1F472-1F3FC.png","/png-emojis/1F472-1F3FD.png","/png-emojis/1F472-1F3FE.png","/png-emojis/1F472-1F3FF.png"],
   },
   {
     name: "Emoji 1F473",
@@ -5958,13 +5196,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👳‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F473-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F473-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F473-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F473-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F473-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F473-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F473-1F3FB-200D-2640-FE0F.png","/png-emojis/1F473-1F3FC-200D-2640-FE0F.png","/png-emojis/1F473-1F3FD-200D-2640-FE0F.png","/png-emojis/1F473-1F3FE-200D-2640-FE0F.png","/png-emojis/1F473-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F473",
@@ -5973,13 +5205,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👳‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F473-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F473-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F473-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F473-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F473-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F473-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F473-1F3FB-200D-2642-FE0F.png","/png-emojis/1F473-1F3FC-200D-2642-FE0F.png","/png-emojis/1F473-1F3FD-200D-2642-FE0F.png","/png-emojis/1F473-1F3FE-200D-2642-FE0F.png","/png-emojis/1F473-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F473",
@@ -5988,13 +5214,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👳",
     hasSkinTones: true,
     baseEmoji: "1F473",
-    skinToneVariants: [
-      "/png-emojis/1F473-1F3FB.png",
-      "/png-emojis/1F473-1F3FC.png",
-      "/png-emojis/1F473-1F3FD.png",
-      "/png-emojis/1F473-1F3FE.png",
-      "/png-emojis/1F473-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F473-1F3FB.png","/png-emojis/1F473-1F3FC.png","/png-emojis/1F473-1F3FD.png","/png-emojis/1F473-1F3FE.png","/png-emojis/1F473-1F3FF.png"],
   },
   {
     name: "Emoji 1F474",
@@ -6003,13 +5223,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👴",
     hasSkinTones: true,
     baseEmoji: "1F474",
-    skinToneVariants: [
-      "/png-emojis/1F474-1F3FB.png",
-      "/png-emojis/1F474-1F3FC.png",
-      "/png-emojis/1F474-1F3FD.png",
-      "/png-emojis/1F474-1F3FE.png",
-      "/png-emojis/1F474-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F474-1F3FB.png","/png-emojis/1F474-1F3FC.png","/png-emojis/1F474-1F3FD.png","/png-emojis/1F474-1F3FE.png","/png-emojis/1F474-1F3FF.png"],
   },
   {
     name: "Emoji 1F475",
@@ -6018,13 +5232,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👵",
     hasSkinTones: true,
     baseEmoji: "1F475",
-    skinToneVariants: [
-      "/png-emojis/1F475-1F3FB.png",
-      "/png-emojis/1F475-1F3FC.png",
-      "/png-emojis/1F475-1F3FD.png",
-      "/png-emojis/1F475-1F3FE.png",
-      "/png-emojis/1F475-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F475-1F3FB.png","/png-emojis/1F475-1F3FC.png","/png-emojis/1F475-1F3FD.png","/png-emojis/1F475-1F3FE.png","/png-emojis/1F475-1F3FF.png"],
   },
   {
     name: "Emoji 1F476",
@@ -6033,13 +5241,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👶",
     hasSkinTones: true,
     baseEmoji: "1F476",
-    skinToneVariants: [
-      "/png-emojis/1F476-1F3FB.png",
-      "/png-emojis/1F476-1F3FC.png",
-      "/png-emojis/1F476-1F3FD.png",
-      "/png-emojis/1F476-1F3FE.png",
-      "/png-emojis/1F476-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F476-1F3FB.png","/png-emojis/1F476-1F3FC.png","/png-emojis/1F476-1F3FD.png","/png-emojis/1F476-1F3FE.png","/png-emojis/1F476-1F3FF.png"],
   },
   {
     name: "Emoji 1F477",
@@ -6048,13 +5250,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👷‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F477-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F477-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F477-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F477-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F477-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F477-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F477-1F3FB-200D-2640-FE0F.png","/png-emojis/1F477-1F3FC-200D-2640-FE0F.png","/png-emojis/1F477-1F3FD-200D-2640-FE0F.png","/png-emojis/1F477-1F3FE-200D-2640-FE0F.png","/png-emojis/1F477-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F477",
@@ -6063,13 +5259,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👷‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F477-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F477-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F477-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F477-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F477-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F477-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F477-1F3FB-200D-2642-FE0F.png","/png-emojis/1F477-1F3FC-200D-2642-FE0F.png","/png-emojis/1F477-1F3FD-200D-2642-FE0F.png","/png-emojis/1F477-1F3FE-200D-2642-FE0F.png","/png-emojis/1F477-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F477",
@@ -6078,13 +5268,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👷",
     hasSkinTones: true,
     baseEmoji: "1F477",
-    skinToneVariants: [
-      "/png-emojis/1F477-1F3FB.png",
-      "/png-emojis/1F477-1F3FC.png",
-      "/png-emojis/1F477-1F3FD.png",
-      "/png-emojis/1F477-1F3FE.png",
-      "/png-emojis/1F477-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F477-1F3FB.png","/png-emojis/1F477-1F3FC.png","/png-emojis/1F477-1F3FD.png","/png-emojis/1F477-1F3FE.png","/png-emojis/1F477-1F3FF.png"],
   },
   {
     name: "Emoji 1F478",
@@ -6093,13 +5277,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👸",
     hasSkinTones: true,
     baseEmoji: "1F478",
-    skinToneVariants: [
-      "/png-emojis/1F478-1F3FB.png",
-      "/png-emojis/1F478-1F3FC.png",
-      "/png-emojis/1F478-1F3FD.png",
-      "/png-emojis/1F478-1F3FE.png",
-      "/png-emojis/1F478-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F478-1F3FB.png","/png-emojis/1F478-1F3FC.png","/png-emojis/1F478-1F3FD.png","/png-emojis/1F478-1F3FE.png","/png-emojis/1F478-1F3FF.png"],
   },
   {
     name: "Emoji 1F479",
@@ -6126,13 +5304,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "👼",
     hasSkinTones: true,
     baseEmoji: "1F47C",
-    skinToneVariants: [
-      "/png-emojis/1F47C-1F3FB.png",
-      "/png-emojis/1F47C-1F3FC.png",
-      "/png-emojis/1F47C-1F3FD.png",
-      "/png-emojis/1F47C-1F3FE.png",
-      "/png-emojis/1F47C-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F47C-1F3FB.png","/png-emojis/1F47C-1F3FC.png","/png-emojis/1F47C-1F3FD.png","/png-emojis/1F47C-1F3FE.png","/png-emojis/1F47C-1F3FF.png"],
   },
   {
     name: "Emoji 1F47D",
@@ -6165,13 +5337,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💁‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F481-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F481-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F481-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F481-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F481-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F481-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F481-1F3FB-200D-2640-FE0F.png","/png-emojis/1F481-1F3FC-200D-2640-FE0F.png","/png-emojis/1F481-1F3FD-200D-2640-FE0F.png","/png-emojis/1F481-1F3FE-200D-2640-FE0F.png","/png-emojis/1F481-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F481",
@@ -6180,13 +5346,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💁‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F481-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F481-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F481-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F481-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F481-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F481-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F481-1F3FB-200D-2642-FE0F.png","/png-emojis/1F481-1F3FC-200D-2642-FE0F.png","/png-emojis/1F481-1F3FD-200D-2642-FE0F.png","/png-emojis/1F481-1F3FE-200D-2642-FE0F.png","/png-emojis/1F481-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F481",
@@ -6195,13 +5355,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💁",
     hasSkinTones: true,
     baseEmoji: "1F481",
-    skinToneVariants: [
-      "/png-emojis/1F481-1F3FB.png",
-      "/png-emojis/1F481-1F3FC.png",
-      "/png-emojis/1F481-1F3FD.png",
-      "/png-emojis/1F481-1F3FE.png",
-      "/png-emojis/1F481-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F481-1F3FB.png","/png-emojis/1F481-1F3FC.png","/png-emojis/1F481-1F3FD.png","/png-emojis/1F481-1F3FE.png","/png-emojis/1F481-1F3FF.png"],
   },
   {
     name: "Emoji 1F482",
@@ -6210,13 +5364,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💂‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F482-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F482-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F482-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F482-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F482-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F482-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F482-1F3FB-200D-2640-FE0F.png","/png-emojis/1F482-1F3FC-200D-2640-FE0F.png","/png-emojis/1F482-1F3FD-200D-2640-FE0F.png","/png-emojis/1F482-1F3FE-200D-2640-FE0F.png","/png-emojis/1F482-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F482",
@@ -6225,13 +5373,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💂‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F482-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F482-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F482-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F482-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F482-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F482-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F482-1F3FB-200D-2642-FE0F.png","/png-emojis/1F482-1F3FC-200D-2642-FE0F.png","/png-emojis/1F482-1F3FD-200D-2642-FE0F.png","/png-emojis/1F482-1F3FE-200D-2642-FE0F.png","/png-emojis/1F482-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F482",
@@ -6240,13 +5382,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💂",
     hasSkinTones: true,
     baseEmoji: "1F482",
-    skinToneVariants: [
-      "/png-emojis/1F482-1F3FB.png",
-      "/png-emojis/1F482-1F3FC.png",
-      "/png-emojis/1F482-1F3FD.png",
-      "/png-emojis/1F482-1F3FE.png",
-      "/png-emojis/1F482-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F482-1F3FB.png","/png-emojis/1F482-1F3FC.png","/png-emojis/1F482-1F3FD.png","/png-emojis/1F482-1F3FE.png","/png-emojis/1F482-1F3FF.png"],
   },
   {
     name: "Emoji 1F483",
@@ -6255,13 +5391,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💃",
     hasSkinTones: true,
     baseEmoji: "1F483",
-    skinToneVariants: [
-      "/png-emojis/1F483-1F3FB.png",
-      "/png-emojis/1F483-1F3FC.png",
-      "/png-emojis/1F483-1F3FD.png",
-      "/png-emojis/1F483-1F3FE.png",
-      "/png-emojis/1F483-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F483-1F3FB.png","/png-emojis/1F483-1F3FC.png","/png-emojis/1F483-1F3FD.png","/png-emojis/1F483-1F3FE.png","/png-emojis/1F483-1F3FF.png"],
   },
   {
     name: "Emoji 1F484",
@@ -6276,13 +5406,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💅",
     hasSkinTones: true,
     baseEmoji: "1F485",
-    skinToneVariants: [
-      "/png-emojis/1F485-1F3FB.png",
-      "/png-emojis/1F485-1F3FC.png",
-      "/png-emojis/1F485-1F3FD.png",
-      "/png-emojis/1F485-1F3FE.png",
-      "/png-emojis/1F485-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F485-1F3FB.png","/png-emojis/1F485-1F3FC.png","/png-emojis/1F485-1F3FD.png","/png-emojis/1F485-1F3FE.png","/png-emojis/1F485-1F3FF.png"],
   },
   {
     name: "Emoji 1F486",
@@ -6291,13 +5415,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💆‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F486-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F486-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F486-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F486-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F486-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F486-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F486-1F3FB-200D-2640-FE0F.png","/png-emojis/1F486-1F3FC-200D-2640-FE0F.png","/png-emojis/1F486-1F3FD-200D-2640-FE0F.png","/png-emojis/1F486-1F3FE-200D-2640-FE0F.png","/png-emojis/1F486-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F486",
@@ -6306,13 +5424,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💆‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F486-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F486-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F486-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F486-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F486-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F486-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F486-1F3FB-200D-2642-FE0F.png","/png-emojis/1F486-1F3FC-200D-2642-FE0F.png","/png-emojis/1F486-1F3FD-200D-2642-FE0F.png","/png-emojis/1F486-1F3FE-200D-2642-FE0F.png","/png-emojis/1F486-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F486",
@@ -6321,13 +5433,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💆",
     hasSkinTones: true,
     baseEmoji: "1F486",
-    skinToneVariants: [
-      "/png-emojis/1F486-1F3FB.png",
-      "/png-emojis/1F486-1F3FC.png",
-      "/png-emojis/1F486-1F3FD.png",
-      "/png-emojis/1F486-1F3FE.png",
-      "/png-emojis/1F486-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F486-1F3FB.png","/png-emojis/1F486-1F3FC.png","/png-emojis/1F486-1F3FD.png","/png-emojis/1F486-1F3FE.png","/png-emojis/1F486-1F3FF.png"],
   },
   {
     name: "Emoji 1F487",
@@ -6336,13 +5442,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💇‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F487-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F487-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F487-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F487-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F487-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F487-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F487-1F3FB-200D-2640-FE0F.png","/png-emojis/1F487-1F3FC-200D-2640-FE0F.png","/png-emojis/1F487-1F3FD-200D-2640-FE0F.png","/png-emojis/1F487-1F3FE-200D-2640-FE0F.png","/png-emojis/1F487-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F487",
@@ -6351,13 +5451,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💇‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F487-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F487-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F487-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F487-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F487-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F487-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F487-1F3FB-200D-2642-FE0F.png","/png-emojis/1F487-1F3FC-200D-2642-FE0F.png","/png-emojis/1F487-1F3FD-200D-2642-FE0F.png","/png-emojis/1F487-1F3FE-200D-2642-FE0F.png","/png-emojis/1F487-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F487",
@@ -6366,13 +5460,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💇",
     hasSkinTones: true,
     baseEmoji: "1F487",
-    skinToneVariants: [
-      "/png-emojis/1F487-1F3FB.png",
-      "/png-emojis/1F487-1F3FC.png",
-      "/png-emojis/1F487-1F3FD.png",
-      "/png-emojis/1F487-1F3FE.png",
-      "/png-emojis/1F487-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F487-1F3FB.png","/png-emojis/1F487-1F3FC.png","/png-emojis/1F487-1F3FD.png","/png-emojis/1F487-1F3FE.png","/png-emojis/1F487-1F3FF.png"],
   },
   {
     name: "Emoji 1F488",
@@ -6423,13 +5511,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💏",
     hasSkinTones: true,
     baseEmoji: "1F48F",
-    skinToneVariants: [
-      "/png-emojis/1F48F-1F3FB.png",
-      "/png-emojis/1F48F-1F3FC.png",
-      "/png-emojis/1F48F-1F3FD.png",
-      "/png-emojis/1F48F-1F3FE.png",
-      "/png-emojis/1F48F-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F48F-1F3FB.png","/png-emojis/1F48F-1F3FC.png","/png-emojis/1F48F-1F3FD.png","/png-emojis/1F48F-1F3FE.png","/png-emojis/1F48F-1F3FF.png"],
   },
   {
     name: "Emoji 1F490",
@@ -6444,13 +5526,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💑",
     hasSkinTones: true,
     baseEmoji: "1F491",
-    skinToneVariants: [
-      "/png-emojis/1F491-1F3FB.png",
-      "/png-emojis/1F491-1F3FC.png",
-      "/png-emojis/1F491-1F3FD.png",
-      "/png-emojis/1F491-1F3FE.png",
-      "/png-emojis/1F491-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F491-1F3FB.png","/png-emojis/1F491-1F3FC.png","/png-emojis/1F491-1F3FD.png","/png-emojis/1F491-1F3FE.png","/png-emojis/1F491-1F3FF.png"],
   },
   {
     name: "Emoji 1F492",
@@ -6460,79 +5536,79 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F493",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F493.png",
     preview: "💓",
   },
   {
     name: "Emoji 1F494",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F494.png",
     preview: "💔",
   },
   {
     name: "Emoji 1F495",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F495.png",
     preview: "💕",
   },
   {
     name: "Emoji 1F496",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F496.png",
     preview: "💖",
   },
   {
     name: "Emoji 1F497",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F497.png",
     preview: "💗",
   },
   {
     name: "Emoji 1F498",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F498.png",
     preview: "💘",
   },
   {
     name: "Emoji 1F499",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F499.png",
     preview: "💙",
   },
   {
     name: "Emoji 1F49A",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F49A.png",
     preview: "💚",
   },
   {
     name: "Emoji 1F49B",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F49B.png",
     preview: "💛",
   },
   {
     name: "Emoji 1F49C",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F49C.png",
     preview: "💜",
   },
   {
     name: "Emoji 1F49D",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F49D.png",
     preview: "💝",
   },
   {
     name: "Emoji 1F49E",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F49E.png",
     preview: "💞",
   },
   {
     name: "Emoji 1F49F",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F49F.png",
     preview: "💟",
   },
@@ -6597,13 +5673,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "💪",
     hasSkinTones: true,
     baseEmoji: "1F4AA",
-    skinToneVariants: [
-      "/png-emojis/1F4AA-1F3FB.png",
-      "/png-emojis/1F4AA-1F3FC.png",
-      "/png-emojis/1F4AA-1F3FD.png",
-      "/png-emojis/1F4AA-1F3FE.png",
-      "/png-emojis/1F4AA-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F4AA-1F3FB.png","/png-emojis/1F4AA-1F3FC.png","/png-emojis/1F4AA-1F3FD.png","/png-emojis/1F4AA-1F3FE.png","/png-emojis/1F4AA-1F3FF.png"],
   },
   {
     name: "Emoji 1F4AB",
@@ -7297,13 +6367,13 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F52F",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/1F52F.png",
     preview: "🔯",
   },
   {
     name: "Emoji 1F549",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/1F549.png",
     preview: "🕉",
   },
@@ -7333,7 +6403,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F54E",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/1F54E.png",
     preview: "🕎",
   },
@@ -7356,13 +6426,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🕴",
     hasSkinTones: true,
     baseEmoji: "1F574",
-    skinToneVariants: [
-      "/png-emojis/1F574-1F3FB.png",
-      "/png-emojis/1F574-1F3FC.png",
-      "/png-emojis/1F574-1F3FD.png",
-      "/png-emojis/1F574-1F3FE.png",
-      "/png-emojis/1F574-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F574-1F3FB.png","/png-emojis/1F574-1F3FC.png","/png-emojis/1F574-1F3FD.png","/png-emojis/1F574-1F3FE.png","/png-emojis/1F574-1F3FF.png"],
   },
   {
     name: "Emoji 1F575",
@@ -7371,13 +6435,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🕵",
     hasSkinTones: true,
     baseEmoji: "1F575",
-    skinToneVariants: [
-      "/png-emojis/1F575-1F3FB.png",
-      "/png-emojis/1F575-1F3FC.png",
-      "/png-emojis/1F575-1F3FD.png",
-      "/png-emojis/1F575-1F3FE.png",
-      "/png-emojis/1F575-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F575-1F3FB.png","/png-emojis/1F575-1F3FC.png","/png-emojis/1F575-1F3FD.png","/png-emojis/1F575-1F3FE.png","/png-emojis/1F575-1F3FF.png"],
   },
   {
     name: "Emoji 1F575",
@@ -7422,13 +6480,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🕺",
     hasSkinTones: true,
     baseEmoji: "1F57A",
-    skinToneVariants: [
-      "/png-emojis/1F57A-1F3FB.png",
-      "/png-emojis/1F57A-1F3FC.png",
-      "/png-emojis/1F57A-1F3FD.png",
-      "/png-emojis/1F57A-1F3FE.png",
-      "/png-emojis/1F57A-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F57A-1F3FB.png","/png-emojis/1F57A-1F3FC.png","/png-emojis/1F57A-1F3FD.png","/png-emojis/1F57A-1F3FE.png","/png-emojis/1F57A-1F3FF.png"],
   },
   {
     name: "Emoji 1F587",
@@ -7467,13 +6519,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🖐",
     hasSkinTones: true,
     baseEmoji: "1F590",
-    skinToneVariants: [
-      "/png-emojis/1F590-1F3FB.png",
-      "/png-emojis/1F590-1F3FC.png",
-      "/png-emojis/1F590-1F3FD.png",
-      "/png-emojis/1F590-1F3FE.png",
-      "/png-emojis/1F590-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F590-1F3FB.png","/png-emojis/1F590-1F3FC.png","/png-emojis/1F590-1F3FD.png","/png-emojis/1F590-1F3FE.png","/png-emojis/1F590-1F3FF.png"],
   },
   {
     name: "Emoji 1F595",
@@ -7482,13 +6528,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🖕",
     hasSkinTones: true,
     baseEmoji: "1F595",
-    skinToneVariants: [
-      "/png-emojis/1F595-1F3FB.png",
-      "/png-emojis/1F595-1F3FC.png",
-      "/png-emojis/1F595-1F3FD.png",
-      "/png-emojis/1F595-1F3FE.png",
-      "/png-emojis/1F595-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F595-1F3FB.png","/png-emojis/1F595-1F3FC.png","/png-emojis/1F595-1F3FD.png","/png-emojis/1F595-1F3FE.png","/png-emojis/1F595-1F3FF.png"],
   },
   {
     name: "Emoji 1F596",
@@ -7497,17 +6537,11 @@ export const iconRegistry: IconInfo[] = [
     preview: "🖖",
     hasSkinTones: true,
     baseEmoji: "1F596",
-    skinToneVariants: [
-      "/png-emojis/1F596-1F3FB.png",
-      "/png-emojis/1F596-1F3FC.png",
-      "/png-emojis/1F596-1F3FD.png",
-      "/png-emojis/1F596-1F3FE.png",
-      "/png-emojis/1F596-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F596-1F3FB.png","/png-emojis/1F596-1F3FC.png","/png-emojis/1F596-1F3FD.png","/png-emojis/1F596-1F3FE.png","/png-emojis/1F596-1F3FF.png"],
   },
   {
     name: "Emoji 1F5A4",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F5A4.png",
     preview: "🖤",
   },
@@ -8112,13 +7146,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙅‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F645-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F645-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F645-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F645-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F645-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F645-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F645-1F3FB-200D-2640-FE0F.png","/png-emojis/1F645-1F3FC-200D-2640-FE0F.png","/png-emojis/1F645-1F3FD-200D-2640-FE0F.png","/png-emojis/1F645-1F3FE-200D-2640-FE0F.png","/png-emojis/1F645-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F645",
@@ -8127,13 +7155,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙅‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F645-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F645-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F645-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F645-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F645-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F645-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F645-1F3FB-200D-2642-FE0F.png","/png-emojis/1F645-1F3FC-200D-2642-FE0F.png","/png-emojis/1F645-1F3FD-200D-2642-FE0F.png","/png-emojis/1F645-1F3FE-200D-2642-FE0F.png","/png-emojis/1F645-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F645",
@@ -8142,13 +7164,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙅",
     hasSkinTones: true,
     baseEmoji: "1F645",
-    skinToneVariants: [
-      "/png-emojis/1F645-1F3FB.png",
-      "/png-emojis/1F645-1F3FC.png",
-      "/png-emojis/1F645-1F3FD.png",
-      "/png-emojis/1F645-1F3FE.png",
-      "/png-emojis/1F645-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F645-1F3FB.png","/png-emojis/1F645-1F3FC.png","/png-emojis/1F645-1F3FD.png","/png-emojis/1F645-1F3FE.png","/png-emojis/1F645-1F3FF.png"],
   },
   {
     name: "Emoji 1F646",
@@ -8157,13 +7173,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙆‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F646-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F646-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F646-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F646-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F646-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F646-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F646-1F3FB-200D-2640-FE0F.png","/png-emojis/1F646-1F3FC-200D-2640-FE0F.png","/png-emojis/1F646-1F3FD-200D-2640-FE0F.png","/png-emojis/1F646-1F3FE-200D-2640-FE0F.png","/png-emojis/1F646-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F646",
@@ -8172,13 +7182,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙆‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F646-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F646-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F646-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F646-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F646-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F646-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F646-1F3FB-200D-2642-FE0F.png","/png-emojis/1F646-1F3FC-200D-2642-FE0F.png","/png-emojis/1F646-1F3FD-200D-2642-FE0F.png","/png-emojis/1F646-1F3FE-200D-2642-FE0F.png","/png-emojis/1F646-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F646",
@@ -8187,13 +7191,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙆",
     hasSkinTones: true,
     baseEmoji: "1F646",
-    skinToneVariants: [
-      "/png-emojis/1F646-1F3FB.png",
-      "/png-emojis/1F646-1F3FC.png",
-      "/png-emojis/1F646-1F3FD.png",
-      "/png-emojis/1F646-1F3FE.png",
-      "/png-emojis/1F646-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F646-1F3FB.png","/png-emojis/1F646-1F3FC.png","/png-emojis/1F646-1F3FD.png","/png-emojis/1F646-1F3FE.png","/png-emojis/1F646-1F3FF.png"],
   },
   {
     name: "Emoji 1F647",
@@ -8202,13 +7200,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙇‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F647-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F647-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F647-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F647-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F647-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F647-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F647-1F3FB-200D-2640-FE0F.png","/png-emojis/1F647-1F3FC-200D-2640-FE0F.png","/png-emojis/1F647-1F3FD-200D-2640-FE0F.png","/png-emojis/1F647-1F3FE-200D-2640-FE0F.png","/png-emojis/1F647-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F647",
@@ -8217,13 +7209,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙇‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F647-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F647-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F647-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F647-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F647-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F647-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F647-1F3FB-200D-2642-FE0F.png","/png-emojis/1F647-1F3FC-200D-2642-FE0F.png","/png-emojis/1F647-1F3FD-200D-2642-FE0F.png","/png-emojis/1F647-1F3FE-200D-2642-FE0F.png","/png-emojis/1F647-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F647",
@@ -8232,13 +7218,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙇",
     hasSkinTones: true,
     baseEmoji: "1F647",
-    skinToneVariants: [
-      "/png-emojis/1F647-1F3FB.png",
-      "/png-emojis/1F647-1F3FC.png",
-      "/png-emojis/1F647-1F3FD.png",
-      "/png-emojis/1F647-1F3FE.png",
-      "/png-emojis/1F647-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F647-1F3FB.png","/png-emojis/1F647-1F3FC.png","/png-emojis/1F647-1F3FD.png","/png-emojis/1F647-1F3FE.png","/png-emojis/1F647-1F3FF.png"],
   },
   {
     name: "Emoji 1F648",
@@ -8265,13 +7245,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙋‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F64B-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F64B-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F64B-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F64B-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F64B-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F64B-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64B-1F3FB-200D-2640-FE0F.png","/png-emojis/1F64B-1F3FC-200D-2640-FE0F.png","/png-emojis/1F64B-1F3FD-200D-2640-FE0F.png","/png-emojis/1F64B-1F3FE-200D-2640-FE0F.png","/png-emojis/1F64B-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F64B",
@@ -8280,13 +7254,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙋‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F64B-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F64B-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F64B-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F64B-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F64B-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F64B-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64B-1F3FB-200D-2642-FE0F.png","/png-emojis/1F64B-1F3FC-200D-2642-FE0F.png","/png-emojis/1F64B-1F3FD-200D-2642-FE0F.png","/png-emojis/1F64B-1F3FE-200D-2642-FE0F.png","/png-emojis/1F64B-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F64B",
@@ -8295,13 +7263,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙋",
     hasSkinTones: true,
     baseEmoji: "1F64B",
-    skinToneVariants: [
-      "/png-emojis/1F64B-1F3FB.png",
-      "/png-emojis/1F64B-1F3FC.png",
-      "/png-emojis/1F64B-1F3FD.png",
-      "/png-emojis/1F64B-1F3FE.png",
-      "/png-emojis/1F64B-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64B-1F3FB.png","/png-emojis/1F64B-1F3FC.png","/png-emojis/1F64B-1F3FD.png","/png-emojis/1F64B-1F3FE.png","/png-emojis/1F64B-1F3FF.png"],
   },
   {
     name: "Emoji 1F64C",
@@ -8310,13 +7272,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙌",
     hasSkinTones: true,
     baseEmoji: "1F64C",
-    skinToneVariants: [
-      "/png-emojis/1F64C-1F3FB.png",
-      "/png-emojis/1F64C-1F3FC.png",
-      "/png-emojis/1F64C-1F3FD.png",
-      "/png-emojis/1F64C-1F3FE.png",
-      "/png-emojis/1F64C-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64C-1F3FB.png","/png-emojis/1F64C-1F3FC.png","/png-emojis/1F64C-1F3FD.png","/png-emojis/1F64C-1F3FE.png","/png-emojis/1F64C-1F3FF.png"],
   },
   {
     name: "Emoji 1F64D",
@@ -8325,13 +7281,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙍‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F64D-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F64D-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F64D-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F64D-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F64D-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F64D-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64D-1F3FB-200D-2640-FE0F.png","/png-emojis/1F64D-1F3FC-200D-2640-FE0F.png","/png-emojis/1F64D-1F3FD-200D-2640-FE0F.png","/png-emojis/1F64D-1F3FE-200D-2640-FE0F.png","/png-emojis/1F64D-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F64D",
@@ -8340,13 +7290,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙍‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F64D-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F64D-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F64D-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F64D-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F64D-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F64D-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64D-1F3FB-200D-2642-FE0F.png","/png-emojis/1F64D-1F3FC-200D-2642-FE0F.png","/png-emojis/1F64D-1F3FD-200D-2642-FE0F.png","/png-emojis/1F64D-1F3FE-200D-2642-FE0F.png","/png-emojis/1F64D-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F64D",
@@ -8355,13 +7299,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙍",
     hasSkinTones: true,
     baseEmoji: "1F64D",
-    skinToneVariants: [
-      "/png-emojis/1F64D-1F3FB.png",
-      "/png-emojis/1F64D-1F3FC.png",
-      "/png-emojis/1F64D-1F3FD.png",
-      "/png-emojis/1F64D-1F3FE.png",
-      "/png-emojis/1F64D-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64D-1F3FB.png","/png-emojis/1F64D-1F3FC.png","/png-emojis/1F64D-1F3FD.png","/png-emojis/1F64D-1F3FE.png","/png-emojis/1F64D-1F3FF.png"],
   },
   {
     name: "Emoji 1F64E",
@@ -8370,13 +7308,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙎‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F64E-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F64E-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F64E-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F64E-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F64E-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F64E-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64E-1F3FB-200D-2640-FE0F.png","/png-emojis/1F64E-1F3FC-200D-2640-FE0F.png","/png-emojis/1F64E-1F3FD-200D-2640-FE0F.png","/png-emojis/1F64E-1F3FE-200D-2640-FE0F.png","/png-emojis/1F64E-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F64E",
@@ -8385,13 +7317,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙎‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F64E-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F64E-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F64E-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F64E-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F64E-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F64E-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64E-1F3FB-200D-2642-FE0F.png","/png-emojis/1F64E-1F3FC-200D-2642-FE0F.png","/png-emojis/1F64E-1F3FD-200D-2642-FE0F.png","/png-emojis/1F64E-1F3FE-200D-2642-FE0F.png","/png-emojis/1F64E-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F64E",
@@ -8400,13 +7326,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙎",
     hasSkinTones: true,
     baseEmoji: "1F64E",
-    skinToneVariants: [
-      "/png-emojis/1F64E-1F3FB.png",
-      "/png-emojis/1F64E-1F3FC.png",
-      "/png-emojis/1F64E-1F3FD.png",
-      "/png-emojis/1F64E-1F3FE.png",
-      "/png-emojis/1F64E-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64E-1F3FB.png","/png-emojis/1F64E-1F3FC.png","/png-emojis/1F64E-1F3FD.png","/png-emojis/1F64E-1F3FE.png","/png-emojis/1F64E-1F3FF.png"],
   },
   {
     name: "Emoji 1F64F",
@@ -8415,13 +7335,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🙏",
     hasSkinTones: true,
     baseEmoji: "1F64F",
-    skinToneVariants: [
-      "/png-emojis/1F64F-1F3FB.png",
-      "/png-emojis/1F64F-1F3FC.png",
-      "/png-emojis/1F64F-1F3FD.png",
-      "/png-emojis/1F64F-1F3FE.png",
-      "/png-emojis/1F64F-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F64F-1F3FB.png","/png-emojis/1F64F-1F3FC.png","/png-emojis/1F64F-1F3FD.png","/png-emojis/1F64F-1F3FE.png","/png-emojis/1F64F-1F3FF.png"],
   },
   {
     name: "Rocket",
@@ -8640,13 +7554,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚣‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F6A3-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6A3-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F6A3-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F6A3-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F6A3-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F6A3-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6A3-1F3FB-200D-2640-FE0F.png","/png-emojis/1F6A3-1F3FC-200D-2640-FE0F.png","/png-emojis/1F6A3-1F3FD-200D-2640-FE0F.png","/png-emojis/1F6A3-1F3FE-200D-2640-FE0F.png","/png-emojis/1F6A3-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F6A3",
@@ -8655,13 +7563,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚣‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F6A3-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6A3-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F6A3-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F6A3-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F6A3-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F6A3-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6A3-1F3FB-200D-2642-FE0F.png","/png-emojis/1F6A3-1F3FC-200D-2642-FE0F.png","/png-emojis/1F6A3-1F3FD-200D-2642-FE0F.png","/png-emojis/1F6A3-1F3FE-200D-2642-FE0F.png","/png-emojis/1F6A3-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F6A3",
@@ -8670,13 +7572,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚣",
     hasSkinTones: true,
     baseEmoji: "1F6A3",
-    skinToneVariants: [
-      "/png-emojis/1F6A3-1F3FB.png",
-      "/png-emojis/1F6A3-1F3FC.png",
-      "/png-emojis/1F6A3-1F3FD.png",
-      "/png-emojis/1F6A3-1F3FE.png",
-      "/png-emojis/1F6A3-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6A3-1F3FB.png","/png-emojis/1F6A3-1F3FC.png","/png-emojis/1F6A3-1F3FD.png","/png-emojis/1F6A3-1F3FE.png","/png-emojis/1F6A3-1F3FF.png"],
   },
   {
     name: "Emoji 1F6A4",
@@ -8781,13 +7677,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚴‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F6B4-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6B4-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F6B4-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F6B4-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F6B4-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F6B4-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B4-1F3FB-200D-2640-FE0F.png","/png-emojis/1F6B4-1F3FC-200D-2640-FE0F.png","/png-emojis/1F6B4-1F3FD-200D-2640-FE0F.png","/png-emojis/1F6B4-1F3FE-200D-2640-FE0F.png","/png-emojis/1F6B4-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F6B4",
@@ -8796,13 +7686,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚴‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F6B4-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6B4-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F6B4-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F6B4-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F6B4-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F6B4-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B4-1F3FB-200D-2642-FE0F.png","/png-emojis/1F6B4-1F3FC-200D-2642-FE0F.png","/png-emojis/1F6B4-1F3FD-200D-2642-FE0F.png","/png-emojis/1F6B4-1F3FE-200D-2642-FE0F.png","/png-emojis/1F6B4-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F6B4",
@@ -8811,13 +7695,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚴",
     hasSkinTones: true,
     baseEmoji: "1F6B4",
-    skinToneVariants: [
-      "/png-emojis/1F6B4-1F3FB.png",
-      "/png-emojis/1F6B4-1F3FC.png",
-      "/png-emojis/1F6B4-1F3FD.png",
-      "/png-emojis/1F6B4-1F3FE.png",
-      "/png-emojis/1F6B4-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B4-1F3FB.png","/png-emojis/1F6B4-1F3FC.png","/png-emojis/1F6B4-1F3FD.png","/png-emojis/1F6B4-1F3FE.png","/png-emojis/1F6B4-1F3FF.png"],
   },
   {
     name: "Emoji 1F6B5",
@@ -8826,13 +7704,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚵‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F6B5-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6B5-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F6B5-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F6B5-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F6B5-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F6B5-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B5-1F3FB-200D-2640-FE0F.png","/png-emojis/1F6B5-1F3FC-200D-2640-FE0F.png","/png-emojis/1F6B5-1F3FD-200D-2640-FE0F.png","/png-emojis/1F6B5-1F3FE-200D-2640-FE0F.png","/png-emojis/1F6B5-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F6B5",
@@ -8841,13 +7713,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚵‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F6B5-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6B5-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F6B5-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F6B5-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F6B5-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F6B5-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B5-1F3FB-200D-2642-FE0F.png","/png-emojis/1F6B5-1F3FC-200D-2642-FE0F.png","/png-emojis/1F6B5-1F3FD-200D-2642-FE0F.png","/png-emojis/1F6B5-1F3FE-200D-2642-FE0F.png","/png-emojis/1F6B5-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F6B5",
@@ -8856,13 +7722,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚵",
     hasSkinTones: true,
     baseEmoji: "1F6B5",
-    skinToneVariants: [
-      "/png-emojis/1F6B5-1F3FB.png",
-      "/png-emojis/1F6B5-1F3FC.png",
-      "/png-emojis/1F6B5-1F3FD.png",
-      "/png-emojis/1F6B5-1F3FE.png",
-      "/png-emojis/1F6B5-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B5-1F3FB.png","/png-emojis/1F6B5-1F3FC.png","/png-emojis/1F6B5-1F3FD.png","/png-emojis/1F6B5-1F3FE.png","/png-emojis/1F6B5-1F3FF.png"],
   },
   {
     name: "Emoji 1F6B6",
@@ -8871,13 +7731,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚶‍♀️‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F6B6-200D-2640-FE0F-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6B6-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B6-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F6B6",
@@ -8886,13 +7740,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚶‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F6B6-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6B6-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F6B6-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F6B6-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F6B6-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F6B6-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B6-1F3FB-200D-2640-FE0F.png","/png-emojis/1F6B6-1F3FC-200D-2640-FE0F.png","/png-emojis/1F6B6-1F3FD-200D-2640-FE0F.png","/png-emojis/1F6B6-1F3FE-200D-2640-FE0F.png","/png-emojis/1F6B6-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F6B6",
@@ -8901,13 +7749,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚶‍♂️‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F6B6-200D-2642-FE0F-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6B6-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B6-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F6B6",
@@ -8916,13 +7758,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚶‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F6B6-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6B6-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F6B6-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F6B6-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F6B6-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F6B6-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B6-1F3FB-200D-2642-FE0F.png","/png-emojis/1F6B6-1F3FC-200D-2642-FE0F.png","/png-emojis/1F6B6-1F3FD-200D-2642-FE0F.png","/png-emojis/1F6B6-1F3FE-200D-2642-FE0F.png","/png-emojis/1F6B6-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F6B6",
@@ -8931,13 +7767,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚶‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F6B6-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F6B6-1F3FB-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FC-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FD-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FE-200D-27A1-FE0F.png",
-      "/png-emojis/1F6B6-1F3FF-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B6-1F3FB-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FC-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FD-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FE-200D-27A1-FE0F.png","/png-emojis/1F6B6-1F3FF-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F6B6",
@@ -8946,13 +7776,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🚶",
     hasSkinTones: true,
     baseEmoji: "1F6B6",
-    skinToneVariants: [
-      "/png-emojis/1F6B6-1F3FB.png",
-      "/png-emojis/1F6B6-1F3FC.png",
-      "/png-emojis/1F6B6-1F3FD.png",
-      "/png-emojis/1F6B6-1F3FE.png",
-      "/png-emojis/1F6B6-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6B6-1F3FB.png","/png-emojis/1F6B6-1F3FC.png","/png-emojis/1F6B6-1F3FD.png","/png-emojis/1F6B6-1F3FE.png","/png-emojis/1F6B6-1F3FF.png"],
   },
   {
     name: "Emoji 1F6B7",
@@ -9015,13 +7839,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🛀",
     hasSkinTones: true,
     baseEmoji: "1F6C0",
-    skinToneVariants: [
-      "/png-emojis/1F6C0-1F3FB.png",
-      "/png-emojis/1F6C0-1F3FC.png",
-      "/png-emojis/1F6C0-1F3FD.png",
-      "/png-emojis/1F6C0-1F3FE.png",
-      "/png-emojis/1F6C0-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6C0-1F3FB.png","/png-emojis/1F6C0-1F3FC.png","/png-emojis/1F6C0-1F3FD.png","/png-emojis/1F6C0-1F3FE.png","/png-emojis/1F6C0-1F3FF.png"],
   },
   {
     name: "Emoji 1F6C1",
@@ -9066,13 +7884,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🛌",
     hasSkinTones: true,
     baseEmoji: "1F6CC",
-    skinToneVariants: [
-      "/png-emojis/1F6CC-1F3FB.png",
-      "/png-emojis/1F6CC-1F3FC.png",
-      "/png-emojis/1F6CC-1F3FD.png",
-      "/png-emojis/1F6CC-1F3FE.png",
-      "/png-emojis/1F6CC-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F6CC-1F3FB.png","/png-emojis/1F6CC-1F3FC.png","/png-emojis/1F6CC-1F3FD.png","/png-emojis/1F6CC-1F3FE.png","/png-emojis/1F6CC-1F3FF.png"],
   },
   {
     name: "Emoji 1F6CD",
@@ -9094,7 +7906,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F6D0",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/1F6D0.png",
     preview: "🛐",
   },
@@ -9273,23 +8085,17 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤌",
     hasSkinTones: true,
     baseEmoji: "1F90C",
-    skinToneVariants: [
-      "/png-emojis/1F90C-1F3FB.png",
-      "/png-emojis/1F90C-1F3FC.png",
-      "/png-emojis/1F90C-1F3FD.png",
-      "/png-emojis/1F90C-1F3FE.png",
-      "/png-emojis/1F90C-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F90C-1F3FB.png","/png-emojis/1F90C-1F3FC.png","/png-emojis/1F90C-1F3FD.png","/png-emojis/1F90C-1F3FE.png","/png-emojis/1F90C-1F3FF.png"],
   },
   {
     name: "Emoji 1F90D",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F90D.png",
     preview: "🤍",
   },
   {
     name: "Emoji 1F90E",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F90E.png",
     preview: "🤎",
   },
@@ -9300,13 +8106,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤏",
     hasSkinTones: true,
     baseEmoji: "1F90F",
-    skinToneVariants: [
-      "/png-emojis/1F90F-1F3FB.png",
-      "/png-emojis/1F90F-1F3FC.png",
-      "/png-emojis/1F90F-1F3FD.png",
-      "/png-emojis/1F90F-1F3FE.png",
-      "/png-emojis/1F90F-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F90F-1F3FB.png","/png-emojis/1F90F-1F3FC.png","/png-emojis/1F90F-1F3FD.png","/png-emojis/1F90F-1F3FE.png","/png-emojis/1F90F-1F3FF.png"],
   },
   {
     name: "Emoji 1F910",
@@ -9363,13 +8163,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤘",
     hasSkinTones: true,
     baseEmoji: "1F918",
-    skinToneVariants: [
-      "/png-emojis/1F918-1F3FB.png",
-      "/png-emojis/1F918-1F3FC.png",
-      "/png-emojis/1F918-1F3FD.png",
-      "/png-emojis/1F918-1F3FE.png",
-      "/png-emojis/1F918-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F918-1F3FB.png","/png-emojis/1F918-1F3FC.png","/png-emojis/1F918-1F3FD.png","/png-emojis/1F918-1F3FE.png","/png-emojis/1F918-1F3FF.png"],
   },
   {
     name: "Emoji 1F919",
@@ -9378,13 +8172,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤙",
     hasSkinTones: true,
     baseEmoji: "1F919",
-    skinToneVariants: [
-      "/png-emojis/1F919-1F3FB.png",
-      "/png-emojis/1F919-1F3FC.png",
-      "/png-emojis/1F919-1F3FD.png",
-      "/png-emojis/1F919-1F3FE.png",
-      "/png-emojis/1F919-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F919-1F3FB.png","/png-emojis/1F919-1F3FC.png","/png-emojis/1F919-1F3FD.png","/png-emojis/1F919-1F3FE.png","/png-emojis/1F919-1F3FF.png"],
   },
   {
     name: "Emoji 1F91A",
@@ -9393,13 +8181,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤚",
     hasSkinTones: true,
     baseEmoji: "1F91A",
-    skinToneVariants: [
-      "/png-emojis/1F91A-1F3FB.png",
-      "/png-emojis/1F91A-1F3FC.png",
-      "/png-emojis/1F91A-1F3FD.png",
-      "/png-emojis/1F91A-1F3FE.png",
-      "/png-emojis/1F91A-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F91A-1F3FB.png","/png-emojis/1F91A-1F3FC.png","/png-emojis/1F91A-1F3FD.png","/png-emojis/1F91A-1F3FE.png","/png-emojis/1F91A-1F3FF.png"],
   },
   {
     name: "Emoji 1F91B",
@@ -9408,13 +8190,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤛",
     hasSkinTones: true,
     baseEmoji: "1F91B",
-    skinToneVariants: [
-      "/png-emojis/1F91B-1F3FB.png",
-      "/png-emojis/1F91B-1F3FC.png",
-      "/png-emojis/1F91B-1F3FD.png",
-      "/png-emojis/1F91B-1F3FE.png",
-      "/png-emojis/1F91B-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F91B-1F3FB.png","/png-emojis/1F91B-1F3FC.png","/png-emojis/1F91B-1F3FD.png","/png-emojis/1F91B-1F3FE.png","/png-emojis/1F91B-1F3FF.png"],
   },
   {
     name: "Emoji 1F91C",
@@ -9423,13 +8199,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤜",
     hasSkinTones: true,
     baseEmoji: "1F91C",
-    skinToneVariants: [
-      "/png-emojis/1F91C-1F3FB.png",
-      "/png-emojis/1F91C-1F3FC.png",
-      "/png-emojis/1F91C-1F3FD.png",
-      "/png-emojis/1F91C-1F3FE.png",
-      "/png-emojis/1F91C-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F91C-1F3FB.png","/png-emojis/1F91C-1F3FC.png","/png-emojis/1F91C-1F3FD.png","/png-emojis/1F91C-1F3FE.png","/png-emojis/1F91C-1F3FF.png"],
   },
   {
     name: "Emoji 1F91D",
@@ -9438,13 +8208,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤝",
     hasSkinTones: true,
     baseEmoji: "1F91D",
-    skinToneVariants: [
-      "/png-emojis/1F91D-1F3FB.png",
-      "/png-emojis/1F91D-1F3FC.png",
-      "/png-emojis/1F91D-1F3FD.png",
-      "/png-emojis/1F91D-1F3FE.png",
-      "/png-emojis/1F91D-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F91D-1F3FB.png","/png-emojis/1F91D-1F3FC.png","/png-emojis/1F91D-1F3FD.png","/png-emojis/1F91D-1F3FE.png","/png-emojis/1F91D-1F3FF.png"],
   },
   {
     name: "Emoji 1F91E",
@@ -9453,13 +8217,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤞",
     hasSkinTones: true,
     baseEmoji: "1F91E",
-    skinToneVariants: [
-      "/png-emojis/1F91E-1F3FB.png",
-      "/png-emojis/1F91E-1F3FC.png",
-      "/png-emojis/1F91E-1F3FD.png",
-      "/png-emojis/1F91E-1F3FE.png",
-      "/png-emojis/1F91E-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F91E-1F3FB.png","/png-emojis/1F91E-1F3FC.png","/png-emojis/1F91E-1F3FD.png","/png-emojis/1F91E-1F3FE.png","/png-emojis/1F91E-1F3FF.png"],
   },
   {
     name: "Emoji 1F91F",
@@ -9468,13 +8226,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤟",
     hasSkinTones: true,
     baseEmoji: "1F91F",
-    skinToneVariants: [
-      "/png-emojis/1F91F-1F3FB.png",
-      "/png-emojis/1F91F-1F3FC.png",
-      "/png-emojis/1F91F-1F3FD.png",
-      "/png-emojis/1F91F-1F3FE.png",
-      "/png-emojis/1F91F-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F91F-1F3FB.png","/png-emojis/1F91F-1F3FC.png","/png-emojis/1F91F-1F3FD.png","/png-emojis/1F91F-1F3FE.png","/png-emojis/1F91F-1F3FF.png"],
   },
   {
     name: "Emoji 1F920",
@@ -9519,13 +8271,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤦‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F926-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F926-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F926-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F926-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F926-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F926-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F926-1F3FB-200D-2640-FE0F.png","/png-emojis/1F926-1F3FC-200D-2640-FE0F.png","/png-emojis/1F926-1F3FD-200D-2640-FE0F.png","/png-emojis/1F926-1F3FE-200D-2640-FE0F.png","/png-emojis/1F926-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F926",
@@ -9534,13 +8280,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤦‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F926-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F926-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F926-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F926-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F926-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F926-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F926-1F3FB-200D-2642-FE0F.png","/png-emojis/1F926-1F3FC-200D-2642-FE0F.png","/png-emojis/1F926-1F3FD-200D-2642-FE0F.png","/png-emojis/1F926-1F3FE-200D-2642-FE0F.png","/png-emojis/1F926-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F926",
@@ -9549,13 +8289,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤦",
     hasSkinTones: true,
     baseEmoji: "1F926",
-    skinToneVariants: [
-      "/png-emojis/1F926-1F3FB.png",
-      "/png-emojis/1F926-1F3FC.png",
-      "/png-emojis/1F926-1F3FD.png",
-      "/png-emojis/1F926-1F3FE.png",
-      "/png-emojis/1F926-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F926-1F3FB.png","/png-emojis/1F926-1F3FC.png","/png-emojis/1F926-1F3FD.png","/png-emojis/1F926-1F3FE.png","/png-emojis/1F926-1F3FF.png"],
   },
   {
     name: "Emoji 1F927",
@@ -9618,13 +8352,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤰",
     hasSkinTones: true,
     baseEmoji: "1F930",
-    skinToneVariants: [
-      "/png-emojis/1F930-1F3FB.png",
-      "/png-emojis/1F930-1F3FC.png",
-      "/png-emojis/1F930-1F3FD.png",
-      "/png-emojis/1F930-1F3FE.png",
-      "/png-emojis/1F930-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F930-1F3FB.png","/png-emojis/1F930-1F3FC.png","/png-emojis/1F930-1F3FD.png","/png-emojis/1F930-1F3FE.png","/png-emojis/1F930-1F3FF.png"],
   },
   {
     name: "Emoji 1F931",
@@ -9633,13 +8361,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤱",
     hasSkinTones: true,
     baseEmoji: "1F931",
-    skinToneVariants: [
-      "/png-emojis/1F931-1F3FB.png",
-      "/png-emojis/1F931-1F3FC.png",
-      "/png-emojis/1F931-1F3FD.png",
-      "/png-emojis/1F931-1F3FE.png",
-      "/png-emojis/1F931-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F931-1F3FB.png","/png-emojis/1F931-1F3FC.png","/png-emojis/1F931-1F3FD.png","/png-emojis/1F931-1F3FE.png","/png-emojis/1F931-1F3FF.png"],
   },
   {
     name: "Emoji 1F932",
@@ -9648,13 +8370,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤲",
     hasSkinTones: true,
     baseEmoji: "1F932",
-    skinToneVariants: [
-      "/png-emojis/1F932-1F3FB.png",
-      "/png-emojis/1F932-1F3FC.png",
-      "/png-emojis/1F932-1F3FD.png",
-      "/png-emojis/1F932-1F3FE.png",
-      "/png-emojis/1F932-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F932-1F3FB.png","/png-emojis/1F932-1F3FC.png","/png-emojis/1F932-1F3FD.png","/png-emojis/1F932-1F3FE.png","/png-emojis/1F932-1F3FF.png"],
   },
   {
     name: "Emoji 1F933",
@@ -9663,13 +8379,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤳",
     hasSkinTones: true,
     baseEmoji: "1F933",
-    skinToneVariants: [
-      "/png-emojis/1F933-1F3FB.png",
-      "/png-emojis/1F933-1F3FC.png",
-      "/png-emojis/1F933-1F3FD.png",
-      "/png-emojis/1F933-1F3FE.png",
-      "/png-emojis/1F933-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F933-1F3FB.png","/png-emojis/1F933-1F3FC.png","/png-emojis/1F933-1F3FD.png","/png-emojis/1F933-1F3FE.png","/png-emojis/1F933-1F3FF.png"],
   },
   {
     name: "Emoji 1F934",
@@ -9678,13 +8388,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤴",
     hasSkinTones: true,
     baseEmoji: "1F934",
-    skinToneVariants: [
-      "/png-emojis/1F934-1F3FB.png",
-      "/png-emojis/1F934-1F3FC.png",
-      "/png-emojis/1F934-1F3FD.png",
-      "/png-emojis/1F934-1F3FE.png",
-      "/png-emojis/1F934-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F934-1F3FB.png","/png-emojis/1F934-1F3FC.png","/png-emojis/1F934-1F3FD.png","/png-emojis/1F934-1F3FE.png","/png-emojis/1F934-1F3FF.png"],
   },
   {
     name: "Emoji 1F935",
@@ -9693,13 +8397,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤵‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F935-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F935-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F935-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F935-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F935-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F935-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F935-1F3FB-200D-2640-FE0F.png","/png-emojis/1F935-1F3FC-200D-2640-FE0F.png","/png-emojis/1F935-1F3FD-200D-2640-FE0F.png","/png-emojis/1F935-1F3FE-200D-2640-FE0F.png","/png-emojis/1F935-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F935",
@@ -9708,13 +8406,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤵‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F935-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F935-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F935-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F935-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F935-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F935-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F935-1F3FB-200D-2642-FE0F.png","/png-emojis/1F935-1F3FC-200D-2642-FE0F.png","/png-emojis/1F935-1F3FD-200D-2642-FE0F.png","/png-emojis/1F935-1F3FE-200D-2642-FE0F.png","/png-emojis/1F935-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F935",
@@ -9723,13 +8415,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤵",
     hasSkinTones: true,
     baseEmoji: "1F935",
-    skinToneVariants: [
-      "/png-emojis/1F935-1F3FB.png",
-      "/png-emojis/1F935-1F3FC.png",
-      "/png-emojis/1F935-1F3FD.png",
-      "/png-emojis/1F935-1F3FE.png",
-      "/png-emojis/1F935-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F935-1F3FB.png","/png-emojis/1F935-1F3FC.png","/png-emojis/1F935-1F3FD.png","/png-emojis/1F935-1F3FE.png","/png-emojis/1F935-1F3FF.png"],
   },
   {
     name: "Emoji 1F936",
@@ -9738,13 +8424,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤶",
     hasSkinTones: true,
     baseEmoji: "1F936",
-    skinToneVariants: [
-      "/png-emojis/1F936-1F3FB.png",
-      "/png-emojis/1F936-1F3FC.png",
-      "/png-emojis/1F936-1F3FD.png",
-      "/png-emojis/1F936-1F3FE.png",
-      "/png-emojis/1F936-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F936-1F3FB.png","/png-emojis/1F936-1F3FC.png","/png-emojis/1F936-1F3FD.png","/png-emojis/1F936-1F3FE.png","/png-emojis/1F936-1F3FF.png"],
   },
   {
     name: "Emoji 1F937",
@@ -9753,13 +8433,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤷‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F937-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F937-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F937-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F937-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F937-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F937-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F937-1F3FB-200D-2640-FE0F.png","/png-emojis/1F937-1F3FC-200D-2640-FE0F.png","/png-emojis/1F937-1F3FD-200D-2640-FE0F.png","/png-emojis/1F937-1F3FE-200D-2640-FE0F.png","/png-emojis/1F937-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F937",
@@ -9768,13 +8442,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤷‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F937-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F937-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F937-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F937-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F937-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F937-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F937-1F3FB-200D-2642-FE0F.png","/png-emojis/1F937-1F3FC-200D-2642-FE0F.png","/png-emojis/1F937-1F3FD-200D-2642-FE0F.png","/png-emojis/1F937-1F3FE-200D-2642-FE0F.png","/png-emojis/1F937-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F937",
@@ -9783,13 +8451,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤷",
     hasSkinTones: true,
     baseEmoji: "1F937",
-    skinToneVariants: [
-      "/png-emojis/1F937-1F3FB.png",
-      "/png-emojis/1F937-1F3FC.png",
-      "/png-emojis/1F937-1F3FD.png",
-      "/png-emojis/1F937-1F3FE.png",
-      "/png-emojis/1F937-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F937-1F3FB.png","/png-emojis/1F937-1F3FC.png","/png-emojis/1F937-1F3FD.png","/png-emojis/1F937-1F3FE.png","/png-emojis/1F937-1F3FF.png"],
   },
   {
     name: "Emoji 1F938",
@@ -9798,13 +8460,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤸‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F938-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F938-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F938-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F938-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F938-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F938-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F938-1F3FB-200D-2640-FE0F.png","/png-emojis/1F938-1F3FC-200D-2640-FE0F.png","/png-emojis/1F938-1F3FD-200D-2640-FE0F.png","/png-emojis/1F938-1F3FE-200D-2640-FE0F.png","/png-emojis/1F938-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F938",
@@ -9813,13 +8469,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤸‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F938-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F938-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F938-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F938-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F938-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F938-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F938-1F3FB-200D-2642-FE0F.png","/png-emojis/1F938-1F3FC-200D-2642-FE0F.png","/png-emojis/1F938-1F3FD-200D-2642-FE0F.png","/png-emojis/1F938-1F3FE-200D-2642-FE0F.png","/png-emojis/1F938-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F938",
@@ -9828,13 +8478,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤸",
     hasSkinTones: true,
     baseEmoji: "1F938",
-    skinToneVariants: [
-      "/png-emojis/1F938-1F3FB.png",
-      "/png-emojis/1F938-1F3FC.png",
-      "/png-emojis/1F938-1F3FD.png",
-      "/png-emojis/1F938-1F3FE.png",
-      "/png-emojis/1F938-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F938-1F3FB.png","/png-emojis/1F938-1F3FC.png","/png-emojis/1F938-1F3FD.png","/png-emojis/1F938-1F3FE.png","/png-emojis/1F938-1F3FF.png"],
   },
   {
     name: "Emoji 1F939",
@@ -9843,13 +8487,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤹‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F939-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F939-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F939-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F939-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F939-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F939-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F939-1F3FB-200D-2640-FE0F.png","/png-emojis/1F939-1F3FC-200D-2640-FE0F.png","/png-emojis/1F939-1F3FD-200D-2640-FE0F.png","/png-emojis/1F939-1F3FE-200D-2640-FE0F.png","/png-emojis/1F939-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F939",
@@ -9858,13 +8496,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤹‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F939-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F939-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F939-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F939-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F939-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F939-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F939-1F3FB-200D-2642-FE0F.png","/png-emojis/1F939-1F3FC-200D-2642-FE0F.png","/png-emojis/1F939-1F3FD-200D-2642-FE0F.png","/png-emojis/1F939-1F3FE-200D-2642-FE0F.png","/png-emojis/1F939-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F939",
@@ -9873,13 +8505,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤹",
     hasSkinTones: true,
     baseEmoji: "1F939",
-    skinToneVariants: [
-      "/png-emojis/1F939-1F3FB.png",
-      "/png-emojis/1F939-1F3FC.png",
-      "/png-emojis/1F939-1F3FD.png",
-      "/png-emojis/1F939-1F3FE.png",
-      "/png-emojis/1F939-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F939-1F3FB.png","/png-emojis/1F939-1F3FC.png","/png-emojis/1F939-1F3FD.png","/png-emojis/1F939-1F3FE.png","/png-emojis/1F939-1F3FF.png"],
   },
   {
     name: "Emoji 1F93A",
@@ -9912,13 +8538,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤽‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F93D-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F93D-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F93D-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F93D-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F93D-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F93D-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F93D-1F3FB-200D-2640-FE0F.png","/png-emojis/1F93D-1F3FC-200D-2640-FE0F.png","/png-emojis/1F93D-1F3FD-200D-2640-FE0F.png","/png-emojis/1F93D-1F3FE-200D-2640-FE0F.png","/png-emojis/1F93D-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F93D",
@@ -9927,13 +8547,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤽‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F93D-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F93D-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F93D-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F93D-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F93D-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F93D-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F93D-1F3FB-200D-2642-FE0F.png","/png-emojis/1F93D-1F3FC-200D-2642-FE0F.png","/png-emojis/1F93D-1F3FD-200D-2642-FE0F.png","/png-emojis/1F93D-1F3FE-200D-2642-FE0F.png","/png-emojis/1F93D-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F93D",
@@ -9942,13 +8556,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤽",
     hasSkinTones: true,
     baseEmoji: "1F93D",
-    skinToneVariants: [
-      "/png-emojis/1F93D-1F3FB.png",
-      "/png-emojis/1F93D-1F3FC.png",
-      "/png-emojis/1F93D-1F3FD.png",
-      "/png-emojis/1F93D-1F3FE.png",
-      "/png-emojis/1F93D-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F93D-1F3FB.png","/png-emojis/1F93D-1F3FC.png","/png-emojis/1F93D-1F3FD.png","/png-emojis/1F93D-1F3FE.png","/png-emojis/1F93D-1F3FF.png"],
   },
   {
     name: "Emoji 1F93E",
@@ -9957,13 +8565,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤾‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F93E-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F93E-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F93E-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F93E-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F93E-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F93E-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F93E-1F3FB-200D-2640-FE0F.png","/png-emojis/1F93E-1F3FC-200D-2640-FE0F.png","/png-emojis/1F93E-1F3FD-200D-2640-FE0F.png","/png-emojis/1F93E-1F3FE-200D-2640-FE0F.png","/png-emojis/1F93E-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F93E",
@@ -9972,13 +8574,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤾‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F93E-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F93E-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F93E-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F93E-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F93E-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F93E-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F93E-1F3FB-200D-2642-FE0F.png","/png-emojis/1F93E-1F3FC-200D-2642-FE0F.png","/png-emojis/1F93E-1F3FD-200D-2642-FE0F.png","/png-emojis/1F93E-1F3FE-200D-2642-FE0F.png","/png-emojis/1F93E-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F93E",
@@ -9987,13 +8583,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🤾",
     hasSkinTones: true,
     baseEmoji: "1F93E",
-    skinToneVariants: [
-      "/png-emojis/1F93E-1F3FB.png",
-      "/png-emojis/1F93E-1F3FC.png",
-      "/png-emojis/1F93E-1F3FD.png",
-      "/png-emojis/1F93E-1F3FE.png",
-      "/png-emojis/1F93E-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F93E-1F3FB.png","/png-emojis/1F93E-1F3FC.png","/png-emojis/1F93E-1F3FD.png","/png-emojis/1F93E-1F3FE.png","/png-emojis/1F93E-1F3FF.png"],
   },
   {
     name: "Emoji 1F93F",
@@ -10332,13 +8922,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🥷",
     hasSkinTones: true,
     baseEmoji: "1F977",
-    skinToneVariants: [
-      "/png-emojis/1F977-1F3FB.png",
-      "/png-emojis/1F977-1F3FC.png",
-      "/png-emojis/1F977-1F3FD.png",
-      "/png-emojis/1F977-1F3FE.png",
-      "/png-emojis/1F977-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F977-1F3FB.png","/png-emojis/1F977-1F3FC.png","/png-emojis/1F977-1F3FD.png","/png-emojis/1F977-1F3FE.png","/png-emojis/1F977-1F3FF.png"],
   },
   {
     name: "Emoji 1F978",
@@ -10713,13 +9297,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🦵",
     hasSkinTones: true,
     baseEmoji: "1F9B5",
-    skinToneVariants: [
-      "/png-emojis/1F9B5-1F3FB.png",
-      "/png-emojis/1F9B5-1F3FC.png",
-      "/png-emojis/1F9B5-1F3FD.png",
-      "/png-emojis/1F9B5-1F3FE.png",
-      "/png-emojis/1F9B5-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9B5-1F3FB.png","/png-emojis/1F9B5-1F3FC.png","/png-emojis/1F9B5-1F3FD.png","/png-emojis/1F9B5-1F3FE.png","/png-emojis/1F9B5-1F3FF.png"],
   },
   {
     name: "Emoji 1F9B6",
@@ -10728,13 +9306,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🦶",
     hasSkinTones: true,
     baseEmoji: "1F9B6",
-    skinToneVariants: [
-      "/png-emojis/1F9B6-1F3FB.png",
-      "/png-emojis/1F9B6-1F3FC.png",
-      "/png-emojis/1F9B6-1F3FD.png",
-      "/png-emojis/1F9B6-1F3FE.png",
-      "/png-emojis/1F9B6-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9B6-1F3FB.png","/png-emojis/1F9B6-1F3FC.png","/png-emojis/1F9B6-1F3FD.png","/png-emojis/1F9B6-1F3FE.png","/png-emojis/1F9B6-1F3FF.png"],
   },
   {
     name: "Emoji 1F9B7",
@@ -10749,13 +9321,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🦸‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9B8-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9B8-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9B8-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9B8-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9B8-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9B8-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9B8-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9B8-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9B8-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9B8-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9B8-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9B8",
@@ -10764,13 +9330,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🦸‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9B8-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9B8-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9B8-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9B8-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9B8-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9B8-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9B8-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9B8-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9B8-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9B8-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9B8-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9B8",
@@ -10779,13 +9339,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🦸",
     hasSkinTones: true,
     baseEmoji: "1F9B8",
-    skinToneVariants: [
-      "/png-emojis/1F9B8-1F3FB.png",
-      "/png-emojis/1F9B8-1F3FC.png",
-      "/png-emojis/1F9B8-1F3FD.png",
-      "/png-emojis/1F9B8-1F3FE.png",
-      "/png-emojis/1F9B8-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9B8-1F3FB.png","/png-emojis/1F9B8-1F3FC.png","/png-emojis/1F9B8-1F3FD.png","/png-emojis/1F9B8-1F3FE.png","/png-emojis/1F9B8-1F3FF.png"],
   },
   {
     name: "Emoji 1F9B9",
@@ -10794,13 +9348,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🦹‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9B9-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9B9-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9B9-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9B9-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9B9-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9B9-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9B9-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9B9-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9B9-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9B9-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9B9-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9B9",
@@ -10809,13 +9357,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🦹‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9B9-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9B9-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9B9-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9B9-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9B9-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9B9-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9B9-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9B9-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9B9-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9B9-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9B9-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9B9",
@@ -10824,13 +9366,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🦹",
     hasSkinTones: true,
     baseEmoji: "1F9B9",
-    skinToneVariants: [
-      "/png-emojis/1F9B9-1F3FB.png",
-      "/png-emojis/1F9B9-1F3FC.png",
-      "/png-emojis/1F9B9-1F3FD.png",
-      "/png-emojis/1F9B9-1F3FE.png",
-      "/png-emojis/1F9B9-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9B9-1F3FB.png","/png-emojis/1F9B9-1F3FC.png","/png-emojis/1F9B9-1F3FD.png","/png-emojis/1F9B9-1F3FE.png","/png-emojis/1F9B9-1F3FF.png"],
   },
   {
     name: "Emoji 1F9BA",
@@ -10845,13 +9381,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🦻",
     hasSkinTones: true,
     baseEmoji: "1F9BB",
-    skinToneVariants: [
-      "/png-emojis/1F9BB-1F3FB.png",
-      "/png-emojis/1F9BB-1F3FC.png",
-      "/png-emojis/1F9BB-1F3FD.png",
-      "/png-emojis/1F9BB-1F3FE.png",
-      "/png-emojis/1F9BB-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9BB-1F3FB.png","/png-emojis/1F9BB-1F3FC.png","/png-emojis/1F9BB-1F3FD.png","/png-emojis/1F9BB-1F3FE.png","/png-emojis/1F9BB-1F3FF.png"],
   },
   {
     name: "Emoji 1F9BC",
@@ -10962,13 +9492,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧍‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9CD-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9CD-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9CD-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9CD-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9CD-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9CD-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CD-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9CD-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9CD-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9CD-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9CD-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9CD",
@@ -10977,13 +9501,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧍‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9CD-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9CD-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9CD-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9CD-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9CD-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9CD-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CD-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9CD-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9CD-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9CD-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9CD-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9CD",
@@ -10992,13 +9510,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧍",
     hasSkinTones: true,
     baseEmoji: "1F9CD",
-    skinToneVariants: [
-      "/png-emojis/1F9CD-1F3FB.png",
-      "/png-emojis/1F9CD-1F3FC.png",
-      "/png-emojis/1F9CD-1F3FD.png",
-      "/png-emojis/1F9CD-1F3FE.png",
-      "/png-emojis/1F9CD-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CD-1F3FB.png","/png-emojis/1F9CD-1F3FC.png","/png-emojis/1F9CD-1F3FD.png","/png-emojis/1F9CD-1F3FE.png","/png-emojis/1F9CD-1F3FF.png"],
   },
   {
     name: "Emoji 1F9CE",
@@ -11007,13 +9519,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧎‍♀️‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F9CE-200D-2640-FE0F-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9CE-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CE-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F9CE",
@@ -11022,13 +9528,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧎‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9CE-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9CE-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9CE-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9CE-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9CE-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9CE-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CE-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9CE-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9CE-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9CE-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9CE-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9CE",
@@ -11037,13 +9537,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧎‍♂️‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F9CE-200D-2642-FE0F-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9CE-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CE-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F9CE",
@@ -11052,13 +9546,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧎‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9CE-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9CE-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9CE-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9CE-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9CE-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9CE-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CE-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9CE-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9CE-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9CE-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9CE-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9CE",
@@ -11067,13 +9555,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧎‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F9CE-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9CE-1F3FB-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FC-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FD-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FE-200D-27A1-FE0F.png",
-      "/png-emojis/1F9CE-1F3FF-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CE-1F3FB-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FC-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FD-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FE-200D-27A1-FE0F.png","/png-emojis/1F9CE-1F3FF-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F9CE",
@@ -11082,13 +9564,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧎",
     hasSkinTones: true,
     baseEmoji: "1F9CE",
-    skinToneVariants: [
-      "/png-emojis/1F9CE-1F3FB.png",
-      "/png-emojis/1F9CE-1F3FC.png",
-      "/png-emojis/1F9CE-1F3FD.png",
-      "/png-emojis/1F9CE-1F3FE.png",
-      "/png-emojis/1F9CE-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CE-1F3FB.png","/png-emojis/1F9CE-1F3FC.png","/png-emojis/1F9CE-1F3FD.png","/png-emojis/1F9CE-1F3FE.png","/png-emojis/1F9CE-1F3FF.png"],
   },
   {
     name: "Emoji 1F9CF",
@@ -11097,13 +9573,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧏‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9CF-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9CF-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9CF-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9CF-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9CF-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9CF-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CF-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9CF-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9CF-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9CF-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9CF-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9CF",
@@ -11112,13 +9582,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧏‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9CF-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9CF-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9CF-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9CF-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9CF-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9CF-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CF-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9CF-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9CF-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9CF-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9CF-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9CF",
@@ -11127,13 +9591,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧏",
     hasSkinTones: true,
     baseEmoji: "1F9CF",
-    skinToneVariants: [
-      "/png-emojis/1F9CF-1F3FB.png",
-      "/png-emojis/1F9CF-1F3FC.png",
-      "/png-emojis/1F9CF-1F3FD.png",
-      "/png-emojis/1F9CF-1F3FE.png",
-      "/png-emojis/1F9CF-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9CF-1F3FB.png","/png-emojis/1F9CF-1F3FC.png","/png-emojis/1F9CF-1F3FD.png","/png-emojis/1F9CF-1F3FE.png","/png-emojis/1F9CF-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D0",
@@ -11148,13 +9606,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🌾",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F33E",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F33E.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F33E.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F33E.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F33E.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F33E.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F33E.png","/png-emojis/1F9D1-1F3FC-200D-1F33E.png","/png-emojis/1F9D1-1F3FD-200D-1F33E.png","/png-emojis/1F9D1-1F3FE-200D-1F33E.png","/png-emojis/1F9D1-1F3FF-200D-1F33E.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11163,13 +9615,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🍳",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F373",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F373.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F373.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F373.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F373.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F373.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F373.png","/png-emojis/1F9D1-1F3FC-200D-1F373.png","/png-emojis/1F9D1-1F3FD-200D-1F373.png","/png-emojis/1F9D1-1F3FE-200D-1F373.png","/png-emojis/1F9D1-1F3FF-200D-1F373.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11178,13 +9624,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🍼",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F37C",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F37C.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F37C.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F37C.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F37C.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F37C.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F37C.png","/png-emojis/1F9D1-1F3FC-200D-1F37C.png","/png-emojis/1F9D1-1F3FD-200D-1F37C.png","/png-emojis/1F9D1-1F3FE-200D-1F37C.png","/png-emojis/1F9D1-1F3FF-200D-1F37C.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11193,13 +9633,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🎄",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F384",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F384.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F384.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F384.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F384.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F384.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F384.png","/png-emojis/1F9D1-1F3FC-200D-1F384.png","/png-emojis/1F9D1-1F3FD-200D-1F384.png","/png-emojis/1F9D1-1F3FE-200D-1F384.png","/png-emojis/1F9D1-1F3FF-200D-1F384.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11208,13 +9642,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🎓",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F393",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F393.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F393.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F393.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F393.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F393.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F393.png","/png-emojis/1F9D1-1F3FC-200D-1F393.png","/png-emojis/1F9D1-1F3FD-200D-1F393.png","/png-emojis/1F9D1-1F3FE-200D-1F393.png","/png-emojis/1F9D1-1F3FF-200D-1F393.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11223,13 +9651,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🎤",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F3A4",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F3A4.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F3A4.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F3A4.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F3A4.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F3A4.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F3A4.png","/png-emojis/1F9D1-1F3FC-200D-1F3A4.png","/png-emojis/1F9D1-1F3FD-200D-1F3A4.png","/png-emojis/1F9D1-1F3FE-200D-1F3A4.png","/png-emojis/1F9D1-1F3FF-200D-1F3A4.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11238,13 +9660,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🎨",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F3A8",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F3A8.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F3A8.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F3A8.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F3A8.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F3A8.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F3A8.png","/png-emojis/1F9D1-1F3FC-200D-1F3A8.png","/png-emojis/1F9D1-1F3FD-200D-1F3A8.png","/png-emojis/1F9D1-1F3FE-200D-1F3A8.png","/png-emojis/1F9D1-1F3FF-200D-1F3A8.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11253,13 +9669,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🏫",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F3EB",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F3EB.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F3EB.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F3EB.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F3EB.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F3EB.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F3EB.png","/png-emojis/1F9D1-1F3FC-200D-1F3EB.png","/png-emojis/1F9D1-1F3FD-200D-1F3EB.png","/png-emojis/1F9D1-1F3FE-200D-1F3EB.png","/png-emojis/1F9D1-1F3FF-200D-1F3EB.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11268,13 +9678,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🏭",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F3ED",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F3ED.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F3ED.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F3ED.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F3ED.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F3ED.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F3ED.png","/png-emojis/1F9D1-1F3FC-200D-1F3ED.png","/png-emojis/1F9D1-1F3FD-200D-1F3ED.png","/png-emojis/1F9D1-1F3FE-200D-1F3ED.png","/png-emojis/1F9D1-1F3FF-200D-1F3ED.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11283,13 +9687,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍💻",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F4BB",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F4BB.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F4BB.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F4BB.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F4BB.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F4BB.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F4BB.png","/png-emojis/1F9D1-1F3FC-200D-1F4BB.png","/png-emojis/1F9D1-1F3FD-200D-1F4BB.png","/png-emojis/1F9D1-1F3FE-200D-1F4BB.png","/png-emojis/1F9D1-1F3FF-200D-1F4BB.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11298,13 +9696,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍💼",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F4BC",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F4BC.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F4BC.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F4BC.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F4BC.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F4BC.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F4BC.png","/png-emojis/1F9D1-1F3FC-200D-1F4BC.png","/png-emojis/1F9D1-1F3FD-200D-1F4BC.png","/png-emojis/1F9D1-1F3FE-200D-1F4BC.png","/png-emojis/1F9D1-1F3FF-200D-1F4BC.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11313,13 +9705,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🔧",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F527",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F527.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F527.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F527.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F527.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F527.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F527.png","/png-emojis/1F9D1-1F3FC-200D-1F527.png","/png-emojis/1F9D1-1F3FD-200D-1F527.png","/png-emojis/1F9D1-1F3FE-200D-1F527.png","/png-emojis/1F9D1-1F3FF-200D-1F527.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11328,13 +9714,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🔬",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F52C",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F52C.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F52C.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F52C.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F52C.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F52C.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F52C.png","/png-emojis/1F9D1-1F3FC-200D-1F52C.png","/png-emojis/1F9D1-1F3FD-200D-1F52C.png","/png-emojis/1F9D1-1F3FE-200D-1F52C.png","/png-emojis/1F9D1-1F3FF-200D-1F52C.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11343,13 +9723,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🚀",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F680",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F680.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F680.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F680.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F680.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F680.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F680.png","/png-emojis/1F9D1-1F3FC-200D-1F680.png","/png-emojis/1F9D1-1F3FD-200D-1F680.png","/png-emojis/1F9D1-1F3FE-200D-1F680.png","/png-emojis/1F9D1-1F3FF-200D-1F680.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11358,13 +9732,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🚒",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F692",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F692.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F692.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F692.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F692.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F692.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F692.png","/png-emojis/1F9D1-1F3FC-200D-1F692.png","/png-emojis/1F9D1-1F3FD-200D-1F692.png","/png-emojis/1F9D1-1F3FE-200D-1F692.png","/png-emojis/1F9D1-1F3FF-200D-1F692.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11373,33 +9741,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🤝‍🧑",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F91D-200D-1F9D1",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FB.png",
-      "/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FC.png",
-      "/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FD.png",
-      "/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FE.png",
-      "/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FF.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FB.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FC.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FD.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FE.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FF.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FB.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FC.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FD.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FE.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FF.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FB.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FC.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FD.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FE.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FF.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FB.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FC.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FD.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FE.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FB.png","/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FC.png","/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FD.png","/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FE.png","/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FF.png","/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FB.png","/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FC.png","/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FD.png","/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FE.png","/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FF.png","/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FB.png","/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FC.png","/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FD.png","/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FE.png","/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FF.png","/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FB.png","/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FC.png","/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FD.png","/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FE.png","/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FF.png","/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FB.png","/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FC.png","/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FD.png","/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FE.png","/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11408,13 +9750,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦯‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9AF-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9AF-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9AF-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FC-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FD-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FE-200D-1F9AF-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FF-200D-1F9AF-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11423,13 +9759,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦯",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9AF",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9AF.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9AF.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9AF.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9AF.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9AF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9AF.png","/png-emojis/1F9D1-1F3FC-200D-1F9AF.png","/png-emojis/1F9D1-1F3FD-200D-1F9AF.png","/png-emojis/1F9D1-1F3FE-200D-1F9AF.png","/png-emojis/1F9D1-1F3FF-200D-1F9AF.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11438,13 +9768,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦰",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9B0",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9B0.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9B0.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9B0.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9B0.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9B0.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9B0.png","/png-emojis/1F9D1-1F3FC-200D-1F9B0.png","/png-emojis/1F9D1-1F3FD-200D-1F9B0.png","/png-emojis/1F9D1-1F3FE-200D-1F9B0.png","/png-emojis/1F9D1-1F3FF-200D-1F9B0.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11453,13 +9777,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦱",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9B1",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9B1.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9B1.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9B1.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9B1.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9B1.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9B1.png","/png-emojis/1F9D1-1F3FC-200D-1F9B1.png","/png-emojis/1F9D1-1F3FD-200D-1F9B1.png","/png-emojis/1F9D1-1F3FE-200D-1F9B1.png","/png-emojis/1F9D1-1F3FF-200D-1F9B1.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11468,13 +9786,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦲",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9B2",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9B2.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9B2.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9B2.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9B2.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9B2.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9B2.png","/png-emojis/1F9D1-1F3FC-200D-1F9B2.png","/png-emojis/1F9D1-1F3FD-200D-1F9B2.png","/png-emojis/1F9D1-1F3FE-200D-1F9B2.png","/png-emojis/1F9D1-1F3FF-200D-1F9B2.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11483,13 +9795,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦳",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9B3",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9B3.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9B3.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9B3.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9B3.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9B3.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9B3.png","/png-emojis/1F9D1-1F3FC-200D-1F9B3.png","/png-emojis/1F9D1-1F3FD-200D-1F9B3.png","/png-emojis/1F9D1-1F3FE-200D-1F9B3.png","/png-emojis/1F9D1-1F3FF-200D-1F9B3.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11498,13 +9804,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦼‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9BC-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9BC-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9BC-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FC-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FD-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FE-200D-1F9BC-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FF-200D-1F9BC-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11513,13 +9813,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦼",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9BC",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9BC.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9BC.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9BC.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9BC.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9BC.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9BC.png","/png-emojis/1F9D1-1F3FC-200D-1F9BC.png","/png-emojis/1F9D1-1F3FD-200D-1F9BC.png","/png-emojis/1F9D1-1F3FE-200D-1F9BC.png","/png-emojis/1F9D1-1F3FF-200D-1F9BC.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11528,13 +9822,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦽‍➡️",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9BD-200D-27A1-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9BD-200D-27A1-FE0F.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9BD-200D-27A1-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FC-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FD-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FE-200D-1F9BD-200D-27A1-FE0F.png","/png-emojis/1F9D1-1F3FF-200D-1F9BD-200D-27A1-FE0F.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11543,13 +9831,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍🦽",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-1F9BD",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-1F9BD.png",
-      "/png-emojis/1F9D1-1F3FC-200D-1F9BD.png",
-      "/png-emojis/1F9D1-1F3FD-200D-1F9BD.png",
-      "/png-emojis/1F9D1-1F3FE-200D-1F9BD.png",
-      "/png-emojis/1F9D1-1F3FF-200D-1F9BD.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-1F9BD.png","/png-emojis/1F9D1-1F3FC-200D-1F9BD.png","/png-emojis/1F9D1-1F3FD-200D-1F9BD.png","/png-emojis/1F9D1-1F3FE-200D-1F9BD.png","/png-emojis/1F9D1-1F3FF-200D-1F9BD.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11558,13 +9840,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍⚕️",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-2695-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-2695-FE0F.png",
-      "/png-emojis/1F9D1-1F3FC-200D-2695-FE0F.png",
-      "/png-emojis/1F9D1-1F3FD-200D-2695-FE0F.png",
-      "/png-emojis/1F9D1-1F3FE-200D-2695-FE0F.png",
-      "/png-emojis/1F9D1-1F3FF-200D-2695-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-2695-FE0F.png","/png-emojis/1F9D1-1F3FC-200D-2695-FE0F.png","/png-emojis/1F9D1-1F3FD-200D-2695-FE0F.png","/png-emojis/1F9D1-1F3FE-200D-2695-FE0F.png","/png-emojis/1F9D1-1F3FF-200D-2695-FE0F.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11573,13 +9849,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍⚖️",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-2696-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-2696-FE0F.png",
-      "/png-emojis/1F9D1-1F3FC-200D-2696-FE0F.png",
-      "/png-emojis/1F9D1-1F3FD-200D-2696-FE0F.png",
-      "/png-emojis/1F9D1-1F3FE-200D-2696-FE0F.png",
-      "/png-emojis/1F9D1-1F3FF-200D-2696-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-2696-FE0F.png","/png-emojis/1F9D1-1F3FC-200D-2696-FE0F.png","/png-emojis/1F9D1-1F3FD-200D-2696-FE0F.png","/png-emojis/1F9D1-1F3FE-200D-2696-FE0F.png","/png-emojis/1F9D1-1F3FF-200D-2696-FE0F.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11588,13 +9858,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑‍✈️",
     hasSkinTones: true,
     baseEmoji: "1F9D1-200D-2708-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB-200D-2708-FE0F.png",
-      "/png-emojis/1F9D1-1F3FC-200D-2708-FE0F.png",
-      "/png-emojis/1F9D1-1F3FD-200D-2708-FE0F.png",
-      "/png-emojis/1F9D1-1F3FE-200D-2708-FE0F.png",
-      "/png-emojis/1F9D1-1F3FF-200D-2708-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB-200D-2708-FE0F.png","/png-emojis/1F9D1-1F3FC-200D-2708-FE0F.png","/png-emojis/1F9D1-1F3FD-200D-2708-FE0F.png","/png-emojis/1F9D1-1F3FE-200D-2708-FE0F.png","/png-emojis/1F9D1-1F3FF-200D-2708-FE0F.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11603,13 +9867,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧑",
     hasSkinTones: true,
     baseEmoji: "1F9D1",
-    skinToneVariants: [
-      "/png-emojis/1F9D1-1F3FB.png",
-      "/png-emojis/1F9D1-1F3FC.png",
-      "/png-emojis/1F9D1-1F3FD.png",
-      "/png-emojis/1F9D1-1F3FE.png",
-      "/png-emojis/1F9D1-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D1-1F3FB.png","/png-emojis/1F9D1-1F3FC.png","/png-emojis/1F9D1-1F3FD.png","/png-emojis/1F9D1-1F3FE.png","/png-emojis/1F9D1-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D1",
@@ -11648,13 +9906,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧒",
     hasSkinTones: true,
     baseEmoji: "1F9D2",
-    skinToneVariants: [
-      "/png-emojis/1F9D2-1F3FB.png",
-      "/png-emojis/1F9D2-1F3FC.png",
-      "/png-emojis/1F9D2-1F3FD.png",
-      "/png-emojis/1F9D2-1F3FE.png",
-      "/png-emojis/1F9D2-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D2-1F3FB.png","/png-emojis/1F9D2-1F3FC.png","/png-emojis/1F9D2-1F3FD.png","/png-emojis/1F9D2-1F3FE.png","/png-emojis/1F9D2-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D3",
@@ -11663,13 +9915,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧓",
     hasSkinTones: true,
     baseEmoji: "1F9D3",
-    skinToneVariants: [
-      "/png-emojis/1F9D3-1F3FB.png",
-      "/png-emojis/1F9D3-1F3FC.png",
-      "/png-emojis/1F9D3-1F3FD.png",
-      "/png-emojis/1F9D3-1F3FE.png",
-      "/png-emojis/1F9D3-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D3-1F3FB.png","/png-emojis/1F9D3-1F3FC.png","/png-emojis/1F9D3-1F3FD.png","/png-emojis/1F9D3-1F3FE.png","/png-emojis/1F9D3-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D4",
@@ -11678,13 +9924,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧔‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9D4-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D4-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9D4-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9D4-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9D4-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9D4-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D4-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9D4-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9D4-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9D4-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9D4-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9D4",
@@ -11693,13 +9933,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧔‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9D4-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D4-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9D4-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9D4-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9D4-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9D4-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D4-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9D4-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9D4-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9D4-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9D4-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9D4",
@@ -11708,13 +9942,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧔",
     hasSkinTones: true,
     baseEmoji: "1F9D4",
-    skinToneVariants: [
-      "/png-emojis/1F9D4-1F3FB.png",
-      "/png-emojis/1F9D4-1F3FC.png",
-      "/png-emojis/1F9D4-1F3FD.png",
-      "/png-emojis/1F9D4-1F3FE.png",
-      "/png-emojis/1F9D4-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D4-1F3FB.png","/png-emojis/1F9D4-1F3FC.png","/png-emojis/1F9D4-1F3FD.png","/png-emojis/1F9D4-1F3FE.png","/png-emojis/1F9D4-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D5",
@@ -11723,13 +9951,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧕",
     hasSkinTones: true,
     baseEmoji: "1F9D5",
-    skinToneVariants: [
-      "/png-emojis/1F9D5-1F3FB.png",
-      "/png-emojis/1F9D5-1F3FC.png",
-      "/png-emojis/1F9D5-1F3FD.png",
-      "/png-emojis/1F9D5-1F3FE.png",
-      "/png-emojis/1F9D5-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D5-1F3FB.png","/png-emojis/1F9D5-1F3FC.png","/png-emojis/1F9D5-1F3FD.png","/png-emojis/1F9D5-1F3FE.png","/png-emojis/1F9D5-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D6",
@@ -11738,13 +9960,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧖‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9D6-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D6-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9D6-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9D6-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9D6-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9D6-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D6-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9D6-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9D6-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9D6-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9D6-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9D6",
@@ -11753,13 +9969,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧖‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9D6-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D6-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9D6-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9D6-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9D6-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9D6-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D6-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9D6-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9D6-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9D6-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9D6-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9D6",
@@ -11768,13 +9978,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧖",
     hasSkinTones: true,
     baseEmoji: "1F9D6",
-    skinToneVariants: [
-      "/png-emojis/1F9D6-1F3FB.png",
-      "/png-emojis/1F9D6-1F3FC.png",
-      "/png-emojis/1F9D6-1F3FD.png",
-      "/png-emojis/1F9D6-1F3FE.png",
-      "/png-emojis/1F9D6-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D6-1F3FB.png","/png-emojis/1F9D6-1F3FC.png","/png-emojis/1F9D6-1F3FD.png","/png-emojis/1F9D6-1F3FE.png","/png-emojis/1F9D6-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D7",
@@ -11783,13 +9987,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧗‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9D7-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D7-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9D7-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9D7-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9D7-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9D7-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D7-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9D7-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9D7-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9D7-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9D7-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9D7",
@@ -11798,13 +9996,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧗‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9D7-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D7-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9D7-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9D7-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9D7-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9D7-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D7-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9D7-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9D7-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9D7-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9D7-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9D7",
@@ -11813,13 +10005,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧗",
     hasSkinTones: true,
     baseEmoji: "1F9D7",
-    skinToneVariants: [
-      "/png-emojis/1F9D7-1F3FB.png",
-      "/png-emojis/1F9D7-1F3FC.png",
-      "/png-emojis/1F9D7-1F3FD.png",
-      "/png-emojis/1F9D7-1F3FE.png",
-      "/png-emojis/1F9D7-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D7-1F3FB.png","/png-emojis/1F9D7-1F3FC.png","/png-emojis/1F9D7-1F3FD.png","/png-emojis/1F9D7-1F3FE.png","/png-emojis/1F9D7-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D8",
@@ -11828,13 +10014,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧘‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9D8-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D8-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9D8-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9D8-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9D8-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9D8-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D8-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9D8-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9D8-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9D8-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9D8-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9D8",
@@ -11843,13 +10023,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧘‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9D8-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D8-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9D8-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9D8-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9D8-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9D8-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D8-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9D8-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9D8-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9D8-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9D8-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9D8",
@@ -11858,13 +10032,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧘",
     hasSkinTones: true,
     baseEmoji: "1F9D8",
-    skinToneVariants: [
-      "/png-emojis/1F9D8-1F3FB.png",
-      "/png-emojis/1F9D8-1F3FC.png",
-      "/png-emojis/1F9D8-1F3FD.png",
-      "/png-emojis/1F9D8-1F3FE.png",
-      "/png-emojis/1F9D8-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D8-1F3FB.png","/png-emojis/1F9D8-1F3FC.png","/png-emojis/1F9D8-1F3FD.png","/png-emojis/1F9D8-1F3FE.png","/png-emojis/1F9D8-1F3FF.png"],
   },
   {
     name: "Emoji 1F9D9",
@@ -11873,13 +10041,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧙‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9D9-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D9-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9D9-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9D9-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9D9-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9D9-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D9-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9D9-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9D9-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9D9-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9D9-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9D9",
@@ -11888,13 +10050,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧙‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9D9-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9D9-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9D9-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9D9-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9D9-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9D9-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D9-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9D9-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9D9-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9D9-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9D9-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9D9",
@@ -11903,13 +10059,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧙",
     hasSkinTones: true,
     baseEmoji: "1F9D9",
-    skinToneVariants: [
-      "/png-emojis/1F9D9-1F3FB.png",
-      "/png-emojis/1F9D9-1F3FC.png",
-      "/png-emojis/1F9D9-1F3FD.png",
-      "/png-emojis/1F9D9-1F3FE.png",
-      "/png-emojis/1F9D9-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9D9-1F3FB.png","/png-emojis/1F9D9-1F3FC.png","/png-emojis/1F9D9-1F3FD.png","/png-emojis/1F9D9-1F3FE.png","/png-emojis/1F9D9-1F3FF.png"],
   },
   {
     name: "Emoji 1F9DA",
@@ -11918,13 +10068,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧚‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9DA-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9DA-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9DA-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9DA-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9DA-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9DA-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DA-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9DA-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9DA-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9DA-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9DA-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9DA",
@@ -11933,13 +10077,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧚‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9DA-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9DA-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9DA-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9DA-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9DA-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9DA-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DA-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9DA-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9DA-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9DA-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9DA-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9DA",
@@ -11948,13 +10086,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧚",
     hasSkinTones: true,
     baseEmoji: "1F9DA",
-    skinToneVariants: [
-      "/png-emojis/1F9DA-1F3FB.png",
-      "/png-emojis/1F9DA-1F3FC.png",
-      "/png-emojis/1F9DA-1F3FD.png",
-      "/png-emojis/1F9DA-1F3FE.png",
-      "/png-emojis/1F9DA-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DA-1F3FB.png","/png-emojis/1F9DA-1F3FC.png","/png-emojis/1F9DA-1F3FD.png","/png-emojis/1F9DA-1F3FE.png","/png-emojis/1F9DA-1F3FF.png"],
   },
   {
     name: "Emoji 1F9DB",
@@ -11963,13 +10095,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧛‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9DB-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9DB-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9DB-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9DB-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9DB-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9DB-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DB-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9DB-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9DB-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9DB-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9DB-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9DB",
@@ -11978,13 +10104,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧛‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9DB-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9DB-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9DB-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9DB-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9DB-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9DB-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DB-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9DB-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9DB-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9DB-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9DB-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9DB",
@@ -11993,13 +10113,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧛",
     hasSkinTones: true,
     baseEmoji: "1F9DB",
-    skinToneVariants: [
-      "/png-emojis/1F9DB-1F3FB.png",
-      "/png-emojis/1F9DB-1F3FC.png",
-      "/png-emojis/1F9DB-1F3FD.png",
-      "/png-emojis/1F9DB-1F3FE.png",
-      "/png-emojis/1F9DB-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DB-1F3FB.png","/png-emojis/1F9DB-1F3FC.png","/png-emojis/1F9DB-1F3FD.png","/png-emojis/1F9DB-1F3FE.png","/png-emojis/1F9DB-1F3FF.png"],
   },
   {
     name: "Emoji 1F9DC",
@@ -12008,13 +10122,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧜‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9DC-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9DC-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9DC-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9DC-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9DC-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9DC-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DC-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9DC-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9DC-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9DC-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9DC-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9DC",
@@ -12023,13 +10131,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧜‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9DC-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9DC-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9DC-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9DC-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9DC-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9DC-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DC-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9DC-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9DC-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9DC-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9DC-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9DC",
@@ -12038,13 +10140,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧜",
     hasSkinTones: true,
     baseEmoji: "1F9DC",
-    skinToneVariants: [
-      "/png-emojis/1F9DC-1F3FB.png",
-      "/png-emojis/1F9DC-1F3FC.png",
-      "/png-emojis/1F9DC-1F3FD.png",
-      "/png-emojis/1F9DC-1F3FE.png",
-      "/png-emojis/1F9DC-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DC-1F3FB.png","/png-emojis/1F9DC-1F3FC.png","/png-emojis/1F9DC-1F3FD.png","/png-emojis/1F9DC-1F3FE.png","/png-emojis/1F9DC-1F3FF.png"],
   },
   {
     name: "Emoji 1F9DD",
@@ -12053,13 +10149,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧝‍♀️",
     hasSkinTones: true,
     baseEmoji: "1F9DD-200D-2640-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9DD-1F3FB-200D-2640-FE0F.png",
-      "/png-emojis/1F9DD-1F3FC-200D-2640-FE0F.png",
-      "/png-emojis/1F9DD-1F3FD-200D-2640-FE0F.png",
-      "/png-emojis/1F9DD-1F3FE-200D-2640-FE0F.png",
-      "/png-emojis/1F9DD-1F3FF-200D-2640-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DD-1F3FB-200D-2640-FE0F.png","/png-emojis/1F9DD-1F3FC-200D-2640-FE0F.png","/png-emojis/1F9DD-1F3FD-200D-2640-FE0F.png","/png-emojis/1F9DD-1F3FE-200D-2640-FE0F.png","/png-emojis/1F9DD-1F3FF-200D-2640-FE0F.png"],
   },
   {
     name: "Emoji 1F9DD",
@@ -12068,13 +10158,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧝‍♂️",
     hasSkinTones: true,
     baseEmoji: "1F9DD-200D-2642-FE0F",
-    skinToneVariants: [
-      "/png-emojis/1F9DD-1F3FB-200D-2642-FE0F.png",
-      "/png-emojis/1F9DD-1F3FC-200D-2642-FE0F.png",
-      "/png-emojis/1F9DD-1F3FD-200D-2642-FE0F.png",
-      "/png-emojis/1F9DD-1F3FE-200D-2642-FE0F.png",
-      "/png-emojis/1F9DD-1F3FF-200D-2642-FE0F.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DD-1F3FB-200D-2642-FE0F.png","/png-emojis/1F9DD-1F3FC-200D-2642-FE0F.png","/png-emojis/1F9DD-1F3FD-200D-2642-FE0F.png","/png-emojis/1F9DD-1F3FE-200D-2642-FE0F.png","/png-emojis/1F9DD-1F3FF-200D-2642-FE0F.png"],
   },
   {
     name: "Emoji 1F9DD",
@@ -12083,13 +10167,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🧝",
     hasSkinTones: true,
     baseEmoji: "1F9DD",
-    skinToneVariants: [
-      "/png-emojis/1F9DD-1F3FB.png",
-      "/png-emojis/1F9DD-1F3FC.png",
-      "/png-emojis/1F9DD-1F3FD.png",
-      "/png-emojis/1F9DD-1F3FE.png",
-      "/png-emojis/1F9DD-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1F9DD-1F3FB.png","/png-emojis/1F9DD-1F3FC.png","/png-emojis/1F9DD-1F3FD.png","/png-emojis/1F9DD-1F3FE.png","/png-emojis/1F9DD-1F3FF.png"],
   },
   {
     name: "Emoji 1F9DE",
@@ -12135,7 +10213,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F9E1",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1F9E1.png",
     preview: "🧡",
   },
@@ -12351,19 +10429,19 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1FA75",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1FA75.png",
     preview: "🩵",
   },
   {
     name: "Emoji 1FA76",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1FA76.png",
     preview: "🩶",
   },
   {
     name: "Emoji 1FA77",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/1FA77.png",
     preview: "🩷",
   },
@@ -12639,7 +10717,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1FAAF",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/1FAAF.png",
     preview: "🪯",
   },
@@ -12758,13 +10836,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫃",
     hasSkinTones: true,
     baseEmoji: "1FAC3",
-    skinToneVariants: [
-      "/png-emojis/1FAC3-1F3FB.png",
-      "/png-emojis/1FAC3-1F3FC.png",
-      "/png-emojis/1FAC3-1F3FD.png",
-      "/png-emojis/1FAC3-1F3FE.png",
-      "/png-emojis/1FAC3-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAC3-1F3FB.png","/png-emojis/1FAC3-1F3FC.png","/png-emojis/1FAC3-1F3FD.png","/png-emojis/1FAC3-1F3FE.png","/png-emojis/1FAC3-1F3FF.png"],
   },
   {
     name: "Emoji 1FAC4",
@@ -12773,13 +10845,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫄",
     hasSkinTones: true,
     baseEmoji: "1FAC4",
-    skinToneVariants: [
-      "/png-emojis/1FAC4-1F3FB.png",
-      "/png-emojis/1FAC4-1F3FC.png",
-      "/png-emojis/1FAC4-1F3FD.png",
-      "/png-emojis/1FAC4-1F3FE.png",
-      "/png-emojis/1FAC4-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAC4-1F3FB.png","/png-emojis/1FAC4-1F3FC.png","/png-emojis/1FAC4-1F3FD.png","/png-emojis/1FAC4-1F3FE.png","/png-emojis/1FAC4-1F3FF.png"],
   },
   {
     name: "Emoji 1FAC5",
@@ -12788,13 +10854,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫅",
     hasSkinTones: true,
     baseEmoji: "1FAC5",
-    skinToneVariants: [
-      "/png-emojis/1FAC5-1F3FB.png",
-      "/png-emojis/1FAC5-1F3FC.png",
-      "/png-emojis/1FAC5-1F3FD.png",
-      "/png-emojis/1FAC5-1F3FE.png",
-      "/png-emojis/1FAC5-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAC5-1F3FB.png","/png-emojis/1FAC5-1F3FC.png","/png-emojis/1FAC5-1F3FD.png","/png-emojis/1FAC5-1F3FE.png","/png-emojis/1FAC5-1F3FF.png"],
   },
   {
     name: "Emoji 1FACE",
@@ -12941,13 +11001,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫰",
     hasSkinTones: true,
     baseEmoji: "1FAF0",
-    skinToneVariants: [
-      "/png-emojis/1FAF0-1F3FB.png",
-      "/png-emojis/1FAF0-1F3FC.png",
-      "/png-emojis/1FAF0-1F3FD.png",
-      "/png-emojis/1FAF0-1F3FE.png",
-      "/png-emojis/1FAF0-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAF0-1F3FB.png","/png-emojis/1FAF0-1F3FC.png","/png-emojis/1FAF0-1F3FD.png","/png-emojis/1FAF0-1F3FE.png","/png-emojis/1FAF0-1F3FF.png"],
   },
   {
     name: "Emoji 1FAF1",
@@ -12956,13 +11010,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫱",
     hasSkinTones: true,
     baseEmoji: "1FAF1",
-    skinToneVariants: [
-      "/png-emojis/1FAF1-1F3FB.png",
-      "/png-emojis/1FAF1-1F3FC.png",
-      "/png-emojis/1FAF1-1F3FD.png",
-      "/png-emojis/1FAF1-1F3FE.png",
-      "/png-emojis/1FAF1-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAF1-1F3FB.png","/png-emojis/1FAF1-1F3FC.png","/png-emojis/1FAF1-1F3FD.png","/png-emojis/1FAF1-1F3FE.png","/png-emojis/1FAF1-1F3FF.png"],
   },
   {
     name: "Emoji 1FAF2",
@@ -12971,13 +11019,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫲",
     hasSkinTones: true,
     baseEmoji: "1FAF2",
-    skinToneVariants: [
-      "/png-emojis/1FAF2-1F3FB.png",
-      "/png-emojis/1FAF2-1F3FC.png",
-      "/png-emojis/1FAF2-1F3FD.png",
-      "/png-emojis/1FAF2-1F3FE.png",
-      "/png-emojis/1FAF2-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAF2-1F3FB.png","/png-emojis/1FAF2-1F3FC.png","/png-emojis/1FAF2-1F3FD.png","/png-emojis/1FAF2-1F3FE.png","/png-emojis/1FAF2-1F3FF.png"],
   },
   {
     name: "Emoji 1FAF3",
@@ -12986,13 +11028,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫳",
     hasSkinTones: true,
     baseEmoji: "1FAF3",
-    skinToneVariants: [
-      "/png-emojis/1FAF3-1F3FB.png",
-      "/png-emojis/1FAF3-1F3FC.png",
-      "/png-emojis/1FAF3-1F3FD.png",
-      "/png-emojis/1FAF3-1F3FE.png",
-      "/png-emojis/1FAF3-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAF3-1F3FB.png","/png-emojis/1FAF3-1F3FC.png","/png-emojis/1FAF3-1F3FD.png","/png-emojis/1FAF3-1F3FE.png","/png-emojis/1FAF3-1F3FF.png"],
   },
   {
     name: "Emoji 1FAF4",
@@ -13001,13 +11037,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫴",
     hasSkinTones: true,
     baseEmoji: "1FAF4",
-    skinToneVariants: [
-      "/png-emojis/1FAF4-1F3FB.png",
-      "/png-emojis/1FAF4-1F3FC.png",
-      "/png-emojis/1FAF4-1F3FD.png",
-      "/png-emojis/1FAF4-1F3FE.png",
-      "/png-emojis/1FAF4-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAF4-1F3FB.png","/png-emojis/1FAF4-1F3FC.png","/png-emojis/1FAF4-1F3FD.png","/png-emojis/1FAF4-1F3FE.png","/png-emojis/1FAF4-1F3FF.png"],
   },
   {
     name: "Emoji 1FAF5",
@@ -13016,13 +11046,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫵",
     hasSkinTones: true,
     baseEmoji: "1FAF5",
-    skinToneVariants: [
-      "/png-emojis/1FAF5-1F3FB.png",
-      "/png-emojis/1FAF5-1F3FC.png",
-      "/png-emojis/1FAF5-1F3FD.png",
-      "/png-emojis/1FAF5-1F3FE.png",
-      "/png-emojis/1FAF5-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAF5-1F3FB.png","/png-emojis/1FAF5-1F3FC.png","/png-emojis/1FAF5-1F3FD.png","/png-emojis/1FAF5-1F3FE.png","/png-emojis/1FAF5-1F3FF.png"],
   },
   {
     name: "Emoji 1FAF6",
@@ -13031,13 +11055,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫶",
     hasSkinTones: true,
     baseEmoji: "1FAF6",
-    skinToneVariants: [
-      "/png-emojis/1FAF6-1F3FB.png",
-      "/png-emojis/1FAF6-1F3FC.png",
-      "/png-emojis/1FAF6-1F3FD.png",
-      "/png-emojis/1FAF6-1F3FE.png",
-      "/png-emojis/1FAF6-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAF6-1F3FB.png","/png-emojis/1FAF6-1F3FC.png","/png-emojis/1FAF6-1F3FD.png","/png-emojis/1FAF6-1F3FE.png","/png-emojis/1FAF6-1F3FF.png"],
   },
   {
     name: "Emoji 1FAF7",
@@ -13046,13 +11064,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫷",
     hasSkinTones: true,
     baseEmoji: "1FAF7",
-    skinToneVariants: [
-      "/png-emojis/1FAF7-1F3FB.png",
-      "/png-emojis/1FAF7-1F3FC.png",
-      "/png-emojis/1FAF7-1F3FD.png",
-      "/png-emojis/1FAF7-1F3FE.png",
-      "/png-emojis/1FAF7-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAF7-1F3FB.png","/png-emojis/1FAF7-1F3FC.png","/png-emojis/1FAF7-1F3FD.png","/png-emojis/1FAF7-1F3FE.png","/png-emojis/1FAF7-1F3FF.png"],
   },
   {
     name: "Emoji 1FAF8",
@@ -13061,13 +11073,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "🫸",
     hasSkinTones: true,
     baseEmoji: "1FAF8",
-    skinToneVariants: [
-      "/png-emojis/1FAF8-1F3FB.png",
-      "/png-emojis/1FAF8-1F3FC.png",
-      "/png-emojis/1FAF8-1F3FD.png",
-      "/png-emojis/1FAF8-1F3FE.png",
-      "/png-emojis/1FAF8-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/1FAF8-1F3FB.png","/png-emojis/1FAF8-1F3FC.png","/png-emojis/1FAF8-1F3FD.png","/png-emojis/1FAF8-1F3FE.png","/png-emojis/1FAF8-1F3FF.png"],
   },
   {
     name: "Emoji 203C",
@@ -13100,29 +11106,23 @@ export const iconRegistry: IconInfo[] = [
     preview: "☝",
     hasSkinTones: true,
     baseEmoji: "261D",
-    skinToneVariants: [
-      "/png-emojis/261D-1F3FB.png",
-      "/png-emojis/261D-1F3FC.png",
-      "/png-emojis/261D-1F3FD.png",
-      "/png-emojis/261D-1F3FE.png",
-      "/png-emojis/261D-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/261D-1F3FB.png","/png-emojis/261D-1F3FC.png","/png-emojis/261D-1F3FD.png","/png-emojis/261D-1F3FE.png","/png-emojis/261D-1F3FF.png"],
   },
   {
     name: "Emoji 262A",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/262A.png",
     preview: "☪",
   },
   {
     name: "Emoji 262E",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/262E.png",
     preview: "☮",
   },
   {
     name: "Emoji 262F",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/262F.png",
     preview: "☯",
   },
@@ -13182,7 +11182,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 269B",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/269B.png",
     preview: "⚛",
   },
@@ -13349,13 +11349,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "⛹",
     hasSkinTones: true,
     baseEmoji: "26F9",
-    skinToneVariants: [
-      "/png-emojis/26F9-1F3FB.png",
-      "/png-emojis/26F9-1F3FC.png",
-      "/png-emojis/26F9-1F3FD.png",
-      "/png-emojis/26F9-1F3FE.png",
-      "/png-emojis/26F9-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/26F9-1F3FB.png","/png-emojis/26F9-1F3FC.png","/png-emojis/26F9-1F3FD.png","/png-emojis/26F9-1F3FE.png","/png-emojis/26F9-1F3FF.png"],
   },
   {
     name: "Emoji 26F9",
@@ -13388,13 +11382,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "✊",
     hasSkinTones: true,
     baseEmoji: "270A",
-    skinToneVariants: [
-      "/png-emojis/270A-1F3FB.png",
-      "/png-emojis/270A-1F3FC.png",
-      "/png-emojis/270A-1F3FD.png",
-      "/png-emojis/270A-1F3FE.png",
-      "/png-emojis/270A-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/270A-1F3FB.png","/png-emojis/270A-1F3FC.png","/png-emojis/270A-1F3FD.png","/png-emojis/270A-1F3FE.png","/png-emojis/270A-1F3FF.png"],
   },
   {
     name: "Emoji 270B",
@@ -13403,13 +11391,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "✋",
     hasSkinTones: true,
     baseEmoji: "270B",
-    skinToneVariants: [
-      "/png-emojis/270B-1F3FB.png",
-      "/png-emojis/270B-1F3FC.png",
-      "/png-emojis/270B-1F3FD.png",
-      "/png-emojis/270B-1F3FE.png",
-      "/png-emojis/270B-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/270B-1F3FB.png","/png-emojis/270B-1F3FC.png","/png-emojis/270B-1F3FD.png","/png-emojis/270B-1F3FE.png","/png-emojis/270B-1F3FF.png"],
   },
   {
     name: "Emoji 270C",
@@ -13418,13 +11400,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "✌",
     hasSkinTones: true,
     baseEmoji: "270C",
-    skinToneVariants: [
-      "/png-emojis/270C-1F3FB.png",
-      "/png-emojis/270C-1F3FC.png",
-      "/png-emojis/270C-1F3FD.png",
-      "/png-emojis/270C-1F3FE.png",
-      "/png-emojis/270C-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/270C-1F3FB.png","/png-emojis/270C-1F3FC.png","/png-emojis/270C-1F3FD.png","/png-emojis/270C-1F3FE.png","/png-emojis/270C-1F3FF.png"],
   },
   {
     name: "Emoji 270D",
@@ -13433,13 +11409,7 @@ export const iconRegistry: IconInfo[] = [
     preview: "✍",
     hasSkinTones: true,
     baseEmoji: "270D",
-    skinToneVariants: [
-      "/png-emojis/270D-1F3FB.png",
-      "/png-emojis/270D-1F3FC.png",
-      "/png-emojis/270D-1F3FD.png",
-      "/png-emojis/270D-1F3FE.png",
-      "/png-emojis/270D-1F3FF.png",
-    ],
+    skinToneVariants: ["/png-emojis/270D-1F3FB.png","/png-emojis/270D-1F3FC.png","/png-emojis/270D-1F3FD.png","/png-emojis/270D-1F3FE.png","/png-emojis/270D-1F3FF.png"],
   },
   {
     name: "Emoji 270F",
@@ -13449,19 +11419,19 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 271D",
-    category: "religion-culture",
+    category: "symbols",
     path: "/png-emojis/271D.png",
     preview: "✝",
   },
   {
     name: "Red Heart ♀️",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/2764-FE0F-200D-1F525.png",
     preview: "❤️‍🔥",
   },
   {
     name: "Red Heart ♀️",
-    category: "smileys-emotion",
+    category: "symbols",
     path: "/png-emojis/2764-FE0F-200D-1FA79.png",
     preview: "❤️‍🩹",
   },
@@ -14274,57 +12244,33 @@ export const iconRegistry: IconInfo[] = [
     category: "symbols",
     path: "/png-emojis/E348.png",
     preview: "",
-  },
+  }
 ];
 
 /**
  * Get icon by path
  */
 export function getIconByPath(path: string): IconInfo | undefined {
-  return iconRegistry.find((icon) => icon.path === path);
+  return iconRegistry.find(icon => icon.path === path);
 }
 
 /**
  * Get icons by category
  */
-function remapCategory(icon: IconInfo): string {
-  let cat = icon.category;
-  const baseCode = icon.baseEmoji || icon.path.split('/').pop()?.replace('.png', '') || '';
-  const nameLower = (icon.name || '').toLowerCase();
-
-  // Break up Religion & Culture into Symbols, except folded hands (praying) -> People & Body
-  if (cat === 'religion-culture') {
-    if (baseCode.startsWith('1F64F') || nameLower.includes('folded hands') || nameLower.includes('pray')) {
-      cat = 'people-body';
-    } else {
-      cat = 'symbols';
-    }
-  }
-
-  // Hearts from Smileys & Emotion -> Symbols (standalone hearts only)
-  const isHeartish = /(^|\b)heart(s)?(\b|$)/i.test(icon.name || '');
-  const looksLikeFace = /(face|eyes|kiss|couple)/i.test(icon.name || '');
-  if (cat === 'smileys-emotion' && isHeartish && !looksLikeFace) {
-    cat = 'symbols';
-  }
-
-  return cat;
-}
-
 export function getIconsByCategory(category: string): IconInfo[] {
-  return iconRegistry.filter((icon) => remapCategory(icon) === category);
+  return iconRegistry.filter(icon => icon.category === category);
 }
 
 /**
  * Get all available categories
  */
 export function getCategories(): string[] {
-  const categories = Array.from(new Set(iconRegistry.map((icon) => remapCategory(icon))));
+  const raw = Array.from(new Set(iconRegistry.map(icon => icon.category)));
   const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
-  const withoutCustom = categories.filter((c) => c !== 'custom');
+  const withoutCustom = raw.filter(c => c !== 'custom' && c !== 'religion-culture');
   const ordered = [
-    ...priority.filter((c) => withoutCustom.includes(c)),
-    ...withoutCustom.filter((c) => !priority.includes(c)).sort(),
+    ...priority.filter(c => withoutCustom.includes(c)),
+    ...withoutCustom.filter(c => !priority.includes(c)).sort(),
   ];
   return ordered;
 }
@@ -14334,30 +12280,27 @@ export function getCategories(): string[] {
  */
 export function getCategoryDisplayName(category: string): string {
   const displayNames: Record<string, string> = {
-    "smileys-emotion": "Smileys & Emotion",
-    "people-body": "People & Body",
-    "animals-nature": "Animals & Nature",
-    "food-drink": "Food & Drink",
-    "activities-events": "Activities & Events",
-    "travel-places": "Travel & Places",
-    "objects-tools": "Objects & Tools",
-    symbols: "Symbols",
-    flags: "Flags",
-    "religion-culture": "Religion & Culture",
-    custom: "Custom",
+    'smileys-emotion': 'Smileys & Emotion',
+    'people-body': 'People & Body',
+    'animals-nature': 'Animals & Nature',
+    'food-drink': 'Food & Drink',
+    'activities-events': 'Activities & Events',
+    'travel-places': 'Travel & Places',
+    'objects-tools': 'Objects & Tools',
+    'symbols': 'Symbols',
+    'flags': 'Flags',
+    'religion-culture': 'Religion & Culture',
+    'custom': 'Custom'
   };
-  return (
-    displayNames[category] ||
-    category.charAt(0).toUpperCase() + category.slice(1)
-  );
+  return displayNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
 }
 
 /**
  * Get skin tone variants for an emoji
  */
 export function getSkinToneVariants(baseEmojiPath: string): string[] {
-  const baseEmoji = baseEmojiPath.split("/").pop()?.replace(".png", "") || "";
-  const emoji = iconRegistry.find((icon) => icon.baseEmoji === baseEmoji);
+  const baseEmoji = baseEmojiPath.split('/').pop()?.replace('.png', '') || '';
+  const emoji = iconRegistry.find(icon => icon.baseEmoji === baseEmoji);
   return emoji?.skinToneVariants || [];
 }
 
@@ -14365,8 +12308,8 @@ export function getSkinToneVariants(baseEmojiPath: string): string[] {
  * Check if emoji has skin tone variants
  */
 export function hasSkinToneVariants(emojiPath: string): boolean {
-  const baseEmoji = emojiPath.split("/").pop()?.replace(".png", "") || "";
-  const emoji = iconRegistry.find((icon) => icon.baseEmoji === baseEmoji);
+  const baseEmoji = emojiPath.split('/').pop()?.replace('.png', '') || '';
+  const emoji = iconRegistry.find(icon => icon.baseEmoji === baseEmoji);
   return emoji?.hasSkinTones || false;
 }
 
@@ -14377,9 +12320,9 @@ export function getCustomStampsAsIcons(): IconInfo[] {
   const customStamps = getCustomStamps();
   return customStamps.map((stamp: CustomStamp) => ({
     name: stamp.name,
-    category: "custom",
+    category: 'custom',
     path: stamp.dataUrl,
-    preview: stamp.preview,
+    preview: stamp.preview
   }));
 }
 
@@ -14389,11 +12332,11 @@ export function getCustomStampsAsIcons(): IconInfo[] {
 export function getAllCategories(): string[] {
   const standardCategories = getCategories();
   const customStamps = getCustomStamps();
-
+  
   if (customStamps.length > 0) {
     return [...standardCategories, 'custom'];
   }
-
+  
   return standardCategories;
 }
 
@@ -14401,7 +12344,7 @@ export function getAllCategories(): string[] {
  * Get icons by category including custom stamps
  */
 export function getIconsByCategoryWithCustom(category: string): IconInfo[] {
-  if (category === "custom") {
+  if (category === 'custom') {
     return getCustomStampsAsIcons();
   }
   return getIconsByCategory(category);
@@ -14418,4159 +12361,344 @@ export function getAllIcons(): IconInfo[] {
     return i === -1 ? priority.length : i;
   };
   return all.slice().sort((a, b) => {
-    const ca = remapCategory(a);
-    const cb = remapCategory(b);
-    const pa = getPrio(ca);
-    const pb = getPrio(cb);
+    const pa = getPrio(a.category);
+    const pb = getPrio(b.category);
     if (pa !== pb) return pa - pb;
-    if (ca !== cb) return ca.localeCompare(cb);
+    if (a.category !== b.category) return a.category.localeCompare(b.category);
     return a.name.localeCompare(b.name);
   });
 }
 
 // Export category statistics for debugging
 export const CATEGORY_STATS = {
-  symbols: 216,
+  "symbols": 253,
   "objects-tools": 262,
   "travel-places": 187,
   "food-drink": 135,
   "animals-nature": 153,
-  "smileys-emotion": 168,
-  "religion-culture": 13,
+  "smileys-emotion": 144,
   "activities-events": 85,
-  flags: 269,
-  "people-body": 392,
+  "flags": 269,
+  "people-body": 392
 };
 export const TOTAL_EMOJIS = 3755;
-export const GENERATED_AT = "2025-08-08T14:01:53.371Z";
+export const GENERATED_AT = "2025-08-08T14:13:46.500Z";
 
 // Skin tone mapping for quick lookup
 export const SKIN_TONE_MAP = new Map([
-  [
-    "1F385",
-    {
-      base: "/png-emojis/1F385.png",
-      variants: {
-        light: "/png-emojis/1F385-1F3FB.png",
-        "medium-light": "/png-emojis/1F385-1F3FC.png",
-        medium: "/png-emojis/1F385-1F3FD.png",
-        "medium-dark": "/png-emojis/1F385-1F3FE.png",
-        dark: "/png-emojis/1F385-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F3C2",
-    {
-      base: "/png-emojis/1F3C2.png",
-      variants: {
-        light: "/png-emojis/1F3C2-1F3FB.png",
-        "medium-light": "/png-emojis/1F3C2-1F3FC.png",
-        medium: "/png-emojis/1F3C2-1F3FD.png",
-        "medium-dark": "/png-emojis/1F3C2-1F3FE.png",
-        dark: "/png-emojis/1F3C2-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F3C3-200D-2640-FE0F-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F3C3-200D-2640-FE0F-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F3C3-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png",
-        "medium-light":
-          "/png-emojis/1F3C3-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F3C3-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png",
-        "medium-dark":
-          "/png-emojis/1F3C3-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F3C3-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F3C3-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F3C3-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F3C3-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F3C3-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F3C3-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F3C3-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F3C3-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F3C3-200D-2642-FE0F-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F3C3-200D-2642-FE0F-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F3C3-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png",
-        "medium-light":
-          "/png-emojis/1F3C3-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F3C3-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png",
-        "medium-dark":
-          "/png-emojis/1F3C3-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F3C3-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F3C3-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F3C3-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F3C3-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F3C3-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F3C3-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F3C3-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F3C3-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F3C3-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F3C3-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F3C3-1F3FB-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F3C3-1F3FC-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F3C3-1F3FD-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F3C3-1F3FE-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F3C3-1F3FF-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F3C3",
-    {
-      base: "/png-emojis/1F3C3.png",
-      variants: {
-        light: "/png-emojis/1F3C3-1F3FB.png",
-        "medium-light": "/png-emojis/1F3C3-1F3FC.png",
-        medium: "/png-emojis/1F3C3-1F3FD.png",
-        "medium-dark": "/png-emojis/1F3C3-1F3FE.png",
-        dark: "/png-emojis/1F3C3-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F3C4-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F3C4-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F3C4-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F3C4-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F3C4-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F3C4-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F3C4-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F3C4-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F3C4-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F3C4-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F3C4-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F3C4-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F3C4-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F3C4-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F3C4",
-    {
-      base: "/png-emojis/1F3C4.png",
-      variants: {
-        light: "/png-emojis/1F3C4-1F3FB.png",
-        "medium-light": "/png-emojis/1F3C4-1F3FC.png",
-        medium: "/png-emojis/1F3C4-1F3FD.png",
-        "medium-dark": "/png-emojis/1F3C4-1F3FE.png",
-        dark: "/png-emojis/1F3C4-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F3C7",
-    {
-      base: "/png-emojis/1F3C7.png",
-      variants: {
-        light: "/png-emojis/1F3C7-1F3FB.png",
-        "medium-light": "/png-emojis/1F3C7-1F3FC.png",
-        medium: "/png-emojis/1F3C7-1F3FD.png",
-        "medium-dark": "/png-emojis/1F3C7-1F3FE.png",
-        dark: "/png-emojis/1F3C7-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F3CA-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F3CA-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F3CA-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F3CA-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F3CA-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F3CA-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F3CA-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F3CA-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F3CA-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F3CA-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F3CA-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F3CA-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F3CA-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F3CA-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F3CA",
-    {
-      base: "/png-emojis/1F3CA.png",
-      variants: {
-        light: "/png-emojis/1F3CA-1F3FB.png",
-        "medium-light": "/png-emojis/1F3CA-1F3FC.png",
-        medium: "/png-emojis/1F3CA-1F3FD.png",
-        "medium-dark": "/png-emojis/1F3CA-1F3FE.png",
-        dark: "/png-emojis/1F3CA-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F3CB",
-    {
-      base: "/png-emojis/1F3CB.png",
-      variants: {
-        light: "/png-emojis/1F3CB-1F3FB.png",
-        "medium-light": "/png-emojis/1F3CB-1F3FC.png",
-        medium: "/png-emojis/1F3CB-1F3FD.png",
-        "medium-dark": "/png-emojis/1F3CB-1F3FE.png",
-        dark: "/png-emojis/1F3CB-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F3CC",
-    {
-      base: "/png-emojis/1F3CC.png",
-      variants: {
-        light: "/png-emojis/1F3CC-1F3FB.png",
-        "medium-light": "/png-emojis/1F3CC-1F3FC.png",
-        medium: "/png-emojis/1F3CC-1F3FD.png",
-        "medium-dark": "/png-emojis/1F3CC-1F3FE.png",
-        dark: "/png-emojis/1F3CC-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F442",
-    {
-      base: "/png-emojis/1F442.png",
-      variants: {
-        light: "/png-emojis/1F442-1F3FB.png",
-        "medium-light": "/png-emojis/1F442-1F3FC.png",
-        medium: "/png-emojis/1F442-1F3FD.png",
-        "medium-dark": "/png-emojis/1F442-1F3FE.png",
-        dark: "/png-emojis/1F442-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F443",
-    {
-      base: "/png-emojis/1F443.png",
-      variants: {
-        light: "/png-emojis/1F443-1F3FB.png",
-        "medium-light": "/png-emojis/1F443-1F3FC.png",
-        medium: "/png-emojis/1F443-1F3FD.png",
-        "medium-dark": "/png-emojis/1F443-1F3FE.png",
-        dark: "/png-emojis/1F443-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F446",
-    {
-      base: "/png-emojis/1F446.png",
-      variants: {
-        light: "/png-emojis/1F446-1F3FB.png",
-        "medium-light": "/png-emojis/1F446-1F3FC.png",
-        medium: "/png-emojis/1F446-1F3FD.png",
-        "medium-dark": "/png-emojis/1F446-1F3FE.png",
-        dark: "/png-emojis/1F446-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F447",
-    {
-      base: "/png-emojis/1F447.png",
-      variants: {
-        light: "/png-emojis/1F447-1F3FB.png",
-        "medium-light": "/png-emojis/1F447-1F3FC.png",
-        medium: "/png-emojis/1F447-1F3FD.png",
-        "medium-dark": "/png-emojis/1F447-1F3FE.png",
-        dark: "/png-emojis/1F447-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F448",
-    {
-      base: "/png-emojis/1F448.png",
-      variants: {
-        light: "/png-emojis/1F448-1F3FB.png",
-        "medium-light": "/png-emojis/1F448-1F3FC.png",
-        medium: "/png-emojis/1F448-1F3FD.png",
-        "medium-dark": "/png-emojis/1F448-1F3FE.png",
-        dark: "/png-emojis/1F448-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F449",
-    {
-      base: "/png-emojis/1F449.png",
-      variants: {
-        light: "/png-emojis/1F449-1F3FB.png",
-        "medium-light": "/png-emojis/1F449-1F3FC.png",
-        medium: "/png-emojis/1F449-1F3FD.png",
-        "medium-dark": "/png-emojis/1F449-1F3FE.png",
-        dark: "/png-emojis/1F449-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F44A",
-    {
-      base: "/png-emojis/1F44A.png",
-      variants: {
-        light: "/png-emojis/1F44A-1F3FB.png",
-        "medium-light": "/png-emojis/1F44A-1F3FC.png",
-        medium: "/png-emojis/1F44A-1F3FD.png",
-        "medium-dark": "/png-emojis/1F44A-1F3FE.png",
-        dark: "/png-emojis/1F44A-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F44B",
-    {
-      base: "/png-emojis/1F44B.png",
-      variants: {
-        light: "/png-emojis/1F44B-1F3FB.png",
-        "medium-light": "/png-emojis/1F44B-1F3FC.png",
-        medium: "/png-emojis/1F44B-1F3FD.png",
-        "medium-dark": "/png-emojis/1F44B-1F3FE.png",
-        dark: "/png-emojis/1F44B-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F44C",
-    {
-      base: "/png-emojis/1F44C.png",
-      variants: {
-        light: "/png-emojis/1F44C-1F3FB.png",
-        "medium-light": "/png-emojis/1F44C-1F3FC.png",
-        medium: "/png-emojis/1F44C-1F3FD.png",
-        "medium-dark": "/png-emojis/1F44C-1F3FE.png",
-        dark: "/png-emojis/1F44C-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F44D",
-    {
-      base: "/png-emojis/1F44D.png",
-      variants: {
-        light: "/png-emojis/1F44D-1F3FB.png",
-        "medium-light": "/png-emojis/1F44D-1F3FC.png",
-        medium: "/png-emojis/1F44D-1F3FD.png",
-        "medium-dark": "/png-emojis/1F44D-1F3FE.png",
-        dark: "/png-emojis/1F44D-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F44E",
-    {
-      base: "/png-emojis/1F44E.png",
-      variants: {
-        light: "/png-emojis/1F44E-1F3FB.png",
-        "medium-light": "/png-emojis/1F44E-1F3FC.png",
-        medium: "/png-emojis/1F44E-1F3FD.png",
-        "medium-dark": "/png-emojis/1F44E-1F3FE.png",
-        dark: "/png-emojis/1F44E-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F44F",
-    {
-      base: "/png-emojis/1F44F.png",
-      variants: {
-        light: "/png-emojis/1F44F-1F3FB.png",
-        "medium-light": "/png-emojis/1F44F-1F3FC.png",
-        medium: "/png-emojis/1F44F-1F3FD.png",
-        "medium-dark": "/png-emojis/1F44F-1F3FE.png",
-        dark: "/png-emojis/1F44F-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F450",
-    {
-      base: "/png-emojis/1F450.png",
-      variants: {
-        light: "/png-emojis/1F450-1F3FB.png",
-        "medium-light": "/png-emojis/1F450-1F3FC.png",
-        medium: "/png-emojis/1F450-1F3FD.png",
-        "medium-dark": "/png-emojis/1F450-1F3FE.png",
-        dark: "/png-emojis/1F450-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F466",
-    {
-      base: "/png-emojis/1F466.png",
-      variants: {
-        light: "/png-emojis/1F466-1F3FB.png",
-        "medium-light": "/png-emojis/1F466-1F3FC.png",
-        medium: "/png-emojis/1F466-1F3FD.png",
-        "medium-dark": "/png-emojis/1F466-1F3FE.png",
-        dark: "/png-emojis/1F466-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F467",
-    {
-      base: "/png-emojis/1F467.png",
-      variants: {
-        light: "/png-emojis/1F467-1F3FB.png",
-        "medium-light": "/png-emojis/1F467-1F3FC.png",
-        medium: "/png-emojis/1F467-1F3FD.png",
-        "medium-dark": "/png-emojis/1F467-1F3FE.png",
-        dark: "/png-emojis/1F467-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F33E",
-    {
-      base: "/png-emojis/1F468-200D-1F33E.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F33E.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F33E.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F33E.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F33E.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F33E.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F373",
-    {
-      base: "/png-emojis/1F468-200D-1F373.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F373.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F373.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F373.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F373.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F373.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F37C",
-    {
-      base: "/png-emojis/1F468-200D-1F37C.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F37C.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F37C.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F37C.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F37C.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F37C.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F393",
-    {
-      base: "/png-emojis/1F468-200D-1F393.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F393.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F393.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F393.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F393.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F393.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F3A4",
-    {
-      base: "/png-emojis/1F468-200D-1F3A4.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F3A4.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F3A4.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F3A4.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F3A4.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F3A4.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F3A8",
-    {
-      base: "/png-emojis/1F468-200D-1F3A8.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F3A8.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F3A8.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F3A8.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F3A8.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F3A8.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F3EB",
-    {
-      base: "/png-emojis/1F468-200D-1F3EB.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F3EB.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F3EB.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F3EB.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F3EB.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F3EB.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F3ED",
-    {
-      base: "/png-emojis/1F468-200D-1F3ED.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F3ED.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F3ED.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F3ED.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F3ED.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F3ED.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F4BB",
-    {
-      base: "/png-emojis/1F468-200D-1F4BB.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F4BB.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F4BB.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F4BB.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F4BB.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F4BB.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F4BC",
-    {
-      base: "/png-emojis/1F468-200D-1F4BC.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F4BC.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F4BC.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F4BC.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F4BC.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F4BC.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F527",
-    {
-      base: "/png-emojis/1F468-200D-1F527.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F527.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F527.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F527.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F527.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F527.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F52C",
-    {
-      base: "/png-emojis/1F468-200D-1F52C.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F52C.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F52C.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F52C.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F52C.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F52C.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F680",
-    {
-      base: "/png-emojis/1F468-200D-1F680.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F680.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F680.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F680.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F680.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F680.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F692",
-    {
-      base: "/png-emojis/1F468-200D-1F692.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F692.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F692.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F692.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F692.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F692.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9AF-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F468-200D-1F9AF-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9AF-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9AF-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9AF-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9AF-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9AF-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9AF",
-    {
-      base: "/png-emojis/1F468-200D-1F9AF.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9AF.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9AF.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9AF.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9AF.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9AF.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9B0",
-    {
-      base: "/png-emojis/1F468-200D-1F9B0.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9B0.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9B0.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9B0.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9B0.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9B0.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9B1",
-    {
-      base: "/png-emojis/1F468-200D-1F9B1.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9B1.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9B1.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9B1.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9B1.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9B1.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9B2",
-    {
-      base: "/png-emojis/1F468-200D-1F9B2.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9B2.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9B2.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9B2.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9B2.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9B2.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9B3",
-    {
-      base: "/png-emojis/1F468-200D-1F9B3.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9B3.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9B3.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9B3.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9B3.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9B3.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9BC-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F468-200D-1F9BC-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9BC-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9BC-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9BC-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9BC-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9BC-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9BC",
-    {
-      base: "/png-emojis/1F468-200D-1F9BC.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9BC.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9BC.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9BC.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9BC.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9BC.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9BD-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F468-200D-1F9BD-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9BD-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9BD-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9BD-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9BD-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9BD-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-1F9BD",
-    {
-      base: "/png-emojis/1F468-200D-1F9BD.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-1F9BD.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-1F9BD.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-1F9BD.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-1F9BD.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-1F9BD.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-2695-FE0F",
-    {
-      base: "/png-emojis/1F468-200D-2695-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-2695-FE0F.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-2695-FE0F.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-2695-FE0F.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-2695-FE0F.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-2695-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-2696-FE0F",
-    {
-      base: "/png-emojis/1F468-200D-2696-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-2696-FE0F.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-2696-FE0F.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-2696-FE0F.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-2696-FE0F.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-2696-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-2708-FE0F",
-    {
-      base: "/png-emojis/1F468-200D-2708-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-2708-FE0F.png",
-        "medium-light": "/png-emojis/1F468-1F3FC-200D-2708-FE0F.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-2708-FE0F.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE-200D-2708-FE0F.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-2708-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-2764-FE0F-200D-1F468",
-    {
-      base: "/png-emojis/1F468-200D-2764-FE0F-200D-1F468.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FF.png",
-        "medium-light":
-          "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FF.png",
-        medium: "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FF.png",
-        "medium-dark":
-          "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FF.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F468-200D-2764-FE0F-200D-1F48B-200D-1F468",
-    {
-      base: "/png-emojis/1F468-200D-2764-FE0F-200D-1F48B-200D-1F468.png",
-      variants: {
-        light:
-          "/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-        "medium-light":
-          "/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-        medium:
-          "/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-        "medium-dark":
-          "/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-        dark: "/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F468",
-    {
-      base: "/png-emojis/1F468.png",
-      variants: {
-        light: "/png-emojis/1F468-1F3FB.png",
-        "medium-light": "/png-emojis/1F468-1F3FC.png",
-        medium: "/png-emojis/1F468-1F3FD.png",
-        "medium-dark": "/png-emojis/1F468-1F3FE.png",
-        dark: "/png-emojis/1F468-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F33E",
-    {
-      base: "/png-emojis/1F469-200D-1F33E.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F33E.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F33E.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F33E.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F33E.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F33E.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F373",
-    {
-      base: "/png-emojis/1F469-200D-1F373.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F373.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F373.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F373.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F373.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F373.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F37C",
-    {
-      base: "/png-emojis/1F469-200D-1F37C.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F37C.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F37C.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F37C.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F37C.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F37C.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F393",
-    {
-      base: "/png-emojis/1F469-200D-1F393.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F393.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F393.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F393.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F393.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F393.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F3A4",
-    {
-      base: "/png-emojis/1F469-200D-1F3A4.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F3A4.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F3A4.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F3A4.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F3A4.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F3A4.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F3A8",
-    {
-      base: "/png-emojis/1F469-200D-1F3A8.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F3A8.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F3A8.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F3A8.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F3A8.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F3A8.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F3EB",
-    {
-      base: "/png-emojis/1F469-200D-1F3EB.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F3EB.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F3EB.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F3EB.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F3EB.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F3EB.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F3ED",
-    {
-      base: "/png-emojis/1F469-200D-1F3ED.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F3ED.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F3ED.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F3ED.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F3ED.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F3ED.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F4BB",
-    {
-      base: "/png-emojis/1F469-200D-1F4BB.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F4BB.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F4BB.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F4BB.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F4BB.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F4BB.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F4BC",
-    {
-      base: "/png-emojis/1F469-200D-1F4BC.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F4BC.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F4BC.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F4BC.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F4BC.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F4BC.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F527",
-    {
-      base: "/png-emojis/1F469-200D-1F527.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F527.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F527.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F527.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F527.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F527.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F52C",
-    {
-      base: "/png-emojis/1F469-200D-1F52C.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F52C.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F52C.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F52C.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F52C.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F52C.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F680",
-    {
-      base: "/png-emojis/1F469-200D-1F680.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F680.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F680.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F680.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F680.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F680.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F692",
-    {
-      base: "/png-emojis/1F469-200D-1F692.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F692.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F692.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F692.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F692.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F692.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9AF-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F469-200D-1F9AF-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9AF-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9AF-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9AF-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9AF-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9AF-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9AF",
-    {
-      base: "/png-emojis/1F469-200D-1F9AF.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9AF.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9AF.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9AF.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9AF.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9AF.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9B0",
-    {
-      base: "/png-emojis/1F469-200D-1F9B0.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9B0.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9B0.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9B0.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9B0.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9B0.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9B1",
-    {
-      base: "/png-emojis/1F469-200D-1F9B1.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9B1.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9B1.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9B1.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9B1.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9B1.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9B2",
-    {
-      base: "/png-emojis/1F469-200D-1F9B2.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9B2.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9B2.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9B2.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9B2.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9B2.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9B3",
-    {
-      base: "/png-emojis/1F469-200D-1F9B3.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9B3.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9B3.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9B3.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9B3.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9B3.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9BC-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F469-200D-1F9BC-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9BC-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9BC-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9BC-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9BC-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9BC-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9BC",
-    {
-      base: "/png-emojis/1F469-200D-1F9BC.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9BC.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9BC.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9BC.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9BC.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9BC.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9BD-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F469-200D-1F9BD-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9BD-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9BD-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9BD-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9BD-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9BD-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-1F9BD",
-    {
-      base: "/png-emojis/1F469-200D-1F9BD.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-1F9BD.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-1F9BD.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-1F9BD.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-1F9BD.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-1F9BD.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-2695-FE0F",
-    {
-      base: "/png-emojis/1F469-200D-2695-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-2695-FE0F.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-2695-FE0F.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-2695-FE0F.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-2695-FE0F.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-2695-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-2696-FE0F",
-    {
-      base: "/png-emojis/1F469-200D-2696-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-2696-FE0F.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-2696-FE0F.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-2696-FE0F.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-2696-FE0F.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-2696-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-2708-FE0F",
-    {
-      base: "/png-emojis/1F469-200D-2708-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-2708-FE0F.png",
-        "medium-light": "/png-emojis/1F469-1F3FC-200D-2708-FE0F.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-2708-FE0F.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE-200D-2708-FE0F.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-2708-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-2764-FE0F-200D-1F468",
-    {
-      base: "/png-emojis/1F469-200D-2764-FE0F-200D-1F468.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FF.png",
-        "medium-light":
-          "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FF.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FF.png",
-        "medium-dark":
-          "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FF.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-2764-FE0F-200D-1F469",
-    {
-      base: "/png-emojis/1F469-200D-2764-FE0F-200D-1F469.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FF.png",
-        "medium-light":
-          "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FF.png",
-        medium: "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FF.png",
-        "medium-dark":
-          "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FF.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-2764-FE0F-200D-1F48B-200D-1F468",
-    {
-      base: "/png-emojis/1F469-200D-2764-FE0F-200D-1F48B-200D-1F468.png",
-      variants: {
-        light:
-          "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-        "medium-light":
-          "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-        medium:
-          "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-        "medium-dark":
-          "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F469-200D-2764-FE0F-200D-1F48B-200D-1F469",
-    {
-      base: "/png-emojis/1F469-200D-2764-FE0F-200D-1F48B-200D-1F469.png",
-      variants: {
-        light:
-          "/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-        "medium-light":
-          "/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-        medium:
-          "/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-        "medium-dark":
-          "/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-        dark: "/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F469",
-    {
-      base: "/png-emojis/1F469.png",
-      variants: {
-        light: "/png-emojis/1F469-1F3FB.png",
-        "medium-light": "/png-emojis/1F469-1F3FC.png",
-        medium: "/png-emojis/1F469-1F3FD.png",
-        "medium-dark": "/png-emojis/1F469-1F3FE.png",
-        dark: "/png-emojis/1F469-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F46B",
-    {
-      base: "/png-emojis/1F46B.png",
-      variants: {
-        light: "/png-emojis/1F46B-1F3FB.png",
-        "medium-light": "/png-emojis/1F46B-1F3FC.png",
-        medium: "/png-emojis/1F46B-1F3FD.png",
-        "medium-dark": "/png-emojis/1F46B-1F3FE.png",
-        dark: "/png-emojis/1F46B-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F46C",
-    {
-      base: "/png-emojis/1F46C.png",
-      variants: {
-        light: "/png-emojis/1F46C-1F3FB.png",
-        "medium-light": "/png-emojis/1F46C-1F3FC.png",
-        medium: "/png-emojis/1F46C-1F3FD.png",
-        "medium-dark": "/png-emojis/1F46C-1F3FE.png",
-        dark: "/png-emojis/1F46C-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F46D",
-    {
-      base: "/png-emojis/1F46D.png",
-      variants: {
-        light: "/png-emojis/1F46D-1F3FB.png",
-        "medium-light": "/png-emojis/1F46D-1F3FC.png",
-        medium: "/png-emojis/1F46D-1F3FD.png",
-        "medium-dark": "/png-emojis/1F46D-1F3FE.png",
-        dark: "/png-emojis/1F46D-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F46E-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F46E-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F46E-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F46E-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F46E-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F46E-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F46E-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F46E-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F46E-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F46E-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F46E-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F46E-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F46E-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F46E-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F46E",
-    {
-      base: "/png-emojis/1F46E.png",
-      variants: {
-        light: "/png-emojis/1F46E-1F3FB.png",
-        "medium-light": "/png-emojis/1F46E-1F3FC.png",
-        medium: "/png-emojis/1F46E-1F3FD.png",
-        "medium-dark": "/png-emojis/1F46E-1F3FE.png",
-        dark: "/png-emojis/1F46E-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F470-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F470-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F470-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F470-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F470-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F470-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F470-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F470-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F470-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F470-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F470-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F470-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F470-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F470-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F470",
-    {
-      base: "/png-emojis/1F470.png",
-      variants: {
-        light: "/png-emojis/1F470-1F3FB.png",
-        "medium-light": "/png-emojis/1F470-1F3FC.png",
-        medium: "/png-emojis/1F470-1F3FD.png",
-        "medium-dark": "/png-emojis/1F470-1F3FE.png",
-        dark: "/png-emojis/1F470-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F471-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F471-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F471-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F471-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F471-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F471-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F471-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F471-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F471-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F471-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F471-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F471-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F471-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F471-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F471",
-    {
-      base: "/png-emojis/1F471.png",
-      variants: {
-        light: "/png-emojis/1F471-1F3FB.png",
-        "medium-light": "/png-emojis/1F471-1F3FC.png",
-        medium: "/png-emojis/1F471-1F3FD.png",
-        "medium-dark": "/png-emojis/1F471-1F3FE.png",
-        dark: "/png-emojis/1F471-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F472",
-    {
-      base: "/png-emojis/1F472.png",
-      variants: {
-        light: "/png-emojis/1F472-1F3FB.png",
-        "medium-light": "/png-emojis/1F472-1F3FC.png",
-        medium: "/png-emojis/1F472-1F3FD.png",
-        "medium-dark": "/png-emojis/1F472-1F3FE.png",
-        dark: "/png-emojis/1F472-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F473-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F473-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F473-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F473-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F473-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F473-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F473-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F473-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F473-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F473-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F473-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F473-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F473-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F473-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F473",
-    {
-      base: "/png-emojis/1F473.png",
-      variants: {
-        light: "/png-emojis/1F473-1F3FB.png",
-        "medium-light": "/png-emojis/1F473-1F3FC.png",
-        medium: "/png-emojis/1F473-1F3FD.png",
-        "medium-dark": "/png-emojis/1F473-1F3FE.png",
-        dark: "/png-emojis/1F473-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F474",
-    {
-      base: "/png-emojis/1F474.png",
-      variants: {
-        light: "/png-emojis/1F474-1F3FB.png",
-        "medium-light": "/png-emojis/1F474-1F3FC.png",
-        medium: "/png-emojis/1F474-1F3FD.png",
-        "medium-dark": "/png-emojis/1F474-1F3FE.png",
-        dark: "/png-emojis/1F474-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F475",
-    {
-      base: "/png-emojis/1F475.png",
-      variants: {
-        light: "/png-emojis/1F475-1F3FB.png",
-        "medium-light": "/png-emojis/1F475-1F3FC.png",
-        medium: "/png-emojis/1F475-1F3FD.png",
-        "medium-dark": "/png-emojis/1F475-1F3FE.png",
-        dark: "/png-emojis/1F475-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F476",
-    {
-      base: "/png-emojis/1F476.png",
-      variants: {
-        light: "/png-emojis/1F476-1F3FB.png",
-        "medium-light": "/png-emojis/1F476-1F3FC.png",
-        medium: "/png-emojis/1F476-1F3FD.png",
-        "medium-dark": "/png-emojis/1F476-1F3FE.png",
-        dark: "/png-emojis/1F476-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F477-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F477-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F477-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F477-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F477-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F477-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F477-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F477-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F477-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F477-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F477-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F477-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F477-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F477-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F477",
-    {
-      base: "/png-emojis/1F477.png",
-      variants: {
-        light: "/png-emojis/1F477-1F3FB.png",
-        "medium-light": "/png-emojis/1F477-1F3FC.png",
-        medium: "/png-emojis/1F477-1F3FD.png",
-        "medium-dark": "/png-emojis/1F477-1F3FE.png",
-        dark: "/png-emojis/1F477-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F478",
-    {
-      base: "/png-emojis/1F478.png",
-      variants: {
-        light: "/png-emojis/1F478-1F3FB.png",
-        "medium-light": "/png-emojis/1F478-1F3FC.png",
-        medium: "/png-emojis/1F478-1F3FD.png",
-        "medium-dark": "/png-emojis/1F478-1F3FE.png",
-        dark: "/png-emojis/1F478-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F47C",
-    {
-      base: "/png-emojis/1F47C.png",
-      variants: {
-        light: "/png-emojis/1F47C-1F3FB.png",
-        "medium-light": "/png-emojis/1F47C-1F3FC.png",
-        medium: "/png-emojis/1F47C-1F3FD.png",
-        "medium-dark": "/png-emojis/1F47C-1F3FE.png",
-        dark: "/png-emojis/1F47C-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F481-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F481-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F481-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F481-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F481-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F481-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F481-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F481-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F481-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F481-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F481-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F481-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F481-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F481-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F481",
-    {
-      base: "/png-emojis/1F481.png",
-      variants: {
-        light: "/png-emojis/1F481-1F3FB.png",
-        "medium-light": "/png-emojis/1F481-1F3FC.png",
-        medium: "/png-emojis/1F481-1F3FD.png",
-        "medium-dark": "/png-emojis/1F481-1F3FE.png",
-        dark: "/png-emojis/1F481-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F482-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F482-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F482-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F482-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F482-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F482-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F482-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F482-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F482-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F482-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F482-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F482-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F482-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F482-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F482",
-    {
-      base: "/png-emojis/1F482.png",
-      variants: {
-        light: "/png-emojis/1F482-1F3FB.png",
-        "medium-light": "/png-emojis/1F482-1F3FC.png",
-        medium: "/png-emojis/1F482-1F3FD.png",
-        "medium-dark": "/png-emojis/1F482-1F3FE.png",
-        dark: "/png-emojis/1F482-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F483",
-    {
-      base: "/png-emojis/1F483.png",
-      variants: {
-        light: "/png-emojis/1F483-1F3FB.png",
-        "medium-light": "/png-emojis/1F483-1F3FC.png",
-        medium: "/png-emojis/1F483-1F3FD.png",
-        "medium-dark": "/png-emojis/1F483-1F3FE.png",
-        dark: "/png-emojis/1F483-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F485",
-    {
-      base: "/png-emojis/1F485.png",
-      variants: {
-        light: "/png-emojis/1F485-1F3FB.png",
-        "medium-light": "/png-emojis/1F485-1F3FC.png",
-        medium: "/png-emojis/1F485-1F3FD.png",
-        "medium-dark": "/png-emojis/1F485-1F3FE.png",
-        dark: "/png-emojis/1F485-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F486-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F486-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F486-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F486-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F486-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F486-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F486-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F486-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F486-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F486-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F486-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F486-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F486-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F486-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F486",
-    {
-      base: "/png-emojis/1F486.png",
-      variants: {
-        light: "/png-emojis/1F486-1F3FB.png",
-        "medium-light": "/png-emojis/1F486-1F3FC.png",
-        medium: "/png-emojis/1F486-1F3FD.png",
-        "medium-dark": "/png-emojis/1F486-1F3FE.png",
-        dark: "/png-emojis/1F486-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F487-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F487-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F487-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F487-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F487-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F487-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F487-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F487-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F487-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F487-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F487-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F487-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F487-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F487-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F487",
-    {
-      base: "/png-emojis/1F487.png",
-      variants: {
-        light: "/png-emojis/1F487-1F3FB.png",
-        "medium-light": "/png-emojis/1F487-1F3FC.png",
-        medium: "/png-emojis/1F487-1F3FD.png",
-        "medium-dark": "/png-emojis/1F487-1F3FE.png",
-        dark: "/png-emojis/1F487-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F48F",
-    {
-      base: "/png-emojis/1F48F.png",
-      variants: {
-        light: "/png-emojis/1F48F-1F3FB.png",
-        "medium-light": "/png-emojis/1F48F-1F3FC.png",
-        medium: "/png-emojis/1F48F-1F3FD.png",
-        "medium-dark": "/png-emojis/1F48F-1F3FE.png",
-        dark: "/png-emojis/1F48F-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F491",
-    {
-      base: "/png-emojis/1F491.png",
-      variants: {
-        light: "/png-emojis/1F491-1F3FB.png",
-        "medium-light": "/png-emojis/1F491-1F3FC.png",
-        medium: "/png-emojis/1F491-1F3FD.png",
-        "medium-dark": "/png-emojis/1F491-1F3FE.png",
-        dark: "/png-emojis/1F491-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F4AA",
-    {
-      base: "/png-emojis/1F4AA.png",
-      variants: {
-        light: "/png-emojis/1F4AA-1F3FB.png",
-        "medium-light": "/png-emojis/1F4AA-1F3FC.png",
-        medium: "/png-emojis/1F4AA-1F3FD.png",
-        "medium-dark": "/png-emojis/1F4AA-1F3FE.png",
-        dark: "/png-emojis/1F4AA-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F574",
-    {
-      base: "/png-emojis/1F574.png",
-      variants: {
-        light: "/png-emojis/1F574-1F3FB.png",
-        "medium-light": "/png-emojis/1F574-1F3FC.png",
-        medium: "/png-emojis/1F574-1F3FD.png",
-        "medium-dark": "/png-emojis/1F574-1F3FE.png",
-        dark: "/png-emojis/1F574-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F575",
-    {
-      base: "/png-emojis/1F575.png",
-      variants: {
-        light: "/png-emojis/1F575-1F3FB.png",
-        "medium-light": "/png-emojis/1F575-1F3FC.png",
-        medium: "/png-emojis/1F575-1F3FD.png",
-        "medium-dark": "/png-emojis/1F575-1F3FE.png",
-        dark: "/png-emojis/1F575-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F57A",
-    {
-      base: "/png-emojis/1F57A.png",
-      variants: {
-        light: "/png-emojis/1F57A-1F3FB.png",
-        "medium-light": "/png-emojis/1F57A-1F3FC.png",
-        medium: "/png-emojis/1F57A-1F3FD.png",
-        "medium-dark": "/png-emojis/1F57A-1F3FE.png",
-        dark: "/png-emojis/1F57A-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F590",
-    {
-      base: "/png-emojis/1F590.png",
-      variants: {
-        light: "/png-emojis/1F590-1F3FB.png",
-        "medium-light": "/png-emojis/1F590-1F3FC.png",
-        medium: "/png-emojis/1F590-1F3FD.png",
-        "medium-dark": "/png-emojis/1F590-1F3FE.png",
-        dark: "/png-emojis/1F590-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F595",
-    {
-      base: "/png-emojis/1F595.png",
-      variants: {
-        light: "/png-emojis/1F595-1F3FB.png",
-        "medium-light": "/png-emojis/1F595-1F3FC.png",
-        medium: "/png-emojis/1F595-1F3FD.png",
-        "medium-dark": "/png-emojis/1F595-1F3FE.png",
-        dark: "/png-emojis/1F595-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F596",
-    {
-      base: "/png-emojis/1F596.png",
-      variants: {
-        light: "/png-emojis/1F596-1F3FB.png",
-        "medium-light": "/png-emojis/1F596-1F3FC.png",
-        medium: "/png-emojis/1F596-1F3FD.png",
-        "medium-dark": "/png-emojis/1F596-1F3FE.png",
-        dark: "/png-emojis/1F596-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F645-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F645-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F645-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F645-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F645-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F645-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F645-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F645-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F645-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F645-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F645-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F645-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F645-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F645-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F645",
-    {
-      base: "/png-emojis/1F645.png",
-      variants: {
-        light: "/png-emojis/1F645-1F3FB.png",
-        "medium-light": "/png-emojis/1F645-1F3FC.png",
-        medium: "/png-emojis/1F645-1F3FD.png",
-        "medium-dark": "/png-emojis/1F645-1F3FE.png",
-        dark: "/png-emojis/1F645-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F646-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F646-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F646-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F646-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F646-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F646-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F646-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F646-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F646-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F646-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F646-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F646-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F646-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F646-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F646",
-    {
-      base: "/png-emojis/1F646.png",
-      variants: {
-        light: "/png-emojis/1F646-1F3FB.png",
-        "medium-light": "/png-emojis/1F646-1F3FC.png",
-        medium: "/png-emojis/1F646-1F3FD.png",
-        "medium-dark": "/png-emojis/1F646-1F3FE.png",
-        dark: "/png-emojis/1F646-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F647-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F647-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F647-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F647-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F647-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F647-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F647-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F647-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F647-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F647-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F647-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F647-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F647-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F647-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F647",
-    {
-      base: "/png-emojis/1F647.png",
-      variants: {
-        light: "/png-emojis/1F647-1F3FB.png",
-        "medium-light": "/png-emojis/1F647-1F3FC.png",
-        medium: "/png-emojis/1F647-1F3FD.png",
-        "medium-dark": "/png-emojis/1F647-1F3FE.png",
-        dark: "/png-emojis/1F647-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F64B-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F64B-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F64B-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F64B-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F64B-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F64B-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F64B-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F64B-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F64B-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F64B-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F64B-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F64B-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F64B-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F64B-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F64B",
-    {
-      base: "/png-emojis/1F64B.png",
-      variants: {
-        light: "/png-emojis/1F64B-1F3FB.png",
-        "medium-light": "/png-emojis/1F64B-1F3FC.png",
-        medium: "/png-emojis/1F64B-1F3FD.png",
-        "medium-dark": "/png-emojis/1F64B-1F3FE.png",
-        dark: "/png-emojis/1F64B-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F64C",
-    {
-      base: "/png-emojis/1F64C.png",
-      variants: {
-        light: "/png-emojis/1F64C-1F3FB.png",
-        "medium-light": "/png-emojis/1F64C-1F3FC.png",
-        medium: "/png-emojis/1F64C-1F3FD.png",
-        "medium-dark": "/png-emojis/1F64C-1F3FE.png",
-        dark: "/png-emojis/1F64C-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F64D-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F64D-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F64D-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F64D-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F64D-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F64D-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F64D-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F64D-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F64D-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F64D-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F64D-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F64D-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F64D-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F64D-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F64D",
-    {
-      base: "/png-emojis/1F64D.png",
-      variants: {
-        light: "/png-emojis/1F64D-1F3FB.png",
-        "medium-light": "/png-emojis/1F64D-1F3FC.png",
-        medium: "/png-emojis/1F64D-1F3FD.png",
-        "medium-dark": "/png-emojis/1F64D-1F3FE.png",
-        dark: "/png-emojis/1F64D-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F64E-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F64E-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F64E-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F64E-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F64E-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F64E-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F64E-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F64E-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F64E-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F64E-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F64E-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F64E-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F64E-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F64E-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F64E",
-    {
-      base: "/png-emojis/1F64E.png",
-      variants: {
-        light: "/png-emojis/1F64E-1F3FB.png",
-        "medium-light": "/png-emojis/1F64E-1F3FC.png",
-        medium: "/png-emojis/1F64E-1F3FD.png",
-        "medium-dark": "/png-emojis/1F64E-1F3FE.png",
-        dark: "/png-emojis/1F64E-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F64F",
-    {
-      base: "/png-emojis/1F64F.png",
-      variants: {
-        light: "/png-emojis/1F64F-1F3FB.png",
-        "medium-light": "/png-emojis/1F64F-1F3FC.png",
-        medium: "/png-emojis/1F64F-1F3FD.png",
-        "medium-dark": "/png-emojis/1F64F-1F3FE.png",
-        dark: "/png-emojis/1F64F-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F6A3-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F6A3-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6A3-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F6A3-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F6A3-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F6A3-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F6A3-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6A3-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F6A3-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6A3-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F6A3-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F6A3-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F6A3-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F6A3-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6A3",
-    {
-      base: "/png-emojis/1F6A3.png",
-      variants: {
-        light: "/png-emojis/1F6A3-1F3FB.png",
-        "medium-light": "/png-emojis/1F6A3-1F3FC.png",
-        medium: "/png-emojis/1F6A3-1F3FD.png",
-        "medium-dark": "/png-emojis/1F6A3-1F3FE.png",
-        dark: "/png-emojis/1F6A3-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F6B4-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F6B4-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6B4-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F6B4-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F6B4-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F6B4-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F6B4-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6B4-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F6B4-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6B4-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F6B4-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F6B4-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F6B4-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F6B4-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6B4",
-    {
-      base: "/png-emojis/1F6B4.png",
-      variants: {
-        light: "/png-emojis/1F6B4-1F3FB.png",
-        "medium-light": "/png-emojis/1F6B4-1F3FC.png",
-        medium: "/png-emojis/1F6B4-1F3FD.png",
-        "medium-dark": "/png-emojis/1F6B4-1F3FE.png",
-        dark: "/png-emojis/1F6B4-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F6B5-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F6B5-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6B5-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F6B5-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F6B5-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F6B5-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F6B5-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6B5-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F6B5-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6B5-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F6B5-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F6B5-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F6B5-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F6B5-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6B5",
-    {
-      base: "/png-emojis/1F6B5.png",
-      variants: {
-        light: "/png-emojis/1F6B5-1F3FB.png",
-        "medium-light": "/png-emojis/1F6B5-1F3FC.png",
-        medium: "/png-emojis/1F6B5-1F3FD.png",
-        "medium-dark": "/png-emojis/1F6B5-1F3FE.png",
-        dark: "/png-emojis/1F6B5-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F6B6-200D-2640-FE0F-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F6B6-200D-2640-FE0F-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6B6-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png",
-        "medium-light":
-          "/png-emojis/1F6B6-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F6B6-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png",
-        "medium-dark":
-          "/png-emojis/1F6B6-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F6B6-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6B6-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F6B6-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6B6-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F6B6-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F6B6-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F6B6-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F6B6-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6B6-200D-2642-FE0F-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F6B6-200D-2642-FE0F-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6B6-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png",
-        "medium-light":
-          "/png-emojis/1F6B6-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F6B6-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png",
-        "medium-dark":
-          "/png-emojis/1F6B6-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F6B6-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6B6-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F6B6-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6B6-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F6B6-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F6B6-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F6B6-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F6B6-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6B6-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F6B6-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F6B6-1F3FB-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F6B6-1F3FC-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F6B6-1F3FD-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F6B6-1F3FE-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F6B6-1F3FF-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F6B6",
-    {
-      base: "/png-emojis/1F6B6.png",
-      variants: {
-        light: "/png-emojis/1F6B6-1F3FB.png",
-        "medium-light": "/png-emojis/1F6B6-1F3FC.png",
-        medium: "/png-emojis/1F6B6-1F3FD.png",
-        "medium-dark": "/png-emojis/1F6B6-1F3FE.png",
-        dark: "/png-emojis/1F6B6-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F6C0",
-    {
-      base: "/png-emojis/1F6C0.png",
-      variants: {
-        light: "/png-emojis/1F6C0-1F3FB.png",
-        "medium-light": "/png-emojis/1F6C0-1F3FC.png",
-        medium: "/png-emojis/1F6C0-1F3FD.png",
-        "medium-dark": "/png-emojis/1F6C0-1F3FE.png",
-        dark: "/png-emojis/1F6C0-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F6CC",
-    {
-      base: "/png-emojis/1F6CC.png",
-      variants: {
-        light: "/png-emojis/1F6CC-1F3FB.png",
-        "medium-light": "/png-emojis/1F6CC-1F3FC.png",
-        medium: "/png-emojis/1F6CC-1F3FD.png",
-        "medium-dark": "/png-emojis/1F6CC-1F3FE.png",
-        dark: "/png-emojis/1F6CC-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F90C",
-    {
-      base: "/png-emojis/1F90C.png",
-      variants: {
-        light: "/png-emojis/1F90C-1F3FB.png",
-        "medium-light": "/png-emojis/1F90C-1F3FC.png",
-        medium: "/png-emojis/1F90C-1F3FD.png",
-        "medium-dark": "/png-emojis/1F90C-1F3FE.png",
-        dark: "/png-emojis/1F90C-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F90F",
-    {
-      base: "/png-emojis/1F90F.png",
-      variants: {
-        light: "/png-emojis/1F90F-1F3FB.png",
-        "medium-light": "/png-emojis/1F90F-1F3FC.png",
-        medium: "/png-emojis/1F90F-1F3FD.png",
-        "medium-dark": "/png-emojis/1F90F-1F3FE.png",
-        dark: "/png-emojis/1F90F-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F918",
-    {
-      base: "/png-emojis/1F918.png",
-      variants: {
-        light: "/png-emojis/1F918-1F3FB.png",
-        "medium-light": "/png-emojis/1F918-1F3FC.png",
-        medium: "/png-emojis/1F918-1F3FD.png",
-        "medium-dark": "/png-emojis/1F918-1F3FE.png",
-        dark: "/png-emojis/1F918-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F919",
-    {
-      base: "/png-emojis/1F919.png",
-      variants: {
-        light: "/png-emojis/1F919-1F3FB.png",
-        "medium-light": "/png-emojis/1F919-1F3FC.png",
-        medium: "/png-emojis/1F919-1F3FD.png",
-        "medium-dark": "/png-emojis/1F919-1F3FE.png",
-        dark: "/png-emojis/1F919-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F91A",
-    {
-      base: "/png-emojis/1F91A.png",
-      variants: {
-        light: "/png-emojis/1F91A-1F3FB.png",
-        "medium-light": "/png-emojis/1F91A-1F3FC.png",
-        medium: "/png-emojis/1F91A-1F3FD.png",
-        "medium-dark": "/png-emojis/1F91A-1F3FE.png",
-        dark: "/png-emojis/1F91A-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F91B",
-    {
-      base: "/png-emojis/1F91B.png",
-      variants: {
-        light: "/png-emojis/1F91B-1F3FB.png",
-        "medium-light": "/png-emojis/1F91B-1F3FC.png",
-        medium: "/png-emojis/1F91B-1F3FD.png",
-        "medium-dark": "/png-emojis/1F91B-1F3FE.png",
-        dark: "/png-emojis/1F91B-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F91C",
-    {
-      base: "/png-emojis/1F91C.png",
-      variants: {
-        light: "/png-emojis/1F91C-1F3FB.png",
-        "medium-light": "/png-emojis/1F91C-1F3FC.png",
-        medium: "/png-emojis/1F91C-1F3FD.png",
-        "medium-dark": "/png-emojis/1F91C-1F3FE.png",
-        dark: "/png-emojis/1F91C-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F91D",
-    {
-      base: "/png-emojis/1F91D.png",
-      variants: {
-        light: "/png-emojis/1F91D-1F3FB.png",
-        "medium-light": "/png-emojis/1F91D-1F3FC.png",
-        medium: "/png-emojis/1F91D-1F3FD.png",
-        "medium-dark": "/png-emojis/1F91D-1F3FE.png",
-        dark: "/png-emojis/1F91D-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F91E",
-    {
-      base: "/png-emojis/1F91E.png",
-      variants: {
-        light: "/png-emojis/1F91E-1F3FB.png",
-        "medium-light": "/png-emojis/1F91E-1F3FC.png",
-        medium: "/png-emojis/1F91E-1F3FD.png",
-        "medium-dark": "/png-emojis/1F91E-1F3FE.png",
-        dark: "/png-emojis/1F91E-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F91F",
-    {
-      base: "/png-emojis/1F91F.png",
-      variants: {
-        light: "/png-emojis/1F91F-1F3FB.png",
-        "medium-light": "/png-emojis/1F91F-1F3FC.png",
-        medium: "/png-emojis/1F91F-1F3FD.png",
-        "medium-dark": "/png-emojis/1F91F-1F3FE.png",
-        dark: "/png-emojis/1F91F-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F926-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F926-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F926-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F926-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F926-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F926-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F926-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F926-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F926-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F926-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F926-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F926-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F926-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F926-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F926",
-    {
-      base: "/png-emojis/1F926.png",
-      variants: {
-        light: "/png-emojis/1F926-1F3FB.png",
-        "medium-light": "/png-emojis/1F926-1F3FC.png",
-        medium: "/png-emojis/1F926-1F3FD.png",
-        "medium-dark": "/png-emojis/1F926-1F3FE.png",
-        dark: "/png-emojis/1F926-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F930",
-    {
-      base: "/png-emojis/1F930.png",
-      variants: {
-        light: "/png-emojis/1F930-1F3FB.png",
-        "medium-light": "/png-emojis/1F930-1F3FC.png",
-        medium: "/png-emojis/1F930-1F3FD.png",
-        "medium-dark": "/png-emojis/1F930-1F3FE.png",
-        dark: "/png-emojis/1F930-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F931",
-    {
-      base: "/png-emojis/1F931.png",
-      variants: {
-        light: "/png-emojis/1F931-1F3FB.png",
-        "medium-light": "/png-emojis/1F931-1F3FC.png",
-        medium: "/png-emojis/1F931-1F3FD.png",
-        "medium-dark": "/png-emojis/1F931-1F3FE.png",
-        dark: "/png-emojis/1F931-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F932",
-    {
-      base: "/png-emojis/1F932.png",
-      variants: {
-        light: "/png-emojis/1F932-1F3FB.png",
-        "medium-light": "/png-emojis/1F932-1F3FC.png",
-        medium: "/png-emojis/1F932-1F3FD.png",
-        "medium-dark": "/png-emojis/1F932-1F3FE.png",
-        dark: "/png-emojis/1F932-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F933",
-    {
-      base: "/png-emojis/1F933.png",
-      variants: {
-        light: "/png-emojis/1F933-1F3FB.png",
-        "medium-light": "/png-emojis/1F933-1F3FC.png",
-        medium: "/png-emojis/1F933-1F3FD.png",
-        "medium-dark": "/png-emojis/1F933-1F3FE.png",
-        dark: "/png-emojis/1F933-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F934",
-    {
-      base: "/png-emojis/1F934.png",
-      variants: {
-        light: "/png-emojis/1F934-1F3FB.png",
-        "medium-light": "/png-emojis/1F934-1F3FC.png",
-        medium: "/png-emojis/1F934-1F3FD.png",
-        "medium-dark": "/png-emojis/1F934-1F3FE.png",
-        dark: "/png-emojis/1F934-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F935-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F935-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F935-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F935-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F935-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F935-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F935-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F935-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F935-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F935-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F935-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F935-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F935-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F935-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F935",
-    {
-      base: "/png-emojis/1F935.png",
-      variants: {
-        light: "/png-emojis/1F935-1F3FB.png",
-        "medium-light": "/png-emojis/1F935-1F3FC.png",
-        medium: "/png-emojis/1F935-1F3FD.png",
-        "medium-dark": "/png-emojis/1F935-1F3FE.png",
-        dark: "/png-emojis/1F935-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F936",
-    {
-      base: "/png-emojis/1F936.png",
-      variants: {
-        light: "/png-emojis/1F936-1F3FB.png",
-        "medium-light": "/png-emojis/1F936-1F3FC.png",
-        medium: "/png-emojis/1F936-1F3FD.png",
-        "medium-dark": "/png-emojis/1F936-1F3FE.png",
-        dark: "/png-emojis/1F936-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F937-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F937-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F937-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F937-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F937-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F937-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F937-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F937-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F937-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F937-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F937-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F937-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F937-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F937-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F937",
-    {
-      base: "/png-emojis/1F937.png",
-      variants: {
-        light: "/png-emojis/1F937-1F3FB.png",
-        "medium-light": "/png-emojis/1F937-1F3FC.png",
-        medium: "/png-emojis/1F937-1F3FD.png",
-        "medium-dark": "/png-emojis/1F937-1F3FE.png",
-        dark: "/png-emojis/1F937-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F938-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F938-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F938-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F938-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F938-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F938-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F938-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F938-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F938-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F938-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F938-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F938-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F938-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F938-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F938",
-    {
-      base: "/png-emojis/1F938.png",
-      variants: {
-        light: "/png-emojis/1F938-1F3FB.png",
-        "medium-light": "/png-emojis/1F938-1F3FC.png",
-        medium: "/png-emojis/1F938-1F3FD.png",
-        "medium-dark": "/png-emojis/1F938-1F3FE.png",
-        dark: "/png-emojis/1F938-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F939-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F939-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F939-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F939-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F939-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F939-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F939-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F939-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F939-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F939-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F939-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F939-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F939-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F939-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F939",
-    {
-      base: "/png-emojis/1F939.png",
-      variants: {
-        light: "/png-emojis/1F939-1F3FB.png",
-        "medium-light": "/png-emojis/1F939-1F3FC.png",
-        medium: "/png-emojis/1F939-1F3FD.png",
-        "medium-dark": "/png-emojis/1F939-1F3FE.png",
-        dark: "/png-emojis/1F939-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F93D-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F93D-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F93D-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F93D-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F93D-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F93D-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F93D-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F93D-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F93D-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F93D-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F93D-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F93D-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F93D-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F93D-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F93D",
-    {
-      base: "/png-emojis/1F93D.png",
-      variants: {
-        light: "/png-emojis/1F93D-1F3FB.png",
-        "medium-light": "/png-emojis/1F93D-1F3FC.png",
-        medium: "/png-emojis/1F93D-1F3FD.png",
-        "medium-dark": "/png-emojis/1F93D-1F3FE.png",
-        dark: "/png-emojis/1F93D-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F93E-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F93E-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F93E-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F93E-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F93E-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F93E-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F93E-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F93E-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F93E-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F93E-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F93E-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F93E-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F93E-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F93E-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F93E",
-    {
-      base: "/png-emojis/1F93E.png",
-      variants: {
-        light: "/png-emojis/1F93E-1F3FB.png",
-        "medium-light": "/png-emojis/1F93E-1F3FC.png",
-        medium: "/png-emojis/1F93E-1F3FD.png",
-        "medium-dark": "/png-emojis/1F93E-1F3FE.png",
-        dark: "/png-emojis/1F93E-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F977",
-    {
-      base: "/png-emojis/1F977.png",
-      variants: {
-        light: "/png-emojis/1F977-1F3FB.png",
-        "medium-light": "/png-emojis/1F977-1F3FC.png",
-        medium: "/png-emojis/1F977-1F3FD.png",
-        "medium-dark": "/png-emojis/1F977-1F3FE.png",
-        dark: "/png-emojis/1F977-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9B5",
-    {
-      base: "/png-emojis/1F9B5.png",
-      variants: {
-        light: "/png-emojis/1F9B5-1F3FB.png",
-        "medium-light": "/png-emojis/1F9B5-1F3FC.png",
-        medium: "/png-emojis/1F9B5-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9B5-1F3FE.png",
-        dark: "/png-emojis/1F9B5-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9B6",
-    {
-      base: "/png-emojis/1F9B6.png",
-      variants: {
-        light: "/png-emojis/1F9B6-1F3FB.png",
-        "medium-light": "/png-emojis/1F9B6-1F3FC.png",
-        medium: "/png-emojis/1F9B6-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9B6-1F3FE.png",
-        dark: "/png-emojis/1F9B6-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9B8-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9B8-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9B8-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9B8-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9B8-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9B8-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9B8-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9B8-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9B8-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9B8-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9B8-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9B8-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9B8-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9B8-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9B8",
-    {
-      base: "/png-emojis/1F9B8.png",
-      variants: {
-        light: "/png-emojis/1F9B8-1F3FB.png",
-        "medium-light": "/png-emojis/1F9B8-1F3FC.png",
-        medium: "/png-emojis/1F9B8-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9B8-1F3FE.png",
-        dark: "/png-emojis/1F9B8-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9B9-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9B9-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9B9-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9B9-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9B9-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9B9-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9B9-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9B9-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9B9-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9B9-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9B9-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9B9-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9B9-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9B9-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9B9",
-    {
-      base: "/png-emojis/1F9B9.png",
-      variants: {
-        light: "/png-emojis/1F9B9-1F3FB.png",
-        "medium-light": "/png-emojis/1F9B9-1F3FC.png",
-        medium: "/png-emojis/1F9B9-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9B9-1F3FE.png",
-        dark: "/png-emojis/1F9B9-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9BB",
-    {
-      base: "/png-emojis/1F9BB.png",
-      variants: {
-        light: "/png-emojis/1F9BB-1F3FB.png",
-        "medium-light": "/png-emojis/1F9BB-1F3FC.png",
-        medium: "/png-emojis/1F9BB-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9BB-1F3FE.png",
-        dark: "/png-emojis/1F9BB-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9CD-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9CD-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9CD-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9CD-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9CD-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9CD-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9CD-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9CD-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9CD-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9CD-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9CD-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9CD-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9CD-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9CD-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9CD",
-    {
-      base: "/png-emojis/1F9CD.png",
-      variants: {
-        light: "/png-emojis/1F9CD-1F3FB.png",
-        "medium-light": "/png-emojis/1F9CD-1F3FC.png",
-        medium: "/png-emojis/1F9CD-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9CD-1F3FE.png",
-        dark: "/png-emojis/1F9CD-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9CE-200D-2640-FE0F-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F9CE-200D-2640-FE0F-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9CE-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png",
-        "medium-light":
-          "/png-emojis/1F9CE-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F9CE-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png",
-        "medium-dark":
-          "/png-emojis/1F9CE-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F9CE-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9CE-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9CE-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9CE-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9CE-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9CE-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9CE-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9CE-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9CE-200D-2642-FE0F-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F9CE-200D-2642-FE0F-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9CE-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png",
-        "medium-light":
-          "/png-emojis/1F9CE-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F9CE-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png",
-        "medium-dark":
-          "/png-emojis/1F9CE-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F9CE-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9CE-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9CE-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9CE-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9CE-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9CE-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9CE-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9CE-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9CE-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F9CE-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9CE-1F3FB-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F9CE-1F3FC-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F9CE-1F3FD-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F9CE-1F3FE-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F9CE-1F3FF-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9CE",
-    {
-      base: "/png-emojis/1F9CE.png",
-      variants: {
-        light: "/png-emojis/1F9CE-1F3FB.png",
-        "medium-light": "/png-emojis/1F9CE-1F3FC.png",
-        medium: "/png-emojis/1F9CE-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9CE-1F3FE.png",
-        dark: "/png-emojis/1F9CE-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9CF-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9CF-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9CF-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9CF-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9CF-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9CF-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9CF-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9CF-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9CF-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9CF-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9CF-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9CF-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9CF-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9CF-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9CF",
-    {
-      base: "/png-emojis/1F9CF.png",
-      variants: {
-        light: "/png-emojis/1F9CF-1F3FB.png",
-        "medium-light": "/png-emojis/1F9CF-1F3FC.png",
-        medium: "/png-emojis/1F9CF-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9CF-1F3FE.png",
-        dark: "/png-emojis/1F9CF-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F33E",
-    {
-      base: "/png-emojis/1F9D1-200D-1F33E.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F33E.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F33E.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F33E.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F33E.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F33E.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F373",
-    {
-      base: "/png-emojis/1F9D1-200D-1F373.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F373.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F373.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F373.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F373.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F373.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F37C",
-    {
-      base: "/png-emojis/1F9D1-200D-1F37C.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F37C.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F37C.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F37C.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F37C.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F37C.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F384",
-    {
-      base: "/png-emojis/1F9D1-200D-1F384.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F384.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F384.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F384.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F384.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F384.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F393",
-    {
-      base: "/png-emojis/1F9D1-200D-1F393.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F393.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F393.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F393.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F393.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F393.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F3A4",
-    {
-      base: "/png-emojis/1F9D1-200D-1F3A4.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F3A4.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F3A4.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F3A4.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F3A4.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F3A4.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F3A8",
-    {
-      base: "/png-emojis/1F9D1-200D-1F3A8.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F3A8.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F3A8.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F3A8.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F3A8.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F3A8.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F3EB",
-    {
-      base: "/png-emojis/1F9D1-200D-1F3EB.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F3EB.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F3EB.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F3EB.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F3EB.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F3EB.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F3ED",
-    {
-      base: "/png-emojis/1F9D1-200D-1F3ED.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F3ED.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F3ED.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F3ED.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F3ED.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F3ED.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F4BB",
-    {
-      base: "/png-emojis/1F9D1-200D-1F4BB.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F4BB.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F4BB.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F4BB.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F4BB.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F4BB.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F4BC",
-    {
-      base: "/png-emojis/1F9D1-200D-1F4BC.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F4BC.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F4BC.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F4BC.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F4BC.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F4BC.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F527",
-    {
-      base: "/png-emojis/1F9D1-200D-1F527.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F527.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F527.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F527.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F527.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F527.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F52C",
-    {
-      base: "/png-emojis/1F9D1-200D-1F52C.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F52C.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F52C.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F52C.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F52C.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F52C.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F680",
-    {
-      base: "/png-emojis/1F9D1-200D-1F680.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F680.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F680.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F680.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F680.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F680.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F692",
-    {
-      base: "/png-emojis/1F9D1-200D-1F692.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F692.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F692.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F692.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F692.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F692.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F91D-200D-1F9D1",
-    {
-      base: "/png-emojis/1F9D1-200D-1F91D-200D-1F9D1.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FF.png",
-        "medium-light":
-          "/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FF.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FF.png",
-        "medium-dark":
-          "/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FF.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9AF-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9AF-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9AF-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9AF-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9AF-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9AF-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9AF-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9AF",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9AF.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9AF.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9AF.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9AF.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9AF.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9AF.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9B0",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9B0.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9B0.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9B0.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9B0.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9B0.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9B0.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9B1",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9B1.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9B1.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9B1.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9B1.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9B1.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9B1.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9B2",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9B2.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9B2.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9B2.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9B2.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9B2.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9B2.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9B3",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9B3.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9B3.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9B3.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9B3.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9B3.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9B3.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9BC-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9BC-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9BC-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9BC-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9BC-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9BC-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9BC-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9BC",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9BC.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9BC.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9BC.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9BC.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9BC.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9BC.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9BD-200D-27A1-FE0F",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9BD-200D-27A1-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9BD-200D-27A1-FE0F.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9BD-200D-27A1-FE0F.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9BD-200D-27A1-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9BD-200D-27A1-FE0F.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9BD-200D-27A1-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-1F9BD",
-    {
-      base: "/png-emojis/1F9D1-200D-1F9BD.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-1F9BD.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-1F9BD.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-1F9BD.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-1F9BD.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-1F9BD.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-2695-FE0F",
-    {
-      base: "/png-emojis/1F9D1-200D-2695-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-2695-FE0F.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-2695-FE0F.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-2695-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-2695-FE0F.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-2695-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-2696-FE0F",
-    {
-      base: "/png-emojis/1F9D1-200D-2696-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-2696-FE0F.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-2696-FE0F.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-2696-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-2696-FE0F.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-2696-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D1-200D-2708-FE0F",
-    {
-      base: "/png-emojis/1F9D1-200D-2708-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB-200D-2708-FE0F.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC-200D-2708-FE0F.png",
-        medium: "/png-emojis/1F9D1-1F3FD-200D-2708-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE-200D-2708-FE0F.png",
-        dark: "/png-emojis/1F9D1-1F3FF-200D-2708-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D1",
-    {
-      base: "/png-emojis/1F9D1.png",
-      variants: {
-        light: "/png-emojis/1F9D1-1F3FB.png",
-        "medium-light": "/png-emojis/1F9D1-1F3FC.png",
-        medium: "/png-emojis/1F9D1-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9D1-1F3FE.png",
-        dark: "/png-emojis/1F9D1-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D2",
-    {
-      base: "/png-emojis/1F9D2.png",
-      variants: {
-        light: "/png-emojis/1F9D2-1F3FB.png",
-        "medium-light": "/png-emojis/1F9D2-1F3FC.png",
-        medium: "/png-emojis/1F9D2-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9D2-1F3FE.png",
-        dark: "/png-emojis/1F9D2-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D3",
-    {
-      base: "/png-emojis/1F9D3.png",
-      variants: {
-        light: "/png-emojis/1F9D3-1F3FB.png",
-        "medium-light": "/png-emojis/1F9D3-1F3FC.png",
-        medium: "/png-emojis/1F9D3-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9D3-1F3FE.png",
-        dark: "/png-emojis/1F9D3-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D4-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9D4-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D4-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9D4-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9D4-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D4-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9D4-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D4-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9D4-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D4-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9D4-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9D4-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D4-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9D4-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D4",
-    {
-      base: "/png-emojis/1F9D4.png",
-      variants: {
-        light: "/png-emojis/1F9D4-1F3FB.png",
-        "medium-light": "/png-emojis/1F9D4-1F3FC.png",
-        medium: "/png-emojis/1F9D4-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9D4-1F3FE.png",
-        dark: "/png-emojis/1F9D4-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D5",
-    {
-      base: "/png-emojis/1F9D5.png",
-      variants: {
-        light: "/png-emojis/1F9D5-1F3FB.png",
-        "medium-light": "/png-emojis/1F9D5-1F3FC.png",
-        medium: "/png-emojis/1F9D5-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9D5-1F3FE.png",
-        dark: "/png-emojis/1F9D5-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D6-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9D6-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D6-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9D6-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9D6-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D6-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9D6-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D6-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9D6-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D6-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9D6-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9D6-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D6-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9D6-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D6",
-    {
-      base: "/png-emojis/1F9D6.png",
-      variants: {
-        light: "/png-emojis/1F9D6-1F3FB.png",
-        "medium-light": "/png-emojis/1F9D6-1F3FC.png",
-        medium: "/png-emojis/1F9D6-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9D6-1F3FE.png",
-        dark: "/png-emojis/1F9D6-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D7-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9D7-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D7-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9D7-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9D7-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D7-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9D7-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D7-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9D7-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D7-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9D7-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9D7-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D7-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9D7-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D7",
-    {
-      base: "/png-emojis/1F9D7.png",
-      variants: {
-        light: "/png-emojis/1F9D7-1F3FB.png",
-        "medium-light": "/png-emojis/1F9D7-1F3FC.png",
-        medium: "/png-emojis/1F9D7-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9D7-1F3FE.png",
-        dark: "/png-emojis/1F9D7-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D8-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9D8-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D8-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9D8-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9D8-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D8-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9D8-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D8-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9D8-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D8-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9D8-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9D8-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D8-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9D8-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D8",
-    {
-      base: "/png-emojis/1F9D8.png",
-      variants: {
-        light: "/png-emojis/1F9D8-1F3FB.png",
-        "medium-light": "/png-emojis/1F9D8-1F3FC.png",
-        medium: "/png-emojis/1F9D8-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9D8-1F3FE.png",
-        dark: "/png-emojis/1F9D8-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9D9-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9D9-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D9-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9D9-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9D9-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D9-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9D9-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D9-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9D9-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9D9-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9D9-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9D9-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9D9-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9D9-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9D9",
-    {
-      base: "/png-emojis/1F9D9.png",
-      variants: {
-        light: "/png-emojis/1F9D9-1F3FB.png",
-        "medium-light": "/png-emojis/1F9D9-1F3FC.png",
-        medium: "/png-emojis/1F9D9-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9D9-1F3FE.png",
-        dark: "/png-emojis/1F9D9-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9DA-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9DA-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9DA-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9DA-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9DA-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9DA-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9DA-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9DA-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9DA-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9DA-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9DA-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9DA-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9DA-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9DA-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9DA",
-    {
-      base: "/png-emojis/1F9DA.png",
-      variants: {
-        light: "/png-emojis/1F9DA-1F3FB.png",
-        "medium-light": "/png-emojis/1F9DA-1F3FC.png",
-        medium: "/png-emojis/1F9DA-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9DA-1F3FE.png",
-        dark: "/png-emojis/1F9DA-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9DB-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9DB-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9DB-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9DB-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9DB-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9DB-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9DB-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9DB-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9DB-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9DB-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9DB-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9DB-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9DB-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9DB-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9DB",
-    {
-      base: "/png-emojis/1F9DB.png",
-      variants: {
-        light: "/png-emojis/1F9DB-1F3FB.png",
-        "medium-light": "/png-emojis/1F9DB-1F3FC.png",
-        medium: "/png-emojis/1F9DB-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9DB-1F3FE.png",
-        dark: "/png-emojis/1F9DB-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9DC-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9DC-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9DC-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9DC-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9DC-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9DC-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9DC-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9DC-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9DC-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9DC-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9DC-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9DC-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9DC-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9DC-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9DC",
-    {
-      base: "/png-emojis/1F9DC.png",
-      variants: {
-        light: "/png-emojis/1F9DC-1F3FB.png",
-        "medium-light": "/png-emojis/1F9DC-1F3FC.png",
-        medium: "/png-emojis/1F9DC-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9DC-1F3FE.png",
-        dark: "/png-emojis/1F9DC-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1F9DD-200D-2640-FE0F",
-    {
-      base: "/png-emojis/1F9DD-200D-2640-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9DD-1F3FB-200D-2640-FE0F.png",
-        "medium-light": "/png-emojis/1F9DD-1F3FC-200D-2640-FE0F.png",
-        medium: "/png-emojis/1F9DD-1F3FD-200D-2640-FE0F.png",
-        "medium-dark": "/png-emojis/1F9DD-1F3FE-200D-2640-FE0F.png",
-        dark: "/png-emojis/1F9DD-1F3FF-200D-2640-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9DD-200D-2642-FE0F",
-    {
-      base: "/png-emojis/1F9DD-200D-2642-FE0F.png",
-      variants: {
-        light: "/png-emojis/1F9DD-1F3FB-200D-2642-FE0F.png",
-        "medium-light": "/png-emojis/1F9DD-1F3FC-200D-2642-FE0F.png",
-        medium: "/png-emojis/1F9DD-1F3FD-200D-2642-FE0F.png",
-        "medium-dark": "/png-emojis/1F9DD-1F3FE-200D-2642-FE0F.png",
-        dark: "/png-emojis/1F9DD-1F3FF-200D-2642-FE0F.png",
-      },
-    },
-  ],
-  [
-    "1F9DD",
-    {
-      base: "/png-emojis/1F9DD.png",
-      variants: {
-        light: "/png-emojis/1F9DD-1F3FB.png",
-        "medium-light": "/png-emojis/1F9DD-1F3FC.png",
-        medium: "/png-emojis/1F9DD-1F3FD.png",
-        "medium-dark": "/png-emojis/1F9DD-1F3FE.png",
-        dark: "/png-emojis/1F9DD-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAC3",
-    {
-      base: "/png-emojis/1FAC3.png",
-      variants: {
-        light: "/png-emojis/1FAC3-1F3FB.png",
-        "medium-light": "/png-emojis/1FAC3-1F3FC.png",
-        medium: "/png-emojis/1FAC3-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAC3-1F3FE.png",
-        dark: "/png-emojis/1FAC3-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAC4",
-    {
-      base: "/png-emojis/1FAC4.png",
-      variants: {
-        light: "/png-emojis/1FAC4-1F3FB.png",
-        "medium-light": "/png-emojis/1FAC4-1F3FC.png",
-        medium: "/png-emojis/1FAC4-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAC4-1F3FE.png",
-        dark: "/png-emojis/1FAC4-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAC5",
-    {
-      base: "/png-emojis/1FAC5.png",
-      variants: {
-        light: "/png-emojis/1FAC5-1F3FB.png",
-        "medium-light": "/png-emojis/1FAC5-1F3FC.png",
-        medium: "/png-emojis/1FAC5-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAC5-1F3FE.png",
-        dark: "/png-emojis/1FAC5-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAF0",
-    {
-      base: "/png-emojis/1FAF0.png",
-      variants: {
-        light: "/png-emojis/1FAF0-1F3FB.png",
-        "medium-light": "/png-emojis/1FAF0-1F3FC.png",
-        medium: "/png-emojis/1FAF0-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAF0-1F3FE.png",
-        dark: "/png-emojis/1FAF0-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAF1",
-    {
-      base: "/png-emojis/1FAF1.png",
-      variants: {
-        light: "/png-emojis/1FAF1-1F3FB.png",
-        "medium-light": "/png-emojis/1FAF1-1F3FC.png",
-        medium: "/png-emojis/1FAF1-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAF1-1F3FE.png",
-        dark: "/png-emojis/1FAF1-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAF2",
-    {
-      base: "/png-emojis/1FAF2.png",
-      variants: {
-        light: "/png-emojis/1FAF2-1F3FB.png",
-        "medium-light": "/png-emojis/1FAF2-1F3FC.png",
-        medium: "/png-emojis/1FAF2-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAF2-1F3FE.png",
-        dark: "/png-emojis/1FAF2-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAF3",
-    {
-      base: "/png-emojis/1FAF3.png",
-      variants: {
-        light: "/png-emojis/1FAF3-1F3FB.png",
-        "medium-light": "/png-emojis/1FAF3-1F3FC.png",
-        medium: "/png-emojis/1FAF3-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAF3-1F3FE.png",
-        dark: "/png-emojis/1FAF3-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAF4",
-    {
-      base: "/png-emojis/1FAF4.png",
-      variants: {
-        light: "/png-emojis/1FAF4-1F3FB.png",
-        "medium-light": "/png-emojis/1FAF4-1F3FC.png",
-        medium: "/png-emojis/1FAF4-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAF4-1F3FE.png",
-        dark: "/png-emojis/1FAF4-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAF5",
-    {
-      base: "/png-emojis/1FAF5.png",
-      variants: {
-        light: "/png-emojis/1FAF5-1F3FB.png",
-        "medium-light": "/png-emojis/1FAF5-1F3FC.png",
-        medium: "/png-emojis/1FAF5-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAF5-1F3FE.png",
-        dark: "/png-emojis/1FAF5-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAF6",
-    {
-      base: "/png-emojis/1FAF6.png",
-      variants: {
-        light: "/png-emojis/1FAF6-1F3FB.png",
-        "medium-light": "/png-emojis/1FAF6-1F3FC.png",
-        medium: "/png-emojis/1FAF6-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAF6-1F3FE.png",
-        dark: "/png-emojis/1FAF6-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAF7",
-    {
-      base: "/png-emojis/1FAF7.png",
-      variants: {
-        light: "/png-emojis/1FAF7-1F3FB.png",
-        "medium-light": "/png-emojis/1FAF7-1F3FC.png",
-        medium: "/png-emojis/1FAF7-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAF7-1F3FE.png",
-        dark: "/png-emojis/1FAF7-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "1FAF8",
-    {
-      base: "/png-emojis/1FAF8.png",
-      variants: {
-        light: "/png-emojis/1FAF8-1F3FB.png",
-        "medium-light": "/png-emojis/1FAF8-1F3FC.png",
-        medium: "/png-emojis/1FAF8-1F3FD.png",
-        "medium-dark": "/png-emojis/1FAF8-1F3FE.png",
-        dark: "/png-emojis/1FAF8-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "261D",
-    {
-      base: "/png-emojis/261D.png",
-      variants: {
-        light: "/png-emojis/261D-1F3FB.png",
-        "medium-light": "/png-emojis/261D-1F3FC.png",
-        medium: "/png-emojis/261D-1F3FD.png",
-        "medium-dark": "/png-emojis/261D-1F3FE.png",
-        dark: "/png-emojis/261D-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "26F9",
-    {
-      base: "/png-emojis/26F9.png",
-      variants: {
-        light: "/png-emojis/26F9-1F3FB.png",
-        "medium-light": "/png-emojis/26F9-1F3FC.png",
-        medium: "/png-emojis/26F9-1F3FD.png",
-        "medium-dark": "/png-emojis/26F9-1F3FE.png",
-        dark: "/png-emojis/26F9-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "270A",
-    {
-      base: "/png-emojis/270A.png",
-      variants: {
-        light: "/png-emojis/270A-1F3FB.png",
-        "medium-light": "/png-emojis/270A-1F3FC.png",
-        medium: "/png-emojis/270A-1F3FD.png",
-        "medium-dark": "/png-emojis/270A-1F3FE.png",
-        dark: "/png-emojis/270A-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "270B",
-    {
-      base: "/png-emojis/270B.png",
-      variants: {
-        light: "/png-emojis/270B-1F3FB.png",
-        "medium-light": "/png-emojis/270B-1F3FC.png",
-        medium: "/png-emojis/270B-1F3FD.png",
-        "medium-dark": "/png-emojis/270B-1F3FE.png",
-        dark: "/png-emojis/270B-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "270C",
-    {
-      base: "/png-emojis/270C.png",
-      variants: {
-        light: "/png-emojis/270C-1F3FB.png",
-        "medium-light": "/png-emojis/270C-1F3FC.png",
-        medium: "/png-emojis/270C-1F3FD.png",
-        "medium-dark": "/png-emojis/270C-1F3FE.png",
-        dark: "/png-emojis/270C-1F3FF.png",
-      },
-    },
-  ],
-  [
-    "270D",
-    {
-      base: "/png-emojis/270D.png",
-      variants: {
-        light: "/png-emojis/270D-1F3FB.png",
-        "medium-light": "/png-emojis/270D-1F3FC.png",
-        medium: "/png-emojis/270D-1F3FD.png",
-        "medium-dark": "/png-emojis/270D-1F3FE.png",
-        dark: "/png-emojis/270D-1F3FF.png",
-      },
-    },
-  ],
+  ["1F385", {"base":"/png-emojis/1F385.png","variants":{"light":"/png-emojis/1F385-1F3FB.png","medium-light":"/png-emojis/1F385-1F3FC.png","medium":"/png-emojis/1F385-1F3FD.png","medium-dark":"/png-emojis/1F385-1F3FE.png","dark":"/png-emojis/1F385-1F3FF.png"}}],
+  ["1F3C2", {"base":"/png-emojis/1F3C2.png","variants":{"light":"/png-emojis/1F3C2-1F3FB.png","medium-light":"/png-emojis/1F3C2-1F3FC.png","medium":"/png-emojis/1F3C2-1F3FD.png","medium-dark":"/png-emojis/1F3C2-1F3FE.png","dark":"/png-emojis/1F3C2-1F3FF.png"}}],
+  ["1F3C3-200D-2640-FE0F-200D-27A1-FE0F", {"base":"/png-emojis/1F3C3-200D-2640-FE0F-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F3C3-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F3C3-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png","medium":"/png-emojis/1F3C3-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F3C3-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png","dark":"/png-emojis/1F3C3-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png"}}],
+  ["1F3C3-200D-2640-FE0F", {"base":"/png-emojis/1F3C3-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F3C3-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F3C3-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F3C3-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F3C3-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F3C3-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F3C3-200D-2642-FE0F-200D-27A1-FE0F", {"base":"/png-emojis/1F3C3-200D-2642-FE0F-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F3C3-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F3C3-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png","medium":"/png-emojis/1F3C3-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F3C3-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png","dark":"/png-emojis/1F3C3-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png"}}],
+  ["1F3C3-200D-2642-FE0F", {"base":"/png-emojis/1F3C3-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F3C3-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F3C3-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F3C3-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F3C3-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F3C3-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F3C3-200D-27A1-FE0F", {"base":"/png-emojis/1F3C3-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F3C3-1F3FB-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F3C3-1F3FC-200D-27A1-FE0F.png","medium":"/png-emojis/1F3C3-1F3FD-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F3C3-1F3FE-200D-27A1-FE0F.png","dark":"/png-emojis/1F3C3-1F3FF-200D-27A1-FE0F.png"}}],
+  ["1F3C3", {"base":"/png-emojis/1F3C3.png","variants":{"light":"/png-emojis/1F3C3-1F3FB.png","medium-light":"/png-emojis/1F3C3-1F3FC.png","medium":"/png-emojis/1F3C3-1F3FD.png","medium-dark":"/png-emojis/1F3C3-1F3FE.png","dark":"/png-emojis/1F3C3-1F3FF.png"}}],
+  ["1F3C4-200D-2640-FE0F", {"base":"/png-emojis/1F3C4-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F3C4-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F3C4-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F3C4-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F3C4-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F3C4-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F3C4-200D-2642-FE0F", {"base":"/png-emojis/1F3C4-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F3C4-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F3C4-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F3C4-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F3C4-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F3C4-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F3C4", {"base":"/png-emojis/1F3C4.png","variants":{"light":"/png-emojis/1F3C4-1F3FB.png","medium-light":"/png-emojis/1F3C4-1F3FC.png","medium":"/png-emojis/1F3C4-1F3FD.png","medium-dark":"/png-emojis/1F3C4-1F3FE.png","dark":"/png-emojis/1F3C4-1F3FF.png"}}],
+  ["1F3C7", {"base":"/png-emojis/1F3C7.png","variants":{"light":"/png-emojis/1F3C7-1F3FB.png","medium-light":"/png-emojis/1F3C7-1F3FC.png","medium":"/png-emojis/1F3C7-1F3FD.png","medium-dark":"/png-emojis/1F3C7-1F3FE.png","dark":"/png-emojis/1F3C7-1F3FF.png"}}],
+  ["1F3CA-200D-2640-FE0F", {"base":"/png-emojis/1F3CA-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F3CA-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F3CA-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F3CA-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F3CA-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F3CA-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F3CA-200D-2642-FE0F", {"base":"/png-emojis/1F3CA-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F3CA-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F3CA-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F3CA-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F3CA-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F3CA-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F3CA", {"base":"/png-emojis/1F3CA.png","variants":{"light":"/png-emojis/1F3CA-1F3FB.png","medium-light":"/png-emojis/1F3CA-1F3FC.png","medium":"/png-emojis/1F3CA-1F3FD.png","medium-dark":"/png-emojis/1F3CA-1F3FE.png","dark":"/png-emojis/1F3CA-1F3FF.png"}}],
+  ["1F3CB", {"base":"/png-emojis/1F3CB.png","variants":{"light":"/png-emojis/1F3CB-1F3FB.png","medium-light":"/png-emojis/1F3CB-1F3FC.png","medium":"/png-emojis/1F3CB-1F3FD.png","medium-dark":"/png-emojis/1F3CB-1F3FE.png","dark":"/png-emojis/1F3CB-1F3FF.png"}}],
+  ["1F3CC", {"base":"/png-emojis/1F3CC.png","variants":{"light":"/png-emojis/1F3CC-1F3FB.png","medium-light":"/png-emojis/1F3CC-1F3FC.png","medium":"/png-emojis/1F3CC-1F3FD.png","medium-dark":"/png-emojis/1F3CC-1F3FE.png","dark":"/png-emojis/1F3CC-1F3FF.png"}}],
+  ["1F442", {"base":"/png-emojis/1F442.png","variants":{"light":"/png-emojis/1F442-1F3FB.png","medium-light":"/png-emojis/1F442-1F3FC.png","medium":"/png-emojis/1F442-1F3FD.png","medium-dark":"/png-emojis/1F442-1F3FE.png","dark":"/png-emojis/1F442-1F3FF.png"}}],
+  ["1F443", {"base":"/png-emojis/1F443.png","variants":{"light":"/png-emojis/1F443-1F3FB.png","medium-light":"/png-emojis/1F443-1F3FC.png","medium":"/png-emojis/1F443-1F3FD.png","medium-dark":"/png-emojis/1F443-1F3FE.png","dark":"/png-emojis/1F443-1F3FF.png"}}],
+  ["1F446", {"base":"/png-emojis/1F446.png","variants":{"light":"/png-emojis/1F446-1F3FB.png","medium-light":"/png-emojis/1F446-1F3FC.png","medium":"/png-emojis/1F446-1F3FD.png","medium-dark":"/png-emojis/1F446-1F3FE.png","dark":"/png-emojis/1F446-1F3FF.png"}}],
+  ["1F447", {"base":"/png-emojis/1F447.png","variants":{"light":"/png-emojis/1F447-1F3FB.png","medium-light":"/png-emojis/1F447-1F3FC.png","medium":"/png-emojis/1F447-1F3FD.png","medium-dark":"/png-emojis/1F447-1F3FE.png","dark":"/png-emojis/1F447-1F3FF.png"}}],
+  ["1F448", {"base":"/png-emojis/1F448.png","variants":{"light":"/png-emojis/1F448-1F3FB.png","medium-light":"/png-emojis/1F448-1F3FC.png","medium":"/png-emojis/1F448-1F3FD.png","medium-dark":"/png-emojis/1F448-1F3FE.png","dark":"/png-emojis/1F448-1F3FF.png"}}],
+  ["1F449", {"base":"/png-emojis/1F449.png","variants":{"light":"/png-emojis/1F449-1F3FB.png","medium-light":"/png-emojis/1F449-1F3FC.png","medium":"/png-emojis/1F449-1F3FD.png","medium-dark":"/png-emojis/1F449-1F3FE.png","dark":"/png-emojis/1F449-1F3FF.png"}}],
+  ["1F44A", {"base":"/png-emojis/1F44A.png","variants":{"light":"/png-emojis/1F44A-1F3FB.png","medium-light":"/png-emojis/1F44A-1F3FC.png","medium":"/png-emojis/1F44A-1F3FD.png","medium-dark":"/png-emojis/1F44A-1F3FE.png","dark":"/png-emojis/1F44A-1F3FF.png"}}],
+  ["1F44B", {"base":"/png-emojis/1F44B.png","variants":{"light":"/png-emojis/1F44B-1F3FB.png","medium-light":"/png-emojis/1F44B-1F3FC.png","medium":"/png-emojis/1F44B-1F3FD.png","medium-dark":"/png-emojis/1F44B-1F3FE.png","dark":"/png-emojis/1F44B-1F3FF.png"}}],
+  ["1F44C", {"base":"/png-emojis/1F44C.png","variants":{"light":"/png-emojis/1F44C-1F3FB.png","medium-light":"/png-emojis/1F44C-1F3FC.png","medium":"/png-emojis/1F44C-1F3FD.png","medium-dark":"/png-emojis/1F44C-1F3FE.png","dark":"/png-emojis/1F44C-1F3FF.png"}}],
+  ["1F44D", {"base":"/png-emojis/1F44D.png","variants":{"light":"/png-emojis/1F44D-1F3FB.png","medium-light":"/png-emojis/1F44D-1F3FC.png","medium":"/png-emojis/1F44D-1F3FD.png","medium-dark":"/png-emojis/1F44D-1F3FE.png","dark":"/png-emojis/1F44D-1F3FF.png"}}],
+  ["1F44E", {"base":"/png-emojis/1F44E.png","variants":{"light":"/png-emojis/1F44E-1F3FB.png","medium-light":"/png-emojis/1F44E-1F3FC.png","medium":"/png-emojis/1F44E-1F3FD.png","medium-dark":"/png-emojis/1F44E-1F3FE.png","dark":"/png-emojis/1F44E-1F3FF.png"}}],
+  ["1F44F", {"base":"/png-emojis/1F44F.png","variants":{"light":"/png-emojis/1F44F-1F3FB.png","medium-light":"/png-emojis/1F44F-1F3FC.png","medium":"/png-emojis/1F44F-1F3FD.png","medium-dark":"/png-emojis/1F44F-1F3FE.png","dark":"/png-emojis/1F44F-1F3FF.png"}}],
+  ["1F450", {"base":"/png-emojis/1F450.png","variants":{"light":"/png-emojis/1F450-1F3FB.png","medium-light":"/png-emojis/1F450-1F3FC.png","medium":"/png-emojis/1F450-1F3FD.png","medium-dark":"/png-emojis/1F450-1F3FE.png","dark":"/png-emojis/1F450-1F3FF.png"}}],
+  ["1F466", {"base":"/png-emojis/1F466.png","variants":{"light":"/png-emojis/1F466-1F3FB.png","medium-light":"/png-emojis/1F466-1F3FC.png","medium":"/png-emojis/1F466-1F3FD.png","medium-dark":"/png-emojis/1F466-1F3FE.png","dark":"/png-emojis/1F466-1F3FF.png"}}],
+  ["1F467", {"base":"/png-emojis/1F467.png","variants":{"light":"/png-emojis/1F467-1F3FB.png","medium-light":"/png-emojis/1F467-1F3FC.png","medium":"/png-emojis/1F467-1F3FD.png","medium-dark":"/png-emojis/1F467-1F3FE.png","dark":"/png-emojis/1F467-1F3FF.png"}}],
+  ["1F468-200D-1F33E", {"base":"/png-emojis/1F468-200D-1F33E.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F33E.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F33E.png","medium":"/png-emojis/1F468-1F3FD-200D-1F33E.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F33E.png","dark":"/png-emojis/1F468-1F3FF-200D-1F33E.png"}}],
+  ["1F468-200D-1F373", {"base":"/png-emojis/1F468-200D-1F373.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F373.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F373.png","medium":"/png-emojis/1F468-1F3FD-200D-1F373.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F373.png","dark":"/png-emojis/1F468-1F3FF-200D-1F373.png"}}],
+  ["1F468-200D-1F37C", {"base":"/png-emojis/1F468-200D-1F37C.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F37C.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F37C.png","medium":"/png-emojis/1F468-1F3FD-200D-1F37C.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F37C.png","dark":"/png-emojis/1F468-1F3FF-200D-1F37C.png"}}],
+  ["1F468-200D-1F393", {"base":"/png-emojis/1F468-200D-1F393.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F393.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F393.png","medium":"/png-emojis/1F468-1F3FD-200D-1F393.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F393.png","dark":"/png-emojis/1F468-1F3FF-200D-1F393.png"}}],
+  ["1F468-200D-1F3A4", {"base":"/png-emojis/1F468-200D-1F3A4.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F3A4.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F3A4.png","medium":"/png-emojis/1F468-1F3FD-200D-1F3A4.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F3A4.png","dark":"/png-emojis/1F468-1F3FF-200D-1F3A4.png"}}],
+  ["1F468-200D-1F3A8", {"base":"/png-emojis/1F468-200D-1F3A8.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F3A8.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F3A8.png","medium":"/png-emojis/1F468-1F3FD-200D-1F3A8.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F3A8.png","dark":"/png-emojis/1F468-1F3FF-200D-1F3A8.png"}}],
+  ["1F468-200D-1F3EB", {"base":"/png-emojis/1F468-200D-1F3EB.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F3EB.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F3EB.png","medium":"/png-emojis/1F468-1F3FD-200D-1F3EB.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F3EB.png","dark":"/png-emojis/1F468-1F3FF-200D-1F3EB.png"}}],
+  ["1F468-200D-1F3ED", {"base":"/png-emojis/1F468-200D-1F3ED.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F3ED.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F3ED.png","medium":"/png-emojis/1F468-1F3FD-200D-1F3ED.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F3ED.png","dark":"/png-emojis/1F468-1F3FF-200D-1F3ED.png"}}],
+  ["1F468-200D-1F4BB", {"base":"/png-emojis/1F468-200D-1F4BB.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F4BB.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F4BB.png","medium":"/png-emojis/1F468-1F3FD-200D-1F4BB.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F4BB.png","dark":"/png-emojis/1F468-1F3FF-200D-1F4BB.png"}}],
+  ["1F468-200D-1F4BC", {"base":"/png-emojis/1F468-200D-1F4BC.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F4BC.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F4BC.png","medium":"/png-emojis/1F468-1F3FD-200D-1F4BC.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F4BC.png","dark":"/png-emojis/1F468-1F3FF-200D-1F4BC.png"}}],
+  ["1F468-200D-1F527", {"base":"/png-emojis/1F468-200D-1F527.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F527.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F527.png","medium":"/png-emojis/1F468-1F3FD-200D-1F527.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F527.png","dark":"/png-emojis/1F468-1F3FF-200D-1F527.png"}}],
+  ["1F468-200D-1F52C", {"base":"/png-emojis/1F468-200D-1F52C.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F52C.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F52C.png","medium":"/png-emojis/1F468-1F3FD-200D-1F52C.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F52C.png","dark":"/png-emojis/1F468-1F3FF-200D-1F52C.png"}}],
+  ["1F468-200D-1F680", {"base":"/png-emojis/1F468-200D-1F680.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F680.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F680.png","medium":"/png-emojis/1F468-1F3FD-200D-1F680.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F680.png","dark":"/png-emojis/1F468-1F3FF-200D-1F680.png"}}],
+  ["1F468-200D-1F692", {"base":"/png-emojis/1F468-200D-1F692.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F692.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F692.png","medium":"/png-emojis/1F468-1F3FD-200D-1F692.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F692.png","dark":"/png-emojis/1F468-1F3FF-200D-1F692.png"}}],
+  ["1F468-200D-1F9AF-200D-27A1-FE0F", {"base":"/png-emojis/1F468-200D-1F9AF-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9AF-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9AF-200D-27A1-FE0F.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9AF-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9AF-200D-27A1-FE0F.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9AF-200D-27A1-FE0F.png"}}],
+  ["1F468-200D-1F9AF", {"base":"/png-emojis/1F468-200D-1F9AF.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9AF.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9AF.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9AF.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9AF.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9AF.png"}}],
+  ["1F468-200D-1F9B0", {"base":"/png-emojis/1F468-200D-1F9B0.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9B0.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9B0.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9B0.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9B0.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9B0.png"}}],
+  ["1F468-200D-1F9B1", {"base":"/png-emojis/1F468-200D-1F9B1.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9B1.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9B1.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9B1.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9B1.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9B1.png"}}],
+  ["1F468-200D-1F9B2", {"base":"/png-emojis/1F468-200D-1F9B2.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9B2.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9B2.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9B2.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9B2.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9B2.png"}}],
+  ["1F468-200D-1F9B3", {"base":"/png-emojis/1F468-200D-1F9B3.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9B3.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9B3.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9B3.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9B3.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9B3.png"}}],
+  ["1F468-200D-1F9BC-200D-27A1-FE0F", {"base":"/png-emojis/1F468-200D-1F9BC-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9BC-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9BC-200D-27A1-FE0F.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9BC-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9BC-200D-27A1-FE0F.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9BC-200D-27A1-FE0F.png"}}],
+  ["1F468-200D-1F9BC", {"base":"/png-emojis/1F468-200D-1F9BC.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9BC.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9BC.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9BC.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9BC.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9BC.png"}}],
+  ["1F468-200D-1F9BD-200D-27A1-FE0F", {"base":"/png-emojis/1F468-200D-1F9BD-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9BD-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9BD-200D-27A1-FE0F.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9BD-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9BD-200D-27A1-FE0F.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9BD-200D-27A1-FE0F.png"}}],
+  ["1F468-200D-1F9BD", {"base":"/png-emojis/1F468-200D-1F9BD.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-1F9BD.png","medium-light":"/png-emojis/1F468-1F3FC-200D-1F9BD.png","medium":"/png-emojis/1F468-1F3FD-200D-1F9BD.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-1F9BD.png","dark":"/png-emojis/1F468-1F3FF-200D-1F9BD.png"}}],
+  ["1F468-200D-2695-FE0F", {"base":"/png-emojis/1F468-200D-2695-FE0F.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-2695-FE0F.png","medium-light":"/png-emojis/1F468-1F3FC-200D-2695-FE0F.png","medium":"/png-emojis/1F468-1F3FD-200D-2695-FE0F.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-2695-FE0F.png","dark":"/png-emojis/1F468-1F3FF-200D-2695-FE0F.png"}}],
+  ["1F468-200D-2696-FE0F", {"base":"/png-emojis/1F468-200D-2696-FE0F.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-2696-FE0F.png","medium-light":"/png-emojis/1F468-1F3FC-200D-2696-FE0F.png","medium":"/png-emojis/1F468-1F3FD-200D-2696-FE0F.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-2696-FE0F.png","dark":"/png-emojis/1F468-1F3FF-200D-2696-FE0F.png"}}],
+  ["1F468-200D-2708-FE0F", {"base":"/png-emojis/1F468-200D-2708-FE0F.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-2708-FE0F.png","medium-light":"/png-emojis/1F468-1F3FC-200D-2708-FE0F.png","medium":"/png-emojis/1F468-1F3FD-200D-2708-FE0F.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-2708-FE0F.png","dark":"/png-emojis/1F468-1F3FF-200D-2708-FE0F.png"}}],
+  ["1F468-200D-2764-FE0F-200D-1F468", {"base":"/png-emojis/1F468-200D-2764-FE0F-200D-1F468.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F468-1F3FF.png","medium-light":"/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F468-1F3FF.png","medium":"/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F468-1F3FF.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F468-1F3FF.png","dark":"/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F468-1F3FF.png"}}],
+  ["1F468-200D-2764-FE0F-200D-1F48B-200D-1F468", {"base":"/png-emojis/1F468-200D-2764-FE0F-200D-1F48B-200D-1F468.png","variants":{"light":"/png-emojis/1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","medium-light":"/png-emojis/1F468-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","medium":"/png-emojis/1F468-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","medium-dark":"/png-emojis/1F468-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","dark":"/png-emojis/1F468-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png"}}],
+  ["1F468", {"base":"/png-emojis/1F468.png","variants":{"light":"/png-emojis/1F468-1F3FB.png","medium-light":"/png-emojis/1F468-1F3FC.png","medium":"/png-emojis/1F468-1F3FD.png","medium-dark":"/png-emojis/1F468-1F3FE.png","dark":"/png-emojis/1F468-1F3FF.png"}}],
+  ["1F469-200D-1F33E", {"base":"/png-emojis/1F469-200D-1F33E.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F33E.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F33E.png","medium":"/png-emojis/1F469-1F3FD-200D-1F33E.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F33E.png","dark":"/png-emojis/1F469-1F3FF-200D-1F33E.png"}}],
+  ["1F469-200D-1F373", {"base":"/png-emojis/1F469-200D-1F373.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F373.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F373.png","medium":"/png-emojis/1F469-1F3FD-200D-1F373.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F373.png","dark":"/png-emojis/1F469-1F3FF-200D-1F373.png"}}],
+  ["1F469-200D-1F37C", {"base":"/png-emojis/1F469-200D-1F37C.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F37C.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F37C.png","medium":"/png-emojis/1F469-1F3FD-200D-1F37C.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F37C.png","dark":"/png-emojis/1F469-1F3FF-200D-1F37C.png"}}],
+  ["1F469-200D-1F393", {"base":"/png-emojis/1F469-200D-1F393.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F393.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F393.png","medium":"/png-emojis/1F469-1F3FD-200D-1F393.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F393.png","dark":"/png-emojis/1F469-1F3FF-200D-1F393.png"}}],
+  ["1F469-200D-1F3A4", {"base":"/png-emojis/1F469-200D-1F3A4.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F3A4.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F3A4.png","medium":"/png-emojis/1F469-1F3FD-200D-1F3A4.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F3A4.png","dark":"/png-emojis/1F469-1F3FF-200D-1F3A4.png"}}],
+  ["1F469-200D-1F3A8", {"base":"/png-emojis/1F469-200D-1F3A8.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F3A8.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F3A8.png","medium":"/png-emojis/1F469-1F3FD-200D-1F3A8.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F3A8.png","dark":"/png-emojis/1F469-1F3FF-200D-1F3A8.png"}}],
+  ["1F469-200D-1F3EB", {"base":"/png-emojis/1F469-200D-1F3EB.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F3EB.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F3EB.png","medium":"/png-emojis/1F469-1F3FD-200D-1F3EB.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F3EB.png","dark":"/png-emojis/1F469-1F3FF-200D-1F3EB.png"}}],
+  ["1F469-200D-1F3ED", {"base":"/png-emojis/1F469-200D-1F3ED.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F3ED.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F3ED.png","medium":"/png-emojis/1F469-1F3FD-200D-1F3ED.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F3ED.png","dark":"/png-emojis/1F469-1F3FF-200D-1F3ED.png"}}],
+  ["1F469-200D-1F4BB", {"base":"/png-emojis/1F469-200D-1F4BB.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F4BB.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F4BB.png","medium":"/png-emojis/1F469-1F3FD-200D-1F4BB.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F4BB.png","dark":"/png-emojis/1F469-1F3FF-200D-1F4BB.png"}}],
+  ["1F469-200D-1F4BC", {"base":"/png-emojis/1F469-200D-1F4BC.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F4BC.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F4BC.png","medium":"/png-emojis/1F469-1F3FD-200D-1F4BC.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F4BC.png","dark":"/png-emojis/1F469-1F3FF-200D-1F4BC.png"}}],
+  ["1F469-200D-1F527", {"base":"/png-emojis/1F469-200D-1F527.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F527.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F527.png","medium":"/png-emojis/1F469-1F3FD-200D-1F527.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F527.png","dark":"/png-emojis/1F469-1F3FF-200D-1F527.png"}}],
+  ["1F469-200D-1F52C", {"base":"/png-emojis/1F469-200D-1F52C.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F52C.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F52C.png","medium":"/png-emojis/1F469-1F3FD-200D-1F52C.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F52C.png","dark":"/png-emojis/1F469-1F3FF-200D-1F52C.png"}}],
+  ["1F469-200D-1F680", {"base":"/png-emojis/1F469-200D-1F680.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F680.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F680.png","medium":"/png-emojis/1F469-1F3FD-200D-1F680.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F680.png","dark":"/png-emojis/1F469-1F3FF-200D-1F680.png"}}],
+  ["1F469-200D-1F692", {"base":"/png-emojis/1F469-200D-1F692.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F692.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F692.png","medium":"/png-emojis/1F469-1F3FD-200D-1F692.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F692.png","dark":"/png-emojis/1F469-1F3FF-200D-1F692.png"}}],
+  ["1F469-200D-1F9AF-200D-27A1-FE0F", {"base":"/png-emojis/1F469-200D-1F9AF-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9AF-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9AF-200D-27A1-FE0F.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9AF-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9AF-200D-27A1-FE0F.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9AF-200D-27A1-FE0F.png"}}],
+  ["1F469-200D-1F9AF", {"base":"/png-emojis/1F469-200D-1F9AF.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9AF.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9AF.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9AF.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9AF.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9AF.png"}}],
+  ["1F469-200D-1F9B0", {"base":"/png-emojis/1F469-200D-1F9B0.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9B0.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9B0.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9B0.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9B0.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9B0.png"}}],
+  ["1F469-200D-1F9B1", {"base":"/png-emojis/1F469-200D-1F9B1.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9B1.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9B1.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9B1.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9B1.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9B1.png"}}],
+  ["1F469-200D-1F9B2", {"base":"/png-emojis/1F469-200D-1F9B2.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9B2.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9B2.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9B2.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9B2.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9B2.png"}}],
+  ["1F469-200D-1F9B3", {"base":"/png-emojis/1F469-200D-1F9B3.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9B3.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9B3.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9B3.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9B3.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9B3.png"}}],
+  ["1F469-200D-1F9BC-200D-27A1-FE0F", {"base":"/png-emojis/1F469-200D-1F9BC-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9BC-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9BC-200D-27A1-FE0F.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9BC-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9BC-200D-27A1-FE0F.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9BC-200D-27A1-FE0F.png"}}],
+  ["1F469-200D-1F9BC", {"base":"/png-emojis/1F469-200D-1F9BC.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9BC.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9BC.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9BC.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9BC.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9BC.png"}}],
+  ["1F469-200D-1F9BD-200D-27A1-FE0F", {"base":"/png-emojis/1F469-200D-1F9BD-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9BD-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9BD-200D-27A1-FE0F.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9BD-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9BD-200D-27A1-FE0F.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9BD-200D-27A1-FE0F.png"}}],
+  ["1F469-200D-1F9BD", {"base":"/png-emojis/1F469-200D-1F9BD.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-1F9BD.png","medium-light":"/png-emojis/1F469-1F3FC-200D-1F9BD.png","medium":"/png-emojis/1F469-1F3FD-200D-1F9BD.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-1F9BD.png","dark":"/png-emojis/1F469-1F3FF-200D-1F9BD.png"}}],
+  ["1F469-200D-2695-FE0F", {"base":"/png-emojis/1F469-200D-2695-FE0F.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-2695-FE0F.png","medium-light":"/png-emojis/1F469-1F3FC-200D-2695-FE0F.png","medium":"/png-emojis/1F469-1F3FD-200D-2695-FE0F.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-2695-FE0F.png","dark":"/png-emojis/1F469-1F3FF-200D-2695-FE0F.png"}}],
+  ["1F469-200D-2696-FE0F", {"base":"/png-emojis/1F469-200D-2696-FE0F.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-2696-FE0F.png","medium-light":"/png-emojis/1F469-1F3FC-200D-2696-FE0F.png","medium":"/png-emojis/1F469-1F3FD-200D-2696-FE0F.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-2696-FE0F.png","dark":"/png-emojis/1F469-1F3FF-200D-2696-FE0F.png"}}],
+  ["1F469-200D-2708-FE0F", {"base":"/png-emojis/1F469-200D-2708-FE0F.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-2708-FE0F.png","medium-light":"/png-emojis/1F469-1F3FC-200D-2708-FE0F.png","medium":"/png-emojis/1F469-1F3FD-200D-2708-FE0F.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-2708-FE0F.png","dark":"/png-emojis/1F469-1F3FF-200D-2708-FE0F.png"}}],
+  ["1F469-200D-2764-FE0F-200D-1F468", {"base":"/png-emojis/1F469-200D-2764-FE0F-200D-1F468.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F468-1F3FF.png","medium-light":"/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F468-1F3FF.png","medium":"/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F468-1F3FF.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F468-1F3FF.png","dark":"/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F468-1F3FF.png"}}],
+  ["1F469-200D-2764-FE0F-200D-1F469", {"base":"/png-emojis/1F469-200D-2764-FE0F-200D-1F469.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F469-1F3FF.png","medium-light":"/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F469-1F3FF.png","medium":"/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F469-1F3FF.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F469-1F3FF.png","dark":"/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F469-1F3FF.png"}}],
+  ["1F469-200D-2764-FE0F-200D-1F48B-200D-1F468", {"base":"/png-emojis/1F469-200D-2764-FE0F-200D-1F48B-200D-1F468.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","medium-light":"/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","medium":"/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png","dark":"/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF.png"}}],
+  ["1F469-200D-2764-FE0F-200D-1F48B-200D-1F469", {"base":"/png-emojis/1F469-200D-2764-FE0F-200D-1F48B-200D-1F469.png","variants":{"light":"/png-emojis/1F469-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png","medium-light":"/png-emojis/1F469-1F3FC-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png","medium":"/png-emojis/1F469-1F3FD-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png","medium-dark":"/png-emojis/1F469-1F3FE-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png","dark":"/png-emojis/1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F469-1F3FF.png"}}],
+  ["1F469", {"base":"/png-emojis/1F469.png","variants":{"light":"/png-emojis/1F469-1F3FB.png","medium-light":"/png-emojis/1F469-1F3FC.png","medium":"/png-emojis/1F469-1F3FD.png","medium-dark":"/png-emojis/1F469-1F3FE.png","dark":"/png-emojis/1F469-1F3FF.png"}}],
+  ["1F46B", {"base":"/png-emojis/1F46B.png","variants":{"light":"/png-emojis/1F46B-1F3FB.png","medium-light":"/png-emojis/1F46B-1F3FC.png","medium":"/png-emojis/1F46B-1F3FD.png","medium-dark":"/png-emojis/1F46B-1F3FE.png","dark":"/png-emojis/1F46B-1F3FF.png"}}],
+  ["1F46C", {"base":"/png-emojis/1F46C.png","variants":{"light":"/png-emojis/1F46C-1F3FB.png","medium-light":"/png-emojis/1F46C-1F3FC.png","medium":"/png-emojis/1F46C-1F3FD.png","medium-dark":"/png-emojis/1F46C-1F3FE.png","dark":"/png-emojis/1F46C-1F3FF.png"}}],
+  ["1F46D", {"base":"/png-emojis/1F46D.png","variants":{"light":"/png-emojis/1F46D-1F3FB.png","medium-light":"/png-emojis/1F46D-1F3FC.png","medium":"/png-emojis/1F46D-1F3FD.png","medium-dark":"/png-emojis/1F46D-1F3FE.png","dark":"/png-emojis/1F46D-1F3FF.png"}}],
+  ["1F46E-200D-2640-FE0F", {"base":"/png-emojis/1F46E-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F46E-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F46E-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F46E-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F46E-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F46E-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F46E-200D-2642-FE0F", {"base":"/png-emojis/1F46E-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F46E-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F46E-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F46E-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F46E-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F46E-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F46E", {"base":"/png-emojis/1F46E.png","variants":{"light":"/png-emojis/1F46E-1F3FB.png","medium-light":"/png-emojis/1F46E-1F3FC.png","medium":"/png-emojis/1F46E-1F3FD.png","medium-dark":"/png-emojis/1F46E-1F3FE.png","dark":"/png-emojis/1F46E-1F3FF.png"}}],
+  ["1F470-200D-2640-FE0F", {"base":"/png-emojis/1F470-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F470-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F470-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F470-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F470-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F470-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F470-200D-2642-FE0F", {"base":"/png-emojis/1F470-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F470-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F470-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F470-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F470-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F470-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F470", {"base":"/png-emojis/1F470.png","variants":{"light":"/png-emojis/1F470-1F3FB.png","medium-light":"/png-emojis/1F470-1F3FC.png","medium":"/png-emojis/1F470-1F3FD.png","medium-dark":"/png-emojis/1F470-1F3FE.png","dark":"/png-emojis/1F470-1F3FF.png"}}],
+  ["1F471-200D-2640-FE0F", {"base":"/png-emojis/1F471-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F471-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F471-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F471-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F471-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F471-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F471-200D-2642-FE0F", {"base":"/png-emojis/1F471-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F471-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F471-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F471-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F471-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F471-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F471", {"base":"/png-emojis/1F471.png","variants":{"light":"/png-emojis/1F471-1F3FB.png","medium-light":"/png-emojis/1F471-1F3FC.png","medium":"/png-emojis/1F471-1F3FD.png","medium-dark":"/png-emojis/1F471-1F3FE.png","dark":"/png-emojis/1F471-1F3FF.png"}}],
+  ["1F472", {"base":"/png-emojis/1F472.png","variants":{"light":"/png-emojis/1F472-1F3FB.png","medium-light":"/png-emojis/1F472-1F3FC.png","medium":"/png-emojis/1F472-1F3FD.png","medium-dark":"/png-emojis/1F472-1F3FE.png","dark":"/png-emojis/1F472-1F3FF.png"}}],
+  ["1F473-200D-2640-FE0F", {"base":"/png-emojis/1F473-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F473-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F473-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F473-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F473-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F473-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F473-200D-2642-FE0F", {"base":"/png-emojis/1F473-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F473-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F473-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F473-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F473-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F473-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F473", {"base":"/png-emojis/1F473.png","variants":{"light":"/png-emojis/1F473-1F3FB.png","medium-light":"/png-emojis/1F473-1F3FC.png","medium":"/png-emojis/1F473-1F3FD.png","medium-dark":"/png-emojis/1F473-1F3FE.png","dark":"/png-emojis/1F473-1F3FF.png"}}],
+  ["1F474", {"base":"/png-emojis/1F474.png","variants":{"light":"/png-emojis/1F474-1F3FB.png","medium-light":"/png-emojis/1F474-1F3FC.png","medium":"/png-emojis/1F474-1F3FD.png","medium-dark":"/png-emojis/1F474-1F3FE.png","dark":"/png-emojis/1F474-1F3FF.png"}}],
+  ["1F475", {"base":"/png-emojis/1F475.png","variants":{"light":"/png-emojis/1F475-1F3FB.png","medium-light":"/png-emojis/1F475-1F3FC.png","medium":"/png-emojis/1F475-1F3FD.png","medium-dark":"/png-emojis/1F475-1F3FE.png","dark":"/png-emojis/1F475-1F3FF.png"}}],
+  ["1F476", {"base":"/png-emojis/1F476.png","variants":{"light":"/png-emojis/1F476-1F3FB.png","medium-light":"/png-emojis/1F476-1F3FC.png","medium":"/png-emojis/1F476-1F3FD.png","medium-dark":"/png-emojis/1F476-1F3FE.png","dark":"/png-emojis/1F476-1F3FF.png"}}],
+  ["1F477-200D-2640-FE0F", {"base":"/png-emojis/1F477-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F477-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F477-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F477-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F477-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F477-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F477-200D-2642-FE0F", {"base":"/png-emojis/1F477-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F477-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F477-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F477-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F477-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F477-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F477", {"base":"/png-emojis/1F477.png","variants":{"light":"/png-emojis/1F477-1F3FB.png","medium-light":"/png-emojis/1F477-1F3FC.png","medium":"/png-emojis/1F477-1F3FD.png","medium-dark":"/png-emojis/1F477-1F3FE.png","dark":"/png-emojis/1F477-1F3FF.png"}}],
+  ["1F478", {"base":"/png-emojis/1F478.png","variants":{"light":"/png-emojis/1F478-1F3FB.png","medium-light":"/png-emojis/1F478-1F3FC.png","medium":"/png-emojis/1F478-1F3FD.png","medium-dark":"/png-emojis/1F478-1F3FE.png","dark":"/png-emojis/1F478-1F3FF.png"}}],
+  ["1F47C", {"base":"/png-emojis/1F47C.png","variants":{"light":"/png-emojis/1F47C-1F3FB.png","medium-light":"/png-emojis/1F47C-1F3FC.png","medium":"/png-emojis/1F47C-1F3FD.png","medium-dark":"/png-emojis/1F47C-1F3FE.png","dark":"/png-emojis/1F47C-1F3FF.png"}}],
+  ["1F481-200D-2640-FE0F", {"base":"/png-emojis/1F481-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F481-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F481-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F481-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F481-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F481-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F481-200D-2642-FE0F", {"base":"/png-emojis/1F481-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F481-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F481-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F481-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F481-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F481-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F481", {"base":"/png-emojis/1F481.png","variants":{"light":"/png-emojis/1F481-1F3FB.png","medium-light":"/png-emojis/1F481-1F3FC.png","medium":"/png-emojis/1F481-1F3FD.png","medium-dark":"/png-emojis/1F481-1F3FE.png","dark":"/png-emojis/1F481-1F3FF.png"}}],
+  ["1F482-200D-2640-FE0F", {"base":"/png-emojis/1F482-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F482-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F482-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F482-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F482-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F482-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F482-200D-2642-FE0F", {"base":"/png-emojis/1F482-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F482-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F482-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F482-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F482-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F482-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F482", {"base":"/png-emojis/1F482.png","variants":{"light":"/png-emojis/1F482-1F3FB.png","medium-light":"/png-emojis/1F482-1F3FC.png","medium":"/png-emojis/1F482-1F3FD.png","medium-dark":"/png-emojis/1F482-1F3FE.png","dark":"/png-emojis/1F482-1F3FF.png"}}],
+  ["1F483", {"base":"/png-emojis/1F483.png","variants":{"light":"/png-emojis/1F483-1F3FB.png","medium-light":"/png-emojis/1F483-1F3FC.png","medium":"/png-emojis/1F483-1F3FD.png","medium-dark":"/png-emojis/1F483-1F3FE.png","dark":"/png-emojis/1F483-1F3FF.png"}}],
+  ["1F485", {"base":"/png-emojis/1F485.png","variants":{"light":"/png-emojis/1F485-1F3FB.png","medium-light":"/png-emojis/1F485-1F3FC.png","medium":"/png-emojis/1F485-1F3FD.png","medium-dark":"/png-emojis/1F485-1F3FE.png","dark":"/png-emojis/1F485-1F3FF.png"}}],
+  ["1F486-200D-2640-FE0F", {"base":"/png-emojis/1F486-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F486-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F486-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F486-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F486-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F486-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F486-200D-2642-FE0F", {"base":"/png-emojis/1F486-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F486-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F486-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F486-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F486-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F486-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F486", {"base":"/png-emojis/1F486.png","variants":{"light":"/png-emojis/1F486-1F3FB.png","medium-light":"/png-emojis/1F486-1F3FC.png","medium":"/png-emojis/1F486-1F3FD.png","medium-dark":"/png-emojis/1F486-1F3FE.png","dark":"/png-emojis/1F486-1F3FF.png"}}],
+  ["1F487-200D-2640-FE0F", {"base":"/png-emojis/1F487-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F487-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F487-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F487-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F487-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F487-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F487-200D-2642-FE0F", {"base":"/png-emojis/1F487-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F487-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F487-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F487-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F487-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F487-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F487", {"base":"/png-emojis/1F487.png","variants":{"light":"/png-emojis/1F487-1F3FB.png","medium-light":"/png-emojis/1F487-1F3FC.png","medium":"/png-emojis/1F487-1F3FD.png","medium-dark":"/png-emojis/1F487-1F3FE.png","dark":"/png-emojis/1F487-1F3FF.png"}}],
+  ["1F48F", {"base":"/png-emojis/1F48F.png","variants":{"light":"/png-emojis/1F48F-1F3FB.png","medium-light":"/png-emojis/1F48F-1F3FC.png","medium":"/png-emojis/1F48F-1F3FD.png","medium-dark":"/png-emojis/1F48F-1F3FE.png","dark":"/png-emojis/1F48F-1F3FF.png"}}],
+  ["1F491", {"base":"/png-emojis/1F491.png","variants":{"light":"/png-emojis/1F491-1F3FB.png","medium-light":"/png-emojis/1F491-1F3FC.png","medium":"/png-emojis/1F491-1F3FD.png","medium-dark":"/png-emojis/1F491-1F3FE.png","dark":"/png-emojis/1F491-1F3FF.png"}}],
+  ["1F4AA", {"base":"/png-emojis/1F4AA.png","variants":{"light":"/png-emojis/1F4AA-1F3FB.png","medium-light":"/png-emojis/1F4AA-1F3FC.png","medium":"/png-emojis/1F4AA-1F3FD.png","medium-dark":"/png-emojis/1F4AA-1F3FE.png","dark":"/png-emojis/1F4AA-1F3FF.png"}}],
+  ["1F574", {"base":"/png-emojis/1F574.png","variants":{"light":"/png-emojis/1F574-1F3FB.png","medium-light":"/png-emojis/1F574-1F3FC.png","medium":"/png-emojis/1F574-1F3FD.png","medium-dark":"/png-emojis/1F574-1F3FE.png","dark":"/png-emojis/1F574-1F3FF.png"}}],
+  ["1F575", {"base":"/png-emojis/1F575.png","variants":{"light":"/png-emojis/1F575-1F3FB.png","medium-light":"/png-emojis/1F575-1F3FC.png","medium":"/png-emojis/1F575-1F3FD.png","medium-dark":"/png-emojis/1F575-1F3FE.png","dark":"/png-emojis/1F575-1F3FF.png"}}],
+  ["1F57A", {"base":"/png-emojis/1F57A.png","variants":{"light":"/png-emojis/1F57A-1F3FB.png","medium-light":"/png-emojis/1F57A-1F3FC.png","medium":"/png-emojis/1F57A-1F3FD.png","medium-dark":"/png-emojis/1F57A-1F3FE.png","dark":"/png-emojis/1F57A-1F3FF.png"}}],
+  ["1F590", {"base":"/png-emojis/1F590.png","variants":{"light":"/png-emojis/1F590-1F3FB.png","medium-light":"/png-emojis/1F590-1F3FC.png","medium":"/png-emojis/1F590-1F3FD.png","medium-dark":"/png-emojis/1F590-1F3FE.png","dark":"/png-emojis/1F590-1F3FF.png"}}],
+  ["1F595", {"base":"/png-emojis/1F595.png","variants":{"light":"/png-emojis/1F595-1F3FB.png","medium-light":"/png-emojis/1F595-1F3FC.png","medium":"/png-emojis/1F595-1F3FD.png","medium-dark":"/png-emojis/1F595-1F3FE.png","dark":"/png-emojis/1F595-1F3FF.png"}}],
+  ["1F596", {"base":"/png-emojis/1F596.png","variants":{"light":"/png-emojis/1F596-1F3FB.png","medium-light":"/png-emojis/1F596-1F3FC.png","medium":"/png-emojis/1F596-1F3FD.png","medium-dark":"/png-emojis/1F596-1F3FE.png","dark":"/png-emojis/1F596-1F3FF.png"}}],
+  ["1F645-200D-2640-FE0F", {"base":"/png-emojis/1F645-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F645-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F645-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F645-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F645-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F645-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F645-200D-2642-FE0F", {"base":"/png-emojis/1F645-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F645-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F645-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F645-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F645-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F645-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F645", {"base":"/png-emojis/1F645.png","variants":{"light":"/png-emojis/1F645-1F3FB.png","medium-light":"/png-emojis/1F645-1F3FC.png","medium":"/png-emojis/1F645-1F3FD.png","medium-dark":"/png-emojis/1F645-1F3FE.png","dark":"/png-emojis/1F645-1F3FF.png"}}],
+  ["1F646-200D-2640-FE0F", {"base":"/png-emojis/1F646-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F646-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F646-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F646-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F646-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F646-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F646-200D-2642-FE0F", {"base":"/png-emojis/1F646-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F646-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F646-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F646-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F646-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F646-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F646", {"base":"/png-emojis/1F646.png","variants":{"light":"/png-emojis/1F646-1F3FB.png","medium-light":"/png-emojis/1F646-1F3FC.png","medium":"/png-emojis/1F646-1F3FD.png","medium-dark":"/png-emojis/1F646-1F3FE.png","dark":"/png-emojis/1F646-1F3FF.png"}}],
+  ["1F647-200D-2640-FE0F", {"base":"/png-emojis/1F647-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F647-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F647-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F647-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F647-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F647-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F647-200D-2642-FE0F", {"base":"/png-emojis/1F647-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F647-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F647-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F647-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F647-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F647-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F647", {"base":"/png-emojis/1F647.png","variants":{"light":"/png-emojis/1F647-1F3FB.png","medium-light":"/png-emojis/1F647-1F3FC.png","medium":"/png-emojis/1F647-1F3FD.png","medium-dark":"/png-emojis/1F647-1F3FE.png","dark":"/png-emojis/1F647-1F3FF.png"}}],
+  ["1F64B-200D-2640-FE0F", {"base":"/png-emojis/1F64B-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F64B-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F64B-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F64B-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F64B-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F64B-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F64B-200D-2642-FE0F", {"base":"/png-emojis/1F64B-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F64B-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F64B-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F64B-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F64B-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F64B-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F64B", {"base":"/png-emojis/1F64B.png","variants":{"light":"/png-emojis/1F64B-1F3FB.png","medium-light":"/png-emojis/1F64B-1F3FC.png","medium":"/png-emojis/1F64B-1F3FD.png","medium-dark":"/png-emojis/1F64B-1F3FE.png","dark":"/png-emojis/1F64B-1F3FF.png"}}],
+  ["1F64C", {"base":"/png-emojis/1F64C.png","variants":{"light":"/png-emojis/1F64C-1F3FB.png","medium-light":"/png-emojis/1F64C-1F3FC.png","medium":"/png-emojis/1F64C-1F3FD.png","medium-dark":"/png-emojis/1F64C-1F3FE.png","dark":"/png-emojis/1F64C-1F3FF.png"}}],
+  ["1F64D-200D-2640-FE0F", {"base":"/png-emojis/1F64D-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F64D-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F64D-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F64D-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F64D-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F64D-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F64D-200D-2642-FE0F", {"base":"/png-emojis/1F64D-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F64D-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F64D-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F64D-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F64D-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F64D-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F64D", {"base":"/png-emojis/1F64D.png","variants":{"light":"/png-emojis/1F64D-1F3FB.png","medium-light":"/png-emojis/1F64D-1F3FC.png","medium":"/png-emojis/1F64D-1F3FD.png","medium-dark":"/png-emojis/1F64D-1F3FE.png","dark":"/png-emojis/1F64D-1F3FF.png"}}],
+  ["1F64E-200D-2640-FE0F", {"base":"/png-emojis/1F64E-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F64E-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F64E-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F64E-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F64E-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F64E-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F64E-200D-2642-FE0F", {"base":"/png-emojis/1F64E-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F64E-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F64E-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F64E-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F64E-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F64E-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F64E", {"base":"/png-emojis/1F64E.png","variants":{"light":"/png-emojis/1F64E-1F3FB.png","medium-light":"/png-emojis/1F64E-1F3FC.png","medium":"/png-emojis/1F64E-1F3FD.png","medium-dark":"/png-emojis/1F64E-1F3FE.png","dark":"/png-emojis/1F64E-1F3FF.png"}}],
+  ["1F64F", {"base":"/png-emojis/1F64F.png","variants":{"light":"/png-emojis/1F64F-1F3FB.png","medium-light":"/png-emojis/1F64F-1F3FC.png","medium":"/png-emojis/1F64F-1F3FD.png","medium-dark":"/png-emojis/1F64F-1F3FE.png","dark":"/png-emojis/1F64F-1F3FF.png"}}],
+  ["1F6A3-200D-2640-FE0F", {"base":"/png-emojis/1F6A3-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F6A3-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F6A3-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F6A3-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F6A3-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F6A3-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F6A3-200D-2642-FE0F", {"base":"/png-emojis/1F6A3-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F6A3-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F6A3-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F6A3-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F6A3-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F6A3-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F6A3", {"base":"/png-emojis/1F6A3.png","variants":{"light":"/png-emojis/1F6A3-1F3FB.png","medium-light":"/png-emojis/1F6A3-1F3FC.png","medium":"/png-emojis/1F6A3-1F3FD.png","medium-dark":"/png-emojis/1F6A3-1F3FE.png","dark":"/png-emojis/1F6A3-1F3FF.png"}}],
+  ["1F6B4-200D-2640-FE0F", {"base":"/png-emojis/1F6B4-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F6B4-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F6B4-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F6B4-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F6B4-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F6B4-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F6B4-200D-2642-FE0F", {"base":"/png-emojis/1F6B4-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F6B4-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F6B4-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F6B4-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F6B4-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F6B4-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F6B4", {"base":"/png-emojis/1F6B4.png","variants":{"light":"/png-emojis/1F6B4-1F3FB.png","medium-light":"/png-emojis/1F6B4-1F3FC.png","medium":"/png-emojis/1F6B4-1F3FD.png","medium-dark":"/png-emojis/1F6B4-1F3FE.png","dark":"/png-emojis/1F6B4-1F3FF.png"}}],
+  ["1F6B5-200D-2640-FE0F", {"base":"/png-emojis/1F6B5-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F6B5-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F6B5-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F6B5-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F6B5-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F6B5-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F6B5-200D-2642-FE0F", {"base":"/png-emojis/1F6B5-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F6B5-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F6B5-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F6B5-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F6B5-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F6B5-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F6B5", {"base":"/png-emojis/1F6B5.png","variants":{"light":"/png-emojis/1F6B5-1F3FB.png","medium-light":"/png-emojis/1F6B5-1F3FC.png","medium":"/png-emojis/1F6B5-1F3FD.png","medium-dark":"/png-emojis/1F6B5-1F3FE.png","dark":"/png-emojis/1F6B5-1F3FF.png"}}],
+  ["1F6B6-200D-2640-FE0F-200D-27A1-FE0F", {"base":"/png-emojis/1F6B6-200D-2640-FE0F-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F6B6-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F6B6-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png","medium":"/png-emojis/1F6B6-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F6B6-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png","dark":"/png-emojis/1F6B6-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png"}}],
+  ["1F6B6-200D-2640-FE0F", {"base":"/png-emojis/1F6B6-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F6B6-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F6B6-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F6B6-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F6B6-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F6B6-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F6B6-200D-2642-FE0F-200D-27A1-FE0F", {"base":"/png-emojis/1F6B6-200D-2642-FE0F-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F6B6-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F6B6-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png","medium":"/png-emojis/1F6B6-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F6B6-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png","dark":"/png-emojis/1F6B6-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png"}}],
+  ["1F6B6-200D-2642-FE0F", {"base":"/png-emojis/1F6B6-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F6B6-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F6B6-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F6B6-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F6B6-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F6B6-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F6B6-200D-27A1-FE0F", {"base":"/png-emojis/1F6B6-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F6B6-1F3FB-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F6B6-1F3FC-200D-27A1-FE0F.png","medium":"/png-emojis/1F6B6-1F3FD-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F6B6-1F3FE-200D-27A1-FE0F.png","dark":"/png-emojis/1F6B6-1F3FF-200D-27A1-FE0F.png"}}],
+  ["1F6B6", {"base":"/png-emojis/1F6B6.png","variants":{"light":"/png-emojis/1F6B6-1F3FB.png","medium-light":"/png-emojis/1F6B6-1F3FC.png","medium":"/png-emojis/1F6B6-1F3FD.png","medium-dark":"/png-emojis/1F6B6-1F3FE.png","dark":"/png-emojis/1F6B6-1F3FF.png"}}],
+  ["1F6C0", {"base":"/png-emojis/1F6C0.png","variants":{"light":"/png-emojis/1F6C0-1F3FB.png","medium-light":"/png-emojis/1F6C0-1F3FC.png","medium":"/png-emojis/1F6C0-1F3FD.png","medium-dark":"/png-emojis/1F6C0-1F3FE.png","dark":"/png-emojis/1F6C0-1F3FF.png"}}],
+  ["1F6CC", {"base":"/png-emojis/1F6CC.png","variants":{"light":"/png-emojis/1F6CC-1F3FB.png","medium-light":"/png-emojis/1F6CC-1F3FC.png","medium":"/png-emojis/1F6CC-1F3FD.png","medium-dark":"/png-emojis/1F6CC-1F3FE.png","dark":"/png-emojis/1F6CC-1F3FF.png"}}],
+  ["1F90C", {"base":"/png-emojis/1F90C.png","variants":{"light":"/png-emojis/1F90C-1F3FB.png","medium-light":"/png-emojis/1F90C-1F3FC.png","medium":"/png-emojis/1F90C-1F3FD.png","medium-dark":"/png-emojis/1F90C-1F3FE.png","dark":"/png-emojis/1F90C-1F3FF.png"}}],
+  ["1F90F", {"base":"/png-emojis/1F90F.png","variants":{"light":"/png-emojis/1F90F-1F3FB.png","medium-light":"/png-emojis/1F90F-1F3FC.png","medium":"/png-emojis/1F90F-1F3FD.png","medium-dark":"/png-emojis/1F90F-1F3FE.png","dark":"/png-emojis/1F90F-1F3FF.png"}}],
+  ["1F918", {"base":"/png-emojis/1F918.png","variants":{"light":"/png-emojis/1F918-1F3FB.png","medium-light":"/png-emojis/1F918-1F3FC.png","medium":"/png-emojis/1F918-1F3FD.png","medium-dark":"/png-emojis/1F918-1F3FE.png","dark":"/png-emojis/1F918-1F3FF.png"}}],
+  ["1F919", {"base":"/png-emojis/1F919.png","variants":{"light":"/png-emojis/1F919-1F3FB.png","medium-light":"/png-emojis/1F919-1F3FC.png","medium":"/png-emojis/1F919-1F3FD.png","medium-dark":"/png-emojis/1F919-1F3FE.png","dark":"/png-emojis/1F919-1F3FF.png"}}],
+  ["1F91A", {"base":"/png-emojis/1F91A.png","variants":{"light":"/png-emojis/1F91A-1F3FB.png","medium-light":"/png-emojis/1F91A-1F3FC.png","medium":"/png-emojis/1F91A-1F3FD.png","medium-dark":"/png-emojis/1F91A-1F3FE.png","dark":"/png-emojis/1F91A-1F3FF.png"}}],
+  ["1F91B", {"base":"/png-emojis/1F91B.png","variants":{"light":"/png-emojis/1F91B-1F3FB.png","medium-light":"/png-emojis/1F91B-1F3FC.png","medium":"/png-emojis/1F91B-1F3FD.png","medium-dark":"/png-emojis/1F91B-1F3FE.png","dark":"/png-emojis/1F91B-1F3FF.png"}}],
+  ["1F91C", {"base":"/png-emojis/1F91C.png","variants":{"light":"/png-emojis/1F91C-1F3FB.png","medium-light":"/png-emojis/1F91C-1F3FC.png","medium":"/png-emojis/1F91C-1F3FD.png","medium-dark":"/png-emojis/1F91C-1F3FE.png","dark":"/png-emojis/1F91C-1F3FF.png"}}],
+  ["1F91D", {"base":"/png-emojis/1F91D.png","variants":{"light":"/png-emojis/1F91D-1F3FB.png","medium-light":"/png-emojis/1F91D-1F3FC.png","medium":"/png-emojis/1F91D-1F3FD.png","medium-dark":"/png-emojis/1F91D-1F3FE.png","dark":"/png-emojis/1F91D-1F3FF.png"}}],
+  ["1F91E", {"base":"/png-emojis/1F91E.png","variants":{"light":"/png-emojis/1F91E-1F3FB.png","medium-light":"/png-emojis/1F91E-1F3FC.png","medium":"/png-emojis/1F91E-1F3FD.png","medium-dark":"/png-emojis/1F91E-1F3FE.png","dark":"/png-emojis/1F91E-1F3FF.png"}}],
+  ["1F91F", {"base":"/png-emojis/1F91F.png","variants":{"light":"/png-emojis/1F91F-1F3FB.png","medium-light":"/png-emojis/1F91F-1F3FC.png","medium":"/png-emojis/1F91F-1F3FD.png","medium-dark":"/png-emojis/1F91F-1F3FE.png","dark":"/png-emojis/1F91F-1F3FF.png"}}],
+  ["1F926-200D-2640-FE0F", {"base":"/png-emojis/1F926-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F926-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F926-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F926-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F926-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F926-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F926-200D-2642-FE0F", {"base":"/png-emojis/1F926-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F926-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F926-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F926-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F926-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F926-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F926", {"base":"/png-emojis/1F926.png","variants":{"light":"/png-emojis/1F926-1F3FB.png","medium-light":"/png-emojis/1F926-1F3FC.png","medium":"/png-emojis/1F926-1F3FD.png","medium-dark":"/png-emojis/1F926-1F3FE.png","dark":"/png-emojis/1F926-1F3FF.png"}}],
+  ["1F930", {"base":"/png-emojis/1F930.png","variants":{"light":"/png-emojis/1F930-1F3FB.png","medium-light":"/png-emojis/1F930-1F3FC.png","medium":"/png-emojis/1F930-1F3FD.png","medium-dark":"/png-emojis/1F930-1F3FE.png","dark":"/png-emojis/1F930-1F3FF.png"}}],
+  ["1F931", {"base":"/png-emojis/1F931.png","variants":{"light":"/png-emojis/1F931-1F3FB.png","medium-light":"/png-emojis/1F931-1F3FC.png","medium":"/png-emojis/1F931-1F3FD.png","medium-dark":"/png-emojis/1F931-1F3FE.png","dark":"/png-emojis/1F931-1F3FF.png"}}],
+  ["1F932", {"base":"/png-emojis/1F932.png","variants":{"light":"/png-emojis/1F932-1F3FB.png","medium-light":"/png-emojis/1F932-1F3FC.png","medium":"/png-emojis/1F932-1F3FD.png","medium-dark":"/png-emojis/1F932-1F3FE.png","dark":"/png-emojis/1F932-1F3FF.png"}}],
+  ["1F933", {"base":"/png-emojis/1F933.png","variants":{"light":"/png-emojis/1F933-1F3FB.png","medium-light":"/png-emojis/1F933-1F3FC.png","medium":"/png-emojis/1F933-1F3FD.png","medium-dark":"/png-emojis/1F933-1F3FE.png","dark":"/png-emojis/1F933-1F3FF.png"}}],
+  ["1F934", {"base":"/png-emojis/1F934.png","variants":{"light":"/png-emojis/1F934-1F3FB.png","medium-light":"/png-emojis/1F934-1F3FC.png","medium":"/png-emojis/1F934-1F3FD.png","medium-dark":"/png-emojis/1F934-1F3FE.png","dark":"/png-emojis/1F934-1F3FF.png"}}],
+  ["1F935-200D-2640-FE0F", {"base":"/png-emojis/1F935-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F935-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F935-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F935-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F935-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F935-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F935-200D-2642-FE0F", {"base":"/png-emojis/1F935-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F935-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F935-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F935-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F935-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F935-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F935", {"base":"/png-emojis/1F935.png","variants":{"light":"/png-emojis/1F935-1F3FB.png","medium-light":"/png-emojis/1F935-1F3FC.png","medium":"/png-emojis/1F935-1F3FD.png","medium-dark":"/png-emojis/1F935-1F3FE.png","dark":"/png-emojis/1F935-1F3FF.png"}}],
+  ["1F936", {"base":"/png-emojis/1F936.png","variants":{"light":"/png-emojis/1F936-1F3FB.png","medium-light":"/png-emojis/1F936-1F3FC.png","medium":"/png-emojis/1F936-1F3FD.png","medium-dark":"/png-emojis/1F936-1F3FE.png","dark":"/png-emojis/1F936-1F3FF.png"}}],
+  ["1F937-200D-2640-FE0F", {"base":"/png-emojis/1F937-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F937-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F937-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F937-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F937-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F937-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F937-200D-2642-FE0F", {"base":"/png-emojis/1F937-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F937-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F937-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F937-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F937-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F937-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F937", {"base":"/png-emojis/1F937.png","variants":{"light":"/png-emojis/1F937-1F3FB.png","medium-light":"/png-emojis/1F937-1F3FC.png","medium":"/png-emojis/1F937-1F3FD.png","medium-dark":"/png-emojis/1F937-1F3FE.png","dark":"/png-emojis/1F937-1F3FF.png"}}],
+  ["1F938-200D-2640-FE0F", {"base":"/png-emojis/1F938-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F938-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F938-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F938-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F938-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F938-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F938-200D-2642-FE0F", {"base":"/png-emojis/1F938-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F938-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F938-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F938-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F938-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F938-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F938", {"base":"/png-emojis/1F938.png","variants":{"light":"/png-emojis/1F938-1F3FB.png","medium-light":"/png-emojis/1F938-1F3FC.png","medium":"/png-emojis/1F938-1F3FD.png","medium-dark":"/png-emojis/1F938-1F3FE.png","dark":"/png-emojis/1F938-1F3FF.png"}}],
+  ["1F939-200D-2640-FE0F", {"base":"/png-emojis/1F939-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F939-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F939-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F939-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F939-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F939-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F939-200D-2642-FE0F", {"base":"/png-emojis/1F939-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F939-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F939-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F939-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F939-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F939-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F939", {"base":"/png-emojis/1F939.png","variants":{"light":"/png-emojis/1F939-1F3FB.png","medium-light":"/png-emojis/1F939-1F3FC.png","medium":"/png-emojis/1F939-1F3FD.png","medium-dark":"/png-emojis/1F939-1F3FE.png","dark":"/png-emojis/1F939-1F3FF.png"}}],
+  ["1F93D-200D-2640-FE0F", {"base":"/png-emojis/1F93D-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F93D-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F93D-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F93D-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F93D-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F93D-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F93D-200D-2642-FE0F", {"base":"/png-emojis/1F93D-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F93D-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F93D-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F93D-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F93D-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F93D-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F93D", {"base":"/png-emojis/1F93D.png","variants":{"light":"/png-emojis/1F93D-1F3FB.png","medium-light":"/png-emojis/1F93D-1F3FC.png","medium":"/png-emojis/1F93D-1F3FD.png","medium-dark":"/png-emojis/1F93D-1F3FE.png","dark":"/png-emojis/1F93D-1F3FF.png"}}],
+  ["1F93E-200D-2640-FE0F", {"base":"/png-emojis/1F93E-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F93E-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F93E-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F93E-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F93E-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F93E-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F93E-200D-2642-FE0F", {"base":"/png-emojis/1F93E-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F93E-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F93E-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F93E-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F93E-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F93E-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F93E", {"base":"/png-emojis/1F93E.png","variants":{"light":"/png-emojis/1F93E-1F3FB.png","medium-light":"/png-emojis/1F93E-1F3FC.png","medium":"/png-emojis/1F93E-1F3FD.png","medium-dark":"/png-emojis/1F93E-1F3FE.png","dark":"/png-emojis/1F93E-1F3FF.png"}}],
+  ["1F977", {"base":"/png-emojis/1F977.png","variants":{"light":"/png-emojis/1F977-1F3FB.png","medium-light":"/png-emojis/1F977-1F3FC.png","medium":"/png-emojis/1F977-1F3FD.png","medium-dark":"/png-emojis/1F977-1F3FE.png","dark":"/png-emojis/1F977-1F3FF.png"}}],
+  ["1F9B5", {"base":"/png-emojis/1F9B5.png","variants":{"light":"/png-emojis/1F9B5-1F3FB.png","medium-light":"/png-emojis/1F9B5-1F3FC.png","medium":"/png-emojis/1F9B5-1F3FD.png","medium-dark":"/png-emojis/1F9B5-1F3FE.png","dark":"/png-emojis/1F9B5-1F3FF.png"}}],
+  ["1F9B6", {"base":"/png-emojis/1F9B6.png","variants":{"light":"/png-emojis/1F9B6-1F3FB.png","medium-light":"/png-emojis/1F9B6-1F3FC.png","medium":"/png-emojis/1F9B6-1F3FD.png","medium-dark":"/png-emojis/1F9B6-1F3FE.png","dark":"/png-emojis/1F9B6-1F3FF.png"}}],
+  ["1F9B8-200D-2640-FE0F", {"base":"/png-emojis/1F9B8-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9B8-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9B8-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9B8-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9B8-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9B8-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9B8-200D-2642-FE0F", {"base":"/png-emojis/1F9B8-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9B8-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9B8-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9B8-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9B8-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9B8-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9B8", {"base":"/png-emojis/1F9B8.png","variants":{"light":"/png-emojis/1F9B8-1F3FB.png","medium-light":"/png-emojis/1F9B8-1F3FC.png","medium":"/png-emojis/1F9B8-1F3FD.png","medium-dark":"/png-emojis/1F9B8-1F3FE.png","dark":"/png-emojis/1F9B8-1F3FF.png"}}],
+  ["1F9B9-200D-2640-FE0F", {"base":"/png-emojis/1F9B9-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9B9-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9B9-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9B9-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9B9-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9B9-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9B9-200D-2642-FE0F", {"base":"/png-emojis/1F9B9-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9B9-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9B9-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9B9-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9B9-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9B9-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9B9", {"base":"/png-emojis/1F9B9.png","variants":{"light":"/png-emojis/1F9B9-1F3FB.png","medium-light":"/png-emojis/1F9B9-1F3FC.png","medium":"/png-emojis/1F9B9-1F3FD.png","medium-dark":"/png-emojis/1F9B9-1F3FE.png","dark":"/png-emojis/1F9B9-1F3FF.png"}}],
+  ["1F9BB", {"base":"/png-emojis/1F9BB.png","variants":{"light":"/png-emojis/1F9BB-1F3FB.png","medium-light":"/png-emojis/1F9BB-1F3FC.png","medium":"/png-emojis/1F9BB-1F3FD.png","medium-dark":"/png-emojis/1F9BB-1F3FE.png","dark":"/png-emojis/1F9BB-1F3FF.png"}}],
+  ["1F9CD-200D-2640-FE0F", {"base":"/png-emojis/1F9CD-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9CD-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9CD-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9CD-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9CD-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9CD-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9CD-200D-2642-FE0F", {"base":"/png-emojis/1F9CD-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9CD-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9CD-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9CD-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9CD-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9CD-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9CD", {"base":"/png-emojis/1F9CD.png","variants":{"light":"/png-emojis/1F9CD-1F3FB.png","medium-light":"/png-emojis/1F9CD-1F3FC.png","medium":"/png-emojis/1F9CD-1F3FD.png","medium-dark":"/png-emojis/1F9CD-1F3FE.png","dark":"/png-emojis/1F9CD-1F3FF.png"}}],
+  ["1F9CE-200D-2640-FE0F-200D-27A1-FE0F", {"base":"/png-emojis/1F9CE-200D-2640-FE0F-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F9CE-1F3FB-200D-2640-FE0F-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F9CE-1F3FC-200D-2640-FE0F-200D-27A1-FE0F.png","medium":"/png-emojis/1F9CE-1F3FD-200D-2640-FE0F-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F9CE-1F3FE-200D-2640-FE0F-200D-27A1-FE0F.png","dark":"/png-emojis/1F9CE-1F3FF-200D-2640-FE0F-200D-27A1-FE0F.png"}}],
+  ["1F9CE-200D-2640-FE0F", {"base":"/png-emojis/1F9CE-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9CE-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9CE-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9CE-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9CE-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9CE-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9CE-200D-2642-FE0F-200D-27A1-FE0F", {"base":"/png-emojis/1F9CE-200D-2642-FE0F-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F9CE-1F3FB-200D-2642-FE0F-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F9CE-1F3FC-200D-2642-FE0F-200D-27A1-FE0F.png","medium":"/png-emojis/1F9CE-1F3FD-200D-2642-FE0F-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F9CE-1F3FE-200D-2642-FE0F-200D-27A1-FE0F.png","dark":"/png-emojis/1F9CE-1F3FF-200D-2642-FE0F-200D-27A1-FE0F.png"}}],
+  ["1F9CE-200D-2642-FE0F", {"base":"/png-emojis/1F9CE-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9CE-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9CE-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9CE-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9CE-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9CE-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9CE-200D-27A1-FE0F", {"base":"/png-emojis/1F9CE-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F9CE-1F3FB-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F9CE-1F3FC-200D-27A1-FE0F.png","medium":"/png-emojis/1F9CE-1F3FD-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F9CE-1F3FE-200D-27A1-FE0F.png","dark":"/png-emojis/1F9CE-1F3FF-200D-27A1-FE0F.png"}}],
+  ["1F9CE", {"base":"/png-emojis/1F9CE.png","variants":{"light":"/png-emojis/1F9CE-1F3FB.png","medium-light":"/png-emojis/1F9CE-1F3FC.png","medium":"/png-emojis/1F9CE-1F3FD.png","medium-dark":"/png-emojis/1F9CE-1F3FE.png","dark":"/png-emojis/1F9CE-1F3FF.png"}}],
+  ["1F9CF-200D-2640-FE0F", {"base":"/png-emojis/1F9CF-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9CF-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9CF-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9CF-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9CF-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9CF-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9CF-200D-2642-FE0F", {"base":"/png-emojis/1F9CF-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9CF-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9CF-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9CF-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9CF-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9CF-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9CF", {"base":"/png-emojis/1F9CF.png","variants":{"light":"/png-emojis/1F9CF-1F3FB.png","medium-light":"/png-emojis/1F9CF-1F3FC.png","medium":"/png-emojis/1F9CF-1F3FD.png","medium-dark":"/png-emojis/1F9CF-1F3FE.png","dark":"/png-emojis/1F9CF-1F3FF.png"}}],
+  ["1F9D1-200D-1F33E", {"base":"/png-emojis/1F9D1-200D-1F33E.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F33E.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F33E.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F33E.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F33E.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F33E.png"}}],
+  ["1F9D1-200D-1F373", {"base":"/png-emojis/1F9D1-200D-1F373.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F373.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F373.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F373.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F373.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F373.png"}}],
+  ["1F9D1-200D-1F37C", {"base":"/png-emojis/1F9D1-200D-1F37C.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F37C.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F37C.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F37C.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F37C.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F37C.png"}}],
+  ["1F9D1-200D-1F384", {"base":"/png-emojis/1F9D1-200D-1F384.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F384.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F384.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F384.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F384.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F384.png"}}],
+  ["1F9D1-200D-1F393", {"base":"/png-emojis/1F9D1-200D-1F393.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F393.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F393.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F393.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F393.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F393.png"}}],
+  ["1F9D1-200D-1F3A4", {"base":"/png-emojis/1F9D1-200D-1F3A4.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F3A4.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F3A4.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F3A4.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F3A4.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F3A4.png"}}],
+  ["1F9D1-200D-1F3A8", {"base":"/png-emojis/1F9D1-200D-1F3A8.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F3A8.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F3A8.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F3A8.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F3A8.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F3A8.png"}}],
+  ["1F9D1-200D-1F3EB", {"base":"/png-emojis/1F9D1-200D-1F3EB.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F3EB.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F3EB.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F3EB.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F3EB.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F3EB.png"}}],
+  ["1F9D1-200D-1F3ED", {"base":"/png-emojis/1F9D1-200D-1F3ED.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F3ED.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F3ED.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F3ED.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F3ED.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F3ED.png"}}],
+  ["1F9D1-200D-1F4BB", {"base":"/png-emojis/1F9D1-200D-1F4BB.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F4BB.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F4BB.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F4BB.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F4BB.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F4BB.png"}}],
+  ["1F9D1-200D-1F4BC", {"base":"/png-emojis/1F9D1-200D-1F4BC.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F4BC.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F4BC.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F4BC.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F4BC.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F4BC.png"}}],
+  ["1F9D1-200D-1F527", {"base":"/png-emojis/1F9D1-200D-1F527.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F527.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F527.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F527.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F527.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F527.png"}}],
+  ["1F9D1-200D-1F52C", {"base":"/png-emojis/1F9D1-200D-1F52C.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F52C.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F52C.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F52C.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F52C.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F52C.png"}}],
+  ["1F9D1-200D-1F680", {"base":"/png-emojis/1F9D1-200D-1F680.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F680.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F680.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F680.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F680.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F680.png"}}],
+  ["1F9D1-200D-1F692", {"base":"/png-emojis/1F9D1-200D-1F692.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F692.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F692.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F692.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F692.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F692.png"}}],
+  ["1F9D1-200D-1F91D-200D-1F9D1", {"base":"/png-emojis/1F9D1-200D-1F91D-200D-1F9D1.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F91D-200D-1F9D1-1F3FF.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F91D-200D-1F9D1-1F3FF.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F91D-200D-1F9D1-1F3FF.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F91D-200D-1F9D1-1F3FF.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F91D-200D-1F9D1-1F3FF.png"}}],
+  ["1F9D1-200D-1F9AF-200D-27A1-FE0F", {"base":"/png-emojis/1F9D1-200D-1F9AF-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9AF-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9AF-200D-27A1-FE0F.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9AF-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9AF-200D-27A1-FE0F.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9AF-200D-27A1-FE0F.png"}}],
+  ["1F9D1-200D-1F9AF", {"base":"/png-emojis/1F9D1-200D-1F9AF.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9AF.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9AF.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9AF.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9AF.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9AF.png"}}],
+  ["1F9D1-200D-1F9B0", {"base":"/png-emojis/1F9D1-200D-1F9B0.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9B0.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9B0.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9B0.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9B0.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9B0.png"}}],
+  ["1F9D1-200D-1F9B1", {"base":"/png-emojis/1F9D1-200D-1F9B1.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9B1.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9B1.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9B1.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9B1.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9B1.png"}}],
+  ["1F9D1-200D-1F9B2", {"base":"/png-emojis/1F9D1-200D-1F9B2.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9B2.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9B2.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9B2.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9B2.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9B2.png"}}],
+  ["1F9D1-200D-1F9B3", {"base":"/png-emojis/1F9D1-200D-1F9B3.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9B3.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9B3.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9B3.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9B3.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9B3.png"}}],
+  ["1F9D1-200D-1F9BC-200D-27A1-FE0F", {"base":"/png-emojis/1F9D1-200D-1F9BC-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9BC-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9BC-200D-27A1-FE0F.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9BC-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9BC-200D-27A1-FE0F.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9BC-200D-27A1-FE0F.png"}}],
+  ["1F9D1-200D-1F9BC", {"base":"/png-emojis/1F9D1-200D-1F9BC.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9BC.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9BC.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9BC.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9BC.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9BC.png"}}],
+  ["1F9D1-200D-1F9BD-200D-27A1-FE0F", {"base":"/png-emojis/1F9D1-200D-1F9BD-200D-27A1-FE0F.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9BD-200D-27A1-FE0F.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9BD-200D-27A1-FE0F.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9BD-200D-27A1-FE0F.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9BD-200D-27A1-FE0F.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9BD-200D-27A1-FE0F.png"}}],
+  ["1F9D1-200D-1F9BD", {"base":"/png-emojis/1F9D1-200D-1F9BD.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-1F9BD.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-1F9BD.png","medium":"/png-emojis/1F9D1-1F3FD-200D-1F9BD.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-1F9BD.png","dark":"/png-emojis/1F9D1-1F3FF-200D-1F9BD.png"}}],
+  ["1F9D1-200D-2695-FE0F", {"base":"/png-emojis/1F9D1-200D-2695-FE0F.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-2695-FE0F.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-2695-FE0F.png","medium":"/png-emojis/1F9D1-1F3FD-200D-2695-FE0F.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-2695-FE0F.png","dark":"/png-emojis/1F9D1-1F3FF-200D-2695-FE0F.png"}}],
+  ["1F9D1-200D-2696-FE0F", {"base":"/png-emojis/1F9D1-200D-2696-FE0F.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-2696-FE0F.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-2696-FE0F.png","medium":"/png-emojis/1F9D1-1F3FD-200D-2696-FE0F.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-2696-FE0F.png","dark":"/png-emojis/1F9D1-1F3FF-200D-2696-FE0F.png"}}],
+  ["1F9D1-200D-2708-FE0F", {"base":"/png-emojis/1F9D1-200D-2708-FE0F.png","variants":{"light":"/png-emojis/1F9D1-1F3FB-200D-2708-FE0F.png","medium-light":"/png-emojis/1F9D1-1F3FC-200D-2708-FE0F.png","medium":"/png-emojis/1F9D1-1F3FD-200D-2708-FE0F.png","medium-dark":"/png-emojis/1F9D1-1F3FE-200D-2708-FE0F.png","dark":"/png-emojis/1F9D1-1F3FF-200D-2708-FE0F.png"}}],
+  ["1F9D1", {"base":"/png-emojis/1F9D1.png","variants":{"light":"/png-emojis/1F9D1-1F3FB.png","medium-light":"/png-emojis/1F9D1-1F3FC.png","medium":"/png-emojis/1F9D1-1F3FD.png","medium-dark":"/png-emojis/1F9D1-1F3FE.png","dark":"/png-emojis/1F9D1-1F3FF.png"}}],
+  ["1F9D2", {"base":"/png-emojis/1F9D2.png","variants":{"light":"/png-emojis/1F9D2-1F3FB.png","medium-light":"/png-emojis/1F9D2-1F3FC.png","medium":"/png-emojis/1F9D2-1F3FD.png","medium-dark":"/png-emojis/1F9D2-1F3FE.png","dark":"/png-emojis/1F9D2-1F3FF.png"}}],
+  ["1F9D3", {"base":"/png-emojis/1F9D3.png","variants":{"light":"/png-emojis/1F9D3-1F3FB.png","medium-light":"/png-emojis/1F9D3-1F3FC.png","medium":"/png-emojis/1F9D3-1F3FD.png","medium-dark":"/png-emojis/1F9D3-1F3FE.png","dark":"/png-emojis/1F9D3-1F3FF.png"}}],
+  ["1F9D4-200D-2640-FE0F", {"base":"/png-emojis/1F9D4-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9D4-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9D4-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9D4-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9D4-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9D4-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9D4-200D-2642-FE0F", {"base":"/png-emojis/1F9D4-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9D4-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9D4-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9D4-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9D4-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9D4-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9D4", {"base":"/png-emojis/1F9D4.png","variants":{"light":"/png-emojis/1F9D4-1F3FB.png","medium-light":"/png-emojis/1F9D4-1F3FC.png","medium":"/png-emojis/1F9D4-1F3FD.png","medium-dark":"/png-emojis/1F9D4-1F3FE.png","dark":"/png-emojis/1F9D4-1F3FF.png"}}],
+  ["1F9D5", {"base":"/png-emojis/1F9D5.png","variants":{"light":"/png-emojis/1F9D5-1F3FB.png","medium-light":"/png-emojis/1F9D5-1F3FC.png","medium":"/png-emojis/1F9D5-1F3FD.png","medium-dark":"/png-emojis/1F9D5-1F3FE.png","dark":"/png-emojis/1F9D5-1F3FF.png"}}],
+  ["1F9D6-200D-2640-FE0F", {"base":"/png-emojis/1F9D6-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9D6-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9D6-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9D6-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9D6-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9D6-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9D6-200D-2642-FE0F", {"base":"/png-emojis/1F9D6-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9D6-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9D6-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9D6-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9D6-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9D6-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9D6", {"base":"/png-emojis/1F9D6.png","variants":{"light":"/png-emojis/1F9D6-1F3FB.png","medium-light":"/png-emojis/1F9D6-1F3FC.png","medium":"/png-emojis/1F9D6-1F3FD.png","medium-dark":"/png-emojis/1F9D6-1F3FE.png","dark":"/png-emojis/1F9D6-1F3FF.png"}}],
+  ["1F9D7-200D-2640-FE0F", {"base":"/png-emojis/1F9D7-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9D7-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9D7-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9D7-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9D7-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9D7-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9D7-200D-2642-FE0F", {"base":"/png-emojis/1F9D7-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9D7-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9D7-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9D7-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9D7-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9D7-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9D7", {"base":"/png-emojis/1F9D7.png","variants":{"light":"/png-emojis/1F9D7-1F3FB.png","medium-light":"/png-emojis/1F9D7-1F3FC.png","medium":"/png-emojis/1F9D7-1F3FD.png","medium-dark":"/png-emojis/1F9D7-1F3FE.png","dark":"/png-emojis/1F9D7-1F3FF.png"}}],
+  ["1F9D8-200D-2640-FE0F", {"base":"/png-emojis/1F9D8-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9D8-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9D8-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9D8-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9D8-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9D8-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9D8-200D-2642-FE0F", {"base":"/png-emojis/1F9D8-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9D8-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9D8-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9D8-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9D8-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9D8-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9D8", {"base":"/png-emojis/1F9D8.png","variants":{"light":"/png-emojis/1F9D8-1F3FB.png","medium-light":"/png-emojis/1F9D8-1F3FC.png","medium":"/png-emojis/1F9D8-1F3FD.png","medium-dark":"/png-emojis/1F9D8-1F3FE.png","dark":"/png-emojis/1F9D8-1F3FF.png"}}],
+  ["1F9D9-200D-2640-FE0F", {"base":"/png-emojis/1F9D9-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9D9-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9D9-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9D9-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9D9-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9D9-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9D9-200D-2642-FE0F", {"base":"/png-emojis/1F9D9-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9D9-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9D9-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9D9-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9D9-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9D9-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9D9", {"base":"/png-emojis/1F9D9.png","variants":{"light":"/png-emojis/1F9D9-1F3FB.png","medium-light":"/png-emojis/1F9D9-1F3FC.png","medium":"/png-emojis/1F9D9-1F3FD.png","medium-dark":"/png-emojis/1F9D9-1F3FE.png","dark":"/png-emojis/1F9D9-1F3FF.png"}}],
+  ["1F9DA-200D-2640-FE0F", {"base":"/png-emojis/1F9DA-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9DA-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9DA-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9DA-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9DA-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9DA-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9DA-200D-2642-FE0F", {"base":"/png-emojis/1F9DA-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9DA-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9DA-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9DA-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9DA-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9DA-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9DA", {"base":"/png-emojis/1F9DA.png","variants":{"light":"/png-emojis/1F9DA-1F3FB.png","medium-light":"/png-emojis/1F9DA-1F3FC.png","medium":"/png-emojis/1F9DA-1F3FD.png","medium-dark":"/png-emojis/1F9DA-1F3FE.png","dark":"/png-emojis/1F9DA-1F3FF.png"}}],
+  ["1F9DB-200D-2640-FE0F", {"base":"/png-emojis/1F9DB-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9DB-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9DB-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9DB-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9DB-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9DB-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9DB-200D-2642-FE0F", {"base":"/png-emojis/1F9DB-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9DB-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9DB-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9DB-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9DB-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9DB-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9DB", {"base":"/png-emojis/1F9DB.png","variants":{"light":"/png-emojis/1F9DB-1F3FB.png","medium-light":"/png-emojis/1F9DB-1F3FC.png","medium":"/png-emojis/1F9DB-1F3FD.png","medium-dark":"/png-emojis/1F9DB-1F3FE.png","dark":"/png-emojis/1F9DB-1F3FF.png"}}],
+  ["1F9DC-200D-2640-FE0F", {"base":"/png-emojis/1F9DC-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9DC-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9DC-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9DC-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9DC-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9DC-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9DC-200D-2642-FE0F", {"base":"/png-emojis/1F9DC-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9DC-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9DC-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9DC-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9DC-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9DC-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9DC", {"base":"/png-emojis/1F9DC.png","variants":{"light":"/png-emojis/1F9DC-1F3FB.png","medium-light":"/png-emojis/1F9DC-1F3FC.png","medium":"/png-emojis/1F9DC-1F3FD.png","medium-dark":"/png-emojis/1F9DC-1F3FE.png","dark":"/png-emojis/1F9DC-1F3FF.png"}}],
+  ["1F9DD-200D-2640-FE0F", {"base":"/png-emojis/1F9DD-200D-2640-FE0F.png","variants":{"light":"/png-emojis/1F9DD-1F3FB-200D-2640-FE0F.png","medium-light":"/png-emojis/1F9DD-1F3FC-200D-2640-FE0F.png","medium":"/png-emojis/1F9DD-1F3FD-200D-2640-FE0F.png","medium-dark":"/png-emojis/1F9DD-1F3FE-200D-2640-FE0F.png","dark":"/png-emojis/1F9DD-1F3FF-200D-2640-FE0F.png"}}],
+  ["1F9DD-200D-2642-FE0F", {"base":"/png-emojis/1F9DD-200D-2642-FE0F.png","variants":{"light":"/png-emojis/1F9DD-1F3FB-200D-2642-FE0F.png","medium-light":"/png-emojis/1F9DD-1F3FC-200D-2642-FE0F.png","medium":"/png-emojis/1F9DD-1F3FD-200D-2642-FE0F.png","medium-dark":"/png-emojis/1F9DD-1F3FE-200D-2642-FE0F.png","dark":"/png-emojis/1F9DD-1F3FF-200D-2642-FE0F.png"}}],
+  ["1F9DD", {"base":"/png-emojis/1F9DD.png","variants":{"light":"/png-emojis/1F9DD-1F3FB.png","medium-light":"/png-emojis/1F9DD-1F3FC.png","medium":"/png-emojis/1F9DD-1F3FD.png","medium-dark":"/png-emojis/1F9DD-1F3FE.png","dark":"/png-emojis/1F9DD-1F3FF.png"}}],
+  ["1FAC3", {"base":"/png-emojis/1FAC3.png","variants":{"light":"/png-emojis/1FAC3-1F3FB.png","medium-light":"/png-emojis/1FAC3-1F3FC.png","medium":"/png-emojis/1FAC3-1F3FD.png","medium-dark":"/png-emojis/1FAC3-1F3FE.png","dark":"/png-emojis/1FAC3-1F3FF.png"}}],
+  ["1FAC4", {"base":"/png-emojis/1FAC4.png","variants":{"light":"/png-emojis/1FAC4-1F3FB.png","medium-light":"/png-emojis/1FAC4-1F3FC.png","medium":"/png-emojis/1FAC4-1F3FD.png","medium-dark":"/png-emojis/1FAC4-1F3FE.png","dark":"/png-emojis/1FAC4-1F3FF.png"}}],
+  ["1FAC5", {"base":"/png-emojis/1FAC5.png","variants":{"light":"/png-emojis/1FAC5-1F3FB.png","medium-light":"/png-emojis/1FAC5-1F3FC.png","medium":"/png-emojis/1FAC5-1F3FD.png","medium-dark":"/png-emojis/1FAC5-1F3FE.png","dark":"/png-emojis/1FAC5-1F3FF.png"}}],
+  ["1FAF0", {"base":"/png-emojis/1FAF0.png","variants":{"light":"/png-emojis/1FAF0-1F3FB.png","medium-light":"/png-emojis/1FAF0-1F3FC.png","medium":"/png-emojis/1FAF0-1F3FD.png","medium-dark":"/png-emojis/1FAF0-1F3FE.png","dark":"/png-emojis/1FAF0-1F3FF.png"}}],
+  ["1FAF1", {"base":"/png-emojis/1FAF1.png","variants":{"light":"/png-emojis/1FAF1-1F3FB.png","medium-light":"/png-emojis/1FAF1-1F3FC.png","medium":"/png-emojis/1FAF1-1F3FD.png","medium-dark":"/png-emojis/1FAF1-1F3FE.png","dark":"/png-emojis/1FAF1-1F3FF.png"}}],
+  ["1FAF2", {"base":"/png-emojis/1FAF2.png","variants":{"light":"/png-emojis/1FAF2-1F3FB.png","medium-light":"/png-emojis/1FAF2-1F3FC.png","medium":"/png-emojis/1FAF2-1F3FD.png","medium-dark":"/png-emojis/1FAF2-1F3FE.png","dark":"/png-emojis/1FAF2-1F3FF.png"}}],
+  ["1FAF3", {"base":"/png-emojis/1FAF3.png","variants":{"light":"/png-emojis/1FAF3-1F3FB.png","medium-light":"/png-emojis/1FAF3-1F3FC.png","medium":"/png-emojis/1FAF3-1F3FD.png","medium-dark":"/png-emojis/1FAF3-1F3FE.png","dark":"/png-emojis/1FAF3-1F3FF.png"}}],
+  ["1FAF4", {"base":"/png-emojis/1FAF4.png","variants":{"light":"/png-emojis/1FAF4-1F3FB.png","medium-light":"/png-emojis/1FAF4-1F3FC.png","medium":"/png-emojis/1FAF4-1F3FD.png","medium-dark":"/png-emojis/1FAF4-1F3FE.png","dark":"/png-emojis/1FAF4-1F3FF.png"}}],
+  ["1FAF5", {"base":"/png-emojis/1FAF5.png","variants":{"light":"/png-emojis/1FAF5-1F3FB.png","medium-light":"/png-emojis/1FAF5-1F3FC.png","medium":"/png-emojis/1FAF5-1F3FD.png","medium-dark":"/png-emojis/1FAF5-1F3FE.png","dark":"/png-emojis/1FAF5-1F3FF.png"}}],
+  ["1FAF6", {"base":"/png-emojis/1FAF6.png","variants":{"light":"/png-emojis/1FAF6-1F3FB.png","medium-light":"/png-emojis/1FAF6-1F3FC.png","medium":"/png-emojis/1FAF6-1F3FD.png","medium-dark":"/png-emojis/1FAF6-1F3FE.png","dark":"/png-emojis/1FAF6-1F3FF.png"}}],
+  ["1FAF7", {"base":"/png-emojis/1FAF7.png","variants":{"light":"/png-emojis/1FAF7-1F3FB.png","medium-light":"/png-emojis/1FAF7-1F3FC.png","medium":"/png-emojis/1FAF7-1F3FD.png","medium-dark":"/png-emojis/1FAF7-1F3FE.png","dark":"/png-emojis/1FAF7-1F3FF.png"}}],
+  ["1FAF8", {"base":"/png-emojis/1FAF8.png","variants":{"light":"/png-emojis/1FAF8-1F3FB.png","medium-light":"/png-emojis/1FAF8-1F3FC.png","medium":"/png-emojis/1FAF8-1F3FD.png","medium-dark":"/png-emojis/1FAF8-1F3FE.png","dark":"/png-emojis/1FAF8-1F3FF.png"}}],
+  ["261D", {"base":"/png-emojis/261D.png","variants":{"light":"/png-emojis/261D-1F3FB.png","medium-light":"/png-emojis/261D-1F3FC.png","medium":"/png-emojis/261D-1F3FD.png","medium-dark":"/png-emojis/261D-1F3FE.png","dark":"/png-emojis/261D-1F3FF.png"}}],
+  ["26F9", {"base":"/png-emojis/26F9.png","variants":{"light":"/png-emojis/26F9-1F3FB.png","medium-light":"/png-emojis/26F9-1F3FC.png","medium":"/png-emojis/26F9-1F3FD.png","medium-dark":"/png-emojis/26F9-1F3FE.png","dark":"/png-emojis/26F9-1F3FF.png"}}],
+  ["270A", {"base":"/png-emojis/270A.png","variants":{"light":"/png-emojis/270A-1F3FB.png","medium-light":"/png-emojis/270A-1F3FC.png","medium":"/png-emojis/270A-1F3FD.png","medium-dark":"/png-emojis/270A-1F3FE.png","dark":"/png-emojis/270A-1F3FF.png"}}],
+  ["270B", {"base":"/png-emojis/270B.png","variants":{"light":"/png-emojis/270B-1F3FB.png","medium-light":"/png-emojis/270B-1F3FC.png","medium":"/png-emojis/270B-1F3FD.png","medium-dark":"/png-emojis/270B-1F3FE.png","dark":"/png-emojis/270B-1F3FF.png"}}],
+  ["270C", {"base":"/png-emojis/270C.png","variants":{"light":"/png-emojis/270C-1F3FB.png","medium-light":"/png-emojis/270C-1F3FC.png","medium":"/png-emojis/270C-1F3FD.png","medium-dark":"/png-emojis/270C-1F3FE.png","dark":"/png-emojis/270C-1F3FF.png"}}],
+  ["270D", {"base":"/png-emojis/270D.png","variants":{"light":"/png-emojis/270D-1F3FB.png","medium-light":"/png-emojis/270D-1F3FC.png","medium":"/png-emojis/270D-1F3FD.png","medium-dark":"/png-emojis/270D-1F3FE.png","dark":"/png-emojis/270D-1F3FF.png"}}]
 ]);
