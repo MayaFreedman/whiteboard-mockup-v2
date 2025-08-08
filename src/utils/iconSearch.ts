@@ -28,7 +28,8 @@ function singularize(t: string): string | null {
 // Basic synonyms/intents map (kept tight to avoid over-expansion)
 const SYNONYMS: Record<string, string[]> = {
   heart: ['love', 'valentine', 'romance'],
-  smile: ['happy', 'grin', 'smiley', 'joy', 'lol'],
+  smile: ['happy', 'grin', 'smiley', 'joy', 'lol', 'smiling'],
+  happy: ['smile', 'smiling', 'smiley', 'grin', 'joy'],
   sad: ['frown', 'unhappy', 'cry', 'crying', 'tears', 'sob'],
   angry: ['mad', 'rage', 'annoyed'],
   sick: ['ill', 'nausea', 'vomit', 'mask'],
