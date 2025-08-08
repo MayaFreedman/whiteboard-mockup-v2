@@ -121,7 +121,7 @@ class BrushEffectCache {
   }
 
   /**
-   * Maps spray dots from original path to a segment
+   * Maps spray dots from original path to a segment by preserving absolute world positions
    */
   private mapSprayDataToSegment(
     originalSprayData: SprayEffectData,
@@ -130,19 +130,23 @@ class BrushEffectCache {
   ): SprayEffectData {
     const segmentDots: SprayEffectData['dots'] = [];
     
-    // Map each original spray dot to the segment if it belongs there
+    // Map each original spray dot by preserving its absolute world position
     originalSprayData.dots.forEach(dot => {
-      const originalPoint = originalPoints[dot.pointIndex];
-      if (!originalPoint) return;
+      const originalAnchor = originalPoints[dot.pointIndex];
+      if (!originalAnchor) return;
 
-      // Find the closest point in the segment
+      // Calculate absolute world position of this particle
+      const absoluteX = originalAnchor.x + dot.offsetX;
+      const absoluteY = originalAnchor.y + dot.offsetY;
+
+      // Find the closest segment point to this absolute position
       let closestSegmentIndex = -1;
       let minDistance = Infinity;
       
       segmentPoints.forEach((segmentPoint, index) => {
         const distance = Math.sqrt(
-          Math.pow(originalPoint.x - segmentPoint.x, 2) + 
-          Math.pow(originalPoint.y - segmentPoint.y, 2)
+          Math.pow(absoluteX - segmentPoint.x, 2) + 
+          Math.pow(absoluteY - segmentPoint.y, 2)
         );
         
         if (distance < minDistance) {
@@ -151,10 +155,19 @@ class BrushEffectCache {
         }
       });
 
-      // If the dot is close enough to a segment point, include it
-      if (closestSegmentIndex !== -1 && minDistance < 20) { // 20px tolerance
+      // Only include particle if it's within reasonable range of a segment point
+      if (closestSegmentIndex !== -1 && minDistance < 50) { // Increased tolerance for better coverage
+        const newAnchor = segmentPoints[closestSegmentIndex];
+        
+        // Recalculate offset to maintain exact absolute position
+        const newOffsetX = absoluteX - newAnchor.x;
+        const newOffsetY = absoluteY - newAnchor.y;
+        
         segmentDots.push({
-          ...dot,
+          offsetX: newOffsetX,
+          offsetY: newOffsetY,
+          size: dot.size,
+          opacity: dot.opacity,
           pointIndex: closestSegmentIndex
         });
       }
@@ -164,7 +177,7 @@ class BrushEffectCache {
   }
 
   /**
-   * Maps chalk particles from original path to a segment
+   * Maps chalk particles from original path to a segment by preserving absolute world positions
    */
   private mapChalkDataToSegment(
     originalChalkData: ChalkEffectData,
@@ -173,19 +186,23 @@ class BrushEffectCache {
   ): ChalkEffectData {
     const segmentParticles: ChalkEffectData['dustParticles'] = [];
     
-    // Map each original chalk particle to the segment if it belongs there
+    // Map each original chalk particle by preserving its absolute world position
     originalChalkData.dustParticles.forEach(particle => {
-      const originalPoint = originalPoints[particle.pointIndex];
-      if (!originalPoint) return;
+      const originalAnchor = originalPoints[particle.pointIndex];
+      if (!originalAnchor) return;
 
-      // Find the closest point in the segment
+      // Calculate absolute world position of this particle
+      const absoluteX = originalAnchor.x + particle.offsetX;
+      const absoluteY = originalAnchor.y + particle.offsetY;
+
+      // Find the closest segment point to this absolute position
       let closestSegmentIndex = -1;
       let minDistance = Infinity;
       
       segmentPoints.forEach((segmentPoint, index) => {
         const distance = Math.sqrt(
-          Math.pow(originalPoint.x - segmentPoint.x, 2) + 
-          Math.pow(originalPoint.y - segmentPoint.y, 2)
+          Math.pow(absoluteX - segmentPoint.x, 2) + 
+          Math.pow(absoluteY - segmentPoint.y, 2)
         );
         
         if (distance < minDistance) {
@@ -194,10 +211,19 @@ class BrushEffectCache {
         }
       });
 
-      // If the particle is close enough to a segment point, include it
-      if (closestSegmentIndex !== -1 && minDistance < 20) { // 20px tolerance
+      // Only include particle if it's within reasonable range of a segment point
+      if (closestSegmentIndex !== -1 && minDistance < 50) { // Increased tolerance for better coverage
+        const newAnchor = segmentPoints[closestSegmentIndex];
+        
+        // Recalculate offset to maintain exact absolute position
+        const newOffsetX = absoluteX - newAnchor.x;
+        const newOffsetY = absoluteY - newAnchor.y;
+        
         segmentParticles.push({
-          ...particle,
+          offsetX: newOffsetX,
+          offsetY: newOffsetY,
+          size: particle.size,
+          opacity: particle.opacity,
           pointIndex: closestSegmentIndex
         });
       }
