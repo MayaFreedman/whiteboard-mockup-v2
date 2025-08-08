@@ -44,22 +44,18 @@ export const renderSprayOptimized = (
     if (cached && cached.effectData) {
       sprayData = cached.effectData as SprayEffectData;
       pathPoints = cached.points;
+      // Instrument density to detect over-mapping
+      const expectedPerPoint = Math.max(1, Math.floor(strokeWidth * 3));
+      const expectedTotal = Math.max(1, pathPoints.length * expectedPerPoint);
+      const densityRatio = sprayData.dots.length / expectedTotal;
+      if (densityRatio > 1.6) {
+        console.warn('🟠 SPRAY density high', { pathId: pathId.slice(0,8), dots: sprayData.dots.length, points: pathPoints.length, strokeWidth, densityRatio: Number(densityRatio.toFixed(2)) });
+      }
     } else {
-      // FALLBACK ONLY: Should not happen with atomic pre-population
-      console.warn('⚠️ SPRAY FALLBACK: No cached data found for pathId:', pathId.slice(0, 8));
-      pathPoints = pathToPointsForBrush(path);
-      const baseSeed = generateCoordinateBasedSeed(pathPoints);
-      sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
-      
-      // Store for future use but this indicates a timing issue
-      brushEffectCache.store(pathId, 'spray', {
-        type: 'spray',
-        points: pathPoints,
-        strokeWidth,
-        strokeColor,
-        opacity,
-        effectData: sprayData
-      });
+      // DIAGNOSTIC: Skip rendering to avoid dense fallback
+      console.warn('⚠️ SPRAY CACHE MISS during render; skipping to prevent flash:', pathId.slice(0, 8));
+      ctx.restore();
+      return;
     }
   } else {
     // Fallback for preview mode - use coordinate-based seed for stability
@@ -109,22 +105,18 @@ export const renderChalkOptimized = (
     if (cached && cached.effectData) {
       chalkData = cached.effectData as ChalkEffectData;
       pathPoints = cached.points;
+      // Instrument density to detect over-mapping
+      const expectedPerPoint = Math.max(5, Math.floor(strokeWidth * 1.5));
+      const expectedTotal = Math.max(1, pathPoints.length * expectedPerPoint);
+      const densityRatio = chalkData.dustParticles.length / expectedTotal;
+      if (densityRatio > 1.6) {
+        console.warn('🟠 CHALK density high', { pathId: pathId.slice(0,8), particles: chalkData.dustParticles.length, points: pathPoints.length, strokeWidth, densityRatio: Number(densityRatio.toFixed(2)) });
+      }
     } else {
-      // FALLBACK ONLY: Should not happen with atomic pre-population
-      console.warn('⚠️ CHALK FALLBACK: No cached data found for pathId:', pathId.slice(0, 8));
-      pathPoints = pathToPointsForBrush(path);
-      const baseSeed = generateCoordinateBasedSeed(pathPoints);
-      chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
-      
-      // Store for future use but this indicates a timing issue
-      brushEffectCache.store(pathId, 'chalk', {
-        type: 'chalk',
-        points: pathPoints,
-        strokeWidth,
-        strokeColor,
-        opacity,
-        effectData: chalkData
-      });
+      // DIAGNOSTIC: Skip rendering to avoid dense fallback
+      console.warn('⚠️ CHALK CACHE MISS during render; skipping to prevent flash:', pathId.slice(0, 8));
+      ctx.restore();
+      return;
     }
   } else {
     // Fallback for preview mode - use coordinate-based seed for stability

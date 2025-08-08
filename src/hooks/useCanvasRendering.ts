@@ -396,8 +396,8 @@ export const useCanvasRendering = (
         const strokeWidth = obj.strokeWidth || 2;
         const opacity = obj.opacity || 1;
         
-        // Get object ID for caching
-        const objectId = Object.keys(objects).find(id => objects[id] === obj);
+        // Stable object ID for caching
+        const objectId = obj.id;
         
         // Render based on brush type or if it's an eraser
         if (isEraser) {

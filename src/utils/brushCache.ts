@@ -101,7 +101,7 @@ class BrushEffectCache {
     segments.forEach(segment => {
       if (brushType === 'spray') {
         const sprayData = originalData.effectData as SprayEffectData;
-        const segmentSprayData = this.mapSprayDataToSegment(sprayData, originalData.points, segment.points);
+        const segmentSprayData = this.mapSprayDataToSegment(sprayData, originalData.points, segment.points, originalData.strokeWidth);
         
         const segmentCacheData = {
           type: brushType as any,
@@ -118,7 +118,7 @@ class BrushEffectCache {
         segmentCacheValidation.push(segment.id);
       } else if (brushType === 'chalk') {
         const chalkData = originalData.effectData as ChalkEffectData;
-        const segmentChalkData = this.mapChalkDataToSegment(chalkData, originalData.points, segment.points);
+        const segmentChalkData = this.mapChalkDataToSegment(chalkData, originalData.points, segment.points, originalData.strokeWidth);
         
         const segmentCacheData = {
           type: brushType as any,
@@ -161,7 +161,8 @@ class BrushEffectCache {
   private mapSprayDataToSegment(
     originalSprayData: SprayEffectData,
     originalPoints: Array<{ x: number; y: number }>,
-    segmentPoints: Array<{ x: number; y: number }>
+    segmentPoints: Array<{ x: number; y: number }>,
+    strokeWidth: number
   ): SprayEffectData {
     const segmentDots: SprayEffectData['dots'] = [];
     
@@ -191,7 +192,8 @@ class BrushEffectCache {
       });
 
       // Only include particle if it's within reasonable range of a segment point
-      if (closestSegmentIndex !== -1 && minDistance < 50) { // Increased tolerance for better coverage
+      const maxAcceptDistance = Math.max(6, strokeWidth);
+      if (closestSegmentIndex !== -1 && minDistance <= maxAcceptDistance) {
         const newAnchor = segmentPoints[closestSegmentIndex];
         
         // Recalculate offset to maintain exact absolute position
@@ -217,7 +219,8 @@ class BrushEffectCache {
   private mapChalkDataToSegment(
     originalChalkData: ChalkEffectData,
     originalPoints: Array<{ x: number; y: number }>,
-    segmentPoints: Array<{ x: number; y: number }>
+    segmentPoints: Array<{ x: number; y: number }>,
+    strokeWidth: number
   ): ChalkEffectData {
     const segmentParticles: ChalkEffectData['dustParticles'] = [];
     
@@ -247,7 +250,8 @@ class BrushEffectCache {
       });
 
       // Only include particle if it's within reasonable range of a segment point
-      if (closestSegmentIndex !== -1 && minDistance < 50) { // Increased tolerance for better coverage
+      const maxAcceptDistance = Math.max(6, strokeWidth);
+      if (closestSegmentIndex !== -1 && minDistance <= maxAcceptDistance) {
         const newAnchor = segmentPoints[closestSegmentIndex];
         
         // Recalculate offset to maintain exact absolute position
