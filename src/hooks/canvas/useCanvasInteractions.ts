@@ -234,7 +234,7 @@ export const useCanvasInteractions = () => {
         stroke: 'transparent',
         fill: 'transparent',
         strokeWidth: 0,
-        opacity: toolStore.toolSettings.opacity,
+        opacity: 1,
         data: stampData
       };
     }
@@ -254,7 +254,7 @@ export const useCanvasInteractions = () => {
       stroke: 'transparent',
       fill: 'transparent',
       strokeWidth: 0,
-      opacity: toolStore.toolSettings.opacity,
+      opacity: 1,
       data: stampData
     };
   }, [toolStore.toolSettings]);
