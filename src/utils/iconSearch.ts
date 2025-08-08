@@ -206,6 +206,7 @@ function scoreIcon(
   const { nameTokens, keywordTokens, groupTokens, catTokens, code, preview } = buildIndexFields(icon);
   let score = 0;
   let strongHit = false; // name/keyword/code/emoji
+  let exactHit = false; // exact name/keyword/code match
   let categoryHit = false;
   let groupHit = false;
 
@@ -213,6 +214,24 @@ function scoreIcon(
   if (q.length <= 3 && preview && q.includes(preview)) {
     score += 20; // strong
     strongHit = true;
+  }
+
+  // Multi-word strict gating: every token must be covered (exact/prefix/code). Generic tokens can be satisfied by group/category.
+  if (directTokens.length >= 2) {
+    const allCovered = directTokens.every((t) => {
+      const allowPrefix = t.length >= 4;
+      const nameExact = nameTokens.includes(t);
+      const keyExact = keywordTokens.includes(t);
+      const nameStart = allowPrefix && nameTokens.some((w) => w.startsWith(t));
+      const keyStart = allowPrefix && keywordTokens.some((w) => w.startsWith(t));
+      const codeMatch = code && code.toLowerCase() === t;
+      let ok = nameExact || keyExact || nameStart || keyStart || !!codeMatch;
+      if (!ok && GENERIC_TERMS.has(t)) {
+        ok = groupTokens.includes(t) || catTokens.includes(t);
+      }
+      return ok;
+    });
+    if (!allCovered) return 0;
   }
 
   const weighDirect = (t: string) => {
@@ -223,8 +242,8 @@ function scoreIcon(
     const nameSub = nameTokens.some((w) => w.includes(t));
     const keySub = keywordTokens.some((w) => w.includes(t));
 
-    if (nameExact) { score += 16; strongHit = true; }
-    if (keyExact) { score += 12; strongHit = true; }
+    if (nameExact) { score += 16; strongHit = true; exactHit = true; }
+    if (keyExact) { score += 12; strongHit = true; exactHit = true; }
     const allowPrefix = t.length >= 4;
     if (!nameExact && allowPrefix && nameStart) { score += 8; strongHit = true; }
     if (!keyExact && allowPrefix && keyStart) { score += 6; strongHit = true; }
@@ -233,7 +252,7 @@ function scoreIcon(
     if (allowSubstring && !nameExact && !nameStart && nameSub) { score += 2; strongHit = true; }
     if (allowSubstring && !keyExact && !keyStart && keySub) { score += 2; strongHit = true; }
 
-    if (code && code.toLowerCase() === t) { score += 10; strongHit = true; }
+    if (code && code.toLowerCase() === t) { score += 10; strongHit = true; exactHit = true; }
   };
 
   const weighExpanded = (t: string) => {
@@ -298,6 +317,11 @@ function scoreIcon(
     );
   if (hasNegative) {
     score -= emotionHint === 'positive' ? 12 : 8;
+  }
+
+  // Emotion strict gating: if query expresses an emotion, restrict to smileys unless we have an exact match
+  if (emotionHint && !(subgroupRaw.startsWith('face') || catTokens.includes('smileys') || groupTokens.includes('face'))) {
+    if (!exactHit) return 0;
   }
 
   // Phrase bonus: if all direct tokens appear as exact or prefix in name/keywords, reward
