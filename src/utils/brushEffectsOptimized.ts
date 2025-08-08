@@ -10,6 +10,9 @@ import {
   SprayEffectData,
   ChalkEffectData
 } from './brushCache';
+// Keep last known good effects per path to ensure fluid rendering on transient cache misses
+const lastSprayById = new Map<string, { data: SprayEffectData; points: Array<{ x: number; y: number }>; strokeWidth: number; strokeColor: string; opacity: number }>();
+const lastChalkById = new Map<string, { data: ChalkEffectData; points: Array<{ x: number; y: number }>; strokeWidth: number; strokeColor: string; opacity: number }>();
 
 /**
  * Generates a stable seed from path coordinates for consistent preview rendering
@@ -44,6 +47,8 @@ export const renderSprayOptimized = (
     if (cached && cached.effectData) {
       sprayData = cached.effectData as SprayEffectData;
       pathPoints = cached.points;
+      // Track last known good for fluid rendering
+      lastSprayById.set(pathId, { data: sprayData, points: pathPoints, strokeWidth, strokeColor, opacity });
       // Instrument density to detect over-mapping
       const expectedPerPoint = Math.max(1, Math.floor(strokeWidth * 3));
       const expectedTotal = Math.max(1, pathPoints.length * expectedPerPoint);
@@ -52,10 +57,24 @@ export const renderSprayOptimized = (
         console.warn('🟠 SPRAY density high', { pathId: pathId.slice(0,8), dots: sprayData.dots.length, points: pathPoints.length, strokeWidth, densityRatio: Number(densityRatio.toFixed(2)) });
       }
     } else {
-      // DIAGNOSTIC: Skip rendering to avoid dense fallback
-      console.warn('⚠️ SPRAY CACHE MISS during render; skipping to prevent flash:', pathId.slice(0, 8));
-      ctx.restore();
-      return;
+      // Graceful fallback: use last known good effect or a simple stroke to avoid skips
+      const prev = lastSprayById.get(pathId);
+      if (prev) {
+        console.warn('⚠️ SPRAY CACHE MISS; using last known good effect:', pathId.slice(0, 8));
+        sprayData = prev.data;
+        pathPoints = prev.points;
+      } else {
+        console.warn('⚠️ SPRAY CACHE MISS; rendering simple stroke placeholder:', pathId.slice(0, 8));
+        const pathObj = new Path2D(path);
+        ctx.globalAlpha = Math.max(0.6, opacity * 0.8);
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = strokeWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke(pathObj);
+        ctx.restore();
+        return;
+      }
     }
   } else {
     // Fallback for preview mode - use coordinate-based seed for stability
@@ -105,6 +124,8 @@ export const renderChalkOptimized = (
     if (cached && cached.effectData) {
       chalkData = cached.effectData as ChalkEffectData;
       pathPoints = cached.points;
+      // Track last known good for fluid rendering
+      lastChalkById.set(pathId, { data: chalkData, points: pathPoints, strokeWidth, strokeColor, opacity });
       // Instrument density to detect over-mapping
       const expectedPerPoint = Math.max(5, Math.floor(strokeWidth * 1.5));
       const expectedTotal = Math.max(1, pathPoints.length * expectedPerPoint);
@@ -113,10 +134,23 @@ export const renderChalkOptimized = (
         console.warn('🟠 CHALK density high', { pathId: pathId.slice(0,8), particles: chalkData.dustParticles.length, points: pathPoints.length, strokeWidth, densityRatio: Number(densityRatio.toFixed(2)) });
       }
     } else {
-      // DIAGNOSTIC: Skip rendering to avoid dense fallback
-      console.warn('⚠️ CHALK CACHE MISS during render; skipping to prevent flash:', pathId.slice(0, 8));
-      ctx.restore();
-      return;
+      // Graceful fallback: use last known good effect or simple stroke
+      const prev = lastChalkById.get(pathId);
+      if (prev) {
+        console.warn('⚠️ CHALK CACHE MISS; using last known good effect:', pathId.slice(0, 8));
+        chalkData = prev.data;
+        pathPoints = prev.points;
+      } else {
+        console.warn('⚠️ CHALK CACHE MISS; rendering simple stroke placeholder:', pathId.slice(0, 8));
+        ctx.globalAlpha = Math.max(0.6, opacity * 0.85);
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = strokeWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke(pathObj);
+        ctx.restore();
+        return;
+      }
     }
   } else {
     // Fallback for preview mode - use coordinate-based seed for stability
