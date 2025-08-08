@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useToolStore } from '../../../stores/toolStore';
 import { useWhiteboardStore } from '../../../stores/whiteboardStore';
 import { toolsConfig, simpleToolsConfig, ToolConfig, ToolSettingConfig } from '../../../config/toolsConfig';
@@ -17,7 +17,9 @@ import { CustomStampUpload } from './CustomStampUpload';
 import { SkinTonePicker } from './SkinTonePicker';
 // Removed preloadCategoryEmojis import - now using progressive loading
 
-import { Smile, Apple, Dog, Car, Lightbulb, Heart, Flag, Users, PartyPopper, LayoutGrid, Image, Circle } from 'lucide-react';
+import { Input } from '../../ui/input';
+import { searchIcons } from '../../../utils/iconSearch';
+import { Smile, Apple, Dog, Car, Lightbulb, Heart, Flag, Users, PartyPopper, LayoutGrid, Image, Circle, Search } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
 
 const categoryIcons: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
@@ -38,9 +40,28 @@ export const DynamicToolSettings: React.FC = () => {
   const { activeTool, toolSettings, updateToolSettings } = useToolStore();
   const { selectedObjectIds, objects } = useWhiteboardStore();
   
-  // For stamp tool, we'll add category filtering
+// For stamp tool, we'll add category filtering + search
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [refreshKey, setRefreshKey] = useState(0); // Force refresh when custom stamps change
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedQuery(searchQuery), 200);
+    return () => clearTimeout(id);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
   
   // Memoize categories to prevent recalculation
   const categories = useMemo(() => 
@@ -79,21 +100,44 @@ export const DynamicToolSettings: React.FC = () => {
     }));
   }, [activeTool, selectedCategory, refreshKey]);
 
-  // Calculate optimal window config based on category size
-  const windowConfig = useMemo(() => {
-    const categorySize = stampItems.length;
-    
-    if (categorySize >= 2000) {
-      return { windowSize: 100, batchSize: 25 };
-    } else if (categorySize >= 500) {
-      return { windowSize: 150, batchSize: 50 };
-    } else if (categorySize >= 150) {
-      return { windowSize: 200, batchSize: 50 };
+// Search results and displayed items
+  const resolvedCategory = useMemo(() => selectedCategory === 'all' ? undefined : selectedCategory, [selectedCategory]);
+
+  const searchResults = useMemo(() => {
+    if (activeTool !== 'stamp') return null;
+    const q = debouncedQuery.trim();
+    if (!q) return null;
+    return searchIcons(q, { category: resolvedCategory, limit: 500 });
+  }, [activeTool, debouncedQuery, resolvedCategory, refreshKey]);
+
+  const displayedItems = useMemo(() => {
+    if (searchResults) {
+      const seen = new Set<string>();
+      return searchResults
+        .filter(icon => {
+          if (seen.has(icon.path)) return false;
+          seen.add(icon.path);
+          return true;
+        })
+        .map(icon => ({ name: icon.name, url: icon.path, preview: icon.path }));
     }
-    
-    // Small categories load everything immediately
-    return { windowSize: undefined, batchSize: undefined };
-  }, [stampItems.length]);
+    return stampItems;
+  }, [searchResults, stampItems]);
+
+  const totalResults = searchResults?.length || 0;
+
+  // Calculate optimal window config based on current list size
+  const windowConfig = useMemo(() => {
+    const size = displayedItems.length;
+    if (size >= 2000) {
+      return { windowSize: 100, batchSize: 25 } as const;
+    } else if (size >= 500) {
+      return { windowSize: 150, batchSize: 50 } as const;
+    } else if (size >= 150) {
+      return { windowSize: 200, batchSize: 50 } as const;
+    }
+    return { windowSize: undefined, batchSize: undefined } as const;
+  }, [displayedItems.length]);
   
   // Memoize category change handler - now instant with progressive loading
   const handleCategoryChange = useCallback((category: string) => {
@@ -162,6 +206,25 @@ export const DynamicToolSettings: React.FC = () => {
             showValue={true}
           />
           
+{/* Search input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Search</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search emojis (e.g., heart, smile, 😄, coffee)"
+                className="pl-9"
+                aria-label="Search emojis"
+              />
+            </div>
+            {debouncedQuery && (
+              <div className="text-xs text-muted-foreground">Found {totalResults} result{totalResults === 1 ? '' : 's'}</div>
+            )}
+          </div>
+          
           {/* Category selector */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Category</label>
@@ -196,10 +259,10 @@ export const DynamicToolSettings: React.FC = () => {
             </TooltipProvider>
           </div>
           
-          {/* Progressive stamp grid with virtual windowing for large categories */}
+{/* Progressive stamp grid with virtual windowing for large categories */}
           <ProgressiveGridSelector
             label="Select Stamp"
-            items={stampItems}
+            items={displayedItems}
             selectedValue={toolSettings.selectedSticker || ''}
             onChange={handleStampChange}
             showUpload={false}
