@@ -98,19 +98,21 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
-          // PRESERVE brush effects before clearing cache
+          // PRESERVE brush effects with atomic cache pre-population
           const brushType = obj.data?.brushType;
+          let segmentCacheData: Map<string, any> | undefined;
+          
           if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
-            console.log('🎨 Preserving brush effects for segments:', {
+            console.log('🎨 Pre-caching brush effects for segments:', {
               originalId: id.slice(0, 8),
               brushType,
               segmentCount: segmentsWithIds.length
             });
             
-            // Transfer brush effects to segments BEFORE clearing the original
-            brushEffectCache.transferToSegments(id, brushType, segmentsWithIds);
+            // Transfer brush effects and get the data for atomic operations
+            segmentCacheData = brushEffectCache.transferToSegments(id, brushType, segmentsWithIds);
             
-            // Now it's safe to remove the original cache entry
+            // Remove the original cache entry after successful transfer
             brushEffectCache.remove(id, brushType);
           }
           
@@ -137,7 +139,9 @@ export const useEraserLogic = () => {
               strokeWidth: obj.strokeWidth,
               opacity: obj.opacity,
               fill: obj.fill
-            }
+            },
+            // Include pre-cached brush data to prevent fallback rendering
+            segmentBrushCache: segmentCacheData
           };
           
           whiteboardStore.erasePath(enhancedAction, userId);
