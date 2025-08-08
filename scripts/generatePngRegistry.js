@@ -862,6 +862,23 @@ function getSkinToneFromFilename(filename) {
   return toneMap[match[1]] || null;
 }
 
+// Private-use and tag sequence detection
+function isPrivateUseCodepoint(cp) {
+  return (cp >= 0xE000 && cp <= 0xF8FF) || (cp >= 0xF0000 && cp <= 0xFFFFD) || (cp >= 0x100000 && cp <= 0x10FFFD);
+}
+
+function isTagCodepoint(cp) {
+  return cp >= 0xE0000 && cp <= 0xE007F;
+}
+
+function usesPrivateUseOrTagsFromId(id) {
+  const parts = id.toUpperCase().split('-');
+  return parts.some(p => {
+    const num = hexToNumber(p);
+    return isPrivateUseCodepoint(num) || isTagCodepoint(num);
+  });
+}
+
 async function generateRegistry() {
   const pngDir = path.join(__dirname, '../public/png-emojis');
   
@@ -889,11 +906,15 @@ async function generateRegistry() {
   // Generate icons, only showing base emojis (neutral/yellow tone)
   const icons = [];
   const skinToneEmojiMap = new Map();
+  let skippedPrivateOrTags = 0;
   
   Object.entries(emojiGroups).forEach(([baseEmoji, variants]) => {
     // Find the base emoji (without skin tone modifier)
     const baseFile = variants.find(v => !hasSkinToneModifier(v));
     if (!baseFile) return; // Skip if no base emoji found
+
+    // Skip tag-sequence flags and private-use based emoji sequences
+    if (usesPrivateUseOrTagsFromId(baseEmoji)) { skippedPrivateOrTags++; return; }
     
     const category = categorizeEmoji(baseFile);
     if (!category) return; // Skip if emoji is filtered out (like flags)
@@ -946,6 +967,8 @@ async function generateRegistry() {
     .forEach(([cat, count]) => {
       console.log(`  ${cat}: ${count} emojis`);
     });
+  
+  console.log(`🚫 Skipped ${skippedPrivateOrTags} emojis using private-use or tag characters`);
   
   // Generate the TypeScript file
   const registryContent = `/**
