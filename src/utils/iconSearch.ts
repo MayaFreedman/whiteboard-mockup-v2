@@ -266,9 +266,13 @@ function scoreIcon(
     if (!allCovered) return 0;
   }
 
-  // If query is like 'happy face', restrict to smiling faces only
-  if (directTokens.length >= 2 && directTokens.includes('face') && directTokens.some((t) => POSITIVE_EMOTION_TERMS.has(t))) {
-    if (!subgroupRaw.startsWith('face-smiling')) return 0;
+  // If query is like 'happy face', restrict to face-smiling or face-affection
+  if (
+    directTokens.length >= 2 &&
+    directTokens.includes('face') &&
+    directTokens.some((t) => POSITIVE_EMOTION_TERMS.has(t))
+  ) {
+    if (!(subgroupRaw.startsWith('face-smiling') || subgroupRaw.startsWith('face-affection'))) return 0;
   }
 
   const weighDirect = (t: string) => {
@@ -312,6 +316,7 @@ function scoreIcon(
 
     if (groupTokens.includes(t)) { score += 3; groupHit = true; }
     if (catTokens.includes(t)) { score += 1; categoryHit = true; }
+    if (code && code.toLowerCase() === t) { score += 6; strongHit = true; }
   };
 
   // Stage 1: only direct tokens
