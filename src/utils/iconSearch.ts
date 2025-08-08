@@ -17,9 +17,17 @@ function tokenize(input: string): string[] {
   return n ? n.split(' ') : [];
 }
 
-// Basic synonyms/intents map
+function singularize(t: string): string | null {
+  if (t.length <= 3) return null;
+  if (t.endsWith('ies')) return t.slice(0, -3) + 'y';
+  if (/(ses|xes|zes|ches|shes)$/.test(t)) return t.slice(0, -2);
+  if (t.endsWith('s') && !t.endsWith('ss')) return t.slice(0, -1);
+  return null;
+}
+
+// Basic synonyms/intents map (kept tight to avoid over-expansion)
 const SYNONYMS: Record<string, string[]> = {
-  heart: ['love', 'valentine', 'romance', 'heart'],
+  heart: ['love', 'valentine', 'romance'],
   smile: ['happy', 'grin', 'smiley', 'joy', 'lol', 'face'],
   sad: ['frown', 'unhappy', 'cry', 'tear', 'sob', 'face'],
   angry: ['mad', 'rage', 'annoyed', 'face'],
@@ -27,25 +35,45 @@ const SYNONYMS: Record<string, string[]> = {
   sleep: ['zzz', 'sleepy', 'snore', 'bed', 'night'],
   laugh: ['haha', 'lol', 'rofl', 'face'],
   work: ['job', 'office', 'briefcase', 'suit', 'profession'],
-  food: ['drink', 'snack', 'meal', 'lunch', 'dinner', 'restaurant'],
-  coffee: ['tea', 'cafe', 'espresso', 'latte', 'cup', 'drink'],
+  food: ['snack', 'meal', 'lunch', 'dinner', 'restaurant', 'drink'],
+  coffee: ['espresso', 'latte', 'cup', 'cafe', 'drink'],
   weather: ['sun', 'rain', 'cloud', 'snow', 'storm', 'umbrella', 'wind'],
-  animal: ['dog', 'cat', 'bird', 'fish', 'monkey', 'pet', 'animals'],
+  animal: ['animals', 'pet', 'wildlife'],
   face: ['emoji', 'smiley', 'expression', 'emotion'],
   flag: ['country', 'nation', 'banner'],
   star: ['favorite', 'favourite', 'rating'],
   check: ['tick', 'ok', 'done', 'confirm'],
   cross: ['x', 'close', 'cancel', 'delete'],
+  dog: ['puppy', 'doggo', 'hound', 'pup', 'canine'],
+  cat: ['kitty', 'kitten', 'feline'],
+  pig: ['hog', 'boar', 'piggy', 'swine'],
+  bird: ['avian', 'birdie'],
+  fish: ['seafood'],
 };
+
+const GENERIC_TERMS = new Set<string>([
+  'face','emoji','smile','smileys','emotion',
+  'animal','animals','pet','wildlife',
+  'food','drink','coffee',
+  'weather','sun','rain','cloud','snow','storm','umbrella','wind',
+  'flag','country','nation','banner',
+  'star','check','cross',
+  'people','person','body','objects','tools','travel','places','activities','events',
+]);
 
 function expandTokens(tokens: string[]): string[] {
   const set = new Set<string>();
+  const add = (w: string) => {
+    set.add(w);
+    const s = singularize(w);
+    if (s) set.add(s);
+  };
   tokens.forEach((t) => {
-    set.add(t);
+    add(t);
     Object.entries(SYNONYMS).forEach(([key, vals]) => {
       if (t === key || vals.includes(t)) {
-        set.add(key);
-        vals.forEach((v) => set.add(v));
+        add(key);
+        vals.forEach((v) => add(v));
       }
     });
   });
@@ -89,34 +117,47 @@ function buildIndexFields(icon: IconInfo) {
 function scoreIcon(icon: IconInfo, q: string, qTokens: string[], qExpanded: string[]): number {
   const { nameTokens, catTokens, code, preview } = buildIndexFields(icon);
   let score = 0;
+  let nameMatch = false;
+  let codeMatch = false;
+  let emojiMatch = false;
+  let categoryHit = false;
 
   // Direct emoji paste
-  if (q.length <= 3 && preview && q.includes(preview)) score += 12;
+  if (q.length <= 3 && preview && q.includes(preview)) {
+    score += 12;
+    emojiMatch = true;
+  }
 
   for (const t of qTokens) {
-    const tStart = nameTokens.some((w) => w.startsWith(t));
     const tExact = nameTokens.includes(t);
+    const tStart = nameTokens.some((w) => w.startsWith(t));
     const tSub = nameTokens.some((w) => w.includes(t));
 
-    if (tExact) score += 8;
-    else if (tStart) score += 6;
-    else if (tSub) score += 3;
+    if (tExact) { score += 10; nameMatch = true; }
+    else if (tStart) { score += 6; nameMatch = true; }
+    else if (tSub) { score += 2; nameMatch = true; }
 
-    if (catTokens.includes(t)) score += 2;
-    if (code && code.toLowerCase() === t) score += 2;
+    if (catTokens.includes(t)) { score += 1; categoryHit = true; }
+    if (code && code.toLowerCase() === t) { score += 3; codeMatch = true; }
   }
 
   for (const t of qExpanded) {
-    if (nameTokens.includes(t)) score += 3;
-    else if (catTokens.includes(t)) score += 2;
+    if (nameTokens.includes(t)) { score += 2; nameMatch = true; }
+    else if (catTokens.includes(t)) { score += 1; categoryHit = true; }
   }
 
-  // Small boosts based on known patterns
+  // Small contextual nudges
   if (icon.category === 'smileys-emotion' && (qExpanded.includes('face') || qExpanded.includes('smile'))) {
-    score += 2;
+    score += 1;
   }
   if (icon.category === 'food-drink' && (qExpanded.includes('food') || qExpanded.includes('coffee'))) {
-    score += 2;
+    score += 1;
+  }
+
+  // Gate: drop category-only matches for specific queries
+  const isGeneric = qTokens.some((t) => GENERIC_TERMS.has(t));
+  if (score > 0 && !nameMatch && !codeMatch && !emojiMatch && !isGeneric) {
+    return 0;
   }
 
   return score;

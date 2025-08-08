@@ -215,7 +215,7 @@ export const DynamicToolSettings: React.FC = () => {
                 ref={searchInputRef}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search emojis (e.g., heart, smile, 😄, coffee)"
+                placeholder="Search emojis"
                 className="pl-9"
                 aria-label="Search emojis"
               />
