@@ -1,8 +1,8 @@
 /**
  * Auto-generated PNG emoji registry
- * Generated from 3755 PNG files on 2025-08-08T15:04:59.249Z
+ * Generated from 3755 PNG files on 2025-08-08T15:26:22.428Z
  * 
- * Categories: symbols, objects-tools, travel-places, food-drink, animals-nature, people-body, activities-events, flags, smileys-emotion
+ * Categories: symbols, objects-tools, animals-nature, food-drink, smileys-emotion, activities-events, travel-places, flags, people-body
  * DO NOT EDIT MANUALLY - Run 'node scripts/generatePngRegistry.js' to regenerate
  */
 
@@ -70,37 +70,37 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Sun",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/2600.png",
     preview: "☀",
   },
   {
     name: "Cloud",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/2601.png",
     preview: "☁",
   },
   {
     name: "Umbrella",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/2602.png",
     preview: "☂",
   },
   {
     name: "Snowman",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/2603.png",
     preview: "☃",
   },
   {
     name: "Comet",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/2604.png",
     preview: "☄",
   },
   {
     name: "Emoji 2614",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/2614.png",
     preview: "☔",
   },
@@ -118,7 +118,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 2620",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/2620.png",
     preview: "☠",
   },
@@ -148,7 +148,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 2639",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/2639.png",
     preview: "☹",
   },
@@ -304,7 +304,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 2744",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/2744.png",
     preview: "❄",
   },
@@ -1930,7 +1930,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Cyclone",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F300.png",
     preview: "🌀",
   },
@@ -1942,7 +1942,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Closed Umbrella",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F302.png",
     preview: "🌂",
   },
@@ -1978,7 +1978,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Rainbow",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F308.png",
     preview: "🌈",
   },
@@ -1990,7 +1990,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Water Wave",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F30A.png",
     preview: "🌊",
   },
@@ -2002,7 +2002,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Milky Way",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F30C.png",
     preview: "🌌",
   },
@@ -2032,157 +2032,157 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "New Moon",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F311.png",
     preview: "🌑",
   },
   {
     name: "Waxing Crescent Moon",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F312.png",
     preview: "🌒",
   },
   {
     name: "First Quarter Moon",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F313.png",
     preview: "🌓",
   },
   {
     name: "Waxing Gibbous Moon",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F314.png",
     preview: "🌔",
   },
   {
     name: "Full Moon",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F315.png",
     preview: "🌕",
   },
   {
     name: "Waning Gibbous Moon",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F316.png",
     preview: "🌖",
   },
   {
     name: "Last Quarter Moon",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F317.png",
     preview: "🌗",
   },
   {
     name: "Waning Crescent Moon",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F318.png",
     preview: "🌘",
   },
   {
     name: "Crescent Moon",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F319.png",
     preview: "🌙",
   },
   {
     name: "New Moon Face",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F31A.png",
     preview: "🌚",
   },
   {
     name: "First Quarter Moon Face",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F31B.png",
     preview: "🌛",
   },
   {
     name: "Last Quarter Moon Face",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F31C.png",
     preview: "🌜",
   },
   {
     name: "Full Moon Face",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F31D.png",
     preview: "🌝",
   },
   {
     name: "Sun with Face",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F31E.png",
     preview: "🌞",
   },
   {
     name: "Glowing Star",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F31F.png",
     preview: "🌟",
   },
   {
     name: "Shooting Star",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F320.png",
     preview: "🌠",
   },
   {
     name: "Emoji 1F321",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F321.png",
     preview: "🌡",
   },
   {
     name: "Emoji 1F324",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F324.png",
     preview: "🌤",
   },
   {
     name: "Emoji 1F325",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F325.png",
     preview: "🌥",
   },
   {
     name: "Emoji 1F326",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F326.png",
     preview: "🌦",
   },
   {
     name: "Emoji 1F327",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F327.png",
     preview: "🌧",
   },
   {
     name: "Emoji 1F328",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F328.png",
     preview: "🌨",
   },
   {
     name: "Emoji 1F329",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F329.png",
     preview: "🌩",
   },
   {
     name: "Emoji 1F32A",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F32A.png",
     preview: "🌪",
   },
   {
     name: "Emoji 1F32B",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F32B.png",
     preview: "🌫",
   },
   {
     name: "Emoji 1F32C",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F32C.png",
     preview: "🌬",
   },
@@ -5215,19 +5215,19 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F479",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F479.png",
     preview: "👹",
   },
   {
     name: "Emoji 1F47A",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F47A.png",
     preview: "👺",
   },
   {
     name: "Emoji 1F47B",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F47B.png",
     preview: "👻",
   },
@@ -5242,25 +5242,25 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F47D",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F47D.png",
     preview: "👽",
   },
   {
     name: "Emoji 1F47E",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F47E.png",
     preview: "👾",
   },
   {
     name: "Emoji 1F47F",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F47F.png",
     preview: "👿",
   },
   {
     name: "Emoji 1F480",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F480.png",
     preview: "💀",
   },
@@ -5584,7 +5584,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F4A7",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F4A7.png",
     preview: "💧",
   },
@@ -5596,7 +5596,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F4A9",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F4A9.png",
     preview: "💩",
   },
@@ -6241,7 +6241,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F525",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1F525.png",
     preview: "🔥",
   },
@@ -6631,355 +6631,355 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Grinning Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F600.png",
     preview: "😀",
   },
   {
     name: "Beaming Face with Smiling Eyes",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F601.png",
     preview: "😁",
   },
   {
     name: "Face with Tears of Joy",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F602.png",
     preview: "😂",
   },
   {
     name: "Grinning Face with Big Eyes",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F603.png",
     preview: "😃",
   },
   {
     name: "Smiling Face with Smiling Eyes",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F604.png",
     preview: "😄",
   },
   {
     name: "Grinning Face with Sweat",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F605.png",
     preview: "😅",
   },
   {
     name: "Grinning Squinting Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F606.png",
     preview: "😆",
   },
   {
     name: "Smiling Face with Halo",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F607.png",
     preview: "😇",
   },
   {
     name: "Smiling Face with Horns",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F608.png",
     preview: "😈",
   },
   {
     name: "Winking Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F609.png",
     preview: "😉",
   },
   {
     name: "Smiling Face with Smiling Eyes",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F60A.png",
     preview: "😊",
   },
   {
     name: "Face Savoring Food",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F60B.png",
     preview: "😋",
   },
   {
     name: "Relieved Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F60C.png",
     preview: "😌",
   },
   {
     name: "Smiling Face with Heart-Eyes",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F60D.png",
     preview: "😍",
   },
   {
     name: "Smiling Face with Sunglasses",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F60E.png",
     preview: "😎",
   },
   {
     name: "Smirking Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F60F.png",
     preview: "😏",
   },
   {
     name: "Neutral Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F610.png",
     preview: "😐",
   },
   {
     name: "Expressionless Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F611.png",
     preview: "😑",
   },
   {
     name: "Unamused Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F612.png",
     preview: "😒",
   },
   {
     name: "Downcast Face with Sweat",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F613.png",
     preview: "😓",
   },
   {
     name: "Pensive Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F614.png",
     preview: "😔",
   },
   {
     name: "Confused Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F615.png",
     preview: "😕",
   },
   {
     name: "Confounded Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F616.png",
     preview: "😖",
   },
   {
     name: "Kissing Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F617.png",
     preview: "😗",
   },
   {
     name: "Face Blowing a Kiss",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F618.png",
     preview: "😘",
   },
   {
     name: "Kissing Face with Smiling Eyes",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F619.png",
     preview: "😙",
   },
   {
     name: "Kissing Face with Closed Eyes",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F61A.png",
     preview: "😚",
   },
   {
     name: "Face with Tongue",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F61B.png",
     preview: "😛",
   },
   {
     name: "Winking Face with Tongue",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F61C.png",
     preview: "😜",
   },
   {
     name: "Squinting Face with Tongue",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F61D.png",
     preview: "😝",
   },
   {
     name: "Disappointed Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F61E.png",
     preview: "😞",
   },
   {
     name: "Worried Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F61F.png",
     preview: "😟",
   },
   {
     name: "Angry Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F620.png",
     preview: "😠",
   },
   {
     name: "Pouting Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F621.png",
     preview: "😡",
   },
   {
     name: "Crying Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F622.png",
     preview: "😢",
   },
   {
     name: "Persevering Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F623.png",
     preview: "😣",
   },
   {
     name: "Face with Steam From Nose",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F624.png",
     preview: "😤",
   },
   {
     name: "Sad but Relieved Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F625.png",
     preview: "😥",
   },
   {
     name: "Frowning Face with Open Mouth",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F626.png",
     preview: "😦",
   },
   {
     name: "Anguished Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F627.png",
     preview: "😧",
   },
   {
     name: "Fearful Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F628.png",
     preview: "😨",
   },
   {
     name: "Weary Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F629.png",
     preview: "😩",
   },
   {
     name: "Sleepy Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F62A.png",
     preview: "😪",
   },
   {
     name: "Tired Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F62B.png",
     preview: "😫",
   },
   {
     name: "Grimacing Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F62C.png",
     preview: "😬",
   },
   {
     name: "Loudly Crying Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F62D.png",
     preview: "😭",
   },
   {
     name: "Face with Open Mouth",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F62E-200D-1F4A8.png",
     preview: "😮‍💨",
   },
   {
     name: "Face with Open Mouth",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F62E.png",
     preview: "😮",
   },
   {
     name: "Hushed Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F62F.png",
     preview: "😯",
   },
   {
     name: "Anxious Face with Sweat",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F630.png",
     preview: "😰",
   },
   {
     name: "Face Screaming in Fear",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F631.png",
     preview: "😱",
   },
   {
     name: "Astonished Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F632.png",
     preview: "😲",
   },
   {
     name: "Flushed Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F633.png",
     preview: "😳",
   },
   {
     name: "Sleeping Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F634.png",
     preview: "😴",
   },
   {
     name: "Dizzy Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F635-200D-1F4AB.png",
     preview: "😵‍💫",
   },
   {
     name: "Dizzy Face",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F635.png",
     preview: "😵",
   },
   {
     name: "Face Without Mouth ♀️",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F636-200D-1F32B-FE0F.png",
     preview: "😶‍🌫️",
   },
   {
     name: "Face Without Mouth",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F636.png",
     preview: "😶",
   },
   {
     name: "Face with Medical Mask",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F637.png",
     preview: "😷",
   },
@@ -7039,37 +7039,37 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F641",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F641.png",
     preview: "🙁",
   },
   {
     name: "Emoji 1F642",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F642-200D-2194-FE0F.png",
     preview: "🙂‍↔️",
   },
   {
     name: "Emoji 1F642",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F642-200D-2195-FE0F.png",
     preview: "🙂‍↕️",
   },
   {
     name: "Emoji 1F642",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F642.png",
     preview: "🙂",
   },
   {
     name: "Emoji 1F643",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F643.png",
     preview: "🙃",
   },
   {
     name: "Emoji 1F644",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F644.png",
     preview: "🙄",
   },
@@ -7783,13 +7783,13 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F6C2",
-    category: "symbols",
+    category: "people-body",
     path: "/png-emojis/1F6C2.png",
     preview: "🛂",
   },
   {
     name: "Emoji 1F6C3",
-    category: "symbols",
+    category: "people-body",
     path: "/png-emojis/1F6C3.png",
     preview: "🛃",
   },
@@ -8044,49 +8044,49 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F910",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F910.png",
     preview: "🤐",
   },
   {
     name: "Emoji 1F911",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F911.png",
     preview: "🤑",
   },
   {
     name: "Emoji 1F912",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F912.png",
     preview: "🤒",
   },
   {
     name: "Emoji 1F913",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F913.png",
     preview: "🤓",
   },
   {
     name: "Emoji 1F914",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F914.png",
     preview: "🤔",
   },
   {
     name: "Emoji 1F915",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F915.png",
     preview: "🤕",
   },
   {
     name: "Emoji 1F916",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F916.png",
     preview: "🤖",
   },
   {
     name: "Emoji 1F917",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F917.png",
     preview: "🤗",
   },
@@ -8164,37 +8164,37 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F920",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F920.png",
     preview: "🤠",
   },
   {
     name: "Emoji 1F921",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F921.png",
     preview: "🤡",
   },
   {
     name: "Emoji 1F922",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F922.png",
     preview: "🤢",
   },
   {
     name: "Emoji 1F923",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F923.png",
     preview: "🤣",
   },
   {
     name: "Emoji 1F924",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F924.png",
     preview: "🤤",
   },
   {
     name: "Emoji 1F925",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F925.png",
     preview: "🤥",
   },
@@ -8227,55 +8227,55 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F927",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F927.png",
     preview: "🤧",
   },
   {
     name: "Emoji 1F928",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F928.png",
     preview: "🤨",
   },
   {
     name: "Emoji 1F929",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F929.png",
     preview: "🤩",
   },
   {
     name: "Emoji 1F92A",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F92A.png",
     preview: "🤪",
   },
   {
     name: "Emoji 1F92B",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F92B.png",
     preview: "🤫",
   },
   {
     name: "Emoji 1F92C",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F92C.png",
     preview: "🤬",
   },
   {
     name: "Emoji 1F92D",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F92D.png",
     preview: "🤭",
   },
   {
     name: "Emoji 1F92E",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F92E.png",
     preview: "🤮",
   },
   {
     name: "Emoji 1F92F",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F92F.png",
     preview: "🤯",
   },
@@ -8809,43 +8809,43 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F970",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F970.png",
     preview: "🥰",
   },
   {
     name: "Emoji 1F971",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F971.png",
     preview: "🥱",
   },
   {
     name: "Emoji 1F972",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F972.png",
     preview: "🥲",
   },
   {
     name: "Emoji 1F973",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F973.png",
     preview: "🥳",
   },
   {
     name: "Emoji 1F974",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F974.png",
     preview: "🥴",
   },
   {
     name: "Emoji 1F975",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F975.png",
     preview: "🥵",
   },
   {
     name: "Emoji 1F976",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F976.png",
     preview: "🥶",
   },
@@ -8860,19 +8860,19 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F978",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F978.png",
     preview: "🥸",
   },
   {
     name: "Emoji 1F979",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F979.png",
     preview: "🥹",
   },
   {
     name: "Emoji 1F97A",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F97A.png",
     preview: "🥺",
   },
@@ -9529,7 +9529,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1F9D0",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1F9D0.png",
     preview: "🧐",
   },
@@ -10465,7 +10465,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1FA90",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/1FA90.png",
     preview: "🪐",
   },
@@ -10876,37 +10876,37 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1FAE0",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1FAE0.png",
     preview: "🫠",
   },
   {
     name: "Emoji 1FAE1",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1FAE1.png",
     preview: "🫡",
   },
   {
     name: "Emoji 1FAE2",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1FAE2.png",
     preview: "🫢",
   },
   {
     name: "Emoji 1FAE3",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1FAE3.png",
     preview: "🫣",
   },
   {
     name: "Emoji 1FAE4",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1FAE4.png",
     preview: "🫤",
   },
   {
     name: "Emoji 1FAE5",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1FAE5.png",
     preview: "🫥",
   },
@@ -10924,7 +10924,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 1FAE8",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/1FAE8.png",
     preview: "🫨",
   },
@@ -11062,7 +11062,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 263A",
-    category: "people-body",
+    category: "smileys-emotion",
     path: "/png-emojis/263A.png",
     preview: "☺",
   },
@@ -11128,7 +11128,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "High Voltage",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/26A1.png",
     preview: "⚡",
   },
@@ -11164,19 +11164,19 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 26C4",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/26C4.png",
     preview: "⛄",
   },
   {
     name: "Emoji 26C5",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/26C5.png",
     preview: "⛅",
   },
   {
     name: "Emoji 26C8",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/26C8.png",
     preview: "⛈",
   },
@@ -11236,7 +11236,7 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Emoji 26F1",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/26F1.png",
     preview: "⛱",
   },
@@ -11395,41 +11395,11 @@ export const iconRegistry: IconInfo[] = [
   },
   {
     name: "Star",
-    category: "travel-places",
+    category: "animals-nature",
     path: "/png-emojis/2B50.png",
     preview: "⭐",
   }
-]; 
-
-// Category override helpers
-function normalizeCode(code: string): string {
-  return code.toUpperCase().replace(/\.PNG$/, '').replace(/-FE0F/g, '');
-}
-const OVERRIDE_TO_PEOPLE = new Set<string>(['1F6C2','1F6C3','1F6D0']);
-
-const RAW_SMILEYS: string[] = [
-  '1F600','1F603','1F604','1F601','1F606','1F605','1F923','1F602','1F642','1F643','1FAE0','1F609','1F60A','1F607','1F970','1F60D','1F929','1F618','1F617','263A','1F61A','1F619','1F972','1F60B','1F61B','1F61C','1F92A','1F61D','1F911','1F917','1F92D','1FAE2','1FAE3','1F92B','1F914','1FAE1','1F910','1F928','1F610','1F611','1F636','1FAE5','1F636-200D-1F32B-FE0F','1F60F','1F612','1F644','1F62C','1F62E-200D-1F4A8','1F925','1FAE8','1F642-200D-2194-FE0F','1F642-200D-2195-FE0F','1F60C','1F614','1F62A','1F924','1F634','1FAE9','1F637','1F912','1F915','1F922','1F92E','1F927','1F975','1F976','1F974','1F635','1F635-200D-1F4AB','1F92F','1F920','1F973','1F978','1F60E','1F913','1F9D0','1F615','1FAE4','1F61F','1F641','2639','1F62E','1F62F','1F632','1F633','1F97A','1F979','1F626','1F627','1F628','1F630','1F625','1F622','1F62D','1F631','1F616','1F623','1F61E','1F613','1F629','1F62B','1F971','1F624','1F621','1F620','1F92C','1F608','1F47F','1F480','2620','1F4A9','1F921','1F479','1F47A','1F47B','1F47D','1F47E','1F916','1F63A','1F638','1F639','1F63B','1F63C','1F63D','1F640','1F63F','1F63E','1F648','1F649','1F64A','1F48C','1F498','1F49D','1F496','1F497','1F493','1F49E','1F495','1F49F','2763','1F494','2764-FE0F-200D-1F525','2764-FE0F-200D-1FA79','2764','1FA77','1F9E1','1F49B','1F49A','1F499','1FA75','1F49C','1F90E','1F5A4','1FA76','1F90D','1F48B','1F4AF','1F4A2','1F4A5','1F4AB','1F4A6','1F4A8','1F573','1F4AC','1F441-FE0F-200D-1F5E8-FE0F','1F5E8','1F5EF','1F4AD','1F4A4'
 ];
-const SMILEYS_WHITELIST = new Set<string>(RAW_SMILEYS.map(normalizeCode));
-
-function getBaseCodeFromPath(p: string): string {
-  return p.split('/').pop()?.replace('.png', '').toUpperCase() || '';
-}
-
-function remapCategory(icon: IconInfo): string {
-  const base = getBaseCodeFromPath(icon.path);
-  const normalized = normalizeCode(base);
-  if (OVERRIDE_TO_PEOPLE.has(normalized)) return 'people-body';
-  if (SMILEYS_WHITELIST.has(normalized)) return 'smileys-emotion';
-  return icon.category;
-}
-
-function applyCategoryOverrides(icons: IconInfo[]): IconInfo[] {
-  return icons.map(icon => {
-    const newCat = remapCategory(icon);
-    return newCat === icon.category ? icon : { ...icon, category: newCat };
-  });
-}
 
 /**
  * Get icon by path
@@ -11442,14 +11412,14 @@ export function getIconByPath(path: string): IconInfo | undefined {
  * Get icons by category
  */
 export function getIconsByCategory(category: string): IconInfo[] {
-  return applyCategoryOverrides(iconRegistry).filter(icon => icon.category === category);
+  return iconRegistry.filter(icon => icon.category === category);
 }
 
 /**
  * Get all available categories
  */
 export function getCategories(): string[] {
-  const raw = Array.from(new Set(applyCategoryOverrides(iconRegistry).map(icon => icon.category)));
+  const raw = Array.from(new Set(iconRegistry.map(icon => icon.category)));
   const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
   const withoutCustom = raw.filter(c => c !== 'custom' && c !== 'religion-culture');
   const ordered = [
@@ -11538,7 +11508,7 @@ export function getIconsByCategoryWithCustom(category: string): IconInfo[] {
  * Get all icons including custom stamps
  */
 export function getAllIcons(): IconInfo[] {
-  const all = [...applyCategoryOverrides(iconRegistry), ...getCustomStampsAsIcons()];
+  const all = [...iconRegistry, ...getCustomStampsAsIcons()];
   const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
   const getPrio = (c: string) => {
     const i = priority.indexOf(c);
@@ -11555,18 +11525,18 @@ export function getAllIcons(): IconInfo[] {
 
 // Export category statistics for debugging
 export const CATEGORY_STATS = {
-  "symbols": 115,
+  "symbols": 113,
   "objects-tools": 262,
-  "travel-places": 187,
+  "animals-nature": 200,
   "food-drink": 135,
-  "animals-nature": 153,
-  "people-body": 509,
+  "smileys-emotion": 144,
   "activities-events": 85,
+  "travel-places": 140,
   "flags": 266,
-  "smileys-emotion": 27
+  "people-body": 394
 };
 export const TOTAL_EMOJIS = 3755;
-export const GENERATED_AT = "2025-08-08T15:04:59.250Z";
+export const GENERATED_AT = "2025-08-08T15:26:22.434Z";
 
 // Skin tone mapping for quick lookup
 export const SKIN_TONE_MAP = new Map([
