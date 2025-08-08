@@ -216,20 +216,31 @@ function scoreIcon(
     strongHit = true;
   }
 
-  // Multi-word strict gating: every token must be covered (exact/prefix/code). Generic tokens can be satisfied by group/category.
+  // Multi-word strict gating: every token must be covered (exact/prefix/code). For generic 'face', require face subgroup.
   if (directTokens.length >= 2) {
     const allCovered = directTokens.every((t) => {
       const allowPrefix = t.length >= 4;
+      const codeMatch = code && code.toLowerCase() === t;
+
+      // Generic 'face' must be an actual face subgroup
+      if (t === 'face' || t === 'faces' || t === 'emoji' || t === 'smiley') {
+        return subgroupRaw.startsWith('face');
+      }
+
       const nameExact = nameTokens.includes(t);
       const keyExact = keywordTokens.includes(t);
       const nameStart = allowPrefix && nameTokens.some((w) => w.startsWith(t));
       const keyStart = allowPrefix && keywordTokens.some((w) => w.startsWith(t));
-      const codeMatch = code && code.toLowerCase() === t;
-      let ok = nameExact || keyExact || nameStart || keyStart || !!codeMatch;
-      if (!ok && GENERIC_TERMS.has(t)) {
-        ok = groupTokens.includes(t) || catTokens.includes(t);
-      }
-      return ok;
+
+      // Allow direct synonyms only (not broad concepts) to satisfy token coverage
+      const syns = SYNONYMS[t] || [];
+      const synonymHit = syns.some((s) =>
+        nameTokens.includes(s) ||
+        keywordTokens.includes(s) ||
+        (allowPrefix && (nameTokens.some((w) => w.startsWith(s)) || keywordTokens.some((w) => w.startsWith(s))))
+      );
+
+      return nameExact || keyExact || nameStart || keyStart || synonymHit || !!codeMatch;
     });
     if (!allCovered) return 0;
   }
