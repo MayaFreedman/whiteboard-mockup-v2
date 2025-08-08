@@ -11399,7 +11399,48 @@ export const iconRegistry: IconInfo[] = [
     path: "/png-emojis/2B50.png",
     preview: "⭐",
   }
-];
+]; 
+
+// Category overrides and sorting helpers
+const FORCED_CATEGORY_OVERRIDES: Record<string, string> = {
+  '2668': 'food-drink', // Hot Springs -> Food & Drink (pending confirmation)
+  '1F6C2': 'people-body',
+  '1F6C3': 'people-body',
+  '1F6D0': 'people-body',
+};
+
+function getEmojiIdFromPath(p: string): string {
+  const file = p.split('/').pop() || '';
+  return file.replace('.png', '');
+}
+
+function getBaseCode(id: string): string {
+  // Normalize to base code (first segment, trim variation selector)
+  const first = id.split('-')[0];
+  return first.toUpperCase().replace('FE0F', '');
+}
+
+function getEffectiveCategory(icon: IconInfo): string {
+  const id = getBaseCode(getEmojiIdFromPath(icon.path));
+  return FORCED_CATEGORY_OVERRIDES[id] || icon.category;
+}
+
+const FACE_EXTRA_SET = new Set<string>([
+  '263A', '2639',
+  '1F970', '1F971', '1F972', '1F97A',
+  '1F9D0', '1F60E', '1F636', '1F637', '1F912', '1F915', '1F922', '1F92E', '1F927',
+  '1F975', '1F976', '1F974', '1F635', '1F92F',
+  '1FAE0', '1FAE1', '1FAE2', '1FAE3', '1FAE4', '1FAE5', '1FAE8', '1FAE9',
+  '1F910', '1F911', '1F913', '1F920', '1F928', '1F978', '1F979'
+]);
+
+function isFaceEmoji(idOrIcon: string | IconInfo): boolean {
+  const id = typeof idOrIcon === 'string' ? idOrIcon : getEmojiIdFromPath(idOrIcon.path);
+  const base = getBaseCode(id);
+  const hex = parseInt(base, 16);
+  const inEmoticonsBlock = !Number.isNaN(hex) && hex >= 0x1F600 && hex <= 0x1F64F;
+  return inEmoticonsBlock || FACE_EXTRA_SET.has(base);
+}
 
 /**
  * Get icon by path
@@ -11407,12 +11448,30 @@ export const iconRegistry: IconInfo[] = [
 export function getIconByPath(path: string): IconInfo | undefined {
   return iconRegistry.find(icon => icon.path === path);
 }
-
 /**
  * Get icons by category
  */
 export function getIconsByCategory(category: string): IconInfo[] {
-  return iconRegistry.filter(icon => icon.category === category);
+  const items = iconRegistry.filter(icon => getEffectiveCategory(icon) === category);
+
+  // Category-specific ordering
+  if (category === 'smileys-emotion') {
+    return items.slice().sort((a, b) => {
+      const fa = isFaceEmoji(a) ? 0 : 1;
+      const fb = isFaceEmoji(b) ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+
+      // Within faces, keep intuitive unicode ordering
+      const ida = getBaseCode(getEmojiIdFromPath(a.path));
+      const idb = getBaseCode(getEmojiIdFromPath(b.path));
+      const na = parseInt(ida, 16);
+      const nb = parseInt(idb, 16);
+      if (!Number.isNaN(na) && !Number.isNaN(nb) && na !== nb) return na - nb;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  return items.slice().sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
