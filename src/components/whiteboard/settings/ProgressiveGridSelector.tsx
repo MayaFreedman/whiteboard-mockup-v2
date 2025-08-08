@@ -113,9 +113,7 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
         
         {/* Show loading indicator when more items are available */}
         {windowSize && currentWindowEnd < items.length && <div className="col-span-full flex justify-center py-4">
-            <div className="text-sm text-muted-foreground">
-              Showing {currentWindowEnd} of {items.length} items • Scroll for more
-            </div>
+            <div className="text-sm text-muted-foreground">...</div>
           </div>}
       </div>
       {showUpload && <div className="mt-3">
