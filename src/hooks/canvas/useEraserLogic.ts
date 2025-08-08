@@ -98,22 +98,27 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
-          // PRESERVE brush effects ATOMICALLY before any other operations
+          // ATOMIC CACHE PRE-POPULATION: Ensure segments have brush effects BEFORE creation
           const brushType = obj.data?.brushType;
           let transferredData: any = null;
           
           if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
-            console.log('🎨 Preserving brush effects for segments:', {
+            console.log('🎨 Pre-caching brush effects for atomic transfer:', {
               originalId: id.slice(0, 8),
               brushType,
               segmentCount: segmentsWithIds.length
             });
             
-            // Transfer brush effects and get the data back for immediate use
-            transferredData = brushEffectCache.transferToSegments(id, brushType, segmentsWithIds);
+            // PRE-POPULATE: Transfer and validate cache data BEFORE any store operations
+            transferredData = brushEffectCache.transferToSegmentsAtomic(id, brushType, segmentsWithIds);
             
-            // Remove original only after successful transfer
-            brushEffectCache.remove(id, brushType);
+            if (transferredData) {
+              console.log('✅ Atomic brush cache pre-population complete - segments ready');
+              // Remove original only after successful atomic transfer
+              brushEffectCache.remove(id, brushType);
+            } else {
+              console.warn('⚠️ Failed to pre-populate brush cache - segments may flash');
+            }
           }
           
           // Mark object as processed in this stroke

@@ -71,10 +71,10 @@ class BrushEffectCache {
   }
 
   /**
-   * Transfers brush effect data from a parent object to its segments after erasing
-   * Returns the transferred data for immediate use
+   * ATOMIC transfer: Pre-populates segment cache data to prevent flashing
+   * Ensures segments have cached effects BEFORE they can be rendered
    */
-  transferToSegments(
+  transferToSegmentsAtomic(
     originalPathId: string, 
     brushType: string, 
     segments: Array<{ points: Array<{ x: number; y: number }>; id: string }>
@@ -85,7 +85,7 @@ class BrushEffectCache {
       return null;
     }
 
-    console.log('🔄 Transferring brush effects from parent to segments:', {
+    console.log('🔄 ATOMIC: Pre-populating segment cache data:', {
       originalPathId: originalPathId.slice(0, 8),
       brushType,
       segmentCount: segments.length,
@@ -93,6 +93,9 @@ class BrushEffectCache {
     });
 
     const transferredSegmentData: any = {};
+    
+    // Validation: Ensure all segments will have cache data
+    const segmentCacheValidation: string[] = [];
     
     // Transfer appropriate brush effects to each segment
     segments.forEach(segment => {
@@ -109,8 +112,10 @@ class BrushEffectCache {
           effectData: segmentSprayData
         };
         
+        // ATOMIC: Store immediately and validate
         this.store(segment.id, brushType, segmentCacheData);
         transferredSegmentData[segment.id] = segmentCacheData;
+        segmentCacheValidation.push(segment.id);
       } else if (brushType === 'chalk') {
         const chalkData = originalData.effectData as ChalkEffectData;
         const segmentChalkData = this.mapChalkDataToSegment(chalkData, originalData.points, segment.points);
@@ -124,13 +129,30 @@ class BrushEffectCache {
           effectData: segmentChalkData
         };
         
+        // ATOMIC: Store immediately and validate
         this.store(segment.id, brushType, segmentCacheData);
         transferredSegmentData[segment.id] = segmentCacheData;
+        segmentCacheValidation.push(segment.id);
       }
     });
 
-    console.log('✅ Brush effect transfer complete - data ready for immediate use');
-    return transferredSegmentData;
+    // ATOMIC VALIDATION: Verify all segments have cached data
+    const allSegmentsCached = segments.every(segment => {
+      const cached = this.get(segment.id, brushType);
+      return cached && cached.effectData;
+    });
+    
+    if (allSegmentsCached && segmentCacheValidation.length === segments.length) {
+      console.log('✅ ATOMIC: All segments have cached data - no flashing possible');
+      return transferredSegmentData;
+    } else {
+      console.error('❌ ATOMIC FAILURE: Some segments missing cache data:', {
+        expectedCount: segments.length,
+        cachedCount: segmentCacheValidation.length,
+        missingSegments: segments.filter(seg => !segmentCacheValidation.includes(seg.id)).map(seg => seg.id.slice(0, 8))
+      });
+      return null;
+    }
   }
 
   /**
@@ -246,6 +268,18 @@ class BrushEffectCache {
       dustParticles: segmentParticles,
       roughnessLayers: originalChalkData.roughnessLayers // Keep the same roughness layers
     };
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   * Redirects to atomic method
+   */
+  transferToSegments(
+    originalPathId: string, 
+    brushType: string, 
+    segments: Array<{ points: Array<{ x: number; y: number }>; id: string }>
+  ): any {
+    return this.transferToSegmentsAtomic(originalPathId, brushType, segments);
   }
 }
 

@@ -38,18 +38,20 @@ export const renderSprayOptimized = (
   let sprayData: SprayEffectData;
   let pathPoints: Array<{ x: number; y: number }>;
   
-  // Try to get cached effect data
+  // ATOMIC CHECK: Priority to cached effect data to prevent flashing
   if (pathId) {
     const cached = brushEffectCache.get(pathId, 'spray');
     if (cached && cached.effectData) {
       sprayData = cached.effectData as SprayEffectData;
       pathPoints = cached.points;
     } else {
-      // Calculate and cache new effect data - use coordinate-based seed for consistency
+      // FALLBACK ONLY: Should not happen with atomic pre-population
+      console.warn('⚠️ SPRAY FALLBACK: No cached data found for pathId:', pathId.slice(0, 8));
       pathPoints = pathToPointsForBrush(path);
       const baseSeed = generateCoordinateBasedSeed(pathPoints);
       sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
       
+      // Store for future use but this indicates a timing issue
       brushEffectCache.store(pathId, 'spray', {
         type: 'spray',
         points: pathPoints,
@@ -101,18 +103,20 @@ export const renderChalkOptimized = (
   let chalkData: ChalkEffectData;
   let pathPoints: Array<{ x: number; y: number }>;
   
-  // Try to get cached effect data
+  // ATOMIC CHECK: Priority to cached effect data to prevent flashing
   if (pathId) {
     const cached = brushEffectCache.get(pathId, 'chalk');
     if (cached && cached.effectData) {
       chalkData = cached.effectData as ChalkEffectData;
       pathPoints = cached.points;
     } else {
-      // Calculate and cache new effect data - use coordinate-based seed for consistency
+      // FALLBACK ONLY: Should not happen with atomic pre-population
+      console.warn('⚠️ CHALK FALLBACK: No cached data found for pathId:', pathId.slice(0, 8));
       pathPoints = pathToPointsForBrush(path);
       const baseSeed = generateCoordinateBasedSeed(pathPoints);
       chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
       
+      // Store for future use but this indicates a timing issue
       brushEffectCache.store(pathId, 'chalk', {
         type: 'chalk',
         points: pathPoints,
