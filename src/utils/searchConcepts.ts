@@ -30,13 +30,13 @@ export const SEARCH_CONCEPTS: Readonly<Record<string, string[]>> = Object.freeze
   love: ['heart', 'romance'],
 
   // Colors (query-side only via items/codepoints; no back-link to items)
-  purple: ['grape', '1f347', 'eggplant', 'aubergine', '1f346', '1f49c', 'devil', 'smiling face with horns', 'angry face with horns', '1f608', '1f47f'],
-  red: ['2764', 'strawberry', '1f353', 'tomato', '1f345', 'cherries', '1f352', 'devil', 'smiling face with horns', 'angry face with horns', '1f608', '1f47f', 'angry face', 'pouting face', '1f620', '1f621'],
-  blue: ['1f499', 'droplet', 'water droplet', '1f4a7', 'cold face', '1f976'],
-  green: ['1f49a', '1f34f', 'avocado', '1f951', 'broccoli', '1f966', '26f3'],
-  yellow: ['1f49b', 'banana', '1f34c', 'lemon', '1f34b', 'sun', '1f31e'],
-  orange_color: ['1f9e1', '1f34a', 'tangerine', 'carrot', '1f955', 'pumpkin', 'jack o lantern', '1f383', 'fox', '1f98a'],
-  black: ['1f5a4'],
-  white: ['1f90d'],
-  brown: ['1f90e', 'poop', 'poo', 'pile of poo', '1f4a9', 'chocolate', 'chocolate bar', '1f36b', 'bear', 'bear face', '1f43b', 'cookie', '1f36a'],
+  purple: ['grape', '1f347', 'eggplant', 'aubergine', '1f346', '1f49c', 'devil', 'smiling face with horns', 'angry face with horns', '1f608', '1f47f', 'crystal ball', '1f52e', 'alien monster', '1f47e', 'purple circle', '1f7e3', 'purple square', '1f7ea'],
+  red: ['2764', 'strawberry', '1f353', 'tomato', '1f345', 'cherries', '1f352', 'devil', 'smiling face with horns', 'angry face with horns', '1f608', '1f47f', 'angry face', 'pouting face', '1f620', '1f621', 'rose', '1f339', 'red apple', '1f34e', 'hot pepper', '1f336', 'stop sign', '1f6d1', 'ladybug', '1f41e'],
+  blue: ['1f499', 'droplet', 'water droplet', '1f4a7', 'cold face', '1f976', 'water wave', '1f30a', 'blue circle', '1f535', 'blue diamond', '1f537', '1f539', 'blue book', '1f4d8', 'blue square', '1f7e6'],
+  green: ['1f49a', '1f34f', 'avocado', '1f951', 'broccoli', '1f966', '26f3', 'lime', 'clover', '1f340', 'seedling', '1f331', 'cactus', '1f335', 'herb', '1f33f', 'cucumber', '1f952', 'leafy green', '1f96c'],
+  yellow: ['1f49b', 'banana', '1f34c', 'lemon', '1f34b', 'sun', '1f31e', 'sunflower', '1f33b', 'sparkles', '2728', 'star', '2b50', '1f31f', 'warning', '26a0'],
+  orange_color: ['1f9e1', '1f34a', 'tangerine', 'carrot', '1f955', 'pumpkin', 'jack o lantern', '1f383', 'fox', '1f98a', 'fire', '1f525', 'orange circle', '1f7e0', 'orange square', '1f7e7'],
+  black: ['1f5a4', 'black circle', '26ab', 'black square', '2b1b', '25fc', 'spade suit', '2660', 'club suit', '2663'],
+  white: ['1f90d', 'white circle', '26aa', 'white large square', '2b1c', 'snowflake', '2744', 'snowman', '2603', 'ghost', '1f47b', 'cloud', '2601'],
+  brown: ['1f90e', 'poop', 'poo', 'pile of poo', '1f4a9', 'chocolate', 'chocolate bar', '1f36b', 'bear', 'bear face', '1f43b', 'cookie', '1f36a', 'pretzel', '1f968', 'waffle', '1f9c7', 'chestnut', '1f330'],
 });
