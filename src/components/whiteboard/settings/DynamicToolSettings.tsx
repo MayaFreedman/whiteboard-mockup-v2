@@ -241,13 +241,7 @@ export const DynamicToolSettings: React.FC = () => {
           </div>
           
         {/* Progressive stamp grid with virtual windowing for large categories */}
-          {selectedCategory === 'custom' && displayedItems.length === 0 && !debouncedQuery ? (
-            <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-              You haven't uploaded any custom stamps yet. Use the uploader below to add one.
-            </div>
-          ) : (
-            <ProgressiveGridSelector label="Select Stamp" items={displayedItems} selectedValue={toolSettings.selectedSticker || ''} onChange={handleStampChange} showUpload={false} onCustomStampDeleted={handleCustomStampAdded} windowSize={windowConfig.windowSize} batchSize={windowConfig.batchSize} />
-          )}
+          {selectedCategory === 'custom' && displayedItems.length === 0 && !debouncedQuery ? <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">You haven't uploaded any custom stamps yet. Use the uploader below to add one!</div> : <ProgressiveGridSelector label="Select Stamp" items={displayedItems} selectedValue={toolSettings.selectedSticker || ''} onChange={handleStampChange} showUpload={false} onCustomStampDeleted={handleCustomStampAdded} windowSize={windowConfig.windowSize} batchSize={windowConfig.batchSize} />}
           
           {/* Custom stamp upload */}
           <CustomStampUpload onStampAdded={handleCustomStampAdded} />
