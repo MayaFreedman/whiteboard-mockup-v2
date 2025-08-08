@@ -68,6 +68,15 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
     setCurrentWindowEnd(windowSize || items.length);
   }, [items, windowSize]);
 
+  // When the items set changes (e.g., switching categories or new search),
+  // reset the scroll position to the top so the new list starts at the beginning
+  useEffect(() => {
+    const el = containerRef.current;
+    if (el) {
+      el.scrollTop = 0;
+    }
+  }, [items]);
+
   // Handle image load complete
   const handleImageLoaded = useCallback((url: string) => {
     setLoadedImages(prev => new Set(prev).add(url));
