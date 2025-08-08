@@ -18,8 +18,6 @@ import { SkinTonePicker } from './SkinTonePicker';
 // Removed preloadCategoryEmojis import - now using progressive loading
 
 import { Input } from '../../ui/input';
-import { Button } from '../../ui/button';
-import { Alert, AlertDescription } from '../../ui/alert';
 import { searchIcons } from '../../../utils/iconSearch';
 import { Smile, Apple, Dog, Car, Lightbulb, Heart, Flag, Users, PartyPopper, LayoutGrid, Image, Circle, Search } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
@@ -54,6 +52,9 @@ export const DynamicToolSettings: React.FC = () => {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const uploaderRef = useRef<HTMLDivElement>(null);
+  const scrollToUploader = useCallback(() => {
+    uploaderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(searchQuery), 200);
     return () => clearTimeout(id);
@@ -240,7 +241,36 @@ export const DynamicToolSettings: React.FC = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input ref={searchInputRef} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search emojis" className="pl-9" aria-label="Search emojis" />
             </div>
-            {debouncedQuery && <div className="text-xs text-muted-foreground">Found {totalResults} result{totalResults === 1 ? '' : 's'}</div>}
+            {debouncedQuery && (
+              <div className="text-xs text-muted-foreground">
+                {totalResults > 0 ? (
+                  <>Found {totalResults} result{totalResults === 1 ? '' : 's'}</>
+                ) : selectedCategory !== 'all' ? (
+                  <>
+                    No results for "{debouncedQuery}" in {getCategoryDisplayName(selectedCategory)}.{" "}
+                    <button
+                      type="button"
+                      className="underline underline-offset-2 text-primary hover:text-primary/80 font-medium"
+                      onClick={() => handleCategoryChange('all')}
+                    >
+                      Try searching all icons
+                    </button>
+                    .
+                  </>
+                ) : (
+                  <>
+                    No results for "{debouncedQuery}" across all icons. Can't find what you're looking for?{" "}
+                    <button
+                      type="button"
+                      className="underline underline-offset-2 text-primary hover:text-primary/80 font-medium"
+                      onClick={scrollToUploader}
+                    >
+                      Try uploading a custom stamp!
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
           {debouncedQuery && totalResults === 0 && <Alert>
               <AlertDescription className="flex items-center justify-between gap-2">
