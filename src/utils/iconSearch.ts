@@ -147,6 +147,15 @@ function expandQuery(tokens: string[]): { expanded: string[]; concept: string[];
     }
   });
 
+  // Phrase concepts (handle known multi-word intents)
+  const tokenSet = new Set(tokens);
+  if (tokenSet.has('red') && tokenSet.has('flag')) {
+    add('1f6a9'); // triangular flag codepoint
+    add('triangular');
+    conceptSet.add('1f6a9');
+    conceptSet.add('triangular');
+  }
+
   return { expanded: Array.from(set), concept: Array.from(conceptSet), negative: Array.from(negativeSet) };
 }
 
@@ -209,6 +218,7 @@ function scoreIcon(
   let exactHit = false; // exact name/keyword/code match
   let categoryHit = false;
   let groupHit = false;
+  const subgroupRaw = ((((icon as any).subgroup as string) || '') as string).toLowerCase();
 
   // Direct emoji paste
   if (q.length <= 3 && preview && q.includes(preview)) {
@@ -218,7 +228,8 @@ function scoreIcon(
 
   // Multi-word strict gating: every token must be covered (exact/prefix/code). For generic 'face', require face subgroup.
   if (directTokens.length >= 2) {
-    const allCovered = directTokens.every((t) => {
+    const isRedFlagQuery = directTokens.includes('red') && (directTokens.includes('flag') || directTokens.includes('flags'));
+    let allCovered = directTokens.every((t) => {
       const allowPrefix = t.length >= 4;
       const codeMatch = code && code.toLowerCase() === t;
 
@@ -242,7 +253,21 @@ function scoreIcon(
 
       return nameExact || keyExact || nameStart || keyStart || synonymHit || !!codeMatch;
     });
+
+    // Phrase override: 'red flag' should include triangular red flag (🚩) even if 'red' isn't in the name
+    if (!allCovered && isRedFlagQuery) {
+      const isTriangularFlag = (code && code.toLowerCase() === '1f6a9') ||
+        ((nameTokens.includes('triangular') || keywordTokens.includes('triangular')) &&
+         (nameTokens.includes('flag') || keywordTokens.includes('flag')));
+      if (isTriangularFlag) allCovered = true;
+    }
+
     if (!allCovered) return 0;
+  }
+
+  // If query is like 'happy face', restrict to smiling faces only
+  if (directTokens.length >= 2 && directTokens.includes('face') && directTokens.some((t) => POSITIVE_EMOTION_TERMS.has(t))) {
+    if (!subgroupRaw.startsWith('face-smiling')) return 0;
   }
 
   const weighDirect = (t: string) => {
@@ -307,7 +332,6 @@ function scoreIcon(
   }
 
   // Emotion-aware adjustments
-  const subgroupRaw = ((((icon as any).subgroup as string) || '') as string).toLowerCase();
   if (emotionHint === 'positive') {
     const positiveSubgroups = new Set(['face-smiling', 'face-affection']);
     const negativeSubgroups = new Set(['face-negative','face-concerned','face-neutral-skeptical','face-unwell','face-sleeping','face-sleepy']);
