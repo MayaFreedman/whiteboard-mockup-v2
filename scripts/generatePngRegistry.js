@@ -696,6 +696,12 @@ function categorizeEmoji(filename) {
         ui = 'symbols';
       }
 
+      // Override: sky & weather items -> Animals & Nature
+      const subgroupLower = (entry.subgroup || '').toLowerCase();
+      if (entry.group === 'Travel & Places' && subgroupLower.includes('sky & weather')) {
+        ui = 'animals-nature';
+      }
+
       if (ui) return ui;
     }
   }
