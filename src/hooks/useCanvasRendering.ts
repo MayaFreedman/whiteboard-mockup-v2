@@ -288,7 +288,7 @@ export const useCanvasRendering = (
    * @param obj - Whiteboard object to render
    * @param isSelected - Whether the object is currently selected
    */
-  const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, isSelected: boolean = false) => {
+  const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, id: string, isSelected: boolean = false) => {
     ctx.save();
     
     // Apply object transformations
@@ -396,8 +396,8 @@ export const useCanvasRendering = (
         const strokeWidth = obj.strokeWidth || 2;
         const opacity = obj.opacity || 1;
         
-        // Get object ID for caching
-        const objectId = Object.keys(objects).find(id => objects[id] === obj);
+        // Use provided id for caching to guarantee first-frame consistency
+        const objectId = id;
         
         // Render based on brush type or if it's an eraser
         if (isEraser) {
@@ -968,7 +968,7 @@ export const useCanvasRendering = (
     
     objectEntries.forEach(([id, obj]) => {
       const isSelected = selectedObjectIds.includes(id);
-      renderObject(ctx, obj, isSelected);
+      renderObject(ctx, obj, id, isSelected);
     });
   }, [objects, selectedObjectIds, renderObject]);
 
