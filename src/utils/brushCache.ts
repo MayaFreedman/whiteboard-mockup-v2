@@ -72,14 +72,18 @@ class BrushEffectCache {
 
   /**
    * Transfers brush effect data from a parent object to its segments after erasing
+   * Returns the transferred data for immediate use
    */
   transferToSegments(
     originalPathId: string, 
     brushType: string, 
     segments: Array<{ points: Array<{ x: number; y: number }>; id: string }>
-  ): void {
+  ): any {
     const originalData = this.get(originalPathId, brushType);
-    if (!originalData || !originalData.effectData) return;
+    if (!originalData || !originalData.effectData) {
+      console.log('⚠️ No original brush data found for transfer:', originalPathId.slice(0, 8));
+      return null;
+    }
 
     console.log('🔄 Transferring brush effects from parent to segments:', {
       originalPathId: originalPathId.slice(0, 8),
@@ -88,36 +92,45 @@ class BrushEffectCache {
       originalEffectData: originalData.effectData
     });
 
+    const transferredSegmentData: any = {};
+    
     // Transfer appropriate brush effects to each segment
     segments.forEach(segment => {
       if (brushType === 'spray') {
         const sprayData = originalData.effectData as SprayEffectData;
         const segmentSprayData = this.mapSprayDataToSegment(sprayData, originalData.points, segment.points);
         
-        this.store(segment.id, brushType, {
+        const segmentCacheData = {
           type: brushType as any,
           points: segment.points,
           strokeWidth: originalData.strokeWidth,
           strokeColor: originalData.strokeColor,
           opacity: originalData.opacity,
           effectData: segmentSprayData
-        });
+        };
+        
+        this.store(segment.id, brushType, segmentCacheData);
+        transferredSegmentData[segment.id] = segmentCacheData;
       } else if (brushType === 'chalk') {
         const chalkData = originalData.effectData as ChalkEffectData;
         const segmentChalkData = this.mapChalkDataToSegment(chalkData, originalData.points, segment.points);
         
-        this.store(segment.id, brushType, {
+        const segmentCacheData = {
           type: brushType as any,
           points: segment.points,
           strokeWidth: originalData.strokeWidth,
           strokeColor: originalData.strokeColor,
           opacity: originalData.opacity,
           effectData: segmentChalkData
-        });
+        };
+        
+        this.store(segment.id, brushType, segmentCacheData);
+        transferredSegmentData[segment.id] = segmentCacheData;
       }
     });
 
-    console.log('✅ Brush effect transfer complete');
+    console.log('✅ Brush effect transfer complete - data ready for immediate use');
+    return transferredSegmentData;
   }
 
   /**

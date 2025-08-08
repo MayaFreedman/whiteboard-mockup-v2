@@ -42,12 +42,10 @@ export const renderSprayOptimized = (
   if (pathId) {
     const cached = brushEffectCache.get(pathId, 'spray');
     if (cached && cached.effectData) {
-      console.log('🎯 Using cached spray data:', { pathId: pathId.slice(0, 8), dots: cached.effectData.dots?.length });
       sprayData = cached.effectData as SprayEffectData;
       pathPoints = cached.points;
     } else {
       // Calculate and cache new effect data - use coordinate-based seed for consistency
-      console.log('⚠️ FALLBACK: Generating new spray data for:', { pathId: pathId.slice(0, 8), reason: 'no cache' });
       pathPoints = pathToPointsForBrush(path);
       const baseSeed = generateCoordinateBasedSeed(pathPoints);
       sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
@@ -63,7 +61,6 @@ export const renderSprayOptimized = (
     }
   } else {
     // Fallback for preview mode - use coordinate-based seed for stability
-    console.log('⚠️ FALLBACK: Preview mode spray generation');
     pathPoints = pathToPointsForBrush(path);
     const baseSeed = generateCoordinateBasedSeed(pathPoints);
     sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
@@ -108,12 +105,10 @@ export const renderChalkOptimized = (
   if (pathId) {
     const cached = brushEffectCache.get(pathId, 'chalk');
     if (cached && cached.effectData) {
-      console.log('🎯 Using cached chalk data:', { pathId: pathId.slice(0, 8), particles: cached.effectData.dustParticles?.length });
       chalkData = cached.effectData as ChalkEffectData;
       pathPoints = cached.points;
     } else {
       // Calculate and cache new effect data - use coordinate-based seed for consistency
-      console.log('⚠️ FALLBACK: Generating new chalk data for:', { pathId: pathId.slice(0, 8), reason: 'no cache' });
       pathPoints = pathToPointsForBrush(path);
       const baseSeed = generateCoordinateBasedSeed(pathPoints);
       chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
@@ -129,7 +124,6 @@ export const renderChalkOptimized = (
     }
   } else {
     // Fallback for preview mode - use coordinate-based seed for stability
-    console.log('⚠️ FALLBACK: Preview mode chalk generation');
     pathPoints = pathToPointsForBrush(path);
     const baseSeed = generateCoordinateBasedSeed(pathPoints);
     chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);

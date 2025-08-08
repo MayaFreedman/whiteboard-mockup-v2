@@ -98,8 +98,10 @@ export const useEraserLogic = () => {
             id: nanoid()
           }));
           
-          // PRESERVE brush effects before clearing cache
+          // PRESERVE brush effects ATOMICALLY before any other operations
           const brushType = obj.data?.brushType;
+          let transferredData: any = null;
+          
           if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
             console.log('🎨 Preserving brush effects for segments:', {
               originalId: id.slice(0, 8),
@@ -107,17 +109,17 @@ export const useEraserLogic = () => {
               segmentCount: segmentsWithIds.length
             });
             
-            // Transfer brush effects to segments BEFORE clearing the original
-            brushEffectCache.transferToSegments(id, brushType, segmentsWithIds);
+            // Transfer brush effects and get the data back for immediate use
+            transferredData = brushEffectCache.transferToSegments(id, brushType, segmentsWithIds);
             
-            // Now it's safe to remove the original cache entry
+            // Remove original only after successful transfer
             brushEffectCache.remove(id, brushType);
           }
           
           // Mark object as processed in this stroke
           processedObjectsRef.current.add(id);
           
-          // Apply the erasure with complete metadata for multiplayer sync
+          // Create enhanced action with pre-populated cache data
           const enhancedAction = {
             originalObjectId: id,
             eraserPath: {
@@ -137,7 +139,9 @@ export const useEraserLogic = () => {
               strokeWidth: obj.strokeWidth,
               opacity: obj.opacity,
               fill: obj.fill
-            }
+            },
+            // Include transferred cache data to prevent fallback rendering
+            transferredCacheData: transferredData
           };
           
           whiteboardStore.erasePath(enhancedAction, userId);
@@ -149,7 +153,8 @@ export const useEraserLogic = () => {
             userId: userId.slice(0, 8),
             brushType: obj.data?.brushType,
             preservedEffects: !!(brushType && (brushType === 'spray' || brushType === 'chalk')),
-            metadataIncluded: true
+            metadataIncluded: true,
+            cacheDataTransferred: !!transferredData
           });
         }
       }
