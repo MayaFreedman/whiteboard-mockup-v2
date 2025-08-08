@@ -29,7 +29,7 @@ function singularize(t: string): string | null {
 const SYNONYMS: Record<string, string[]> = {
   heart: ['love', 'valentine', 'romance'],
   smile: ['happy', 'grin', 'smiley', 'joy', 'lol'],
-  sad: ['frown', 'unhappy', 'cry', 'tear', 'sob'],
+  sad: ['frown', 'unhappy', 'cry', 'crying', 'tears', 'sob'],
   angry: ['mad', 'rage', 'annoyed'],
   sick: ['ill', 'nausea', 'vomit', 'mask'],
   sleep: ['zzz', 'sleepy', 'snore', 'bed', 'night'],
@@ -246,8 +246,9 @@ function scoreIcon(
 
     if (nameExact) { score += 6; strongHit = true; }
     if (keyExact) { score += 6; strongHit = true; }
-    if (!nameExact && nameStart) { score += 4; strongHit = true; }
-    if (!keyExact && keyStart) { score += 4; strongHit = true; }
+    const allowPrefix = t.length >= 4;
+    if (!nameExact && allowPrefix && nameStart) { score += 4; strongHit = true; }
+    if (!keyExact && allowPrefix && keyStart) { score += 4; strongHit = true; }
     // Intentionally avoid substring matches for expanded tokens to reduce false positives like
     // 'rage' matching within 'beverage'.
 
@@ -318,9 +319,10 @@ function scoreIcon(
     return 0;
   }
 
-  // Gate: drop weak-only matches when query isn't generic
+  // Gate: drop weak-only matches; for single specific queries, be strict even if 'generic'
   const isGeneric = directTokens.some((t) => GENERIC_TERMS.has(t));
-  if (score > 0 && !strongHit && !isGeneric) {
+  const singleSpecific = directTokens.length === 1 && !['food','drink','animal','animals','face','emoji','flags','flag'].includes(directTokens[0]);
+  if (score > 0 && !strongHit && (singleSpecific || !isGeneric)) {
     return 0;
   }
 

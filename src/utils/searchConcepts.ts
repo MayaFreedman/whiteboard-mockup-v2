@@ -28,4 +28,7 @@ export const SEARCH_CONCEPTS: Readonly<Record<string, string[]>> = Object.freeze
   // Love/heart
   heart: ['love', 'valentine', 'romance'],
   love: ['heart', 'romance'],
+
+  // Colors and surfaces
+  green: ['golf', 'flag in hole', 'putting green', '26f3'],
 });
