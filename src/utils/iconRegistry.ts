@@ -13,6 +13,9 @@ export interface IconInfo {
   category: string;
   path: string;
   preview: string;
+  keywords?: string[];
+  group?: string;
+  subgroup?: string;
   hasSkinTones?: boolean;
   skinToneVariants?: string[];
   baseEmoji?: string;

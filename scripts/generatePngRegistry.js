@@ -766,6 +766,17 @@ function categorizeEmoji(filename) {
 
 function generateName(filename) {
   const baseFilename = filename.replace('.png', '');
+
+  // Prefer official Unicode name from emoji-test index if available
+  try {
+    const key = baseFilename.toUpperCase().replace(/-FE0F/g, '');
+    const skinlessKey = key.replace(/-1F3F[B-F]/g, '');
+    const idx = categorizeEmoji._emojiIndex;
+    const entry = idx ? (idx.get(key) || idx.get(skinlessKey)) : null;
+    if (entry && entry.name) {
+      return entry.name;
+    }
+  } catch {}
   
   // Use exact match from Unicode names database
   if (UNICODE_NAMES[baseFilename]) {
@@ -839,6 +850,33 @@ function generatePreview(filename) {
     // Fallback to filename
     return baseFilename;
   }
+}
+
+// Simple normalization and tokenization for keywords
+function normalizeText(input) {
+  return input
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[._/]+/g, ' ')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function tokenizeText(input) {
+  const n = normalizeText(input || '');
+  if (!n) return [];
+  return n.split(' ').filter(t => t.length > 1);
+}
+function deriveKeywords(name, group, subgroup, category, id) {
+  const set = new Set();
+  tokenizeText(name).forEach(t => set.add(t));
+  tokenizeText(group).forEach(t => set.add(t));
+  tokenizeText(subgroup).forEach(t => set.add(t));
+  tokenizeText((category || '').replace('-', ' ')).forEach(t => set.add(t));
+  const baseCode = (id.split('-')[0] || id).toLowerCase();
+  if (baseCode) set.add(baseCode);
+  return Array.from(set).slice(0, 20);
 }
 
 // Skin tone detection
@@ -930,6 +968,15 @@ async function generateRegistry() {
     const skinToneVariants = variants.filter(v => hasSkinToneModifier(v));
     const hasSkinTones = skinToneVariants.length > 0;
     
+    // Pull group/subgroup from Unicode index if available and derive keywords
+    const idKey = baseFile.replace('.png', '').toUpperCase().replace(/-FE0F/g, '');
+    const skinlessKey = idKey.replace(/-1F3F[B-F]/g, '');
+    const idx = categorizeEmoji._emojiIndex;
+    const entry = idx ? (idx.get(idKey) || idx.get(skinlessKey)) : null;
+    const group = entry?.group || undefined;
+    const subgroup = entry?.subgroup || undefined;
+    const keywords = deriveKeywords(name, group, subgroup, category, baseEmoji);
+
     const iconInfo = {
       name,
       category,
@@ -937,6 +984,9 @@ async function generateRegistry() {
       preview,
       hasSkinTones,
       baseEmoji,
+      keywords,
+      ...(group ? { group } : {}),
+      ...(subgroup ? { subgroup } : {}),
       ...(hasSkinTones && { 
         skinToneVariants: skinToneVariants.map(v => `/png-emojis/${v}`)
       })
@@ -990,6 +1040,9 @@ export interface IconInfo {
   category: string;
   path: string;
   preview: string;
+  keywords: string[];
+  group?: string;
+  subgroup?: string;
   hasSkinTones?: boolean;
   skinToneVariants?: string[];
   baseEmoji?: string;
@@ -1001,7 +1054,10 @@ ${icons.map(icon => `  {
     name: "${icon.name.replace(/"/g, '\\"')}",
     category: "${icon.category}",
     path: "${icon.path}",
-    preview: "${icon.preview}",${icon.hasSkinTones ? `
+    preview: "${icon.preview}",
+    keywords: ${JSON.stringify(icon.keywords)},${icon.group ? `
+    group: "${icon.group}",` : ''}${icon.subgroup ? `
+    subgroup: "${icon.subgroup}",` : ''}${icon.hasSkinTones ? `
     hasSkinTones: true,
     baseEmoji: "${icon.baseEmoji}",
     skinToneVariants: ${JSON.stringify(icon.skinToneVariants)},` : ''}

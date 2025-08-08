@@ -1,5 +1,5 @@
 import { IconInfo, getAllIcons, getIconsByCategoryWithCustom } from './iconRegistry';
-
+import { SEARCH_CONCEPTS } from './searchConcepts';
 // Normalize string: lowercase, remove diacritics, collapse punctuation
 function normalize(input: string): string {
   return input
@@ -61,23 +61,56 @@ const GENERIC_TERMS = new Set<string>([
   'people','person','body','objects','tools','travel','places','activities','events',
 ]);
 
-function expandTokens(tokens: string[]): string[] {
+function expandQuery(tokens: string[]): { expanded: string[]; concept: string[] } {
   const set = new Set<string>();
+  const conceptSet = new Set<string>();
+
+  const stem = (w: string): string | null => {
+    if (w.length <= 3) return null;
+    if (/ing$/.test(w)) return w.replace(/ing$/, '');
+    if (/ers$/.test(w)) return w.replace(/ers$/, 'er');
+    if (/er$/.test(w)) return w.replace(/er$/, '');
+    if (/ed$/.test(w)) return w.replace(/ed$/, '');
+    return null;
+  };
+
   const add = (w: string) => {
+    if (!w) return;
     set.add(w);
     const s = singularize(w);
     if (s) set.add(s);
+    const b = stem(w);
+    if (b && b !== w) {
+      set.add(b);
+      const s2 = singularize(b);
+      if (s2) set.add(s2);
+    }
   };
+
   tokens.forEach((t) => {
     add(t);
+
+    // Synonyms
     Object.entries(SYNONYMS).forEach(([key, vals]) => {
       if (t === key || vals.includes(t)) {
         add(key);
         vals.forEach((v) => add(v));
       }
     });
+
+    // Concepts
+    const conceptVals = SEARCH_CONCEPTS[t];
+    if (conceptVals && conceptVals.length) {
+      conceptVals.forEach((cv) => {
+        tokenize(cv).forEach((tok) => {
+          add(tok);
+          conceptSet.add(tok);
+        });
+      });
+    }
   });
-  return Array.from(set);
+
+  return { expanded: Array.from(set), concept: Array.from(conceptSet) };
 }
 
 function categoryTokens(category: string): string[] {
@@ -104,59 +137,103 @@ function getBaseCodeFromIcon(icon: IconInfo): string | null {
 
 function buildIndexFields(icon: IconInfo) {
   const nameTokens = tokenize(icon.name);
+  const keywordTokens: string[] = Array.isArray((icon as any).keywords)
+    ? ((icon as any).keywords as string[]).flatMap((k) => tokenize(k))
+    : [];
+  const groupTokens = [
+    ...tokenize(((icon as any).group as string) || ''),
+    ...tokenize(((icon as any).subgroup as string) || ''),
+  ];
   const catTokens = categoryTokens(icon.category);
   const code = getBaseCodeFromIcon(icon);
   return {
     nameTokens,
+    keywordTokens,
+    groupTokens,
     catTokens,
     code,
     preview: icon.preview,
   };
 }
 
-function scoreIcon(icon: IconInfo, q: string, qTokens: string[], qExpanded: string[]): number {
-  const { nameTokens, catTokens, code, preview } = buildIndexFields(icon);
+function scoreIcon(
+  icon: IconInfo,
+  q: string,
+  directTokens: string[],
+  expandedTokens: string[],
+  conceptTokens: string[],
+  stage: 1 | 2
+): number {
+  const { nameTokens, keywordTokens, groupTokens, catTokens, code, preview } = buildIndexFields(icon);
   let score = 0;
-  let nameMatch = false;
-  let codeMatch = false;
-  let emojiMatch = false;
+  let strongHit = false; // name/keyword/code/emoji
   let categoryHit = false;
+  let groupHit = false;
 
   // Direct emoji paste
   if (q.length <= 3 && preview && q.includes(preview)) {
-    score += 12;
-    emojiMatch = true;
+    score += 20; // strong
+    strongHit = true;
   }
 
-  for (const t of qTokens) {
-    const tExact = nameTokens.includes(t);
-    const tStart = nameTokens.some((w) => w.startsWith(t));
-    const tSub = nameTokens.some((w) => w.includes(t));
+  const weighDirect = (t: string) => {
+    const nameExact = nameTokens.includes(t);
+    const keyExact = keywordTokens.includes(t);
+    const nameStart = nameTokens.some((w) => w.startsWith(t));
+    const keyStart = keywordTokens.some((w) => w.startsWith(t));
+    const nameSub = nameTokens.some((w) => w.includes(t));
+    const keySub = keywordTokens.some((w) => w.includes(t));
 
-    if (tExact) { score += 10; nameMatch = true; }
-    else if (tStart) { score += 6; nameMatch = true; }
-    else if (tSub) { score += 2; nameMatch = true; }
+    if (nameExact) { score += 16; strongHit = true; }
+    if (keyExact) { score += 12; strongHit = true; }
+    if (!nameExact && nameStart) { score += 8; strongHit = true; }
+    if (!keyExact && keyStart) { score += 6; strongHit = true; }
+    if (!nameExact && !nameStart && nameSub) { score += 2; strongHit = true; }
+    if (!keyExact && !keyStart && keySub) { score += 2; strongHit = true; }
 
+    if (code && code.toLowerCase() === t) { score += 10; strongHit = true; }
+  };
+
+  const weighExpanded = (t: string) => {
+    const nameExact = nameTokens.includes(t);
+    const keyExact = keywordTokens.includes(t);
+    const nameStart = nameTokens.some((w) => w.startsWith(t));
+    const keyStart = keywordTokens.some((w) => w.startsWith(t));
+    const nameSub = nameTokens.some((w) => w.includes(t));
+    const keySub = keywordTokens.some((w) => w.includes(t));
+
+    if (nameExact) { score += 6; strongHit = true; }
+    if (keyExact) { score += 6; strongHit = true; }
+    if (!nameExact && nameStart) { score += 4; strongHit = true; }
+    if (!keyExact && keyStart) { score += 4; strongHit = true; }
+    if (!nameExact && !nameStart && nameSub) { score += 1; strongHit = true; }
+    if (!keyExact && !keyStart && keySub) { score += 1; strongHit = true; }
+
+    if (groupTokens.includes(t)) { score += 3; groupHit = true; }
     if (catTokens.includes(t)) { score += 1; categoryHit = true; }
-    if (code && code.toLowerCase() === t) { score += 3; codeMatch = true; }
+  };
+
+  // Stage 1: only direct tokens
+  directTokens.forEach(weighDirect);
+
+  // Stage 2: expand
+  if (stage === 2) {
+    expandedTokens.forEach(weighExpanded);
+
+    // Concept nudges
+    for (const ct of conceptTokens) {
+      const inName = nameTokens.includes(ct);
+      const inKey = keywordTokens.includes(ct);
+      if (inName || inKey) {
+        score += 3;
+        strongHit = true;
+      }
+    }
   }
 
-  for (const t of qExpanded) {
-    if (nameTokens.includes(t)) { score += 2; nameMatch = true; }
-    else if (catTokens.includes(t)) { score += 1; categoryHit = true; }
-  }
-
-  // Small contextual nudges
-  if (icon.category === 'smileys-emotion' && (qExpanded.includes('face') || qExpanded.includes('smile'))) {
-    score += 1;
-  }
-  if (icon.category === 'food-drink' && (qExpanded.includes('food') || qExpanded.includes('coffee'))) {
-    score += 1;
-  }
-
-  // Gate: drop category-only matches for specific queries
-  const isGeneric = qTokens.some((t) => GENERIC_TERMS.has(t));
-  if (score > 0 && !nameMatch && !codeMatch && !emojiMatch && !isGeneric) {
+  // Gate: drop weak-only matches when query isn't generic
+  const isGeneric = directTokens.some((t) => GENERIC_TERMS.has(t));
+  if (score > 0 && !strongHit && !isGeneric) {
     return 0;
   }
 
@@ -171,15 +248,32 @@ export interface SearchOptions {
 export function searchIcons(query: string, options: SearchOptions = {}): IconInfo[] {
   const q = normalize(query);
   if (!q) return [];
-  const qTokens = tokenize(q);
-  const qExpanded = expandTokens(qTokens);
+  const directTokens = tokenize(q);
+  const { expanded: qExpanded, concept: conceptTokens } = expandQuery(directTokens);
 
   const source: IconInfo[] = options.category
     ? getIconsByCategoryWithCustom(options.category)
     : getAllIcons();
 
-  const scored = source
-    .map((icon) => ({ icon, s: scoreIcon(icon, q, qTokens, qExpanded) }))
+  // Stage 1: direct-only
+  let scored = source
+    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, [], conceptTokens, 1) }))
+    .filter((x) => x.s > 0)
+    .sort((a, b) => {
+      if (b.s !== a.s) return b.s - a.s;
+      if (a.icon.category !== b.icon.category) return a.icon.category.localeCompare(b.icon.category);
+      return a.icon.name.localeCompare(b.icon.name);
+    })
+    .map((x) => x.icon);
+
+  const THRESHOLD = 30;
+  if (scored.length >= THRESHOLD) {
+    return options.limit ? scored.slice(0, options.limit) : scored;
+  }
+
+  // Stage 2: broaden with expansions
+  scored = source
+    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, qExpanded, conceptTokens, 2) }))
     .filter((x) => x.s > 0)
     .sort((a, b) => {
       if (b.s !== a.s) return b.s - a.s;
