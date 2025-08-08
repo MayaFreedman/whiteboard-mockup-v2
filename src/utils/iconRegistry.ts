@@ -1,6 +1,6 @@
 /**
  * Auto-generated PNG emoji registry
- * Generated from 3755 PNG files on 2025-08-08T16:17:37.075Z
+ * Generated from 3755 PNG files on 2025-08-08T18:06:00.927Z
  * 
  * Categories: symbols, objects-tools, animals-nature, food-drink, smileys-emotion, activities-events, travel-places, flags, people-body
  * DO NOT EDIT MANUALLY - Run 'node scripts/generatePngRegistry.js' to regenerate
@@ -13,7 +13,7 @@ export interface IconInfo {
   category: string;
   path: string;
   preview: string;
-  keywords?: string[];
+  keywords: string[];
   group?: string;
   subgroup?: string;
   hasSkinTones?: boolean;
@@ -16795,7 +16795,7 @@ export const CATEGORY_STATS = {
   "people-body": 394
 };
 export const TOTAL_EMOJIS = 3755;
-export const GENERATED_AT = "2025-08-08T16:17:37.081Z";
+export const GENERATED_AT = "2025-08-08T18:06:00.931Z";
 
 // Skin tone mapping for quick lookup
 export const SKIN_TONE_MAP = new Map([
