@@ -62,7 +62,7 @@ const GENERIC_TERMS = new Set<string>([
 ]);
 
 // Tokens we should not promote when coming from expansions (avoid broad matches)
-const STOP_EXPANDED_TOKENS = new Set<string>(['flag', 'face', 'emoji', 'smiley', 'expression', 'emotion']);
+const STOP_EXPANDED_TOKENS = new Set<string>(['flag', 'flags', 'face', 'emoji', 'smiley', 'expression', 'emotion']);
 
 // Negative sentiment/meaning opposites to nudge down irrelevant results
 const NEGATIVE_SYNONYMS: Readonly<Record<string, string[]>> = Object.freeze({
@@ -72,6 +72,18 @@ const NEGATIVE_SYNONYMS: Readonly<Record<string, string[]>> = Object.freeze({
   sad: ['happy', 'smile', 'laugh', 'joy'],
   angry: ['happy', 'smile', 'laugh', 'joy'],
 });
+
+// Emotion classification helpers
+const POSITIVE_EMOTION_TERMS = new Set<string>(['happy','smile','smiley','grin','joy','laugh','lol','rofl','love','heart']);
+const NEGATIVE_EMOTION_QUERY_TERMS = new Set<string>(['sad','unhappy','cry','tear','sob','angry','mad','annoyed']);
+function classifyEmotionQuery(tokens: string[]): 'positive' | 'negative' | 'angry' | null {
+  for (const t of tokens) {
+    if (POSITIVE_EMOTION_TERMS.has(t)) return 'positive';
+    if (t === 'sad' || t === 'unhappy' || t === 'cry' || t === 'tear' || t === 'sob') return 'negative';
+    if (t === 'angry' || t === 'mad' || t === 'annoyed' || t === 'rage') return 'angry';
+  }
+  return null;
+}
 
 function expandQuery(tokens: string[]): { expanded: string[]; concept: string[]; negative: string[] } {
   const set = new Set<string>();
@@ -183,6 +195,7 @@ function scoreIcon(
   expandedTokens: string[],
   conceptTokens: string[],
   negativeTokens: string[],
+  emotionHint: 'positive' | 'negative' | 'angry' | null,
   stage: 1 | 2
 ): number {
   const { nameTokens, keywordTokens, groupTokens, catTokens, code, preview } = buildIndexFields(icon);
@@ -254,10 +267,28 @@ function scoreIcon(
     }
   }
 
-  // Apply negative sentiment dampening
-  const hasNegative = negativeTokens.some((t) => nameTokens.includes(t) || keywordTokens.includes(t));
+  // Emotion-aware adjustments
+  const subgroupRaw = ((((icon as any).subgroup as string) || '') as string).toLowerCase();
+  if (emotionHint === 'positive') {
+    const positiveSubgroups = new Set(['face-smiling', 'face-affection']);
+    const negativeSubgroups = new Set(['face-negative','face-concerned','face-neutral-skeptical','face-unwell','face-sleeping','face-sleepy']);
+    if (positiveSubgroups.has(subgroupRaw)) {
+      score += 6;
+    }
+    if (negativeSubgroups.has(subgroupRaw)) {
+      const hasDirectPositiveToken = nameTokens.some((w)=>POSITIVE_EMOTION_TERMS.has(w)) || keywordTokens.some((w)=>POSITIVE_EMOTION_TERMS.has(w));
+      score -= hasDirectPositiveToken ? 4 : 12;
+    }
+  }
+
+  // Apply negative sentiment dampening (broader match; stronger for positive queries)
+  const hasNegative =
+    negativeTokens.some((t) =>
+      nameTokens.some((w) => w === t || w.startsWith(t) || w.includes(t)) ||
+      keywordTokens.some((w) => w === t || w.startsWith(t) || w.includes(t))
+    );
   if (hasNegative) {
-    score -= 8;
+    score -= emotionHint === 'positive' ? 12 : 8;
   }
 
   // Suppress country flags unless query directly asks for flags
@@ -287,6 +318,7 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
   if (!q) return [];
   const directTokens = tokenize(q);
   const { expanded: qExpanded, concept: conceptTokens, negative: negativeTokens } = expandQuery(directTokens);
+  const emotionHint = classifyEmotionQuery(directTokens);
 
   const source: IconInfo[] = options.category
     ? getIconsByCategoryWithCustom(options.category)
@@ -294,7 +326,7 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
 
   // Stage 1: direct-only
   let scored = source
-    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, [], conceptTokens, negativeTokens, 1) }))
+    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, [], conceptTokens, negativeTokens, emotionHint, 1) }))
     .filter((x) => x.s > 0)
     .sort((a, b) => {
       if (b.s !== a.s) return b.s - a.s;
@@ -310,7 +342,7 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
 
   // Stage 2: broaden with expansions
   scored = source
-    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, qExpanded, conceptTokens, negativeTokens, 2) }))
+    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, qExpanded, conceptTokens, negativeTokens, emotionHint, 2) }))
     .filter((x) => x.s > 0)
     .sort((a, b) => {
       if (b.s !== a.s) return b.s - a.s;
