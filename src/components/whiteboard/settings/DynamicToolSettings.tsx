@@ -18,6 +18,7 @@ import { SkinTonePicker } from './SkinTonePicker';
 // Removed preloadCategoryEmojis import - now using progressive loading
 
 import { Smile, Apple, Dog, Car, Lightbulb, Heart, Flag, Users, PartyPopper, LayoutGrid, Image, Circle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
 
 const categoryIcons: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   all: LayoutGrid,
@@ -164,30 +165,35 @@ export const DynamicToolSettings: React.FC = () => {
           {/* Category selector */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Category</label>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => {
-                const IconComp = categoryIcons[category] || Circle;
-                const label = category === 'all' ? 'All Icons' : getCategoryDisplayName(category);
-                const isActive = selectedCategory === category;
-                return (
-                  <button
-                    key={category}
-                    className={`h-9 w-9 rounded-full flex items-center justify-center transition-colors ${
-                      isActive 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                    }`}
-                    onClick={() => handleCategoryChange(category)}
-                    title={label}
-                    aria-label={label}
-                    aria-pressed={isActive}
-                  >
-                    <IconComp className="h-4 w-4" />
-                    <span className="sr-only">{label}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <TooltipProvider>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => {
+                  const IconComp = categoryIcons[category] || Circle;
+                  const label = category === 'all' ? 'All Icons' : getCategoryDisplayName(category);
+                  const isActive = selectedCategory === category;
+                  return (
+                    <Tooltip key={category}>
+                      <TooltipTrigger asChild>
+                        <button
+                          className={`h-9 w-9 rounded-full flex items-center justify-center transition-colors ${
+                            isActive 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                          }`}
+                          onClick={() => handleCategoryChange(category)}
+                          aria-label={label}
+                          aria-pressed={isActive}
+                        >
+                          <IconComp className="h-4 w-4" />
+                          <span className="sr-only">{label}</span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">{label}</TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </TooltipProvider>
           </div>
           
           {/* Progressive stamp grid with virtual windowing for large categories */}
