@@ -11,7 +11,7 @@ export const SEARCH_CONCEPTS: Readonly<Record<string, string[]>> = Object.freeze
   rain: ['umbrella', 'water'],
 
   // Sports
-  golf: ['golfer', 'golfing', 'putt', 'putting', 'putter', 'tee', 'teeing', 'green', '26f3'],
+  golf: ['golfer', 'golfing', 'putt', 'putting', 'putter', 'tee', 'teeing', '26f3'],
   golfer: ['golf', 'golfing'],
   swimming: ['swim', 'swimmer', 'water', 'pool', 'ocean', 'sea'],
   swim: ['swimming', 'swimmer', 'water'],
@@ -22,7 +22,8 @@ export const SEARCH_CONCEPTS: Readonly<Record<string, string[]>> = Object.freeze
   celebration: ['party', 'confetti', 'balloon', 'fireworks'],
 
   // Food & drink
-  coffee: ['espresso', 'latte', 'cup', 'cafe'],
+  coffee: ['espresso', 'latte', 'mug', 'cafe'],
+  orange: ['tangerine', 'citrus', 'mandarin', '1f34a'],
 
   // Love/heart
   heart: ['love', 'valentine', 'romance'],

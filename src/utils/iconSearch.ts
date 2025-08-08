@@ -35,8 +35,8 @@ const SYNONYMS: Record<string, string[]> = {
   sleep: ['zzz', 'sleepy', 'snore', 'bed', 'night'],
   laugh: ['haha', 'lol', 'rofl'],
   work: ['job', 'office', 'briefcase', 'suit', 'profession'],
-  food: ['snack', 'meal', 'lunch', 'dinner', 'restaurant', 'drink'],
-  coffee: ['espresso', 'latte', 'cup', 'cafe', 'drink'],
+  food: ['snack', 'meal', 'lunch', 'dinner', 'restaurant'],
+  coffee: ['espresso', 'latte', 'mug', 'cafe'],
   weather: ['sun', 'rain', 'cloud', 'snow', 'storm', 'umbrella', 'wind'],
   animal: ['animals', 'pet', 'wildlife'],
   face: ['emoji', 'smiley', 'expression', 'emotion'],
@@ -62,7 +62,11 @@ const GENERIC_TERMS = new Set<string>([
 ]);
 
 // Tokens we should not promote when coming from expansions (avoid broad matches)
-const STOP_EXPANDED_TOKENS = new Set<string>(['flag', 'flags', 'face', 'emoji', 'smiley', 'expression', 'emotion']);
+const STOP_EXPANDED_TOKENS = new Set<string>([
+  'flag', 'flags', 'face', 'emoji', 'smiley', 'expression', 'emotion',
+  // Colors (avoid concept bleeding by color words)
+  'red','green','blue','orange','yellow','purple','pink','white','black','brown','grey','gray'
+]);
 
 // Negative sentiment/meaning opposites to nudge down irrelevant results
 const NEGATIVE_SYNONYMS: Readonly<Record<string, string[]>> = Object.freeze({
@@ -222,8 +226,10 @@ function scoreIcon(
     if (keyExact) { score += 12; strongHit = true; }
     if (!nameExact && nameStart) { score += 8; strongHit = true; }
     if (!keyExact && keyStart) { score += 6; strongHit = true; }
-    if (!nameExact && !nameStart && nameSub) { score += 2; strongHit = true; }
-    if (!keyExact && !keyStart && keySub) { score += 2; strongHit = true; }
+    // Avoid substring noise for short tokens like 'ice' in 'office'
+    const allowSubstring = t.length >= 4;
+    if (allowSubstring && !nameExact && !nameStart && nameSub) { score += 2; strongHit = true; }
+    if (allowSubstring && !keyExact && !keyStart && keySub) { score += 2; strongHit = true; }
 
     if (code && code.toLowerCase() === t) { score += 10; strongHit = true; }
   };
@@ -289,6 +295,19 @@ function scoreIcon(
     );
   if (hasNegative) {
     score -= emotionHint === 'positive' ? 12 : 8;
+  }
+
+  // Phrase bonus: if all direct tokens appear as exact or prefix in name/keywords, reward
+  if (directTokens.length > 1) {
+    const phraseHit = directTokens.every((t) =>
+      nameTokens.includes(t) ||
+      keywordTokens.includes(t) ||
+      nameTokens.some((w) => w.startsWith(t)) ||
+      keywordTokens.some((w) => w.startsWith(t))
+    );
+    if (phraseHit) {
+      score += 6;
+    }
   }
 
   // Suppress country flags unless query directly asks for flags
