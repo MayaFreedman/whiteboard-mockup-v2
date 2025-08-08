@@ -13,7 +13,7 @@ import { ShapePropertiesPanel } from '../ShapePropertiesPanel';
 import { TextPropertiesPanel } from '../TextPropertiesPanel';
 import { StampPropertiesPanel } from '../StampPropertiesPanel';
 import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName, getAllIcons } from '../../../utils/iconRegistry';
-import { CustomStampUpload } from './CustomStampUpload';
+import { CustomStampUpload, type CustomStampUploadHandle } from './CustomStampUpload';
 import { SkinTonePicker } from './SkinTonePicker';
 // Removed preloadCategoryEmojis import - now using progressive loading
 
@@ -55,6 +55,7 @@ export const DynamicToolSettings: React.FC = () => {
   const scrollToUploader = useCallback(() => {
     uploaderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
+  const uploaderCtrlRef = useRef<CustomStampUploadHandle | null>(null);
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(searchQuery), 200);
     return () => clearTimeout(id);
@@ -263,7 +264,7 @@ export const DynamicToolSettings: React.FC = () => {
                     <button
                       type="button"
                       className="underline underline-offset-2 text-primary hover:text-primary/80 font-medium"
-                      onClick={scrollToUploader}
+                      onClick={() => { scrollToUploader(); uploaderCtrlRef.current?.openFileDialog(); }}
                     >
                       Try uploading a custom stamp!
                     </button>
@@ -278,7 +279,7 @@ export const DynamicToolSettings: React.FC = () => {
           
           {/* Custom stamp upload */}
           <div ref={uploaderRef}>
-            <CustomStampUpload onStampAdded={handleCustomStampAdded} />
+            <CustomStampUpload ref={uploaderCtrlRef} onStampAdded={handleCustomStampAdded} />
           </div>
         </div>
       </ToolSettingCard>;

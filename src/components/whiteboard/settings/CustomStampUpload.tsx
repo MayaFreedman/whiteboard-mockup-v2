@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Button } from '../../ui/button';
 import { Upload, X, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '../../ui/alert';
@@ -9,9 +9,15 @@ interface CustomStampUploadProps {
   onStampAdded?: () => void; // Callback to refresh the stamp list
 }
 
-export const CustomStampUpload: React.FC<CustomStampUploadProps> = ({ onStampAdded }) => {
+export interface CustomStampUploadHandle { openFileDialog: () => void; }
+export const CustomStampUpload = forwardRef<CustomStampUploadHandle, CustomStampUploadProps>(({ onStampAdded }, ref) => {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  useImperativeHandle(ref, () => ({
+    openFileDialog: () => fileInputRef.current?.click()
+  }), []);
   
   const supported = isCustomStampsSupported();
   const storageInfo = getStorageInfo();
@@ -88,6 +94,7 @@ export const CustomStampUpload: React.FC<CustomStampUploadProps> = ({ onStampAdd
           accept="image/png,image/jpeg,image/jpg"
           onChange={handleInputChange}
           disabled={isUploading}
+          ref={fileInputRef}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
         />
         
@@ -124,4 +131,4 @@ export const CustomStampUpload: React.FC<CustomStampUploadProps> = ({ onStampAdd
       </div>
     </div>
   );
-};
+});
