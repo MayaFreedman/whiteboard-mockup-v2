@@ -577,14 +577,20 @@ function isProfession(filename) {
 
 // Helper function to check if emoji is a flag
 function isFlag(filename) {
-  const baseFilename = filename.replace('.png', '');
-  
-  // Check for flag combinations (two regional indicators)
+  const baseFilename = filename.replace('.png', '').toUpperCase();
+
+  // Country/region flags (two regional indicators)
   if (baseFilename.includes('-') && baseFilename.match(/^1F1[E-F][0-9A-F]-1F1[E-F][0-9A-F]$/)) {
     return true;
   }
-  
-  // Check for individual regional indicator symbols
+
+  // Subdivision and special flags using tag sequences (eg. GB-ENG, GB-SCT, GB-WLS, regional)
+  // Pattern: 1F3F4 (black flag) or 1F3F3 (white flag) followed by tag characters (E0061–E007A) and terminator E007F
+  if (baseFilename.startsWith('1F3F4') || baseFilename.startsWith('1F3F3')) {
+    return true;
+  }
+
+  // Individual regional indicator symbols
   const match = baseFilename.match(/^1F1[E-F][0-9A-F]$/);
   return !!match;
 }
@@ -671,6 +677,12 @@ function categorizeEmoji(filename) {
     const entry = idx.get(exactKey) || idx.get(skinlessKey);
     if (entry) {
       let ui = mapGroupToUI(entry.group, entry.subgroup) || null;
+
+      // Override: move human faces (mask/cough/etc.) into People, but keep cat/monkey faces in Smileys
+      const subgroup = (entry.subgroup || '').toLowerCase();
+      if (entry.group === 'Smileys & Emotion' && subgroup.startsWith('face-') && !subgroup.includes('cat-face') && !subgroup.includes('monkey-face')) {
+        ui = 'people-body';
+      }
 
       // Override: break up religion & culture into Symbols, except folded hands ("praying") -> People & Body
       const lowerName = (entry.name || '').toLowerCase();

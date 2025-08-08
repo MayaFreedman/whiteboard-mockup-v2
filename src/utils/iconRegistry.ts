@@ -12254,18 +12254,40 @@ export function getIconByPath(path: string): IconInfo | undefined {
   return iconRegistry.find(icon => icon.path === path);
 }
 
+// Runtime normalization to improve categorization without regenerating
+function normalizeCategory(icon: IconInfo): string {
+  const base = icon.path.split('/').pop()?.replace('.png', '').toUpperCase() || '';
+
+  // Treat subdivision/tag flags as flags
+  if ((icon.category === 'symbols' || icon.category === 'objects-tools') && (base.startsWith('1F3F4-') || base.startsWith('1F3F3'))) {
+    return 'flags';
+  }
+
+  // Move specific face-related smileys into People & Body (mask/cough/etc.)
+  if (icon.category === 'smileys-emotion') {
+    const faceToPeople = new Set([
+      '1F637','1F912','1F915','1F922','1F92E','1F927', // face-unwell
+      '1F62E-200D-1F4A8','1F635-200D-1F4AB','1F636-200D-1F32B', // special faces
+    ]);
+    if (faceToPeople.has(base)) return 'people-body';
+  }
+
+  return icon.category;
+}
+
 /**
  * Get icons by category
  */
 export function getIconsByCategory(category: string): IconInfo[] {
-  return iconRegistry.filter(icon => icon.category === category);
+  return iconRegistry.filter(icon => normalizeCategory(icon) === category).map(icon => ({ ...icon, category: normalizeCategory(icon) }));
 }
 
 /**
  * Get all available categories
  */
 export function getCategories(): string[] {
-  const raw = Array.from(new Set(iconRegistry.map(icon => icon.category)));
+  const normalized = iconRegistry.map(icon => normalizeCategory(icon));
+  const raw = Array.from(new Set(normalized));
   const priority = ['smileys-emotion', 'food-drink', 'animals-nature', 'people-body', 'symbols'];
   const withoutCustom = raw.filter(c => c !== 'custom' && c !== 'religion-culture');
   const ordered = [
@@ -12354,7 +12376,7 @@ export function getIconsByCategoryWithCustom(category: string): IconInfo[] {
  * Get all icons including custom stamps
  */
 export function getAllIcons(): IconInfo[] {
-  const all = [...iconRegistry, ...getCustomStampsAsIcons()];
+  const all = [...iconRegistry, ...getCustomStampsAsIcons()].map(icon => ({ ...icon, category: normalizeCategory(icon) }));
   const priority = ['smileys-emotion', 'food-drink', 'animals-nature', 'people-body', 'symbols'];
   const getPrio = (c: string) => {
     const i = priority.indexOf(c);
