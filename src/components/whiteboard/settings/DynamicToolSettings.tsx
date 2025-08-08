@@ -18,6 +18,8 @@ import { SkinTonePicker } from './SkinTonePicker';
 // Removed preloadCategoryEmojis import - now using progressive loading
 
 import { Input } from '../../ui/input';
+import { Button } from '../../ui/button';
+import { Alert, AlertDescription } from '../../ui/alert';
 import { searchIcons } from '../../../utils/iconSearch';
 import { Smile, Apple, Dog, Car, Lightbulb, Heart, Flag, Users, PartyPopper, LayoutGrid, Image, Circle, Search } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
@@ -51,6 +53,7 @@ export const DynamicToolSettings: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const uploaderRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(searchQuery), 200);
     return () => clearTimeout(id);
@@ -239,12 +242,35 @@ export const DynamicToolSettings: React.FC = () => {
             </div>
             {debouncedQuery && <div className="text-xs text-muted-foreground">Found {totalResults} result{totalResults === 1 ? '' : 's'}</div>}
           </div>
+          {debouncedQuery && totalResults === 0 && (
+            <Alert>
+              <AlertDescription className="flex items-center justify-between gap-2">
+                {selectedCategory !== 'all' ? (
+                  <>
+                    <span>No results for "{debouncedQuery}" in {getCategoryDisplayName(selectedCategory)}.</span>
+                    <Button size="sm" variant="secondary" onClick={() => handleCategoryChange('all')}>
+                      Search all icons
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <span>No results for "{debouncedQuery}" across all icons.</span>
+                    <Button size="sm" onClick={() => uploaderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+                      Upload custom stamp
+                    </Button>
+                  </>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
           
         {/* Progressive stamp grid with virtual windowing for large categories */}
           {selectedCategory === 'custom' && displayedItems.length === 0 && !debouncedQuery ? <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">You haven't uploaded any custom stamps yet. Use the uploader below to add one!</div> : <ProgressiveGridSelector label="Select Stamp" items={displayedItems} selectedValue={toolSettings.selectedSticker || ''} onChange={handleStampChange} showUpload={false} onCustomStampDeleted={handleCustomStampAdded} windowSize={windowConfig.windowSize} batchSize={windowConfig.batchSize} />}
           
           {/* Custom stamp upload */}
-          <CustomStampUpload onStampAdded={handleCustomStampAdded} />
+          <div ref={uploaderRef}>
+            <CustomStampUpload onStampAdded={handleCustomStampAdded} />
+          </div>
         </div>
       </ToolSettingCard>;
   }
