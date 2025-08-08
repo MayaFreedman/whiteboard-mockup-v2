@@ -408,9 +408,36 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
   const { expanded: qExpanded, concept: conceptTokens, negative: negativeTokens } = expandQuery(directTokens);
   const emotionHint = classifyEmotionQuery(directTokens);
 
-  const source: IconInfo[] = options.category
+  let source: IconInfo[] = options.category
     ? getIconsByCategoryWithCustom(options.category)
     : getAllIcons();
+
+  // Strict color-only query gating: if the query is only a single color (optionally with generic terms),
+  // restrict results to items explicitly tagged with that color or known color codepoints
+  const COLOR_WORDS = new Set(['red','green','blue','yellow','purple','pink','white','black','brown','orange','orange_color','grey','gray']);
+  const GENERIC_COLOR_TERMS = new Set(['emoji','emojis','icon','icons','colour','color','face','smiley','symbol','symbols','shape','shapes']);
+  const colorOnlyToken = (() => {
+    const colors = directTokens.filter((t) => COLOR_WORDS.has(t));
+    const others = directTokens.filter((t) => !COLOR_WORDS.has(t) && !GENERIC_COLOR_TERMS.has(t));
+    return colors.length === 1 && others.length === 0 ? colors[0] : null;
+  })();
+
+  if (colorOnlyToken) {
+    const hexCodeSet = new Set(
+      (SEARCH_CONCEPTS[colorOnlyToken] || [])
+        .filter((v) => /^[0-9a-f]{3,}$/i.test(v))
+        .map((v) => v.toLowerCase())
+    );
+
+    source = source.filter((icon) => {
+      const { nameTokens, keywordTokens, code } = buildIndexFields(icon);
+      return (
+        nameTokens.includes(colorOnlyToken) ||
+        keywordTokens.includes(colorOnlyToken) ||
+        (code && hexCodeSet.has(code.toLowerCase()))
+      );
+    });
+  }
 
   // Stage 1: direct-only
   let scored = source
