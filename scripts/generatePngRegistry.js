@@ -1018,8 +1018,47 @@ export function getIconByPath(path: string): IconInfo | undefined {
 /**
  * Get icons by category
  */
+// Faces grouping helpers
+function getEmojiIdFromPath(p: string): string {
+  const file = p.split('/').pop() || '';
+  return file.replace('.png', '');
+}
+function getBaseCode(id: string): string {
+  const first = id.split('-')[0];
+  return first.toUpperCase().replace('FE0F', '');
+}
+const FACE_EXTRA_SET = new Set<string>([
+  '263A', '2639',
+  '1F970','1F971','1F972','1F97A',
+  '1F9D0','1F60E','1F636','1F637','1F912','1F915','1F922','1F92E','1F927',
+  '1F975','1F976','1F974','1F635','1F92F',
+  '1FAE0','1FAE1','1FAE2','1FAE3','1FAE4','1FAE5','1FAE8','1FAE9',
+  '1F910','1F911','1F913','1F920','1F928','1F978','1F979'
+]);
+function isFaceEmoji(idOrIcon: string | IconInfo): boolean {
+  const id = typeof idOrIcon === 'string' ? idOrIcon : getEmojiIdFromPath(idOrIcon.path);
+  const base = getBaseCode(id);
+  const hex = parseInt(base, 16);
+  const inEmoticonsBlock = !Number.isNaN(hex) && hex >= 0x1F600 && hex <= 0x1F64F;
+  return inEmoticonsBlock || FACE_EXTRA_SET.has(base);
+}
+
 export function getIconsByCategory(category: string): IconInfo[] {
-  return iconRegistry.filter(icon => icon.category === category);
+  const items = iconRegistry.filter(icon => icon.category === category);
+  if (category === 'smileys-emotion') {
+    return items.slice().sort((a, b) => {
+      const fa = isFaceEmoji(a) ? 0 : 1;
+      const fb = isFaceEmoji(b) ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+      const ida = getBaseCode(getEmojiIdFromPath(a.path));
+      const idb = getBaseCode(getEmojiIdFromPath(b.path));
+      const na = parseInt(ida, 16);
+      const nb = parseInt(idb, 16);
+      if (!Number.isNaN(na) && !Number.isNaN(nb) && na !== nb) return na - nb;
+      return a.name.localeCompare(b.name);
+    });
+  }
+  return items;
 }
 
 /**
@@ -1126,6 +1165,12 @@ export function getAllIcons(): IconInfo[] {
     const pb = getPrio(b.category);
     if (pa !== pb) return pa - pb;
     if (a.category !== b.category) return a.category.localeCompare(b.category);
+
+    if (a.category === 'smileys-emotion' && b.category === 'smileys-emotion') {
+      const fa = isFaceEmoji(a) ? 0 : 1;
+      const fb = isFaceEmoji(b) ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+    }
     return a.name.localeCompare(b.name);
   });
 }
