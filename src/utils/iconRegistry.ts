@@ -11399,7 +11399,34 @@ export const iconRegistry: IconInfo[] = [
     path: "/png-emojis/2B50.png",
     preview: "⭐",
   }
-];
+]; 
+
+// Category override helpers
+const OVERRIDE_TO_PEOPLE = new Set<string>(['1F6C2','1F6C3','1F6D0']);
+
+function getBaseCodeFromPath(p: string): string {
+  return p.split('/').pop()?.replace('.png', '').toUpperCase() || '';
+}
+
+function isBasicFaceEmoji(base: string): boolean {
+  const primary = base.split('-')[0];
+  const num = parseInt(primary, 16);
+  return num >= 0x1F600 && num <= 0x1F64F;
+}
+
+function remapCategory(icon: IconInfo): string {
+  const base = getBaseCodeFromPath(icon.path);
+  if (OVERRIDE_TO_PEOPLE.has(base)) return 'people-body';
+  if (icon.category === 'people-body' && isBasicFaceEmoji(base)) return 'smileys-emotion';
+  return icon.category;
+}
+
+function applyCategoryOverrides(icons: IconInfo[]): IconInfo[] {
+  return icons.map(icon => {
+    const newCat = remapCategory(icon);
+    return newCat === icon.category ? icon : { ...icon, category: newCat };
+  });
+}
 
 /**
  * Get icon by path
@@ -11412,14 +11439,14 @@ export function getIconByPath(path: string): IconInfo | undefined {
  * Get icons by category
  */
 export function getIconsByCategory(category: string): IconInfo[] {
-  return iconRegistry.filter(icon => icon.category === category);
+  return applyCategoryOverrides(iconRegistry).filter(icon => icon.category === category);
 }
 
 /**
  * Get all available categories
  */
 export function getCategories(): string[] {
-  const raw = Array.from(new Set(iconRegistry.map(icon => icon.category)));
+  const raw = Array.from(new Set(applyCategoryOverrides(iconRegistry).map(icon => icon.category)));
   const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
   const withoutCustom = raw.filter(c => c !== 'custom' && c !== 'religion-culture');
   const ordered = [
@@ -11508,7 +11535,7 @@ export function getIconsByCategoryWithCustom(category: string): IconInfo[] {
  * Get all icons including custom stamps
  */
 export function getAllIcons(): IconInfo[] {
-  const all = [...iconRegistry, ...getCustomStampsAsIcons()];
+  const all = [...applyCategoryOverrides(iconRegistry), ...getCustomStampsAsIcons()];
   const priority = ['smileys-emotion', 'food-drink', 'animals-nature'];
   const getPrio = (c: string) => {
     const i = priority.indexOf(c);

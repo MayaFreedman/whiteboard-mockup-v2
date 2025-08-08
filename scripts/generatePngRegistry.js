@@ -678,12 +678,10 @@ function categorizeEmoji(filename) {
     if (entry) {
       let ui = mapGroupToUI(entry.group, entry.subgroup) || null;
 
-      // Override: move human faces (mask/cough/etc.) into People, but keep cat/monkey faces in Smileys
-      const subgroup = (entry.subgroup || '').toLowerCase();
-      if (entry.group === 'Smileys & Emotion' && subgroup.startsWith('face-') && !subgroup.includes('cat-face') && !subgroup.includes('monkey-face')) {
+      // Override: force certain symbols into People & Body per user preference
+      if (baseFilename.startsWith('1F6C2') || baseFilename.startsWith('1F6C3') || baseFilename.startsWith('1F6D0')) {
         ui = 'people-body';
       }
-
       // Override: break up religion & culture into Symbols, except folded hands ("praying") -> People & Body
       const lowerName = (entry.name || '').toLowerCase();
       const isFoldedHands = baseFilename.startsWith('1F64F') || lowerName.includes('folded hands') || lowerName.includes('pray');
