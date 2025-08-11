@@ -713,6 +713,7 @@ export const Canvas: React.FC = () => {
         }}
       >
         <canvas
+          id="whiteboard-canvas"
           ref={canvasRef}
           className="absolute inset-0"
           style={{

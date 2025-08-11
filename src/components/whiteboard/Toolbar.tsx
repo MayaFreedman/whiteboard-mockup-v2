@@ -32,6 +32,7 @@ import {
   Diamond,
   ChevronDown,
   Stamp,
+  Camera,
   Trash2
 } from 'lucide-react';
 
@@ -163,6 +164,23 @@ const ActionButtons: React.FC = () => {
     redo(userId);
   };
 
+  const handleScreenshot = () => {
+    try {
+      const canvas = document.getElementById('whiteboard-canvas') as HTMLCanvasElement | null;
+      if (!canvas) {
+        console.warn('📷 No whiteboard canvas found for screenshot');
+        return;
+      }
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `whiteboard-${Date.now()}.png`;
+      a.click();
+    } catch (err) {
+      console.error('📷 Screenshot failed', err);
+    }
+  };
+
   const handleClearCanvas = () => {
     console.log('🗑️ Toolbar clear canvas clicked for user:', userId);
     clearCanvas(userId);
@@ -203,6 +221,14 @@ const ActionButtons: React.FC = () => {
         disabled={!canRedo(userId)}
       >
         <Redo className="w-4 h-4" />
+      </Button>
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        title="Screenshot"
+        onClick={handleScreenshot}
+      >
+        <Camera className="w-4 h-4" />
       </Button>
       <Button 
         variant="ghost" 
