@@ -57,23 +57,18 @@ export const renderSprayOptimized = (
         console.warn('🟠 SPRAY density high', { pathId: pathId.slice(0,8), dots: sprayData.dots.length, points: pathPoints.length, strokeWidth, densityRatio: Number(densityRatio.toFixed(2)) });
       }
     } else {
-      // Graceful fallback: use last known good effect or a simple stroke to avoid skips
       const prev = lastSprayById.get(pathId);
       if (prev) {
         console.warn('⚠️ SPRAY CACHE MISS; using last known good effect:', pathId.slice(0, 8));
         sprayData = prev.data;
         pathPoints = prev.points;
       } else {
-        console.warn('⚠️ SPRAY CACHE MISS; rendering simple stroke placeholder:', pathId.slice(0, 8));
-        const pathObj = new Path2D(path);
-        ctx.globalAlpha = Math.max(0.6, opacity * 0.8);
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = strokeWidth;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke(pathObj);
-        ctx.restore();
-        return;
+        // Deterministic on-the-fly calculation to ensure identical rendering without placeholders
+        pathPoints = pathToPointsForBrush(path);
+        const baseSeed = generateCoordinateBasedSeed(pathPoints);
+        sprayData = precalculateSprayEffect(pathPoints, strokeWidth, baseSeed);
+        // Store as last known good for future transient misses
+        lastSprayById.set(pathId, { data: sprayData, points: pathPoints, strokeWidth, strokeColor, opacity });
       }
     }
   } else {
@@ -134,22 +129,19 @@ export const renderChalkOptimized = (
         console.warn('🟠 CHALK density high', { pathId: pathId.slice(0,8), particles: chalkData.dustParticles.length, points: pathPoints.length, strokeWidth, densityRatio: Number(densityRatio.toFixed(2)) });
       }
     } else {
-      // Graceful fallback: use last known good effect or simple stroke
+      // Graceful fallback: use last known good effect or deterministically recompute
       const prev = lastChalkById.get(pathId);
       if (prev) {
         console.warn('⚠️ CHALK CACHE MISS; using last known good effect:', pathId.slice(0, 8));
         chalkData = prev.data;
         pathPoints = prev.points;
       } else {
-        console.warn('⚠️ CHALK CACHE MISS; rendering simple stroke placeholder:', pathId.slice(0, 8));
-        ctx.globalAlpha = Math.max(0.6, opacity * 0.85);
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = strokeWidth;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke(pathObj);
-        ctx.restore();
-        return;
+        // Deterministic on-the-fly calculation to ensure identical rendering without placeholders
+        pathPoints = pathToPointsForBrush(path);
+        const baseSeed = generateCoordinateBasedSeed(pathPoints);
+        chalkData = precalculateChalkEffect(pathPoints, strokeWidth, baseSeed);
+        // Store as last known good for future transient misses
+        lastChalkById.set(pathId, { data: chalkData, points: pathPoints, strokeWidth, strokeColor, opacity });
       }
     }
   } else {

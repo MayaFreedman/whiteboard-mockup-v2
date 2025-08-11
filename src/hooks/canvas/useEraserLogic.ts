@@ -113,9 +113,7 @@ export const useEraserLogic = () => {
             transferredData = brushEffectCache.transferToSegmentsAtomic(id, brushType, segmentsWithIds);
             
             if (transferredData) {
-              console.log('✅ Atomic brush cache pre-population complete - segments ready');
-              // Remove original only after successful atomic transfer
-              brushEffectCache.remove(id, brushType);
+              console.log('✅ Atomic brush cache pre-population complete - segments ready (removal deferred to store)');
             } else {
               console.warn('⚠️ Failed to pre-populate brush cache - segments may flash');
             }

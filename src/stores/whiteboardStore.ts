@@ -564,6 +564,44 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       previousState: { object: originalObject },
     };
     
+    // Brush cache handling: ensure segments have effects and defer removal
+    const brushType = (originalObjectMetadata?.brushType || originalObject.data?.brushType) as string | undefined;
+    if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
+      // Ensure original cache exists
+      const existing = brushEffectCache.get(originalObjectId, brushType);
+      if (!existing || !existing.effectData) {
+        try {
+          const points = pathToPointsForBrush(originalObject.data?.path || '');
+          const baseSeed = points.length ? Math.floor(points[0].x * 1000 + points[0].y * 1000) : 12345;
+          const strokeWidth = originalObject.strokeWidth || 2;
+          const strokeColor = originalObject.stroke || '#000000';
+          const opacity = originalObject.opacity || 1;
+          const effectData = brushType === 'spray'
+            ? precalculateSprayEffect(points, strokeWidth, baseSeed)
+            : precalculateChalkEffect(points, strokeWidth, baseSeed);
+          brushEffectCache.store(originalObjectId, brushType, {
+            type: brushType as any,
+            points,
+            strokeWidth,
+            strokeColor,
+            opacity,
+            effectData
+          });
+        } catch {}
+      }
+
+      // If not pre-transferred, transfer now atomically
+      const preTransferred = (action as any).transferredCacheData;
+      if (!preTransferred) {
+        brushEffectCache.transferToSegmentsAtomic(originalObjectId, brushType, resultingSegments);
+      }
+
+      // Defer removal to next frame to avoid transient cache misses
+      requestAnimationFrame(() => {
+        brushEffectCache.remove(originalObjectId, brushType);
+      });
+    }
+    
     set((state) => {
       const newObjects = { ...state.objects };
       const newRelationships = new Map(state.objectRelationships);
@@ -907,7 +945,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 brushEffectCache.transferToSegments(originalObjectId, brushType, resultingSegments);
                 
                 // Now it's safe to remove the original cache entry
-                brushEffectCache.remove(originalObjectId, brushType);
+                requestAnimationFrame(() => brushEffectCache.remove(originalObjectId, brushType));
               }
               
               // Remove the original object
@@ -1106,7 +1144,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                   brushEffectCache.transferToSegments(originalObjectId, brushType, resultingSegments);
                   
                   // Now it's safe to remove the original cache entry
-                  brushEffectCache.remove(originalObjectId, brushType);
+                  requestAnimationFrame(() => brushEffectCache.remove(originalObjectId, brushType));
                 }
                 
                 // Remove the original object
