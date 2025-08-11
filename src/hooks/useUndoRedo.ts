@@ -234,21 +234,25 @@ export const useUndoRedo = (): UndoRedoManager => {
       }
       
       case 'CLEAR_CANVAS': {
-        // Undo clear: restore all objects and selection
+        // Undo clear: restore all objects, selection, and previous background/settings
         const previousObjects = action.previousState?.objects || {};
         const previousSelection = action.previousState?.selectedObjectIds || [];
+        const previousSettings = action.previousState?.settings;
         
-        if (Object.keys(previousObjects).length === 0) {
+        if (Object.keys(previousObjects).length === 0 && !previousSettings) {
           console.warn('⚠️ Cannot undo CLEAR_CANVAS: no previous state');
           return { stateChange: null };
         }
         
-        return {
-          stateChange: {
-            objects: previousObjects,
-            selectedObjectIds: previousSelection
-          }
+        const stateChange: Partial<WhiteboardState> = {
+          objects: previousObjects,
+          selectedObjectIds: previousSelection,
         };
+        if (previousSettings) {
+          stateChange.settings = previousSettings;
+        }
+        
+        return { stateChange };
       }
       
       default:
@@ -379,7 +383,8 @@ export const useUndoRedo = (): UndoRedoManager => {
         return {
           stateChange: {
             objects: {},
-            selectedObjectIds: []
+            selectedObjectIds: [],
+            settings: { ...currentState.settings, backgroundColor: '#ffffff' },
           }
         };
       }

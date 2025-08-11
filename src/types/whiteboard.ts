@@ -120,6 +120,7 @@ export interface ClearCanvasAction extends BaseAction {
   previousState?: {
     objects: { [id: string]: WhiteboardObject };
     selectedObjectIds: string[];
+    settings?: WhiteboardState['settings'];
   };
 }
 

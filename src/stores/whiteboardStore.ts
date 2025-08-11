@@ -466,11 +466,15 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   clearCanvas: (userId = 'local') => {
     const state = get();
     
-    // Don't record action if canvas is already empty
-    if (Object.keys(state.objects).length === 0) {
-      console.log('🗑️ Canvas already empty, skipping clear action');
+    // Don't record action if canvas is already empty AND background is default
+    const isObjectsEmpty = Object.keys(state.objects).length === 0;
+    const isBgDefault = (state.settings.backgroundColor || '#ffffff') === '#ffffff';
+    if (isObjectsEmpty && isBgDefault) {
+      console.log('🗑️ Canvas already empty and background default, skipping clear action');
       return;
     }
+    
+    const previousSettings = { ...state.settings };
     
     const action: WhiteboardAction = {
       type: 'CLEAR_CANVAS',
@@ -481,10 +485,15 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       previousState: {
         objects: state.objects,
         selectedObjectIds: state.selectedObjectIds,
+        settings: previousSettings,
       },
     };
 
-    set({ objects: {}, selectedObjectIds: [] });
+    set((s) => ({
+      objects: {},
+      selectedObjectIds: [],
+      settings: { ...s.settings, backgroundColor: '#ffffff' },
+    }));
     get().recordAction(action);
   },
 
@@ -876,7 +885,11 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         return;
         
       case 'CLEAR_CANVAS':
-        set({ objects: {}, selectedObjectIds: [] });
+        set((state) => ({
+          objects: {},
+          selectedObjectIds: [],
+          settings: { ...state.settings, backgroundColor: '#ffffff' },
+        }));
         break;
         
       case 'UPDATE_BACKGROUND_SETTINGS':
@@ -1123,7 +1136,11 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           break;
           
         case 'CLEAR_CANVAS':
-          set({ objects: {}, selectedObjectIds: [] });
+          set((state) => ({
+            objects: {},
+            selectedObjectIds: [],
+            settings: { ...state.settings, backgroundColor: '#ffffff' },
+          }));
           break;
           
         case 'ERASE_PATH':
