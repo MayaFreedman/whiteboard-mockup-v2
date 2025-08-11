@@ -55,6 +55,40 @@ export const SkinTonePicker: React.FC<SkinTonePickerProps> = ({
     return options;
   }, [baseEmojiPath, skinToneVariants]);
 
+  // Local component to handle per-option loading state and remove tooltips
+  const SkinToneOption: React.FC<{
+    option: { tone: string; path: string; label: string };
+    onSelect: (path: string) => void;
+  }> = ({ option, onSelect }) => {
+    const [loaded, setLoaded] = React.useState(false);
+
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 w-8 p-0 rounded-md hover:bg-secondary/80 overflow-hidden"
+        onClick={() => onSelect(option.path)}
+        aria-label="Select skin tone"
+      >
+        <div className="relative w-full h-full">
+          {!loaded && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="h-4 w-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+            </div>
+          )}
+          <img
+            src={option.path}
+            alt={option.label}
+            className={`w-full h-full object-contain ${loaded ? 'opacity-100' : 'opacity-0'}`}
+            loading="lazy"
+            onLoad={() => setLoaded(true)}
+            onError={() => setLoaded(true)}
+          />
+        </div>
+      </Button>
+    );
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -64,21 +98,7 @@ export const SkinTonePicker: React.FC<SkinTonePickerProps> = ({
         <div className="flex flex-col gap-1">
           <div className="flex gap-1">
             {skinToneOptions.map((option) => (
-              <Button
-                key={option.tone}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-md hover:bg-secondary/80 overflow-hidden"
-                onClick={() => onSelect(option.path)}
-                title={option.label}
-              >
-                <img
-                  src={option.path}
-                  alt={option.label}
-                  className="w-full h-full object-contain"
-                  loading="lazy"
-                />
-              </Button>
+              <SkinToneOption key={option.tone} option={option} onSelect={onSelect} />
             ))}
           </div>
         </div>
