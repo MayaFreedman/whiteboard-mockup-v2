@@ -9,26 +9,7 @@ export class ServerClass {
   client = new Client(getConfigurationServerURL());
 
   async connectToColyseusServer(colyseusRoomID: string, isModerator: boolean) {
-
-    // Test server connectivity
-    try {
-      const testResponse = await fetch(
-        getConfigurationServerURL(),
-        {
-          method: "GET",
-          signal: AbortSignal.timeout(5000),
-        }
-      );
-      if (!testResponse.ok) {
-        throw new Error(`Server returned status ${testResponse.status}`)
-      }
-    } catch (fetchError) {
-      throw new Error(
-        `Cannot reach Colyseus server. Error: ${
-          fetchError?.message || "Unknown network error"
-        }`
-      );
-    }
+    // Removed connectivity test since the Colyseus client will handle connection errors
 
     try {
       const joinPromise = this.client.joinById(colyseusRoomID, {
