@@ -24,8 +24,8 @@ export const useCanvasInteractions = () => {
   
   // Initialize action batching with optimized settings
   const { startBatch, endBatch, checkBatchSize } = useActionBatching({
-    batchTimeout: 1000, // 1 second timeout for batch completion
-    maxBatchSize: 50 // Max 50 actions per batch
+    batchTimeout: 0, // Disable auto-end; end on pointer up so one drag = one undo
+    maxBatchSize: 5000 // Large cap to avoid mid-drag splits
   });
   
   // Use eraser logic without passing arguments since it manages its own batching

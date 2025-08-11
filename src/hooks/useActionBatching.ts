@@ -23,10 +23,15 @@ export const useActionBatching = (options: BatchingOptions = {}) => {
     
     // Set timeout to auto-end batch (longer for eraser operations)
     const timeout = isEraserBatch ? batchTimeout * 3 : batchTimeout;
-    batchTimeoutRef.current = setTimeout(() => {
-      store.endActionBatch();
+    if (timeout > 0 && Number.isFinite(timeout)) {
+      batchTimeoutRef.current = setTimeout(() => {
+        store.endActionBatch();
+        batchTimeoutRef.current = null;
+      }, timeout);
+    } else {
+      // Disabled auto-end timeout; caller must end the batch manually
       batchTimeoutRef.current = null;
-    }, timeout);
+    }
 
     return batchId;
   }, [store, batchTimeout, isEraserBatch]);
