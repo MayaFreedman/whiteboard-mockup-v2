@@ -72,10 +72,10 @@ export const CustomStampUpload = forwardRef<CustomStampUploadHandle, CustomStamp
         <div className="flex flex-col items-center gap-2 text-center">
           <Upload className="w-6 h-6 text-muted-foreground" />
           <div className="text-sm">
-            <span className="font-medium">Click to upload</span> or drag and drop
+            <span className="font-medium">Upload a Custom Stamp</span>
           </div>
           <div className="text-xs text-muted-foreground">
-            PNG, JPG up to 1MB
+            Click to upload or drag and drop
           </div>
         </div>
         
