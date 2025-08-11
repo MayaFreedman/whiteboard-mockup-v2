@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -40,28 +40,32 @@ export const WhiteboardSidebar: React.FC = () => {
     console.log('🎛️ Background settings after update:', settings);
   };
 
-  // ... keep existing code (backgroundImages array)
+  // Upload custom background (data URL, synced via UPDATE_SETTINGS)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const triggerUpload = () => fileInputRef.current?.click();
+  const handleUploadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      if (result?.startsWith('data:image')) {
+        updateSettings({ backgroundColor: `url(${result})` });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
   const backgroundImages = [
-    {
-      name: 'Forest',
-      url: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800&h=600&fit=crop&auto=format',
-      preview: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=80&h=60&fit=crop&auto=format'
-    },
-    {
-      name: 'Mountain Lake',
-      url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop&auto=format',
-      preview: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=80&h=60&fit=crop&auto=format'
-    },
-    {
-      name: 'Deer in Nature',
-      url: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=600&fit=crop&auto=format',
-      preview: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=80&h=60&fit=crop&auto=format'
-    },
-    {
-      name: 'Waterfall Bridge',
-      url: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop&auto=format',
-      preview: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=80&h=60&fit=crop&auto=format'
-    }
+    { name: 'Aquarium', url: '/backgrounds/Aquarium.png', preview: '/backgrounds/Aquarium.png' },
+    { name: 'Bedroom', url: '/backgrounds/Bedroom.png', preview: '/backgrounds/Bedroom.png' },
+    { name: 'Garden', url: '/backgrounds/Garden.png', preview: '/backgrounds/Garden.png' },
+    { name: 'Gym', url: '/backgrounds/Gym.png', preview: '/backgrounds/Gym.png' },
+    { name: 'Hospital', url: '/backgrounds/Hospital.png', preview: '/backgrounds/Hospital.png' },
+    { name: 'Kitchen', url: '/backgrounds/Kitchen.png', preview: '/backgrounds/Kitchen.png' },
+    { name: 'Library', url: '/backgrounds/Library.png', preview: '/backgrounds/Library.png' },
+    { name: 'Living Room', url: '/backgrounds/Living-Room.png', preview: '/backgrounds/Living-Room.png' },
+    { name: 'School', url: '/backgrounds/School.png', preview: '/backgrounds/School.png' },
+    { name: 'Treehouse', url: '/backgrounds/Treehouse.png', preview: '/backgrounds/Treehouse.png' },
   ];
 
   return (
@@ -182,6 +186,19 @@ export const WhiteboardSidebar: React.FC = () => {
 
                       <div>
                         <label className="text-sm font-medium text-company-dark-blue mb-3 block">Set Custom Background</label>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Button variant="outline" size="sm" onClick={triggerUpload}>
+                            Upload image
+                          </Button>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleUploadChange}
+                          />
+                          <span className="text-xs text-muted-foreground">JPEG/PNG/SVG, shared via data URL</span>
+                        </div>
                         <div className="grid grid-cols-2 gap-2">
                           {backgroundImages.map((bg) => (
                             <button
@@ -192,7 +209,8 @@ export const WhiteboardSidebar: React.FC = () => {
                             >
                               <img 
                                 src={bg.preview} 
-                                alt={bg.name}
+                                alt={`${bg.name} background`}
+                                loading="lazy"
                                 className="w-full h-full object-cover"
                               />
                               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />

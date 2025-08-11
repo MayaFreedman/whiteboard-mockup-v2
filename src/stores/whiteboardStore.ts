@@ -318,9 +318,22 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   resetViewport: () => set({ viewport: { x: 0, y: 0, zoom: 1 } }),
 
   setSettings: (settings) => set({ settings }),
-  updateSettings: (updates) => set((state) => ({ 
-    settings: { ...state.settings, ...updates } 
-  })),
+  updateSettings: (updates) => {
+    const state = get();
+    const previousSettings = { ...state.settings };
+
+    const action: WhiteboardAction = {
+      type: 'UPDATE_SETTINGS',
+      payload: updates,
+      timestamp: Date.now(),
+      id: nanoid(),
+      userId: 'local',
+      previousState: { settings: previousSettings },
+    };
+
+    set((state) => ({ settings: { ...state.settings, ...updates } }));
+    get().recordAction(action);
+  },
 
   addObject: (object, userId = 'local') => {
     const id = nanoid();
@@ -876,6 +889,14 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           };
           set((state) => ({
             settings: { ...state.settings, ...newSettings },
+          }));
+        }
+        break;
+      
+      case 'UPDATE_SETTINGS':
+        if (action.payload) {
+          set((state) => ({
+            settings: { ...state.settings, ...action.payload },
           }));
         }
         break;

@@ -1037,7 +1037,47 @@ export const useCanvasRendering = (
     // Clear the entire canvas completely
     ctx.clearRect(0, 0, activeWhiteboardSize.width, activeWhiteboardSize.height);
 
-    // Draw background patterns
+    // Draw background color or image first
+    const bg = settings.backgroundColor || '#ffffff';
+    const canvasW = activeWhiteboardSize.width;
+    const canvasH = activeWhiteboardSize.height;
+
+    // Always start with a solid base to avoid transparency flashes
+    const baseColor = bg.startsWith('url(') ? '#ffffff' : bg;
+    try {
+      ctx.fillStyle = baseColor;
+      ctx.fillRect(0, 0, canvasW, canvasH);
+    } catch {}
+
+    // If background is an image URL or data URL, draw it to cover without distortion
+    if (typeof bg === 'string' && bg.startsWith('url(')) {
+      const match = bg.match(/url\((['"]?)(.*?)\1\)/);
+      const srcRaw = match?.[2];
+      if (srcRaw) {
+        const normalizedSrc = normalizeImagePath(srcRaw);
+        const cached = getCachedImage(normalizedSrc);
+        const img = cached.image || imageCache.current.get(normalizedSrc) || null;
+
+        if (img) {
+          // Compute cover dimensions (maintain aspect ratio, no stretching)
+          const scale = Math.max(canvasW / img.width, canvasH / img.height);
+          const drawW = img.width * scale;
+          const drawH = img.height * scale;
+          const dx = (canvasW - drawW) / 2;
+          const dy = (canvasH - drawH) / 2;
+          ctx.drawImage(img, dx, dy, drawW, drawH);
+        } else {
+          // Trigger async load and redraw when ready
+          getOrLoadImage(normalizedSrc).then(() => {
+            if (canvas) {
+              redrawCanvas(false, 'bg-image-loaded');
+            }
+          }).catch(() => {});
+        }
+      }
+    }
+
+    // Draw background patterns on top of image/color
     if (settings.gridVisible) {
       drawGrid(ctx, activeWhiteboardSize.width, activeWhiteboardSize.height);
     }
