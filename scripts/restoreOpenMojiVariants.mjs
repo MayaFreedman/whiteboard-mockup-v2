@@ -27,9 +27,9 @@ const __dirname = path.dirname(__filename);
 const REGISTRY_PATH = path.join(__dirname, '..', 'src', 'utils', 'iconRegistry.ts');
 const TARGET_DIR = path.join(__dirname, '..', 'public', 'png-emojis');
 const OPENMOJI_BASES = [
-  'https://hfg-gmuend.github.io/openmoji/color/618x',
+  'https://hfg-gmuend.github.io/openmoji/color/618x618',
   'https://hfg-gmuend.github.io/openmoji/color/72x72',
-  'https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/618x'
+  'https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/618x618'
 ];
 
 function ensureDir(dir) {
@@ -110,10 +110,17 @@ async function run() {
         const url = `${base}/${name}`;
         try {
           await download(url, targetPath);
-          ok++;
-          downloaded = true;
-          console.log(`✅ Downloaded ${name} from ${base}`);
-          break;
+          // verify file has content
+          const stat = fs.statSync(targetPath);
+          if (stat.size > 0) {
+            ok++;
+            downloaded = true;
+            console.log(`✅ Downloaded ${name} from ${base} (${stat.size} bytes)`);
+            break;
+          } else {
+            // zero-byte file, remove and try next
+            fs.unlinkSync(targetPath);
+          }
         } catch (e) {
           // try next base
         }
