@@ -186,17 +186,18 @@ export const useMultiplayerSync = () => {
       if (message.type === 'whiteboard_action' && message.action) {
         const action: WhiteboardAction = message.action
         
+        // Prevent echo loops by marking the action as seen BEFORE applying
         if (!sentActionIdsRef.current.has(action.id)) {
+          sentActionIdsRef.current.add(action.id)
+          
           // Handle BATCH_UPDATE actions specially
           if (action.type === 'BATCH_UPDATE') {
             console.log('🔄 Processing remote BATCH_UPDATE:', action.id?.slice(0, 8), 'with', action.payload.actions?.length, 'nested actions')
             if (action.payload.actions && Array.isArray(action.payload.actions)) {
               whiteboardStore.batchUpdate(action.payload.actions)
-              sentActionIdsRef.current.add(action.id)
             }
           } else {
             whiteboardStore.applyRemoteAction(action)
-            sentActionIdsRef.current.add(action.id)
           }
         }
       }
