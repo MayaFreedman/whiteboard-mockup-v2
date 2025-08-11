@@ -5,14 +5,14 @@ import { Client } from "colyseus.js";
 export class ServerClass {
   constructor() {}
   server: any = {};
-  client = new Client("https://ca-yto-8b3f79b2.colyseus.cloud");
+  client = new Client("http://localhost:4001");
 
   async connectToColyseusServer(colyseusRoomID: string, isModerator: boolean) {
 
     // Test server connectivity
     try {
       const testResponse = await fetch(
-        "https://ca-yto-8b3f79b2.colyseus.cloud",
+        "http://localhost:4001",
         {
           method: "GET",
           signal: AbortSignal.timeout(5000),
