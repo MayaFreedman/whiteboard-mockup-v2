@@ -75,20 +75,7 @@ export const useScreenSizeSync = () => {
     recalculateMinimumSize();
   }, [userId, updateLocalUserScreenSize, calculateUsableScreenSize, recalculateMinimumSize]);
 
-  // Broadcast our screen size immediately once the connection becomes ready
-  useEffect(() => {
-    if (!multiplayer?.isConnected || !userId) return;
-
-    const currentSize = calculateUsableScreenSize();
-    // Ensure local store is updated before broadcasting
-    updateLocalUserScreenSize(userId, currentSize);
-    // Initial broadcast (no forced reset; avoids duplicate with later participant-change broadcast)
-    broadcastScreenSize(currentSize);
-    // Local recalculation for immediate layout correctness
-    recalculateMinimumSize();
-  }, [multiplayer?.isConnected, userId, calculateUsableScreenSize, updateLocalUserScreenSize, broadcastScreenSize, recalculateMinimumSize]);
-
-  // Handle multiplayer connection state changes (including participant count changes)
+  // Handle multiplayer connection state changes
   useEffect(() => {
     if (!multiplayer?.isConnected || !userId) {
       return;
