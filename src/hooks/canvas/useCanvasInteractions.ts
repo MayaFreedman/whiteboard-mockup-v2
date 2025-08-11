@@ -9,6 +9,7 @@ import { useEraserLogic } from './useEraserLogic';
 import { useActionBatching } from '../useActionBatching';
 import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
+import { useMultiplayer } from '../useMultiplayer';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions

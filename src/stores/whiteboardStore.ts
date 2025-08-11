@@ -103,6 +103,12 @@ export interface WhiteboardStore {
   checkObjectExists: (objectId: string) => boolean;
   getObjectRelationship: (objectId: string) => { originalId?: string; segmentIds?: string[] } | undefined;
   
+  // Soft-locks for advisory concurrency control
+  locks: Map<string, { userId: string; expiresAt: number }>;
+  setLock: (objectId: string, userId: string, ttlMs: number) => void;
+  clearLock: (objectId: string, userId?: string) => void;
+  isLockedByOther: (objectId: string, userId: string) => boolean;
+  
   // Action batching for undo/redo grouping
   currentBatch: {
     id: string | null;
@@ -144,7 +150,10 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   
   // Track processed batch IDs to prevent duplicate processing
   processedBatchIds: new Set(),
-
+  
+  // Advisory locks for objects
+  locks: new Map(),
+  
   // Initialize currentBatch
   currentBatch: {
     id: null,
@@ -842,22 +851,30 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         
       case 'UPDATE_OBJECT':
         if (action.payload.id && action.payload.updates) {
-          set((state) => {
-            const existingObject = state.objects[action.payload.id];
-            if (existingObject) {
-              return {
-                objects: {
-                  ...state.objects,
-                  [action.payload.id]: {
-                    ...existingObject,
-                    ...action.payload.updates,
-                    updatedAt: Date.now(),
-                  },
-                },
-              };
+          const objId = action.payload.id;
+          const existing = get().objects[objId];
+          if (existing) {
+            // Soft-lock guard: ignore updates from non-lock owner while lock is active
+            if (get().isLockedByOther(objId, action.userId)) {
+              console.log('🔒 Skipping remote UPDATE_OBJECT due to active lock by another user:', objId.slice(0,8));
+              break;
             }
-            return state;
-          });
+            // Timestamp guard: drop stale updates
+            if (typeof action.timestamp === 'number' && typeof existing.updatedAt === 'number' && action.timestamp < existing.updatedAt) {
+              console.log('⏱️ Skipping stale UPDATE_OBJECT (ts', action.timestamp, '< updatedAt', existing.updatedAt, '):', objId.slice(0,8));
+              break;
+            }
+            set((state) => ({
+              objects: {
+                ...state.objects,
+                [objId]: {
+                  ...existing,
+                  ...action.payload.updates,
+                  updatedAt: Date.now(),
+                },
+              },
+            }));
+          }
         }
         break;
         
@@ -1110,15 +1127,29 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           
         case 'UPDATE_OBJECT':
           if (action.payload.id && action.payload.updates) {
-            set((state) => ({
-              objects: {
-                ...state.objects,
-                [action.payload.id]: {
-                  ...state.objects[action.payload.id],
-                  ...action.payload.updates,
+            const objId = action.payload.id;
+            const existing = get().objects[objId];
+            if (existing) {
+              // Soft-lock guard during batch
+              if (get().isLockedByOther(objId, action.userId)) {
+                console.log('🔒 Skipping batched UPDATE_OBJECT due to active lock by another user:', objId.slice(0,8));
+                break;
+              }
+              // Timestamp guard during batch
+              if (typeof action.timestamp === 'number' && typeof existing.updatedAt === 'number' && action.timestamp < existing.updatedAt) {
+                console.log('⏱️ Skipping stale batched UPDATE_OBJECT (ts', action.timestamp, '< updatedAt', existing.updatedAt, '):', objId.slice(0,8));
+                break;
+              }
+              set((state) => ({
+                objects: {
+                  ...state.objects,
+                  [objId]: {
+                    ...state.objects[objId],
+                    ...action.payload.updates,
+                  },
                 },
-              },
-            }));
+              }));
+            }
           }
           break;
           
@@ -1318,6 +1349,32 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
   getObjectRelationship: (objectId) => {
     return get().objectRelationships.get(objectId);
+  },
+  
+  // Soft-lock utilities
+  setLock: (objectId, userId, ttlMs) => {
+    set((state) => {
+      const newLocks = new Map(state.locks);
+      newLocks.set(objectId, { userId, expiresAt: Date.now() + Math.max(0, ttlMs) });
+      return { ...state, locks: newLocks };
+    });
+  },
+  clearLock: (objectId, userId) => {
+    set((state) => {
+      const existing = state.locks.get(objectId);
+      if (!existing || (userId && existing.userId !== userId)) {
+        return state;
+      }
+      const newLocks = new Map(state.locks);
+      newLocks.delete(objectId);
+      return { ...state, locks: newLocks };
+    });
+  },
+  isLockedByOther: (objectId, userId) => {
+    const lock = get().locks.get(objectId);
+    if (!lock) return false;
+    if (Date.now() > lock.expiresAt) return false;
+    return lock.userId !== userId;
   },
 }));
 
