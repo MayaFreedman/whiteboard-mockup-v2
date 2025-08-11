@@ -8,6 +8,7 @@ import { ConnectionStatus } from './ConnectionStatus';
 import { InitialStateLoader } from './InitialStateLoader';
 import { useMultiplayerSync } from '../hooks/useMultiplayerSync';
 import { useScreenSizeStore } from '../stores/screenSizeStore';
+import { DEV_MODE } from '../config/devMode';
 
 /**
  * Main whiteboard application component
@@ -28,7 +29,7 @@ export const Whiteboard: React.FC = () => {
     <SidebarProvider>
       <div className="h-screen flex flex-col bg-background w-full">
         {/* Connection Status - Fixed overlay */}
-        <ConnectionStatus />
+        {DEV_MODE && <ConnectionStatus />}
         
         {/* Top Toolbar - Fixed at the top */}
         <Toolbar />
