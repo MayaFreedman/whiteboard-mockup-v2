@@ -208,25 +208,16 @@ export const useMultiplayerSync = () => {
           whiteboardStore.batchUpdate(message.data.actions)
         }
       }
-
-      // Handle custom stamp updates (sync delete across users)
-      if (message.type === 'custom_stamp_update') {
-        const senderSessionId = message.senderSessionId || message.userId
-        if (senderSessionId && senderSessionId === room.sessionId) {
-          return
-        }
-        try {
-          if (message.action === 'delete' && message.url) {
-            import('../utils/customStamps').then(mod => {
-              mod.removeCustomStamp(message.url)
-            }).catch(() => {})
-          }
-        } catch (e) {
-          console.warn('Failed to apply custom stamp update:', e)
-        }
-      }
-
+      
       // Handle screen size updates
+      if (message.type === 'screen_size_update' && message.screenSize) {
+        const senderSessionId = message.senderSessionId || message.userId
+        if (!senderSessionId) return
+        // Ignore our own echo
+        if (senderSessionId === room.sessionId) return
+        console.log('📥 Received screen size update from participant:', senderSessionId, message.screenSize)
+        updateUserScreenSize(senderSessionId, message.screenSize)
+      }
     }
 
     room.onMessage('broadcast', handleBroadcastMessage)

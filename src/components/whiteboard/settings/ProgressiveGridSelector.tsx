@@ -6,7 +6,6 @@ import { removeCustomStamp } from '../../../utils/customStamps';
 import { toast } from 'sonner';
 import { useLazyImageLoading } from '../../../hooks/useLazyImageLoading';
 import { StampGridItem } from './StampGridItem';
-import { useMultiplayer } from '../../../hooks/useMultiplayer';
 interface GridSelectorProps {
   label: string;
   items: Array<{
@@ -31,7 +30,6 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
   windowSize,
   batchSize
 }) => {
-  const multiplayer = useMultiplayer();
   const containerRef = useRef<HTMLDivElement>(null);
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [currentWindowEnd, setCurrentWindowEnd] = useState<number>(windowSize || items.length);
@@ -90,22 +88,12 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
     if (!stampUrl.startsWith('data:')) return;
     try {
       await removeCustomStamp(stampUrl);
-      // Broadcast deletion to other users
-      if (multiplayer?.serverInstance?.server?.room) {
-        multiplayer.serverInstance.sendEvent({
-          type: 'custom_stamp_update',
-          action: 'delete',
-          url: stampUrl,
-          senderSessionId: multiplayer.serverInstance.server.room.sessionId,
-          timestamp: Date.now(),
-        });
-      }
       toast.success('Custom stamp deleted');
       onCustomStampDeleted?.();
     } catch (error) {
       toast.error('Failed to delete stamp');
     }
-  }, [onCustomStampDeleted, multiplayer]);
+  }, [onCustomStampDeleted]);
 
   // Handle image load error
   const handleImageError = useCallback((url: string) => {
