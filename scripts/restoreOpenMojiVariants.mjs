@@ -26,7 +26,11 @@ const __dirname = path.dirname(__filename);
 
 const REGISTRY_PATH = path.join(__dirname, '..', 'src', 'utils', 'iconRegistry.ts');
 const TARGET_DIR = path.join(__dirname, '..', 'public', 'png-emojis');
-const OPENMOJI_BASE = 'https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/618x';
+const OPENMOJI_BASES = [
+  'https://hfg-gmuend.github.io/openmoji/color/618x',
+  'https://hfg-gmuend.github.io/openmoji/color/72x72',
+  'https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/618x'
+];
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -95,20 +99,29 @@ async function run() {
     while (queue.length) {
       const name = queue.shift();
       const targetPath = path.join(TARGET_DIR, name);
-      const url = `${OPENMOJI_BASE}/${name}`;
 
       if (fs.existsSync(targetPath)) {
         skipped++;
         continue;
       }
 
-      try {
-        await download(url, targetPath);
-        ok++;
-        console.log(`✅ Downloaded ${name}`);
-      } catch (e) {
+      let downloaded = false;
+      for (const base of OPENMOJI_BASES) {
+        const url = `${base}/${name}`;
+        try {
+          await download(url, targetPath);
+          ok++;
+          downloaded = true;
+          console.log(`✅ Downloaded ${name} from ${base}`);
+          break;
+        } catch (e) {
+          // try next base
+        }
+      }
+
+      if (!downloaded) {
         failed++;
-        console.warn(`⚠️ Failed ${name} -> ${e.message}`);
+        console.warn(`⚠️ Failed ${name} from all sources`);
       }
     }
   }
