@@ -42,7 +42,7 @@ export interface WhiteboardStore {
 
   // Settings Actions
   setSettings: (settings: WhiteboardSettings) => void;
-  updateSettings: (updates: Partial<WhiteboardSettings>) => void;
+  updateSettings: (updates: Partial<WhiteboardSettings>, userId?: string) => void;
 
   // Actions
   addObject: (object: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'>, userId?: string) => string;
@@ -318,7 +318,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   resetViewport: () => set({ viewport: { x: 0, y: 0, zoom: 1 } }),
 
   setSettings: (settings) => set({ settings }),
-  updateSettings: (updates) => {
+  updateSettings: (updates, userId = 'local') => {
     const state = get();
     const previousSettings = { ...state.settings };
 
@@ -327,7 +327,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       payload: updates,
       timestamp: Date.now(),
       id: nanoid(),
-      userId: 'local',
+      userId,
       previousState: { settings: previousSettings },
     };
 

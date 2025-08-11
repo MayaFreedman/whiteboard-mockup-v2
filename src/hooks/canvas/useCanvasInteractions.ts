@@ -390,7 +390,13 @@ export const useCanvasInteractions = () => {
     
     const objectId = findObjectAt(coords.x, coords.y);
     if (!objectId) {
-      console.log('🎨 No object found to fill at:', coords);
+      // No shape under cursor: set background color using current stroke color
+      const fillColor = toolStore.toolSettings.strokeColor;
+      console.log('🎨 No object found to fill; setting background to:', fillColor, 'at', coords);
+      whiteboardStore.updateSettings({ backgroundColor: fillColor }, userId);
+      if (redrawCanvasRef.current) {
+        redrawCanvasRef.current();
+      }
       return;
     }
     
