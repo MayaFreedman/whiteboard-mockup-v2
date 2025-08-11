@@ -244,9 +244,9 @@ export const WhiteboardSidebar: React.FC = () => {
                         <label className="text-sm font-medium text-company-dark-blue mb-3 block">Set Custom Background</label>
 
                         {/* Custom Backgrounds Grid */}
-                        <div className="space-y-2 mb-3">
-                          <div className="text-xs text-muted-foreground">Your Backgrounds</div>
-                          {customBackgrounds.length > 0 ? (
+                        {customBackgrounds.length > 0 && (
+                          <div className="space-y-2 mb-3">
+                            <div className="text-xs text-muted-foreground">Your Backgrounds</div>
                             <div className="grid grid-cols-2 gap-2">
                               {customBackgrounds.map((bg) => (
                                 <div key={bg.id} className="relative group">
@@ -277,10 +277,9 @@ export const WhiteboardSidebar: React.FC = () => {
                                 </div>
                               ))}
                             </div>
-                          ) : (
-                            <div className="text-xs text-muted-foreground">No custom backgrounds yet. Upload one below.</div>
-                          )}
-                        </div>
+                          </div>
+                        )}
+
 
                         {/* Preset Backgrounds Grid */}
                         <div className="space-y-2">
