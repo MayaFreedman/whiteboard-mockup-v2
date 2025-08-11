@@ -1,7 +1,7 @@
 export const ENV = {
   URL: {
     "app-dev.practicespace.health": "https://ca-yto-8b3f79b2.colyseus.cloud",
-    "https://preview--whiteboard-mockup-v2.lovable.app":
+    "preview--whiteboard-mockup-v2.lovable.app":
       "https://ca-yto-8b3f79b2.colyseus.cloud",
     "app-dev.playspace.health": "https://ca-yto-8b3f79b2.colyseus.cloud",
     "app-staging.playspace.health": "https://ca-yto-8b3f79b2.colyseus.cloud",
