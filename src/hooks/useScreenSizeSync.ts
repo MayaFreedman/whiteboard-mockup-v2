@@ -94,6 +94,8 @@ export const useScreenSizeSync = () => {
       console.log('📏 Multi-player mode - broadcasting screen size');
       const currentSize = calculateUsableScreenSize();
       updateLocalUserScreenSize(userId, currentSize);
+      // Force re-broadcast on participant changes so newcomers receive sizes
+      lastBroadcastRef.current = null;
       broadcastScreenSize(currentSize);
       recalculateMinimumSize();
     }
