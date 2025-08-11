@@ -23,8 +23,9 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ canvas }) => {
   const getCursorSize = () => {
     switch (activeTool) {
       case 'pencil':
+        return (toolSettings.pencilSize || 4) * 2; // Make it a bit more visible
       case 'brush':
-        return toolSettings.strokeWidth * 2; // Make it a bit more visible
+        return (toolSettings.brushSize || 8) * 2; // Make it a bit more visible
       case 'eraser':
         return toolSettings.eraserSize; // Use the full size (diameter), not radius
       case 'fill':

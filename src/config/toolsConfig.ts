@@ -31,7 +31,7 @@ export const toolsConfig: Record<string, ToolConfig> = {
       {
         type: 'slider',
         label: 'Stroke Width',
-        key: 'strokeWidth',
+        key: 'pencilSize',
         min: 1,
         max: 20,
         step: 1,
@@ -68,7 +68,7 @@ export const toolsConfig: Record<string, ToolConfig> = {
       {
         type: 'slider',
         label: 'Stroke Width',
-        key: 'strokeWidth',
+        key: 'brushSize',
         min: 1,
         max: 20,
         step: 1,
@@ -133,7 +133,7 @@ export const toolsConfig: Record<string, ToolConfig> = {
       {
         type: 'slider',
         label: 'Stamp Size',
-        key: 'strokeWidth',
+        key: 'stampSize',
         min: 5,
         max: 20,
         step: 1,

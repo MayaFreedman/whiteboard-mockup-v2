@@ -27,9 +27,13 @@ export type EraserMode = 'pixel' | 'object';
 export interface ToolSettings {
   // Drawing settings
   strokeColor: string;
-  strokeWidth: number;
   opacity: number;
   brushType: BrushType;
+  
+  // Independent sizes per tool
+  pencilSize: number;
+  brushSize: number;
+  stampSize: number;
   
   // Eraser settings
   eraserMode: EraserMode;
@@ -109,9 +113,14 @@ interface ToolStore {
 /** Default settings for all tools */
 const defaultToolSettings: ToolSettings = {
   strokeColor: '#000000',
-  strokeWidth: 8,
   opacity: 1,
   brushType: 'paintbrush',
+  
+  // Independent defaults
+  pencilSize: 4,
+  brushSize: 8,
+  stampSize: 10,
+  
   eraserMode: 'pixel',
   eraserSize: 20,
   eraserOpacity: 1,

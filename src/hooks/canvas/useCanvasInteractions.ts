@@ -453,7 +453,7 @@ export const useCanvasInteractions = () => {
         x: pathStartRef.current.x,
         y: pathStartRef.current.y,
         stroke: toolStore.toolSettings.strokeColor,
-        strokeWidth: toolStore.toolSettings.strokeWidth,
+        strokeWidth: toolStore.activeTool === 'brush' ? (toolStore.toolSettings.brushSize || 8) : (toolStore.toolSettings.pencilSize || 4),
         opacity: toolStore.toolSettings.opacity,
         fill: 'none',
         data: {
@@ -621,7 +621,7 @@ export const useCanvasInteractions = () => {
           return;
         }
         
-        const stampSize = toolStore.toolSettings.strokeWidth || 5;
+        const stampSize = toolStore.toolSettings.stampSize || 10;
         const stampObject = createStampObject(coords.x, coords.y, stampSize);
         
         const objectId = whiteboardStore.addObject(stampObject, userId);
@@ -772,7 +772,7 @@ export const useCanvasInteractions = () => {
           startX: coords.x,
           startY: coords.y,
           strokeColor: toolStore.toolSettings.strokeColor,
-          strokeWidth: toolStore.toolSettings.strokeWidth,
+          strokeWidth: activeTool === 'brush' ? (toolStore.toolSettings.brushSize || 8) : (toolStore.toolSettings.pencilSize || 4),
           opacity: toolStore.toolSettings.opacity,
           brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
@@ -1136,7 +1136,7 @@ export const useCanvasInteractions = () => {
             x: pathStartRef.current.x,
             y: pathStartRef.current.y,
             stroke: toolStore.toolSettings.strokeColor,
-            strokeWidth: toolStore.toolSettings.strokeWidth,
+            strokeWidth: activeTool === 'brush' ? (toolStore.toolSettings.brushSize || 8) : (toolStore.toolSettings.pencilSize || 4),
             opacity: toolStore.toolSettings.opacity,
             fill: 'none',
             data: {

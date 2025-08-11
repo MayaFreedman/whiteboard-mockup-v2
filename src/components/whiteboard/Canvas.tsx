@@ -123,7 +123,7 @@ export const Canvas: React.FC = () => {
       height: fontSize + 8, // Initial height with padding
       stroke: toolStore.toolSettings.strokeColor,
       fill: 'transparent',
-      strokeWidth: toolStore.toolSettings.strokeWidth || 1,
+      strokeWidth: 1,
       opacity: 1,
       data: textData
     };

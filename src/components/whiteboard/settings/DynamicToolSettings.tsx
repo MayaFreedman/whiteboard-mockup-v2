@@ -211,8 +211,8 @@ export const DynamicToolSettings: React.FC = () => {
     return <ToolSettingCard title="Stamp Settings">
         <div className="space-y-4">
           {/* Size slider */}
-          <SliderSetting label="Stamp Size" value={toolSettings.strokeWidth || 5} min={5} max={20} step={1} onChange={value => updateToolSettings({
-          strokeWidth: value
+          <SliderSetting label="Stamp Size" value={toolSettings.stampSize || 10} min={5} max={20} step={1} onChange={value => updateToolSettings({
+          stampSize: value
         })} valueFormatter={value => `${value * 10}px`} showValue={true} />
           
           {/* Category selector */}

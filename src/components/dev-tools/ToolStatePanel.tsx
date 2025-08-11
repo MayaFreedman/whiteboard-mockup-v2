@@ -40,7 +40,9 @@ export const ToolStatePanel: React.FC = () => {
             <span>{toolSettings.strokeColor}</span>
           </div>
           
-          <div>Stroke Width: {toolSettings.strokeWidth}px</div>
+          <div>
+            Size: {activeTool === 'pencil' ? `${toolSettings.pencilSize}px` : activeTool === 'brush' ? `${toolSettings.brushSize}px` : activeTool === 'stamp' ? `${(toolSettings.stampSize || 10) * 10}px` : activeTool === 'eraser' ? `${toolSettings.eraserSize}px` : 'n/a'}
+          </div>
           <div>Opacity: {(toolSettings.opacity * 100).toFixed(0)}%</div>
           <div>Brush Type: <Badge variant="outline">{toolSettings.brushType}</Badge></div>
           
