@@ -1,5 +1,5 @@
 /*
-  restoreOpenMojiVariants.js
+  restoreOpenMojiVariants.mjs
   ---------------------------------
   Targeted restore for skin tone and variant emoji PNGs using OpenMoji.
 
@@ -9,16 +9,20 @@
   - Downloads each PNG from OpenMoji into public/png-emojis/
 
   Usage:
-    node scripts/restoreOpenMojiVariants.js
+    node scripts/restoreOpenMojiVariants.mjs
 
   Notes:
   - Uses OpenMoji "color/618x" PNGs
   - Safe to re-run; existing files will be skipped by default
 */
 
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
+import fs from 'node:fs';
+import path from 'node:path';
+import https from 'node:https';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const REGISTRY_PATH = path.join(__dirname, '..', 'src', 'utils', 'iconRegistry.ts');
 const TARGET_DIR = path.join(__dirname, '..', 'public', 'png-emojis');
