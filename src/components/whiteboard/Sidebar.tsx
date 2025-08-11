@@ -6,7 +6,7 @@ import { Switch } from '../ui/switch';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ScrollArea } from '../ui/scroll-area';
-import { Check, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Check, ChevronsLeft, ChevronsRight, Upload } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Sidebar as UISidebar, SidebarContent, SidebarHeader, useSidebar } from '../ui/sidebar';
 import { DynamicToolSettings } from './settings/DynamicToolSettings';
@@ -56,10 +56,13 @@ export const WhiteboardSidebar: React.FC = () => {
 
   // Upload custom background (data URL, synced via UPDATE_SETTINGS)
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [bgDragActive, setBgDragActive] = useState(false);
+  const [isBgUploading, setIsBgUploading] = useState(false);
   const triggerUpload = () => fileInputRef.current?.click();
   const handleUploadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setIsBgUploading(true);
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
@@ -69,7 +72,36 @@ export const WhiteboardSidebar: React.FC = () => {
         }, userId);
       }
     };
+    reader.onloadend = () => setIsBgUploading(false);
     reader.readAsDataURL(file);
+  };
+  // Drag & Drop handlers for background upload
+  const handleBgDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setBgDragActive(true);
+  };
+  const handleBgDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setBgDragActive(false);
+  };
+  const handleBgDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setBgDragActive(false);
+    if (e.dataTransfer.files?.[0]) {
+      const file = e.dataTransfer.files[0];
+      setIsBgUploading(true);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        if (result?.startsWith('data:image')) {
+          updateSettings({
+            backgroundColor: `url(${result})`
+          }, userId);
+        }
+      };
+      reader.onloadend = () => setIsBgUploading(false);
+      reader.readAsDataURL(file);
+    }
   };
   const backgroundImages = [{
     name: 'Aquarium',
@@ -193,13 +225,6 @@ export const WhiteboardSidebar: React.FC = () => {
 
                       <div>
                         <label className="text-sm font-medium text-company-dark-blue mb-3 block">Set Custom Background</label>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Button variant="outline" size="sm" onClick={triggerUpload}>
-                            Upload image
-                          </Button>
-                          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUploadChange} />
-                          
-                        </div>
                         <div className="grid grid-cols-2 gap-2">
                           {backgroundImages.map(bg => <button key={bg.name} className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group" onClick={() => updateSettings({
                           backgroundColor: `url(${bg.url})`
@@ -212,6 +237,21 @@ export const WhiteboardSidebar: React.FC = () => {
                                 </span>
                               </div>
                             </button>)}
+                        </div>
+                        <div className={`relative border-2 border-dashed rounded-lg p-4 mt-2 transition-colors ${bgDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`} onDragOver={handleBgDragOver} onDragLeave={handleBgDragLeave} onDrop={handleBgDrop}>
+                          <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/jpg" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" onChange={handleUploadChange} disabled={isBgUploading} />
+                          <div className="flex flex-col items-center gap-2 text-center">
+                            <Upload className="w-6 h-6 text-muted-foreground" />
+                            <div className="text-sm">
+                              <span className="font-medium">Upload a Background</span>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Click to upload or drag and drop
+                            </div>
+                          </div>
+                          {isBgUploading && <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
+                              <div className="text-sm font-medium">Processing...</div>
+                            </div>}
                         </div>
                         <button className="mt-2 w-full h-8 rounded border-2 border-border hover:border-company-dark-blue transition-colors bg-background" onClick={() => updateSettings({
                         backgroundColor: '#ffffff'
