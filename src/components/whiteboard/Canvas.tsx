@@ -917,14 +917,6 @@ export const Canvas: React.FC = () => {
         />
       ))}
       
-      {/* Canvas Info Overlay */}
-      <div className="absolute top-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs pointer-events-none">
-        Zoom: {Math.round(viewport.zoom * 100)}% | 
-        Tool: {activeTool} |
-        {interactions.isDragging && ' Dragging'}
-        {isHandlingDoubleClick && ' | Double-click Protection Active'}
-        {editingTextId && ' | Editing Text'}
-      </div>
     </div>
   );
 };
