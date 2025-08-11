@@ -1,18 +1,19 @@
 /* global getConfigurationServerURL, jsonClone, simpleRequest, Colyseus */
 "use strict";
 import { Client } from "colyseus.js";
+import { getConfigurationServerURL } from "./ENV";
 
 export class ServerClass {
   constructor() {}
   server: any = {};
-  client = new Client("http://localhost:4001");
+  client = new Client(getConfigurationServerURL());
 
   async connectToColyseusServer(colyseusRoomID: string, isModerator: boolean) {
 
     // Test server connectivity
     try {
       const testResponse = await fetch(
-        "http://localhost:4001",
+        getConfigurationServerURL(),
         {
           method: "GET",
           signal: AbortSignal.timeout(5000),
