@@ -4,11 +4,19 @@ import { Viewport } from '../types/viewport';
 import { WhiteboardAction, WhiteboardObject } from '../types/whiteboard';
 import { brushEffectCache, precalculateSprayEffect, precalculateChalkEffect, pathToPointsForBrush } from '../utils/brushCache';
 
+export interface CustomBackground {
+  id: string;
+  name: string;
+  url: string; // data URL or path
+  preview: string; // thumbnail or same as url
+}
+
 export interface WhiteboardSettings {
   gridVisible: boolean;
   linedPaperVisible: boolean;
   showDots: boolean;
   backgroundColor: string;
+  customBackgrounds?: CustomBackground[];
 }
 
 export interface WhiteboardStore {
@@ -132,6 +140,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     linedPaperVisible: false,
     showDots: false,
     backgroundColor: '#ffffff',
+    customBackgrounds: [],
   },
   actionHistory: [],
   currentHistoryIndex: -1,

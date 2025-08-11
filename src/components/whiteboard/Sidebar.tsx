@@ -6,8 +6,9 @@ import { Switch } from '../ui/switch';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ScrollArea } from '../ui/scroll-area';
-import { Check, ChevronsLeft, ChevronsRight, Upload } from 'lucide-react';
+import { Check, ChevronsLeft, ChevronsRight, Upload, X } from 'lucide-react';
 import { Button } from '../ui/button';
+import { nanoid } from 'nanoid';
 import { Sidebar as UISidebar, SidebarContent, SidebarHeader, useSidebar } from '../ui/sidebar';
 import { DynamicToolSettings } from './settings/DynamicToolSettings';
 import { useUser } from '../../contexts/UserContext';
@@ -67,7 +68,11 @@ export const WhiteboardSidebar: React.FC = () => {
     reader.onload = () => {
       const result = reader.result as string;
       if (result?.startsWith('data:image')) {
+        const name = file.name.replace(/\.[^/.]+$/, '') || 'Custom Background';
+        const newEntry = { id: nanoid(), name, url: result, preview: result };
+        const currentList = (settings as any)?.customBackgrounds ?? [];
         updateSettings({
+          customBackgrounds: [newEntry, ...currentList],
           backgroundColor: `url(${result})`
         }, userId);
       }
@@ -94,7 +99,11 @@ export const WhiteboardSidebar: React.FC = () => {
       reader.onload = () => {
         const result = reader.result as string;
         if (result?.startsWith('data:image')) {
+          const name = file.name.replace(/\.[^/.]+$/, '') || 'Custom Background';
+          const newEntry = { id: nanoid(), name, url: result, preview: result };
+          const currentList = (settings as any)?.customBackgrounds ?? [];
           updateSettings({
+            customBackgrounds: [newEntry, ...currentList],
             backgroundColor: `url(${result})`
           }, userId);
         }
@@ -226,17 +235,41 @@ export const WhiteboardSidebar: React.FC = () => {
                       <div>
                         <label className="text-sm font-medium text-company-dark-blue mb-3 block">Set Custom Background</label>
                         <div className="grid grid-cols-2 gap-2">
-                          {backgroundImages.map(bg => <button key={bg.name} className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group" onClick={() => updateSettings({
-                          backgroundColor: `url(${bg.url})`
-                        }, userId)} title={bg.name}>
-                              <img src={bg.preview} alt={`${bg.name} background`} loading="lazy" className="w-full h-full object-cover" />
+                          {[
+                            ...(((settings as any)?.customBackgrounds ?? []).map((cb: any) => ({ ...cb, isCustom: true }))),
+                            ...(backgroundImages.map(bg => ({ ...bg, id: bg.url, isCustom: false })))
+                          ].map((item: any) => (
+                            <button
+                              key={item.id || item.name}
+                              className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group"
+                              onClick={() => updateSettings({ backgroundColor: `url(${item.url})` }, userId)}
+                              title={item.name}
+                            >
+                              {/* Delete custom background */}
+                              {item.isCustom && (
+                                <button
+                                  type="button"
+                                  aria-label={`Remove ${item.name} background`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const list = ((settings as any)?.customBackgrounds ?? []).filter((cb: any) => cb.id !== item.id);
+                                    updateSettings({ customBackgrounds: list }, userId);
+                                  }}
+                                  className="absolute top-1 right-1 z-10 bg-background/80 hover:bg-background/95 rounded p-0.5 shadow"
+                                >
+                                  <X className="w-3.5 h-3.5 text-foreground/70" />
+                                </button>
+                              )}
+
+                              <img src={item.preview} alt={`${item.name} background`} loading="lazy" className="w-full h-full object-cover" />
                               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                               <div className="absolute bottom-1 left-1 right-1">
                                 <span className="text-xs text-white font-medium bg-black/50 px-1 rounded">
-                                  {bg.name}
+                                  {item.name}
                                 </span>
                               </div>
-                            </button>)}
+                            </button>
+                          ))}
                         </div>
                         <div className={`relative border-2 border-dashed rounded-lg p-4 mt-2 transition-colors ${bgDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`} onDragOver={handleBgDragOver} onDragLeave={handleBgDragLeave} onDrop={handleBgDrop}>
                           <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/jpg" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" onChange={handleUploadChange} disabled={isBgUploading} />
