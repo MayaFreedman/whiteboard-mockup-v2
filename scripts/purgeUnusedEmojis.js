@@ -10,8 +10,12 @@
  - This script is idempotent and safe to re-run.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ROOT = process.cwd();
 const PNG_DIR = path.join(ROOT, 'public', 'png-emojis');
@@ -74,6 +78,7 @@ function main() {
   console.log('Done.');
 }
 
-if (require.main === module) {
+const invokedAsScript = process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
+if (invokedAsScript) {
   main();
 }
