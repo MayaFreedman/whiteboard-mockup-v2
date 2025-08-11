@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import { Viewport } from '../types/viewport';
 import { WhiteboardAction, WhiteboardObject } from '../types/whiteboard';
 import { brushEffectCache, precalculateSprayEffect, precalculateChalkEffect, pathToPointsForBrush } from '../utils/brushCache';
-
+import { getCustomBackgrounds, saveCustomBackgrounds } from '../utils/customBackgrounds';
 export interface CustomBackground {
   id: string;
   name: string;
@@ -140,7 +140,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     linedPaperVisible: false,
     showDots: false,
     backgroundColor: '#ffffff',
-    customBackgrounds: [],
+    customBackgrounds: getCustomBackgrounds(),
   },
   actionHistory: [],
   currentHistoryIndex: -1,
@@ -340,7 +340,15 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       previousState: { settings: previousSettings },
     };
 
-    set((state) => ({ settings: { ...state.settings, ...updates } }));
+    set((state) => {
+      const newSettings = { ...state.settings, ...updates } as any;
+      try {
+        if ('customBackgrounds' in newSettings && newSettings.customBackgrounds) {
+          saveCustomBackgrounds(newSettings.customBackgrounds as any);
+        }
+      } catch {}
+      return { settings: newSettings };
+    });
     get().recordAction(action);
   },
 
@@ -917,9 +925,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       
       case 'UPDATE_SETTINGS':
         if (action.payload) {
-          set((state) => ({
-            settings: { ...state.settings, ...action.payload },
-          }));
+          set((state) => {
+            const nextSettings = { ...state.settings, ...action.payload } as any;
+            try {
+              const payloadAny = action.payload as any;
+              if (payloadAny && payloadAny.customBackgrounds) {
+                saveCustomBackgrounds(payloadAny.customBackgrounds as any);
+              }
+            } catch {}
+            return { settings: nextSettings };
+          });
         }
         break;
         
