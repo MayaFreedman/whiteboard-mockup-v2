@@ -10,6 +10,7 @@ import { Check, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Sidebar as UISidebar, SidebarContent, SidebarHeader, useSidebar } from '../ui/sidebar';
 import { DynamicToolSettings } from './settings/DynamicToolSettings';
+import { useUser } from '../../contexts/UserContext';
 export const WhiteboardSidebar: React.FC = () => {
   const {
     toolSettings,
@@ -28,6 +29,7 @@ export const WhiteboardSidebar: React.FC = () => {
     open,
     toggleSidebar
   } = useSidebar();
+  const { userId } = useUser();
   const [activeTab, setActiveTab] = useState('tools');
 
   // Switch to tools tab when a tool is selected while on settings tab
@@ -64,7 +66,7 @@ export const WhiteboardSidebar: React.FC = () => {
       if (result?.startsWith('data:image')) {
         updateSettings({
           backgroundColor: `url(${result})`
-        });
+        }, userId);
       }
     };
     reader.readAsDataURL(file);
@@ -201,7 +203,7 @@ export const WhiteboardSidebar: React.FC = () => {
                         <div className="grid grid-cols-2 gap-2">
                           {backgroundImages.map(bg => <button key={bg.name} className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group" onClick={() => updateSettings({
                           backgroundColor: `url(${bg.url})`
-                        })} title={bg.name}>
+                        }, userId)} title={bg.name}>
                               <img src={bg.preview} alt={`${bg.name} background`} loading="lazy" className="w-full h-full object-cover" />
                               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                               <div className="absolute bottom-1 left-1 right-1">
@@ -213,7 +215,7 @@ export const WhiteboardSidebar: React.FC = () => {
                         </div>
                         <button className="mt-2 w-full h-8 rounded border-2 border-border hover:border-company-dark-blue transition-colors bg-background" onClick={() => updateSettings({
                         backgroundColor: '#ffffff'
-                      })}>
+                      }, userId)}>
                           <span className="text-xs text-muted-foreground">Clear Background</span>
                         </button>
                       </div>
