@@ -16,15 +16,15 @@ export const ENV = {
 
 export function getConfigurationServerURL() {
   const domain = window.location.hostname;
-  console.log("[worry-pet-game] domain", domain);
+  console.log("[Whiteboard] domain", domain);
   let server = ENV.URL[domain];
   if (!server) {
     console.warn(
-      `[worry-pet-game] Not able to find configuration for domain [${domain}], will connect to DEFAULT URL`
+      `[Whiteboard] Not able to find configuration for domain [${domain}], will connect to DEFAULT URL`
     );
     server = ENV.DEFAULT_URL;
   }
 
-  console.log("[worry-pet-game] colyseus server ", server);
+  console.log("[Whiteboard] colyseus server ", server);
   return server;
 }
