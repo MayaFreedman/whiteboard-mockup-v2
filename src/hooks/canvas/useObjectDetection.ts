@@ -10,6 +10,7 @@ import {
   getStarVertices 
 } from '../../utils/shapeRendering';
 import { isPointInTextBounds } from '../../utils/textMeasurement';
+import { pathToPoints } from '../../utils/path/pathConversion';
 
 /**
  * Hook for detecting objects at coordinates with improved accuracy
@@ -22,6 +23,17 @@ export const useObjectDetection = () => {
    */
   const isPointInPath = useCallback((pathString: string, x: number, y: number, strokeWidth: number = 2): boolean => {
     try {
+      // Handle degenerate paths (single-point "dots") that Path2D stroke tests miss
+      const pts = pathToPoints(pathString);
+      if (pts.length <= 1) {
+        const p = pts[0] || { x: Number.POSITIVE_INFINITY, y: Number.POSITIVE_INFINITY };
+        const dx = x - p.x;
+        const dy = y - p.y;
+        const dist = Math.hypot(dx, dy);
+        const pickRadius = Math.max(strokeWidth * 1.5, 8); // generous radius for chalk/spray dots
+        if (dist <= pickRadius) return true;
+      }
+
       const path = new Path2D(pathString);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
