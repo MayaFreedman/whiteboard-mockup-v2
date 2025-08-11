@@ -7,7 +7,7 @@ import { useMultiplayer } from './useMultiplayer';
  * Hook for synchronizing screen sizes across multiplayer users
  */
 export const useScreenSizeSync = () => {
-  const { updateLocalUserScreenSize, clearAllSizes } = useScreenSizeStore();
+  const { updateLocalUserScreenSize, clearAllSizes, recalculateMinimumSize } = useScreenSizeStore();
   const { userId } = useUser();
   const multiplayer = useMultiplayer();
   const lastBroadcastRef = useRef<{ width: number; height: number } | null>(null);
@@ -46,12 +46,15 @@ export const useScreenSizeSync = () => {
 
     const newSize = calculateUsableScreenSize();
     
-    // Update local store without triggering recalculation
+    // Update local store
     updateLocalUserScreenSize(userId, newSize);
     
     // Broadcast to other users (with duplicate prevention)
     broadcastScreenSize(newSize);
-  }, [userId, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize]);
+
+    // Recalculate the minimum/shared whiteboard size locally
+    recalculateMinimumSize();
+  }, [userId, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize, recalculateMinimumSize]);
 
   // Handle window resize events only
   useEffect(() => {
@@ -69,7 +72,8 @@ export const useScreenSizeSync = () => {
     
     const initialSize = calculateUsableScreenSize();
     updateLocalUserScreenSize(userId, initialSize);
-  }, [userId, updateLocalUserScreenSize, calculateUsableScreenSize]);
+    recalculateMinimumSize();
+  }, [userId, updateLocalUserScreenSize, calculateUsableScreenSize, recalculateMinimumSize]);
 
   // Handle multiplayer connection state changes
   useEffect(() => {
