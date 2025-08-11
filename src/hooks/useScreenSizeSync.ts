@@ -7,7 +7,7 @@ import { useMultiplayer } from './useMultiplayer';
  * Hook for synchronizing screen sizes across multiplayer users
  */
 export const useScreenSizeSync = () => {
-  const { updateLocalUserScreenSize, recalculateMinimumSize } = useScreenSizeStore();
+  const { updateLocalUserScreenSize, recalculateMinimumSize, clearAllSizes } = useScreenSizeStore();
   const { userId } = useUser();
   const multiplayer = useMultiplayer();
   const lastBroadcastRef = useRef<{ width: number; height: number } | null>(null);
@@ -93,8 +93,9 @@ export const useScreenSizeSync = () => {
     const userCount = multiplayer.connectedUserCount;
     
     if (userCount <= 1) {
-      // Single player mode - ensure local size is present and apply
+      // Single player mode - clear stale entries and ensure local size is active
       console.log('📏 Single player mode - ensuring local size is active');
+      clearAllSizes();
       const currentSize = calculateUsableScreenSize();
       updateLocalUserScreenSize(participantId, currentSize);
       recalculateMinimumSize();
