@@ -78,7 +78,13 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
       };
     });
     
-    // Don't recalculate for local updates - wait for broadcast response
+    // Debounced recalculation to immediately reflect local changes as well
+    if (recalculateTimeout) {
+      clearTimeout(recalculateTimeout);
+    }
+    recalculateTimeout = setTimeout(() => {
+      get().recalculateMinimumSize();
+    }, 50);
   },
 
   removeUser: (userId: string) => {

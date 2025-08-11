@@ -32,29 +32,34 @@ export const useScreenSizeSync = () => {
 
     lastBroadcastRef.current = size;
 
+    const senderSessionId = multiplayer?.serverInstance?.server?.room?.sessionId;
+
     // Send screen size update via multiplayer
     multiplayer.serverInstance?.server?.room?.send('broadcast', {
       type: 'screen_size_update',
       userId: userId,
+      senderSessionId,
       screenSize: size,
       timestamp: Date.now()
     });
-  }, [multiplayer, userId]);
+  }, [multiplayer, userId])
+;
 
   const handleWindowResize = useCallback(() => {
-    if (!userId) return;
+    const participantId = multiplayer?.serverInstance?.server?.room?.sessionId || userId;
+    if (!participantId) return;
 
     const newSize = calculateUsableScreenSize();
     
-    // Update local store
-    updateLocalUserScreenSize(userId, newSize);
+    // Update local store keyed by participant/session id
+    updateLocalUserScreenSize(participantId, newSize);
     
     // Broadcast to other users (with duplicate prevention)
     broadcastScreenSize(newSize);
 
     // Recalculate the minimum/shared whiteboard size locally
     recalculateMinimumSize();
-  }, [userId, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize, recalculateMinimumSize]);
+  }, [userId, multiplayer, updateLocalUserScreenSize, broadcastScreenSize, calculateUsableScreenSize, recalculateMinimumSize]);
 
   // Handle window resize events only
   useEffect(() => {
@@ -68,18 +73,22 @@ export const useScreenSizeSync = () => {
 
   // Set initial screen size once when userId becomes available
   useEffect(() => {
-    if (!userId) return;
+    const participantId = multiplayer?.serverInstance?.server?.room?.sessionId || userId;
+    if (!participantId) return;
     
     const initialSize = calculateUsableScreenSize();
-    updateLocalUserScreenSize(userId, initialSize);
+    updateLocalUserScreenSize(participantId, initialSize);
     recalculateMinimumSize();
-  }, [userId, updateLocalUserScreenSize, calculateUsableScreenSize, recalculateMinimumSize]);
+  }, [userId, multiplayer, updateLocalUserScreenSize, calculateUsableScreenSize, recalculateMinimumSize]);
 
   // Handle multiplayer connection state changes
   useEffect(() => {
-    if (!multiplayer?.isConnected || !userId) {
+    if (!multiplayer?.isConnected) {
       return;
     }
+
+    const participantId = multiplayer?.serverInstance?.server?.room?.sessionId || userId;
+    if (!participantId) return;
 
     const userCount = multiplayer.connectedUserCount;
     
@@ -87,19 +96,19 @@ export const useScreenSizeSync = () => {
       // Single player mode - ensure local size is present and apply
       console.log('📏 Single player mode - ensuring local size is active');
       const currentSize = calculateUsableScreenSize();
-      updateLocalUserScreenSize(userId, currentSize);
+      updateLocalUserScreenSize(participantId, currentSize);
       recalculateMinimumSize();
     } else {
       // Multi-player mode - broadcast current size and ensure local presence
       console.log('📏 Multi-player mode - broadcasting screen size');
       const currentSize = calculateUsableScreenSize();
-      updateLocalUserScreenSize(userId, currentSize);
+      updateLocalUserScreenSize(participantId, currentSize);
       // Force re-broadcast on participant changes so newcomers receive sizes
       lastBroadcastRef.current = null;
       broadcastScreenSize(currentSize);
       recalculateMinimumSize();
     }
-  }, [multiplayer?.isConnected, multiplayer?.connectedUserCount, userId, broadcastScreenSize, calculateUsableScreenSize, updateLocalUserScreenSize, recalculateMinimumSize]);
+  }, [multiplayer?.isConnected, multiplayer?.connectedUserCount, userId, multiplayer, broadcastScreenSize, calculateUsableScreenSize, updateLocalUserScreenSize, recalculateMinimumSize]);
 
   return {
     broadcastScreenSize

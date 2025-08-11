@@ -2,6 +2,7 @@
 import React, { createContext, useState, useCallback, useEffect, ReactNode } from 'react'
 import { ServerClass } from '../server'
 import { WhiteboardAction } from '../types/whiteboard'
+import { useScreenSizeStore } from '../stores/screenSizeStore'
 
 interface User {
   id: string
@@ -71,6 +72,14 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
 
     room.onMessage('participantLeft', (data: any) => {
       setConnectedUserCount(prev => Math.max(0, prev - 1))
+      try {
+        const participantId = data?.sessionId || data?.id || data?.clientId || data?.userId
+        if (participantId) {
+          useScreenSizeStore.getState().removeUser(participantId)
+        }
+      } catch (err) {
+        console.warn('⚠️ Failed to remove participant screen size on leave:', err)
+      }
     })
 
     room.onMessage('ping', () => {

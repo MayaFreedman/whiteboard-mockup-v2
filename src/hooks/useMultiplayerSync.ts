@@ -210,9 +210,13 @@ export const useMultiplayerSync = () => {
       }
       
       // Handle screen size updates
-      if (message.type === 'screen_size_update' && message.userId && message.screenSize) {
-        console.log('📥 Received screen size update from:', message.userId, message.screenSize)
-        updateUserScreenSize(message.userId, message.screenSize)
+      if (message.type === 'screen_size_update' && message.screenSize) {
+        const senderSessionId = message.senderSessionId || message.userId
+        if (!senderSessionId) return
+        // Ignore our own echo
+        if (senderSessionId === room.sessionId) return
+        console.log('📥 Received screen size update from participant:', senderSessionId, message.screenSize)
+        updateUserScreenSize(senderSessionId, message.screenSize)
       }
     }
 
