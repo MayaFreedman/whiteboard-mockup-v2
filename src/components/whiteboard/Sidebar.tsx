@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -10,6 +10,7 @@ import { Check, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Sidebar as UISidebar, SidebarContent, SidebarHeader, useSidebar } from '../ui/sidebar';
 import { DynamicToolSettings } from './settings/DynamicToolSettings';
+import { BackgroundImageUpload } from './settings/BackgroundImageUpload';
 export const WhiteboardSidebar: React.FC = () => {
   const {
     toolSettings,
@@ -52,22 +53,9 @@ export const WhiteboardSidebar: React.FC = () => {
     console.log('🎛️ Background settings after update:', settings);
   };
 
-  // Upload custom background (data URL, synced via UPDATE_SETTINGS)
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const triggerUpload = () => fileInputRef.current?.click();
-  const handleUploadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      if (result?.startsWith('data:image')) {
-        updateSettings({
-          backgroundColor: `url(${result})`
-        });
-      }
-    };
-    reader.readAsDataURL(file);
+  // Handle background image selection from upload component
+  const handleBackgroundImageSelected = (dataUrl: string) => {
+    updateSettings({ backgroundColor: `url(${dataUrl})` });
   };
   const backgroundImages = [{
     name: 'Aquarium',
@@ -191,13 +179,7 @@ export const WhiteboardSidebar: React.FC = () => {
 
                       <div>
                         <label className="text-sm font-medium text-company-dark-blue mb-3 block">Set Custom Background</label>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Button variant="outline" size="sm" onClick={triggerUpload}>
-                            Upload image
-                          </Button>
-                          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUploadChange} />
-                          
-                        </div>
+                        <BackgroundImageUpload onImageSelected={handleBackgroundImageSelected} />
                         <div className="grid grid-cols-2 gap-2">
                           {backgroundImages.map(bg => <button key={bg.name} className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group" onClick={() => updateSettings({
                           backgroundColor: `url(${bg.url})`
