@@ -4,6 +4,7 @@ import { useUser } from '../contexts/UserContext'
 import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
 import { useScreenSizeStore } from '../stores/screenSizeStore'
+import { addCustomBackgroundFromObject, removeCustomBackgroundById, removeCustomBackgroundByDataUrl, type CustomBackground } from '../utils/customBackgrounds'
 
 /**
  * Determines if an action should be synchronized across multiplayer clients
@@ -218,6 +219,37 @@ export const useMultiplayerSync = () => {
         console.log('📥 Received screen size update from participant:', senderSessionId, message.screenSize)
         updateUserScreenSize(senderSessionId, message.screenSize)
       }
+
+      // Handle custom backgrounds sync (add)
+      if (message.type === 'custom_background_added' && message.background) {
+        const sender = message.senderSessionId || message.userId
+        if (sender && sender === room.sessionId) return
+        try {
+          const bg = message.background as CustomBackground
+          addCustomBackgroundFromObject(bg)
+          console.log('🧩 Added remote custom background to local storage:', bg.id)
+        } catch (e) {
+          console.warn('Failed to apply remote custom background:', e)
+        }
+      }
+
+      // Handle custom backgrounds sync (remove)
+      if (message.type === 'custom_background_removed' && (message.backgroundId || message.dataUrl)) {
+        const sender = message.senderSessionId || message.userId
+        if (sender && sender === room.sessionId) return
+        try {
+          if (message.backgroundId) {
+            removeCustomBackgroundById(String(message.backgroundId))
+          } else if (message.dataUrl) {
+            // Fallback removal by dataUrl
+            removeCustomBackgroundByDataUrl(String(message.dataUrl))
+          }
+          console.log('🧽 Removed remote custom background from local storage')
+        } catch (e) {
+          console.warn('Failed to remove remote custom background:', e)
+        }
+      }
+
     }
 
     room.onMessage('broadcast', handleBroadcastMessage)

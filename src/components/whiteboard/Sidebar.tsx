@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useToolStore } from '../../stores/toolStore';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -6,11 +6,13 @@ import { Switch } from '../ui/switch';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ScrollArea } from '../ui/scroll-area';
-import { Check, ChevronsLeft, ChevronsRight, Upload } from 'lucide-react';
+import { Check, ChevronsLeft, ChevronsRight, Upload, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Sidebar as UISidebar, SidebarContent, SidebarHeader, useSidebar } from '../ui/sidebar';
 import { DynamicToolSettings } from './settings/DynamicToolSettings';
 import { useUser } from '../../contexts/UserContext';
+import { MultiplayerContext } from '../../contexts/MultiplayerContext';
+import { getCustomBackgrounds, addCustomBackground, removeCustomBackgroundById, type CustomBackground } from '../../utils/customBackgrounds';
 export const WhiteboardSidebar: React.FC = () => {
   const {
     toolSettings,
@@ -31,6 +33,22 @@ export const WhiteboardSidebar: React.FC = () => {
   } = useSidebar();
   const { userId } = useUser();
   const [activeTab, setActiveTab] = useState('tools');
+
+  const multiplayerContext = useContext(MultiplayerContext);
+  const [customBackgrounds, setCustomBackgrounds] = useState<CustomBackground[]>([]);
+  useEffect(() => {
+    setCustomBackgrounds(getCustomBackgrounds());
+    const onUpdate = () => setCustomBackgrounds(getCustomBackgrounds());
+    window.addEventListener('custom-backgrounds-updated', onUpdate as any);
+    return () => window.removeEventListener('custom-backgrounds-updated', onUpdate as any);
+  }, []);
+
+  const broadcastBgEvent = (payload: any) => {
+    const si = multiplayerContext?.serverInstance;
+    const room = si?.server?.room;
+    if (!room) return;
+    si!.sendEvent({ ...payload, senderSessionId: room.sessionId });
+  };
 
   // Switch to tools tab when a tool is selected while on settings tab
   useEffect(() => {
