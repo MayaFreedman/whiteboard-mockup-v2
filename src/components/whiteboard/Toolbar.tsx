@@ -164,23 +164,48 @@ const ActionButtons: React.FC = () => {
     redo(userId);
   };
 
-  const handleScreenshot = () => {
+  const handleScreenshot = async () => {
     try {
       const canvas = document.getElementById('whiteboard-canvas') as HTMLCanvasElement | null;
       if (!canvas) {
         console.warn('📷 No whiteboard canvas found for screenshot');
         return;
       }
-      const dataUrl = canvas.toDataURL('image/png');
+
+      // Compose onto an offscreen canvas with the same pixel dimensions
+      const off = document.createElement('canvas');
+      off.width = canvas.width;
+      off.height = canvas.height;
+      const ctx = off.getContext('2d');
+      if (!ctx) return;
+
+      // Use the computed background color of the visible canvas (matches theme/whiteboard)
+      const computed = getComputedStyle(canvas);
+      let bg = computed.backgroundColor || '#ffffff';
+      if (/rgba\s*\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*0\s*\)/i.test(bg) || bg === 'transparent') {
+        bg = '#ffffff';
+      }
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, off.width, off.height);
+
+      // Draw the current whiteboard bitmap on top
+      ctx.drawImage(canvas, 0, 0);
+
+      const dataUrl = off.toDataURL('image/png');
+
+      // Filename with local date-time (YYYY-MM-DD_HH-mm-ss)
+      const d = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const filename = `whiteboard-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}.png`;
+
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `whiteboard-${Date.now()}.png`;
+      a.download = filename;
       a.click();
     } catch (err) {
       console.error('📷 Screenshot failed', err);
     }
   };
-
   const handleClearCanvas = () => {
     console.log('🗑️ Toolbar clear canvas clicked for user:', userId);
     clearCanvas(userId);
