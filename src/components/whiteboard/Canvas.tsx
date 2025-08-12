@@ -50,6 +50,7 @@ export const Canvas: React.FC = () => {
   const { activeTool } = toolStore;
   const { userId } = useUser();
   const { startBatch, endBatch } = useActionBatching({ batchTimeout: 100, maxBatchSize: 50 });
+  const { startBatch: startResizeBatch, endBatch: endResizeBatch } = useActionBatching({ batchTimeout: 0, maxBatchSize: 500 });
   const { activeWhiteboardSize, userScreenSizes } = useScreenSizeStore();
   
   // Only show grey overlay when there are multiple users
@@ -974,9 +975,9 @@ export const Canvas: React.FC = () => {
         <ResizeHandles
           key={objectId}
           objectId={objectId}
-          onResizeStart={() => startBatch('UPDATE_OBJECT', objectId, userId)}
+          onResizeStart={() => startResizeBatch('UPDATE_OBJECT', objectId, userId)}
           onResize={(id, bounds) => handleResize(id, bounds)}
-          onResizeEnd={() => endBatch()}
+          onResizeEnd={() => endResizeBatch()}
         />
       ))}
       
