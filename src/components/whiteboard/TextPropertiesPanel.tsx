@@ -25,6 +25,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
   if (!obj || obj.type !== 'text') return null;
 
   const textData = obj.data as TextData;
+  const availableColors = getActiveColors().filter(c => c !== 'rainbow-gradient');
 
   // Auto-resize text object to fit content
   const updateTextBounds = (textObject: any, updatedData: TextData) => {
@@ -205,7 +206,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
       <div className="space-y-2">
         <Label className="text-sm font-medium">Text Color</Label>
         <div className="flex gap-1 flex-wrap">
-          {getActiveColors().map(color => (
+          {availableColors.map(color => (
             <button
               key={color}
               className={`w-6 h-6 rounded border-2 ${obj.stroke === color ? 'border-primary' : 'border-border'}`}

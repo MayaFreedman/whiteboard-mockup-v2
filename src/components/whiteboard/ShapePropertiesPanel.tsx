@@ -18,7 +18,7 @@ export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ sele
   const { getActiveColors, toolSettings, updateToolSettings } = useToolStore();
   
   const obj = objects[selectedObjectId];
-  const activeColors = getActiveColors();
+  const activeColors = getActiveColors().filter(c => c !== 'rainbow-gradient');
   const colorMode = toolSettings.shapeColorMode;
   
   if (!obj) return null;
