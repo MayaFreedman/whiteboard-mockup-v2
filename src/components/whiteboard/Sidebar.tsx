@@ -13,6 +13,7 @@ import { DynamicToolSettings } from './settings/DynamicToolSettings';
 import { useUser } from '../../contexts/UserContext';
 import { MultiplayerContext } from '../../contexts/MultiplayerContext';
 import { getCustomBackgrounds, addCustomBackground, removeCustomBackgroundById, type CustomBackground } from '../../utils/customBackgrounds';
+import { preloadAndCacheImage } from '../../utils/imagePreloader';
 export const WhiteboardSidebar: React.FC = () => {
   const {
     toolSettings,
@@ -94,7 +95,8 @@ export const WhiteboardSidebar: React.FC = () => {
         type: 'custom_background_added',
         background: bg
       });
-      // Apply immediately as current background
+      // Apply immediately as current background (preload first to avoid gap)
+      await preloadAndCacheImage(bg.dataUrl);
       updateSettings({
         backgroundColor: `url(${bg.dataUrl})`
       }, userId);
@@ -126,6 +128,16 @@ export const WhiteboardSidebar: React.FC = () => {
       handleAddBackground(e.dataTransfer.files[0]);
     }
   };
+  const handleSelectCustomBg = async (bg: CustomBackground) => {
+    try { await preloadAndCacheImage(bg.dataUrl); } catch {}
+    updateSettings({ backgroundColor: `url(${bg.dataUrl})` }, userId);
+  };
+
+  const handleSelectPresetBg = async (url: string) => {
+    try { await preloadAndCacheImage(url); } catch {}
+    updateSettings({ backgroundColor: `url(${url})` }, userId);
+  };
+
   const backgroundImages = [{
     name: 'Aquarium',
     url: '/backgrounds/Aquarium.png',
@@ -254,9 +266,12 @@ export const WhiteboardSidebar: React.FC = () => {
                             <div className="text-xs text-muted-foreground">Your Backgrounds</div>
                             <div className="grid grid-cols-2 gap-2">
                               {customBackgrounds.map(bg => <div key={bg.id} className="relative group">
-                                  <button className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden" title={bg.name} onClick={() => updateSettings({
-                              backgroundColor: `url(${bg.dataUrl})`
-                            }, userId)}>
+                                  <button
+                                    className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden"
+                                    title={bg.name}
+                                    onMouseEnter={() => preloadAndCacheImage(bg.dataUrl)}
+                                    onClick={() => handleSelectCustomBg(bg)}
+                                  >
                                     <img src={bg.preview} alt={`${bg.name} custom background`} loading="lazy" className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors" />
                                   </button>
@@ -275,9 +290,7 @@ export const WhiteboardSidebar: React.FC = () => {
                         <div className="space-y-2">
                           <div className="text-xs text-muted-foreground">Preset Backgrounds</div>
                           <div className="grid grid-cols-2 gap-2">
-                            {backgroundImages.map(bg => <button key={bg.name} className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group" onClick={() => updateSettings({
-                            backgroundColor: `url(${bg.url})`
-                          }, userId)} title={bg.name}>
+                            {backgroundImages.map(bg => <button key={bg.name} className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group" onMouseEnter={() => preloadAndCacheImage(bg.url)} onClick={() => handleSelectPresetBg(bg.url)} title={bg.name}>
                                 <img src={bg.preview} alt={`${bg.name} background`} loading="lazy" className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                                 <div className="absolute bottom-1 left-1 right-1">
