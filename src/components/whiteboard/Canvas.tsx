@@ -112,7 +112,7 @@ export const Canvas: React.FC = () => {
       bold,
       italic,
       underline: toolStore.toolSettings.textUnderline || false,
-      textAlign: 'right'
+      textAlign: 'left'
     };
 
     const textObject = {
@@ -872,7 +872,7 @@ export const Canvas: React.FC = () => {
             fontWeight: toolStore.toolSettings.textBold ? 'bold' : 'normal',
             fontStyle: toolStore.toolSettings.textItalic ? 'italic' : 'normal',
             textDecoration: toolStore.toolSettings.textUnderline ? 'underline' : 'none',
-            textAlign: 'right',
+            textAlign: 'left',
             color: 'transparent', // Make text invisible like double-click editing
             zIndex: 1001, // Higher than regular text editing
             lineHeight: (toolStore.toolSettings.fontSize * 1.2 || 20) + 'px',
