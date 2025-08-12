@@ -157,7 +157,21 @@ export const Canvas: React.FC = () => {
       isManualResizing.current = true;
     }
     
-    updateObject(objectId, newBounds);
+    const obj = objects[objectId];
+    let updates: any = { ...newBounds };
+
+    // If a text object's width was changed manually, mark it as fixedWidth
+    if (obj && obj.type === 'text' && typeof obj.width === 'number' && newBounds.width !== obj.width) {
+      updates = {
+        ...updates,
+        data: {
+          ...(obj.data || {}),
+          fixedWidth: true,
+        },
+      };
+    }
+
+    updateObject(objectId, updates);
     // Don't call redrawCanvas here - let the state change trigger it naturally for smoother updates
     
     // Clear the flag after a short delay to allow the resize operation to complete
@@ -173,32 +187,48 @@ export const Canvas: React.FC = () => {
     if (!textObject.data) return;
     
     const textData = textObject.data;
+    const isFixed = !!textData.fixedWidth;
+    const padding = 8;
+    const isPlaceholder = !content || content.trim() === '' || content === 'Double-click to edit';
+
+    const maxWidth = isFixed ? Math.max((textObject.width || 0) - padding, 0) : undefined;
     const metrics = measureText(
       content || 'Double-click to edit',
       textData.fontSize,
       textData.fontFamily,
       textData.bold,
       textData.italic,
-      textObject.width - 8 // Use available width minus padding for wrapping
+      maxWidth
     );
     
     console.log('📏 Text bounds update:', {
       content: content?.slice(0, 50) + (content && content.length > 50 ? '...' : ''),
-      availableWidth: textObject.width - 8,
+      isFixedWidth: isFixed,
+      availableWidth: maxWidth,
       measuredDimensions: { width: metrics.width, height: metrics.height },
       lineCount: metrics.lines.length
     });
     
-    // Add padding to the measured dimensions
-    const padding = 8;
-    const newWidth = Math.max(metrics.width + padding, 100); // Minimum 100px width
-    const newHeight = Math.max(metrics.height + padding, textData.fontSize + padding);
+    const measuredWidth = metrics.width + padding;
+    const measuredHeight = Math.max(metrics.height + padding, textData.fontSize + padding);
+
+    const updates: any = {};
+    if (isFixed) {
+      // Preserve manual width; update height only. Avoid shrinking due to placeholder.
+      const currentHeight = textObject.height || 0;
+      const newHeight = isPlaceholder ? Math.max(currentHeight, measuredHeight) : measuredHeight;
+      if (newHeight !== textObject.height) {
+        updates.height = newHeight;
+      }
+    } else {
+      const newWidth = Math.max(measuredWidth, 100); // Minimum width
+      const newHeight = measuredHeight;
+      if (newWidth !== textObject.width) updates.width = newWidth;
+      if (newHeight !== textObject.height) updates.height = newHeight;
+    }
     
-    if (newWidth !== textObject.width || newHeight !== textObject.height) {
-      updateObject(textObject.id, {
-        width: newWidth,
-        height: newHeight
-      });
+    if (Object.keys(updates).length) {
+      updateObject(textObject.id, updates);
     }
   };
 

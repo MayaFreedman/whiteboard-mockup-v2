@@ -29,27 +29,30 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
 
   // Auto-resize text object to fit content
   const updateTextBounds = (textObject: any, updatedData: TextData) => {
-    console.log('📏 Auto-calculating text bounds:', { 
-      objectId: selectedObjectId, 
-      content: updatedData.content, 
-      fontSize: updatedData.fontSize,
-      currentBounds: { width: textObject.width, height: textObject.height }
-    });
+    const isFixed = !!updatedData.fixedWidth;
     const content = updatedData.content || 'Double-click to edit';
+
+    const padding = 8;
+    const maxWidth = isFixed && typeof textObject.width === 'number' ? Math.max(textObject.width - padding, 0) : undefined;
+
     const metrics = measureText(
       content,
       updatedData.fontSize,
       updatedData.fontFamily,
       updatedData.bold,
-      updatedData.italic
+      updatedData.italic,
+      maxWidth
     );
     
-    // Add padding to the measured dimensions
-    const padding = 8;
-    const newWidth = Math.max(metrics.width + padding, 100); // Minimum 100px width
     const newHeight = Math.max(metrics.height + padding, updatedData.fontSize + padding);
-    
-    console.log('📏 New text bounds calculated:', { newWidth, newHeight, metricsWidth: metrics.width, metricsHeight: metrics.height });
+
+    if (isFixed) {
+      // Preserve manual width; only update height
+      return { width: textObject.width, height: newHeight };
+    }
+
+    // Auto-fit width to content when not fixed
+    const newWidth = Math.max(metrics.width + padding, 100);
     return { width: newWidth, height: newHeight };
   };
 

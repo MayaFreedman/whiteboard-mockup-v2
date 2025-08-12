@@ -222,6 +222,7 @@ export interface TextData {
   italic: boolean;
   underline: boolean;
   textAlign: 'left' | 'center' | 'right';
+  fixedWidth?: boolean; // When true, preserve manual width and only auto-adjust height
 }
 
 export interface TextObject extends WhiteboardObject {
