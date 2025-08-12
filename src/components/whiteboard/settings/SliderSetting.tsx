@@ -9,6 +9,8 @@ interface SliderSettingProps {
   max: number;
   step: number;
   onChange: (value: number) => void;
+  onChangeStart?: () => void;
+  onCommit?: (value: number) => void;
   valueFormatter?: (value: number) => string;
   showValue?: boolean;
 }
@@ -20,6 +22,8 @@ export const SliderSetting: React.FC<SliderSettingProps> = ({
   max,
   step,
   onChange,
+  onChangeStart,
+  onCommit,
   valueFormatter,
   showValue = true
 }) => {
@@ -34,7 +38,9 @@ export const SliderSetting: React.FC<SliderSettingProps> = ({
       </label>
       <Slider
         value={[value]}
+        onPointerDown={() => onChangeStart?.()}
         onValueChange={(values) => onChange(values[0])}
+        onValueCommit={(values) => onCommit?.(values[0])}
         min={min}
         max={max}
         step={step}

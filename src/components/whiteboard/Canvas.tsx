@@ -175,7 +175,7 @@ export const Canvas: React.FC = () => {
       }
     }
 
-    updateObject(objectId, updates);
+    updateObject(objectId, updates, userId);
     // Don't call redrawCanvas here - let the state change trigger it naturally for smoother updates
     
     // Clear the flag after a short delay to allow the resize operation to complete
@@ -974,7 +974,9 @@ export const Canvas: React.FC = () => {
         <ResizeHandles
           key={objectId}
           objectId={objectId}
-          onResize={handleResize}
+          onResizeStart={() => startBatch('UPDATE_OBJECT', objectId, userId)}
+          onResize={(id, bounds) => handleResize(id, bounds)}
+          onResizeEnd={() => endBatch()}
         />
       ))}
       
