@@ -1082,16 +1082,6 @@ export const Canvas: React.FC = () => {
       {/* Custom Cursor */}
       <CustomCursor canvas={canvasRef.current} />
       
-      {/* Resize Handles for Selected Objects */}
-      {activeTool === 'select' && selectedObjectIds.map(objectId => (
-        <ResizeHandles
-          key={objectId}
-          objectId={objectId}
-          onResizeStart={() => startResizeBatch('UPDATE_OBJECT', objectId, userId)}
-          onResize={(id, bounds) => handleResize(id, bounds)}
-          onResizeEnd={() => endResizeBatch()}
-        />
-      ))}
       
     </div>
   );
