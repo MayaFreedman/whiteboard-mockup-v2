@@ -309,12 +309,27 @@ export const Canvas: React.FC = () => {
         availableWidth
       );
       
-      // Check if click is within the actual text bounds
-      const textStartX = obj.x + 4; // Account for padding
-      const textStartY = obj.y + 4; // Account for padding
+      // Horizontal offset based on text alignment within available area
+      let alignOffset = 0;
+      switch (textData.textAlign || 'left') {
+        case 'center':
+          alignOffset = (availableWidth - metrics.width) / 2;
+          break;
+        case 'right':
+          alignOffset = (availableWidth - metrics.width);
+          break;
+        default:
+          alignOffset = 0;
+      }
       
-      let textEndX = textStartX + metrics.width;
-      let textEndY = textStartY + metrics.height;
+      // Clamp offset to avoid negative shift if metrics exceed available width (safety)
+      if (!isFinite(alignOffset)) alignOffset = 0;
+      
+      // Actual text bounds inside the textbox considering padding and alignment
+      const textStartX = obj.x + 4 + Math.max(0, alignOffset);
+      const textStartY = obj.y + 4; // top padding
+      const textEndX = textStartX + metrics.width;
+      const textEndY = textStartY + metrics.height;
       
       // Add some tolerance for easier clicking
       const tolerance = 8;
@@ -323,6 +338,9 @@ export const Canvas: React.FC = () => {
       
       console.log('🖱️ Checking text object with accurate bounds:', {
         id: id.slice(0, 8),
+        textAlign: textData.textAlign,
+        availableWidth,
+        alignOffset,
         textBounds: { x: textStartX, y: textStartY, width: metrics.width, height: metrics.height },
         clickPos: { x, y },
         tolerance,
