@@ -160,15 +160,19 @@ export const Canvas: React.FC = () => {
     const obj = objects[objectId];
     let updates: any = { ...newBounds };
 
-    // If a text object's width was changed manually, mark it as fixedWidth
-    if (obj && obj.type === 'text' && typeof obj.width === 'number' && newBounds.width !== obj.width) {
-      updates = {
-        ...updates,
-        data: {
-          ...(obj.data || {}),
-          fixedWidth: true,
-        },
-      };
+    if (obj && obj.type === 'text' && typeof obj.width === 'number' && typeof obj.height === 'number') {
+      const changedWidth = newBounds.width !== obj.width;
+      const changedHeight = newBounds.height !== obj.height;
+      if (changedWidth || changedHeight) {
+        updates = {
+          ...updates,
+          data: {
+            ...(obj.data || {}),
+            ...(changedWidth ? { fixedWidth: true } : {}),
+            ...(changedHeight ? { fixedHeight: true } : {}),
+          },
+        };
+      }
     }
 
     updateObject(objectId, updates);
@@ -187,11 +191,12 @@ export const Canvas: React.FC = () => {
     if (!textObject.data) return;
     
     const textData = textObject.data;
-    const isFixed = !!textData.fixedWidth;
+    const isFixedW = !!textData.fixedWidth;
+    const isFixedH = !!textData.fixedHeight;
     const padding = 8;
     const isPlaceholder = !content || content.trim() === '' || content === 'Double-click to edit';
 
-    const maxWidth = isFixed ? Math.max((textObject.width || 0) - padding, 0) : undefined;
+    const maxWidth = isFixedW ? Math.max((textObject.width || 0) - padding, 0) : undefined;
     const metrics = measureText(
       content || 'Double-click to edit',
       textData.fontSize,
@@ -203,7 +208,8 @@ export const Canvas: React.FC = () => {
     
     console.log('📏 Text bounds update:', {
       content: content?.slice(0, 50) + (content && content.length > 50 ? '...' : ''),
-      isFixedWidth: isFixed,
+      isFixedWidth: isFixedW,
+      isFixedHeight: isFixedH,
       availableWidth: maxWidth,
       measuredDimensions: { width: metrics.width, height: metrics.height },
       lineCount: metrics.lines.length
@@ -213,15 +219,21 @@ export const Canvas: React.FC = () => {
     const measuredHeight = Math.max(metrics.height + padding, textData.fontSize + padding);
 
     const updates: any = {};
-    if (isFixed) {
+
+    if (isFixedW && isFixedH) {
+      // Preserve both dimensions when both are fixed
+    } else if (isFixedW) {
       // Preserve manual width; update height only. Avoid shrinking due to placeholder.
       const currentHeight = textObject.height || 0;
       const newHeight = isPlaceholder ? Math.max(currentHeight, measuredHeight) : measuredHeight;
-      if (newHeight !== textObject.height) {
-        updates.height = newHeight;
-      }
+      if (newHeight !== textObject.height) updates.height = newHeight;
+    } else if (isFixedH) {
+      // Preserve manual height; update width only
+      const newWidth = Math.max(measuredWidth, 100);
+      if (newWidth !== textObject.width) updates.width = newWidth;
     } else {
-      const newWidth = Math.max(measuredWidth, 100); // Minimum width
+      // Neither fixed - update both
+      const newWidth = Math.max(measuredWidth, 100);
       const newHeight = measuredHeight;
       if (newWidth !== textObject.width) updates.width = newWidth;
       if (newHeight !== textObject.height) updates.height = newHeight;
@@ -514,12 +526,13 @@ export const Canvas: React.FC = () => {
       textarea.style.height = newHeight + 'px';
       
       // Also update the canvas object bounds to match
+      const isFixedH = !!textObject.data?.fixedHeight;
       updateObject(editingTextId, {
         data: {
           ...textObject.data,
           content: newText
         },
-        height: newHeight
+        ...(isFixedH ? {} : { height: newHeight })
       }, userId);
     }
     
