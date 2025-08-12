@@ -57,7 +57,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
     const updatedData = { ...textData, [property]: value };
     
     // Properties that affect text dimensions and should trigger resize
-    const dimensionAffectingProperties = ['content', 'fontSize', 'fontFamily', 'bold', 'italic'];
+    const dimensionAffectingProperties = ['content', 'fontSize', 'fontFamily'];
     const shouldUpdateBounds = dimensionAffectingProperties.includes(property);
     
     if (shouldUpdateBounds) {
