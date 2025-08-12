@@ -92,7 +92,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ canvas }) => {
       >
         <Droplet 
           size={size * 0.8} 
-          className="text-black"
+          style={{ color: toolSettings.strokeColor }}
           fill="currentColor"
         />
       </div>
