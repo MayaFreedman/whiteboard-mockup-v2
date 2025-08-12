@@ -34,6 +34,8 @@ export const useMultiplayerSync = () => {
   const hasRequestedStateRef = useRef(false)
   const userJoinTimeRef = useRef<number | null>(null)
   const [isWaitingForInitialState, setIsWaitingForInitialState] = useState(false)
+  const handlersReadyRef = useRef(false)
+  const responseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // If no multiplayer context, return null values (graceful degradation)
   if (!multiplayerContext) {
@@ -77,7 +79,19 @@ export const useMultiplayerSync = () => {
    * Request initial state from other users (only on first connection)
    */
   const requestInitialState = useCallback(() => {
-    if (!isReadyToSend() || hasReceivedInitialStateRef.current || hasRequestedStateRef.current) {
+    if (!isReadyToSend() || hasReceivedInitialStateRef.current) {
+      return
+    }
+
+    // Ensure handlers are attached before requesting
+    if (!handlersReadyRef.current) {
+      setTimeout(() => {
+        requestInitialState()
+      }, 100)
+      return
+    }
+
+    if (hasRequestedStateRef.current) {
       return
     }
 
@@ -87,11 +101,28 @@ export const useMultiplayerSync = () => {
     
     try {
       serverInstance.requestInitialState()
+
+      // Start timeout: if no response, assume empty room and clear loader
+      if (responseTimeoutRef.current) {
+        clearTimeout(responseTimeoutRef.current)
+      }
+      responseTimeoutRef.current = setTimeout(() => {
+        if (!hasReceivedInitialStateRef.current) {
+          console.warn('⏳ No state response received; assuming empty room')
+          setIsWaitingForInitialState(false)
+          // allow a future retry if needed
+          hasRequestedStateRef.current = false
+        }
+      }, 2000)
     } catch (error) {
       console.error('❌ Failed to send state request:', error)
       hasReceivedInitialStateRef.current = true
       hasRequestedStateRef.current = false
       setIsWaitingForInitialState(false)
+      if (responseTimeoutRef.current) {
+        clearTimeout(responseTimeoutRef.current)
+        responseTimeoutRef.current = null
+      }
     }
   }, [isReadyToSend, serverInstance])
 
@@ -131,6 +162,10 @@ export const useMultiplayerSync = () => {
           
           // Immediately mark as received to prevent duplicate applications
           hasReceivedInitialStateRef.current = true
+          if (responseTimeoutRef.current) {
+            clearTimeout(responseTimeoutRef.current)
+            responseTimeoutRef.current = null
+          }
           setIsWaitingForInitialState(false)
           
           // Clear any existing objects first to prevent duplicates
@@ -253,9 +288,15 @@ export const useMultiplayerSync = () => {
     }
 
     room.onMessage('broadcast', handleBroadcastMessage)
+    handlersReadyRef.current = true
 
     return () => {
+      handlersReadyRef.current = false
       room.onMessage('broadcast', () => {})
+      if (responseTimeoutRef.current) {
+        clearTimeout(responseTimeoutRef.current)
+        responseTimeoutRef.current = null
+      }
     }
   }, [serverInstance, isConnected, whiteboardStore, updateUserScreenSize])
 
@@ -330,6 +371,11 @@ export const useMultiplayerSync = () => {
       hasRequestedStateRef.current = false
       userJoinTimeRef.current = null
       setIsWaitingForInitialState(false)
+      handlersReadyRef.current = false
+      if (responseTimeoutRef.current) {
+        clearTimeout(responseTimeoutRef.current)
+        responseTimeoutRef.current = null
+      }
     }
   }, [isConnected])
 
