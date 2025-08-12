@@ -108,10 +108,12 @@ export const useMultiplayerSync = () => {
       }
       responseTimeoutRef.current = setTimeout(() => {
         if (!hasReceivedInitialStateRef.current) {
-          console.warn('⏳ No state response received; assuming empty room')
-          setIsWaitingForInitialState(false)
-          // allow a future retry if needed
-          hasRequestedStateRef.current = false
+          console.warn('⏳ No state response received; assuming empty room');
+          // Finalize initial state attempt to avoid infinite loader/retry loop
+          hasReceivedInitialStateRef.current = true;
+          setIsWaitingForInitialState(false);
+          // allow a future manual retry if needed (keep requested=false)
+          hasRequestedStateRef.current = false;
         }
       }, 2000)
     } catch (error) {
@@ -154,7 +156,7 @@ export const useMultiplayerSync = () => {
       
       // Handle state response messages
       if (message.type === 'state_response') {
-        console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length)
+        console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length, ' ourSession:', room.sessionId)
         
         // Only apply if this response is for us AND we haven't already applied initial state
         if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
