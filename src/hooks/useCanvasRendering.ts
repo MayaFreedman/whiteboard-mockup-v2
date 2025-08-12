@@ -613,7 +613,7 @@ export const useCanvasRendering = (
           // Set font properties - make placeholder text lighter
           let fontStyle = '';
           if (textData.italic) fontStyle += 'italic ';
-          if (textData.bold && contentToRender !== 'Double-click to edit') fontStyle += 'bold '; // Don't bold placeholder text
+          if (textData.bold) fontStyle += 'bold ';
           
           ctx.font = `${fontStyle}${textData.fontSize}px ${textData.fontFamily}`;
           
@@ -680,7 +680,7 @@ export const useCanvasRendering = (
           }
           
           // Draw underline if enabled - using accurate text measurements and closer positioning
-          if (textData.underline && contentToRender !== 'Double-click to edit') {
+          if (textData.underline) {
             ctx.save();
             ctx.strokeStyle = obj.stroke || '#000000';
             ctx.lineWidth = 1;
