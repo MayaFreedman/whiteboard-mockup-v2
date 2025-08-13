@@ -207,7 +207,7 @@ export const Canvas: React.FC = () => {
     const obj = objects[objectId];
 
     if (obj && obj.type === 'text' && typeof obj.width === 'number' && typeof obj.height === 'number') {
-      // For text objects, scale font size instead of changing dimensions
+      // For text objects, scale font size AND update dimensions
       const currentWidth = obj.width;
       const currentHeight = obj.height;
       
@@ -215,35 +215,28 @@ export const Canvas: React.FC = () => {
       const scaleX = newBounds.width / currentWidth;
       const scaleY = newBounds.height / currentHeight;
       
-      // Use average scale for proportional scaling, with min/max limits
+      // Use average scale for proportional font scaling, with min/max limits
       const scale = Math.max(0.1, Math.min(5, (scaleX + scaleY) / 2));
       
       // Calculate new font size
       const currentFontSize = obj.data.fontSize || 16;
       const newFontSize = Math.round(currentFontSize * scale);
       
-      // Update object with new font size and maintain position
+      // Update object with new font size AND new dimensions
+      const changedWidth = newBounds.width !== obj.width;
+      const changedHeight = newBounds.height !== obj.height;
+      
       const updates = {
-        x: obj.x, // Keep original position
-        y: obj.y, // Keep original position
+        ...newBounds, // Include new position and dimensions
         data: {
           ...(obj.data || {}),
           fontSize: newFontSize,
-          // Remove fixed dimensions since we're scaling font size
-          fixedWidth: false,
-          fixedHeight: false,
+          ...(changedWidth ? { fixedWidth: true } : {}),
+          ...(changedHeight ? { fixedHeight: true } : {}),
         },
       };
       
       updateObject(objectId, updates, userId);
-      
-      // Recalculate text bounds with new font size after update
-      setTimeout(() => {
-        const updatedObj = objects[objectId];
-        if (updatedObj) {
-          updateTextBounds(updatedObj, updatedObj.data.text || '');
-        }
-      }, 10);
     } else {
       // For other objects, update position and dimensions normally
       let updates: any = { ...newBounds };
