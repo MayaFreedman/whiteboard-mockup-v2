@@ -8,7 +8,6 @@ import { useUser } from '../../contexts/UserContext';
 import { useActionBatching } from '../../hooks/useActionBatching';
 import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { useScreenSizeSync } from '../../hooks/useScreenSizeSync';
-import { useCanvasOffset } from '../../hooks/useCanvasOffset';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
 import { measureText } from '../../utils/textMeasurement';
@@ -53,7 +52,6 @@ export const Canvas: React.FC = () => {
   const { startBatch, endBatch } = useActionBatching({ batchTimeout: 100, maxBatchSize: 50 });
   const { startBatch: startResizeBatch, endBatch: endResizeBatch } = useActionBatching({ batchTimeout: 0, maxBatchSize: 500 });
   const { activeWhiteboardSize, userScreenSizes } = useScreenSizeStore();
-  const { canvasOffset } = useCanvasOffset();
   
   // Only show grey overlay when there are multiple users
   const hasMultipleUsers = Object.keys(userScreenSizes).length > 1;
@@ -265,7 +263,7 @@ export const Canvas: React.FC = () => {
     
     return {
       x: Math.round(textObject.x + 4), // Same 4px padding as canvas
-      y: Math.round(textObject.y + 4), // Same 4px padding as canvas
+      y: Math.round(textObject.y + 4), // Same 4px padding as canvas  
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight
