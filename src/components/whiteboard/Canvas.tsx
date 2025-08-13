@@ -118,10 +118,10 @@ export const Canvas: React.FC = () => {
   
   // Set callback for immediate text editing
   setImmediateTextTrigger((coords) => {
-    console.log('📝 Immediate text editing triggered by interactions hook at canvas coords:', coords);
+    console.log('📝 Immediate text editing triggered at canvas coords:', coords);
     
-    // The coordinates from interactions are canvas-relative
-    // For textarea positioning, we need to convert them back to screen coordinates
+    // Convert canvas-relative coordinates to screen coordinates
+    // for textarea positioning
     const containerElement = containerRef.current;
     if (!containerElement) {
       console.warn('Container ref not available for coordinate conversion');
@@ -743,7 +743,7 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    // Block interactions during double-click protection
+    // Block events during double-click protection
     if (isHandlingDoubleClick) {
       console.log('🖱️ Mouse down blocked - double-click protection active');
       return;
