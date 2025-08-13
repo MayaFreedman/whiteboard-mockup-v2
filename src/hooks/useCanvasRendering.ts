@@ -602,6 +602,13 @@ export const useCanvasRendering = (
       case 'sticky-note': {
         console.log('🎨 Rendering sticky note:', obj.id?.slice(0, 8), 'at', { x: obj.x, y: obj.y, width: obj.width, height: obj.height });
         console.log('🎨 Sticky note data:', obj.data);
+        console.log('🎨 Sticky note content check:', { 
+          hasData: !!obj.data, 
+          contentUndefined: obj.data?.content !== undefined,
+          hasWidth: !!obj.width, 
+          hasHeight: !!obj.height,
+          shouldRender: obj.data?.content !== undefined && obj.width && obj.height 
+        });
         
         if (obj.data?.content !== undefined && obj.width && obj.height) {
           const stickyNoteData = obj.data as any; // StickyNoteData extends TextData
@@ -620,6 +627,7 @@ export const useCanvasRendering = (
           ctx.save();
           
           // Shadow - always apply shadow to sticky notes for consistent preview
+          console.log('🎨 Applying shadow to sticky note:', obj.id?.slice(0, 8));
           ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
           ctx.shadowBlur = 6;
           ctx.shadowOffsetX = 2;
