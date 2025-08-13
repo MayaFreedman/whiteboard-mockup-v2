@@ -101,12 +101,26 @@ export const Canvas: React.FC = () => {
   interactions.setImmediateTextTrigger((coords) => {
     console.log('📝 Immediate text editing triggered by interactions hook at canvas coords:', coords);
     
-    // Convert canvas coordinates to screen coordinates for textarea positioning
-    const canvasRect = canvasRef.current?.getBoundingClientRect();
-    const screenCoords = canvasRect ? {
-      x: coords.x + canvasRect.left,
-      y: coords.y + canvasRect.top
-    } : coords;
+    // The coordinates from interactions are canvas-relative
+    // For textarea positioning, we need to convert them back to screen coordinates
+    // by adding the canvas container's screen position
+    const containerElement = containerRef.current;
+    if (!containerElement) {
+      console.warn('Container ref not available for coordinate conversion');
+      return;
+    }
+    
+    const containerRect = containerElement.getBoundingClientRect();
+    const whiteboardDiv = containerElement.querySelector('.absolute.bg-background') as HTMLElement;
+    const whiteboardRect = whiteboardDiv?.getBoundingClientRect();
+    
+    const screenCoords = whiteboardRect ? {
+      x: coords.x + whiteboardRect.left,
+      y: coords.y + whiteboardRect.top
+    } : {
+      x: coords.x + containerRect.left,
+      y: coords.y + containerRect.top
+    };
     
     console.log('📝 Converted to screen coords:', screenCoords);
     
