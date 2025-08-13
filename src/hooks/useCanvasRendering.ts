@@ -612,7 +612,8 @@ export const useCanvasRendering = (
           
           // Always show placeholder for empty content
           if (!contentToRender || contentToRender.trim() === '') {
-            contentToRender = 'Double-click to edit';
+            // No placeholder text for sticky notes - they should be visual even when empty
+            contentToRender = '';
           }
 
           // Draw sticky note background with shadow and rounded corners
@@ -646,12 +647,8 @@ export const useCanvasRendering = (
           
           ctx.font = `${fontStyle}${stickyNoteData.fontSize}px ${stickyNoteData.fontFamily}`;
           
-          // Make placeholder text lighter
-          if (contentToRender === 'Double-click to edit') {
-            ctx.fillStyle = '#666666B3'; // 70% opacity for placeholder
-          } else {
-            ctx.fillStyle = '#333333'; // Darker text for readability on sticky notes
-          }
+          // Set text color for sticky notes (no placeholder styling needed since no placeholder)
+          ctx.fillStyle = '#333333'; // Darker text for readability on sticky notes
           ctx.textBaseline = 'top';
           
           // Handle text alignment
@@ -677,7 +674,9 @@ export const useCanvasRendering = (
           // Calculate available width for text wrapping
           const availableWidth = Math.max(obj.width - (padding * 2), 50);
           
-          // Measure text with same function as text tool
+          // Only render text if there's content (no placeholder for sticky notes)
+          if (contentToRender && contentToRender.trim() !== '') {
+            // Measure text with same function as text tool
           const textMetrics = measureText(
             contentToRender,
             stickyNoteData.fontSize,
@@ -728,7 +727,8 @@ export const useCanvasRendering = (
               ctx.moveTo(underlineStartX, underlineY);
               ctx.lineTo(underlineStartX + textWidth, underlineY);
               ctx.stroke();
-            }
+          }
+          }
           
           ctx.restore();
           console.log('✅ Successfully rendered sticky note:', obj.id?.slice(0, 8));
