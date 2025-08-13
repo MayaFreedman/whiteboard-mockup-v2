@@ -717,10 +717,17 @@ export const useCanvasInteractions = () => {
         const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
         const isClickingOnExistingText = clickedObject && clickedObject.type === 'text';
         
+        console.log('📝 Text tool click analysis:', {
+          hasClickedObject: !!clickedObjectId,
+          isExistingText: isClickingOnExistingText,
+          coords
+        });
+        
         if (isClickingOnExistingText) {
-          console.log('📝 Clicked on existing text object - preventing immediate text editing, waiting for potential double-click');
-          // Don't set up immediate text editing when clicking on existing text
-          // This allows double-click editing to work properly
+          // For existing text objects, allow selection but prevent immediate creation
+          // The double-click event will handle editing of existing text
+          whiteboardStore.selectObjects([clickedObjectId!], userId);
+          console.log('📝 Selected existing text object:', clickedObjectId!.slice(0, 8));
           return;
         }
 
@@ -896,8 +903,9 @@ export const useCanvasInteractions = () => {
           const deltaX = Math.abs(coords.x - textClickStartPosRef.current.x);
           const deltaY = Math.abs(coords.y - textClickStartPosRef.current.y);
           
-          if (deltaX > 5 || deltaY > 5) {
-            console.log('📝 Drag detected - entering drag mode');
+          // Increased threshold to prevent accidental drag detection from small movements
+          if (deltaX > 10 || deltaY > 10) {
+            console.log('📝 Drag detected - entering drag mode', { deltaX, deltaY });
             isDrawingRef.current = true; // Now mark as drawing since it's a drag
           }
         }
@@ -1069,7 +1077,7 @@ export const useCanvasInteractions = () => {
         // Decide: was this a click or a drag?
         if (!isDrawingRef.current && textClickStartPosRef.current) {
           // This was a click (no drag detected) - trigger immediate text editing
-          console.log('📝 Single click detected - triggering immediate text editing');
+          console.log('📝 Single click detected - triggering immediate text editing at:', textClickStartPosRef.current);
           triggerImmediateTextEditing(textClickStartPosRef.current);
         } else if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           // This was a drag - create text box
