@@ -208,7 +208,8 @@ export const useCanvasInteractions = () => {
     x: number,
     y: number,
     width: number,
-    height: number
+    height: number,
+    initialContent: string = ''
   ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
     const stickyNoteColors = {
       yellow: '#FEF08A',
@@ -217,16 +218,28 @@ export const useCanvasInteractions = () => {
       green: '#BBF7D0'
     };
 
-    // Calculate initial font size based on sticky note dimensions
-    // Use a scaling factor where font size is proportional to note size
-    const baseFontSize = Math.min(width, height) * 0.08; // 8% of smallest dimension
-    const minFontSize = 8;
-    const maxFontSize = 32;
-    const calculatedFontSize = Math.max(minFontSize, Math.min(maxFontSize, baseFontSize));
+    // Calculate initial font size to fit a single letter (largest possible)
+    // Use padding of 32px (16px on each side) for available space
+    const padding = 32;
+    const availableWidth = width - padding;
+    const availableHeight = height - padding;
+    
+    // Calculate font size for a single letter 'A' (typically the widest character)
+    const { calculateOptimalFontSize } = require('../../utils/stickyNoteUtils');
+    const singleLetterFontSize = calculateOptimalFontSize(
+      'A', // Single letter to fit at maximum size
+      availableWidth,
+      availableHeight,
+      toolStore.toolSettings.fontFamily,
+      toolStore.toolSettings.textBold,
+      toolStore.toolSettings.textItalic,
+      8, // min font size
+      64 // higher max for single letter
+    );
 
     const stickyNoteData = {
-      content: 'Sticky Note',
-      fontSize: calculatedFontSize,
+      content: initialContent,
+      fontSize: singleLetterFontSize,
       fontFamily: toolStore.toolSettings.fontFamily,
       bold: toolStore.toolSettings.textBold,
       italic: toolStore.toolSettings.textItalic,
@@ -778,20 +791,23 @@ export const useCanvasInteractions = () => {
           coords.x - defaultSize / 2,
           coords.y - defaultSize / 2,
           defaultSize,
-          defaultSize
+          defaultSize,
+          '' // Start with empty content for immediate editing
         );
         
         const objectId = whiteboardStore.addObject(stickyNoteObject, userId);
-        console.log('📝 Created sticky note:', objectId.slice(0, 8));
+        console.log('📝 Created sticky note:', objectId.slice(0, 8), 'with initial font size:', stickyNoteObject.data.fontSize);
         
-        // Immediately start editing the sticky note
+        // Immediately start editing the sticky note with the object ID
         triggerImmediateTextEditing({
-          x: coords.x - defaultSize / 2 + 16, // Account for padding
-          y: coords.y - defaultSize / 2 + 16
+          x: coords.x, // Center position
+          y: coords.y
         });
         
         // Set the sticky note as the immediate text object
         isImmediateTextEditingRef.current = true;
+        
+        // Store the object ID for immediate text editing - will be handled by Canvas component
         
         if (redrawCanvasRef.current) {
           redrawCanvasRef.current();

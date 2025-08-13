@@ -149,29 +149,28 @@ export const Canvas: React.FC = () => {
     
     // Check if we're working with a sticky note tool
     if (activeTool === 'sticky-note') {
-      // For sticky notes, find the newly created sticky note object
-      const stickyNoteObjects = Object.entries(objects).filter(([id, obj]) => 
-        obj.type === 'sticky-note' && 
-        Math.abs(obj.x + 16 - coords.x) < 20 && // Allow tolerance for positioning
-        Math.abs(obj.y + 16 - coords.y) < 20
-      );
+      // For sticky notes, find the most recently created sticky note object
+      const allStickyNotes = Object.entries(objects).filter(([id, obj]) => obj.type === 'sticky-note');
       
       let stickyNoteId = null;
-      if (stickyNoteObjects.length > 0) {
-        stickyNoteId = stickyNoteObjects[stickyNoteObjects.length - 1][0]; // Get the most recent one
-        console.log('📝 Found existing sticky note:', stickyNoteId.slice(0, 8));
+      if (allStickyNotes.length > 0) {
+        // Find the most recently created sticky note (by createdAt timestamp)
+        const mostRecentNote = allStickyNotes.sort((a, b) => 
+          new Date(b[1].createdAt || 0).getTime() - new Date(a[1].createdAt || 0).getTime()
+        )[0];
+        stickyNoteId = mostRecentNote[0];
+        console.log('📝 Found most recent sticky note:', stickyNoteId.slice(0, 8));
       } else {
         console.log('📝 No sticky note found immediately, will search after delay');
         // Small delay to allow the sticky note creation to complete
         setTimeout(() => {
-          const stickyNoteObjects = Object.entries(objects).filter(([id, obj]) => 
-            obj.type === 'sticky-note' && 
-            Math.abs(obj.x + 16 - coords.x) < 20 && 
-            Math.abs(obj.y + 16 - coords.y) < 20
-          );
+          const allStickyNotes = Object.entries(objects).filter(([id, obj]) => obj.type === 'sticky-note');
           
-          if (stickyNoteObjects.length > 0) {
-            const delayedStickyNoteId = stickyNoteObjects[stickyNoteObjects.length - 1][0];
+          if (allStickyNotes.length > 0) {
+            const mostRecentNote = allStickyNotes.sort((a, b) => 
+              new Date(b[1].createdAt || 0).getTime() - new Date(a[1].createdAt || 0).getTime()
+            )[0];
+            const delayedStickyNoteId = mostRecentNote[0];
             setImmediateTextObjectId(delayedStickyNoteId);
             console.log('📝 Found sticky note after delay:', delayedStickyNoteId.slice(0, 8));
           }
@@ -179,11 +178,23 @@ export const Canvas: React.FC = () => {
       }
       
       setIsImmediateTextEditing(true);
-      setImmediateTextPosition(screenCoords);
-      setImmediateTextContent('');
       if (stickyNoteId) {
+        // Position the textarea in the center of the sticky note
+        const stickyNote = objects[stickyNoteId];
+        if (stickyNote) {
+          const stickyScreenCoords = {
+            x: stickyNote.x + whiteboardRect.left + 16, // 16px padding
+            y: stickyNote.y + whiteboardRect.top + 16 - 60 // 16px padding and adjustment
+          };
+          setImmediateTextPosition(stickyScreenCoords);
+        } else {
+          setImmediateTextPosition(screenCoords);
+        }
         setImmediateTextObjectId(stickyNoteId);
+      } else {
+        setImmediateTextPosition(screenCoords);
       }
+      setImmediateTextContent('');
     } else {
       // For regular text tool, create text object as before
       const fontSize = toolStore.toolSettings.fontSize || 16;
