@@ -610,8 +610,8 @@ export const useCanvasRendering = (
           shouldRender: obj.data?.content !== undefined && obj.width && obj.height 
         });
         
-        if (obj.data && obj.width && obj.height) { // Sticky notes should render even with empty content
-          const stickyNoteData = obj.data as any; // StickyNoteData extends TextData
+        if (obj.width && obj.height) { // Sticky notes should always render with shadow when they have dimensions
+          const stickyNoteData = obj.data || {}; // Ensure we have data object even if empty
           
           // Get the text content to render - use live editing text if this object is being edited
           const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
@@ -739,11 +739,11 @@ export const useCanvasRendering = (
           ctx.restore();
           console.log('✅ Successfully rendered sticky note:', obj.id?.slice(0, 8));
         } else {
-          console.warn('⚠️ Skipping sticky note render - missing data:', { 
-            hasData: !!obj.data,
+          console.warn('⚠️ Skipping sticky note render - missing dimensions:', { 
             hasWidth: !!obj.width, 
             hasHeight: !!obj.height,
-            data: obj.data 
+            width: obj.width,
+            height: obj.height
           });
         }
           
