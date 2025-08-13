@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useToolStore } from '../../stores/toolStore';
-import { useCanvasOffset } from '../../hooks/useCanvasOffset';
 import { Droplet } from 'lucide-react';
 
 interface CustomCursorProps {
@@ -13,7 +12,6 @@ interface CustomCursorProps {
  */
 export const CustomCursor: React.FC<CustomCursorProps> = ({ canvas }) => {
   const { activeTool, toolSettings } = useToolStore();
-  const { canvasOffset } = useCanvasOffset();
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
 
@@ -51,11 +49,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ canvas }) => {
       // Check if cursor is within canvas bounds
       const isInBounds = x >= 0 && x <= rect.width && y >= 0 && y <= rect.height;
       
-      // For position: fixed, use screen coordinates but offset by canvas position
-      setCursorPosition({ 
-        x: rect.left + x, 
-        y: rect.top + y 
-      });
+      setCursorPosition({ x: event.clientX, y: event.clientY });
       setIsVisible(isInBounds);
     };
 
