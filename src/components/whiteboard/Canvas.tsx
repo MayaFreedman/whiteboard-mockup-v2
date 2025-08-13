@@ -119,7 +119,7 @@ export const Canvas: React.FC = () => {
     
     const screenCoords = {
       x: coords.x + whiteboardRect.left,
-      y: coords.y + whiteboardRect.top - 65
+      y: coords.y + whiteboardRect.top - 70
     };
     
     console.log('📝 Canvas coords:', coords);
