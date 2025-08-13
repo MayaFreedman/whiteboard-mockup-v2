@@ -1,11 +1,9 @@
 import React from 'react';
 import { useToolStore } from '../../stores/toolStore';
-import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
 import { Separator } from '../ui/separator';
-import { Trash2 } from 'lucide-react';
+import { Button } from '../ui/button';
 
 /**
  * Eraser settings component for the sidebar
@@ -16,23 +14,20 @@ export const EraserSettings: React.FC = () => {
     toolSettings,
     updateToolSettings
   } = useToolStore();
-  const {
-    clearCanvas
-  } = useWhiteboardStore();
+
   const handleModeChange = (mode: 'pixel' | 'object') => {
     updateToolSettings({
       eraserMode: mode
     });
   };
+
   const handleSizeChange = (value: number[]) => {
     updateToolSettings({
       eraserSize: value[0]
     });
   };
-  const handleClearCanvas = () => {
-    clearCanvas();
-  };
-  return <div className="space-y-4">
+
+  return <div className="space-y-3">
       <div>
         <Label className="text-sm font-medium">Eraser Mode</Label>
         <div className="flex gap-2 mt-2">
@@ -51,21 +46,6 @@ export const EraserSettings: React.FC = () => {
           Size: {toolSettings.eraserSize}px
         </Label>
         <Slider value={[toolSettings.eraserSize]} onValueChange={handleSizeChange} min={5} max={100} step={5} className="mt-2" />
-      </div>
-
-      <Separator />
-
-      <div>
-        <Label className="text-sm font-medium">Clear Canvas</Label>
-        <Button variant="outline" size="sm" onClick={handleClearCanvas} className="w-full mt-2 flex items-center gap-2 text-white hover:text-white" style={{
-        backgroundColor: '#7b5d6d'
-      }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#9d7a8a'} onMouseLeave={e => e.currentTarget.style.backgroundColor = '#7b5d6d'} title="Clear entire canvas">
-          <Trash2 className="w-4 h-4" />
-          Clear Canvas
-        </Button>
-        <p className="text-xs text-muted-foreground mt-1">
-          Permanently removes all objects from the canvas
-        </p>
       </div>
     </div>;
 };

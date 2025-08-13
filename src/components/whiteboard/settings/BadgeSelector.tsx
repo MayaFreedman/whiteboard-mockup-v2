@@ -18,12 +18,12 @@ export const BadgeSelector: React.FC<BadgeSelectorProps> = ({
   return (
     <div>
       <label className="text-sm font-medium mb-2 block">{label}</label>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-1">
         {items.map((item) => (
           <Badge
             key={item.value}
             variant={selectedValue === item.value ? 'default' : 'outline'}
-            className="cursor-pointer capitalize"
+            className="cursor-pointer capitalize text-xs px-2 py-1"
             onClick={() => onChange(item.value)}
           >
             {item.label}
