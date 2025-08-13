@@ -208,6 +208,12 @@ export const Canvas: React.FC = () => {
             x: stickyNote.x + whiteboardRect.left - shadowOffsetX, // Compensate for shadow offset
             y: stickyNote.y + whiteboardRect.top - 60 - shadowOffsetY // Adjustment for viewport and shadow
           };
+          console.log('📝 Immediate positioning details:', {
+            stickyNotePos: { x: stickyNote.x, y: stickyNote.y },
+            whiteboardRect: { left: whiteboardRect.left, top: whiteboardRect.top },
+            shadowOffset: { x: shadowOffsetX, y: shadowOffsetY },
+            finalCoords: stickyScreenCoords
+          });
           console.log('📝 Calculated sticky screen coords:', stickyScreenCoords);
           setImmediateTextPosition(stickyScreenCoords);
         } else {
@@ -471,11 +477,27 @@ export const Canvas: React.FC = () => {
     const whiteboardContainer = canvas.closest('.absolute.bg-background') as HTMLElement;
     const rect = whiteboardContainer ? whiteboardContainer.getBoundingClientRect() : canvas.getBoundingClientRect();
     
+    // For sticky notes, account for shadow offset to match immediate editing positioning
+    const shadowOffsetX = isSticky ? 2 : 0;
+    const shadowOffsetY = isSticky ? 2 : 0;
+    
+    console.log('📏 calculateTextPosition details:', {
+      objectType: textObject.type,
+      objectPos: { x: textObject.x, y: textObject.y },
+      rectOffset: { left: rect.left, top: rect.top },
+      padding,
+      shadowOffset: { x: shadowOffsetX, y: shadowOffsetY },
+      finalCalculation: {
+        x: Math.round(textObject.x + rect.left - shadowOffsetX),
+        y: Math.round(textObject.y + rect.top - 60 - shadowOffsetY)
+      }
+    });
+    
     return {
-      x: Math.round(textObject.x + padding + rect.left), // Canvas position + padding + screen offset
-      y: Math.round(textObject.y + padding + rect.top - 70), // Canvas position + padding + screen offset - 70px adjustment
-      width: Math.round(textObject.width - (padding * 2)), // Account for left/right padding
-      height: Math.round(textObject.height - (padding * 2)), // Account for top/bottom padding
+      x: Math.round(textObject.x + rect.left - shadowOffsetX), // Match immediate editing positioning
+      y: Math.round(textObject.y + rect.top - 60 - shadowOffsetY), // Match immediate editing positioning  
+      width: Math.round(textObject.width), // Use full width for sticky notes
+      height: Math.round(textObject.height), // Use full height for sticky notes
       lineHeight: lineHeight
     };
   };
@@ -1181,8 +1203,12 @@ export const Canvas: React.FC = () => {
             top: objects[editingTextId]?.type === 'sticky-note'
               ? textEditorPosition.y - 2 // Compensate for shadow offset
               : textEditorPosition.y,
-            width: textEditorPosition.width,
-            height: textEditorPosition.height,
+            width: objects[editingTextId]?.type === 'sticky-note' 
+              ? textEditorPosition.width // Use full width for sticky notes
+              : textEditorPosition.width,
+            height: objects[editingTextId]?.type === 'sticky-note'
+              ? textEditorPosition.height // Use full height for sticky notes  
+              : textEditorPosition.height,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
             fontFamily: objects[editingTextId]?.data?.fontFamily || 'Arial',
             fontWeight: objects[editingTextId]?.data?.bold ? 'bold' : 'normal',
@@ -1199,7 +1225,7 @@ export const Canvas: React.FC = () => {
               : (objects[editingTextId]?.stroke || '#000000'),
             zIndex: 1000,
             lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
-            padding: '0', // Remove default textarea padding since we handle it with positioning
+            padding: objects[editingTextId]?.type === 'sticky-note' ? '16px' : '0', // Match canvas padding exactly
             margin: '0', // Remove default margins
             border: 'none', // Remove borders
             borderRadius: objects[editingTextId]?.type === 'sticky-note' ? '8px' : '0',
