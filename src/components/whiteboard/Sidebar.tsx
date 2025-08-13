@@ -12,15 +12,6 @@ export const WhiteboardSidebar: React.FC = () => {
       transition: 'transform 0.2s ease-linear',
       marginTop: 'var(--toolbar-height, 0px)'
     }}>
-        <SidebarHeader className="border-b px-4 py-3 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-company-dark-blue">Tools</h2>
-            <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8">
-              <ChevronsLeft className="h-4 w-4" />
-              <span className="sr-only">Collapse sidebar</span>
-            </Button>
-          </div>
-        </SidebarHeader>
         <SidebarContent className="flex-1 min-h-0 p-0">
           <ScrollArea className="h-full">
             <div className="p-4 pb-24">
