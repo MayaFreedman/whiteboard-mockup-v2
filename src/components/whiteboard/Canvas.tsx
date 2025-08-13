@@ -205,24 +205,51 @@ export const Canvas: React.FC = () => {
     }
     
     const obj = objects[objectId];
-    let updates: any = { ...newBounds };
 
     if (obj && obj.type === 'text' && typeof obj.width === 'number' && typeof obj.height === 'number') {
-      const changedWidth = newBounds.width !== obj.width;
-      const changedHeight = newBounds.height !== obj.height;
-      if (changedWidth || changedHeight) {
-        updates = {
-          ...updates,
-          data: {
-            ...(obj.data || {}),
-            ...(changedWidth ? { fixedWidth: true } : {}),
-            ...(changedHeight ? { fixedHeight: true } : {}),
-          },
-        };
-      }
+      // For text objects, scale font size instead of changing dimensions
+      const currentWidth = obj.width;
+      const currentHeight = obj.height;
+      
+      // Calculate scale factors
+      const scaleX = newBounds.width / currentWidth;
+      const scaleY = newBounds.height / currentHeight;
+      
+      // Use average scale for proportional scaling, with min/max limits
+      const scale = Math.max(0.1, Math.min(5, (scaleX + scaleY) / 2));
+      
+      // Calculate new font size
+      const currentFontSize = obj.data.fontSize || 16;
+      const newFontSize = Math.round(currentFontSize * scale);
+      
+      // Update object with new font size and maintain position
+      const updates = {
+        x: obj.x, // Keep original position
+        y: obj.y, // Keep original position
+        data: {
+          ...(obj.data || {}),
+          fontSize: newFontSize,
+          // Remove fixed dimensions since we're scaling font size
+          fixedWidth: false,
+          fixedHeight: false,
+        },
+      };
+      
+      updateObject(objectId, updates, userId);
+      
+      // Recalculate text bounds with new font size after update
+      setTimeout(() => {
+        const updatedObj = objects[objectId];
+        if (updatedObj) {
+          updateTextBounds(updatedObj, updatedObj.data.text || '');
+        }
+      }, 10);
+    } else {
+      // For other objects, update position and dimensions normally
+      let updates: any = { ...newBounds };
+      updateObject(objectId, updates, userId);
     }
 
-    updateObject(objectId, updates, userId);
     // Don't call redrawCanvas here - let the state change trigger it naturally for smoother updates
     
     // Clear the flag after a short delay to allow the resize operation to complete
