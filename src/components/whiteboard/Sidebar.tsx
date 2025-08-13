@@ -7,17 +7,16 @@ import { DynamicToolSettings } from './settings/DynamicToolSettings';
 export const WhiteboardSidebar: React.FC = () => {
   const { open, toggleSidebar } = useSidebar();
   return <>
-      <UISidebar side="left" className="border-r w-96" collapsible="offcanvas" style={{
+      <UISidebar side="left" className="border-r w-96 h-auto" collapsible="offcanvas" style={{
       transform: open ? 'translateX(0)' : 'translateX(-100%)',
       transition: 'transform 0.2s ease-linear',
-      marginTop: 'var(--toolbar-height, 0px)'
+      marginTop: 'var(--toolbar-height, 0px)',
+      height: 'auto',
+      maxHeight: 'calc(100vh - var(--toolbar-height, 64px))',
+      position: 'fixed'
     }}>
-        <SidebarContent className="flex-1 min-h-0 p-0">
-          <ScrollArea className="h-full">
-            <div className="p-4 pb-24">
-              <DynamicToolSettings />
-            </div>
-          </ScrollArea>
+        <SidebarContent className="p-4">
+          <DynamicToolSettings />
         </SidebarContent>
       </UISidebar>
 
