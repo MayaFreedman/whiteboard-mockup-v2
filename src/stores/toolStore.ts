@@ -13,6 +13,7 @@ export type Tool =
   | 'triangle'
   | 'text'
   | 'stamp'
+  | 'background'
   | 'fill'
   | 'hexagon'
   | 'star'
