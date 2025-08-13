@@ -147,43 +147,82 @@ export const Canvas: React.FC = () => {
     console.log('📝 Whiteboard rect:', whiteboardRect);
     console.log('📝 Final screen coords:', screenCoords);
     
-    // Create canvas text object immediately with empty content
-    const fontSize = toolStore.toolSettings.fontSize || 16;
-    const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
-    const bold = toolStore.toolSettings.textBold || false;
-    const italic = toolStore.toolSettings.textItalic || false;
-    
-    // Create initial text object with placeholder content
-    const textData = {
-      content: '',
-      fontSize,
-      fontFamily,
-      bold,
-      italic,
-      underline: toolStore.toolSettings.textUnderline || false,
-      textAlign: 'left'
-    };
+    // Check if we're working with a sticky note tool
+    if (activeTool === 'sticky-note') {
+      // For sticky notes, find the newly created sticky note object
+      const stickyNoteObjects = Object.entries(objects).filter(([id, obj]) => 
+        obj.type === 'sticky-note' && 
+        Math.abs(obj.x + 16 - coords.x) < 20 && // Allow tolerance for positioning
+        Math.abs(obj.y + 16 - coords.y) < 20
+      );
+      
+      let stickyNoteId = null;
+      if (stickyNoteObjects.length > 0) {
+        stickyNoteId = stickyNoteObjects[stickyNoteObjects.length - 1][0]; // Get the most recent one
+        console.log('📝 Found existing sticky note:', stickyNoteId.slice(0, 8));
+      } else {
+        console.log('📝 No sticky note found immediately, will search after delay');
+        // Small delay to allow the sticky note creation to complete
+        setTimeout(() => {
+          const stickyNoteObjects = Object.entries(objects).filter(([id, obj]) => 
+            obj.type === 'sticky-note' && 
+            Math.abs(obj.x + 16 - coords.x) < 20 && 
+            Math.abs(obj.y + 16 - coords.y) < 20
+          );
+          
+          if (stickyNoteObjects.length > 0) {
+            const delayedStickyNoteId = stickyNoteObjects[stickyNoteObjects.length - 1][0];
+            setImmediateTextObjectId(delayedStickyNoteId);
+            console.log('📝 Found sticky note after delay:', delayedStickyNoteId.slice(0, 8));
+          }
+        }, 50);
+      }
+      
+      setIsImmediateTextEditing(true);
+      setImmediateTextPosition(screenCoords);
+      setImmediateTextContent('');
+      if (stickyNoteId) {
+        setImmediateTextObjectId(stickyNoteId);
+      }
+    } else {
+      // For regular text tool, create text object as before
+      const fontSize = toolStore.toolSettings.fontSize || 16;
+      const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
+      const bold = toolStore.toolSettings.textBold || false;
+      const italic = toolStore.toolSettings.textItalic || false;
+      
+      // Create initial text object with placeholder content
+      const textData = {
+        content: '',
+        fontSize,
+        fontFamily,
+        bold,
+        italic,
+        underline: toolStore.toolSettings.textUnderline || false,
+        textAlign: 'left'
+      };
 
-    const textObject = {
-      type: 'text' as const,
-      x: coords.x - 4, // Account for canvas text 4px left padding
-      y: coords.y,
-      width: 200, // Initial width
-      height: fontSize + 8, // Initial height with padding
-      stroke: toolStore.toolSettings.strokeColor,
-      fill: 'transparent',
-      strokeWidth: 1,
-      opacity: 1,
-      data: textData
-    };
+      const textObject = {
+        type: 'text' as const,
+        x: coords.x - 4, // Account for canvas text 4px left padding
+        y: coords.y,
+        width: 200, // Initial width
+        height: fontSize + 8, // Initial height with padding
+        stroke: toolStore.toolSettings.strokeColor,
+        fill: 'transparent',
+        strokeWidth: 1,
+        opacity: 1,
+        data: textData
+      };
 
-    const objectId = addObject(textObject, userId);
-    console.log('📝 Created immediate text object:', objectId.slice(0, 8));
-    
-    setIsImmediateTextEditing(true);
-    setImmediateTextPosition(screenCoords);
-    setImmediateTextContent('');
-    setImmediateTextObjectId(objectId);
+      const objectId = addObject(textObject, userId);
+      console.log('📝 Created immediate text object:', objectId.slice(0, 8));
+      
+      setIsImmediateTextEditing(true);
+      setImmediateTextPosition(screenCoords);
+      setImmediateTextContent('');
+      setImmediateTextObjectId(objectId);
+    }
     
     redrawCanvas();
     
@@ -282,12 +321,12 @@ export const Canvas: React.FC = () => {
     const isSticky = textObject.type === 'sticky-note';
     
     if (isSticky) {
-      // For sticky notes: adjust font size to fit content in fixed dimensions
+      // For sticky notes: NEVER change dimensions, only adjust font size to fit content
       const padding = 32; // 16px on each side
       const availableWidth = textObject.width - padding;
       const availableHeight = textObject.height - padding;
       
-      // Calculate optimal font size to fit content
+      // Calculate optimal font size to fit content in FIXED dimensions
       const targetFontSize = calculateOptimalFontSize(
         content || 'Sticky Note',
         availableWidth,
@@ -303,12 +342,13 @@ export const Canvas: React.FC = () => {
             ...textData,
             fontSize: targetFontSize
           }
+          // NEVER update width/height for sticky notes
         }, userId);
       }
-      return;
+      return; // Exit early - no dimension changes for sticky notes
     }
     
-    // For regular text objects: resize bounds to fit content
+    // For regular text objects: resize bounds to fit content (existing behavior)
     const isFixedW = !!textData.fixedWidth;
     const isFixedH = !!textData.fixedHeight;
     const padding = 8;
@@ -354,7 +394,7 @@ export const Canvas: React.FC = () => {
       if (newWidth !== textObject.width) updates.width = newWidth;
     } else {
       // Neither fixed - update both
-      const minWidth = isSticky ? 150 : 100; // Minimum width for sticky notes vs text
+      const minWidth = 100; // Minimum width for text objects
       const newWidth = Math.max(measuredWidth, minWidth);
       const newHeight = measuredHeight;
       if (newWidth !== textObject.width) updates.width = newWidth;
@@ -362,8 +402,9 @@ export const Canvas: React.FC = () => {
     }
     
     if (Object.keys(updates).length) {
-      updateObject(textObject.id, updates);
+      updateObject(textObject.id, updates, userId);
     }
+
   };
 
   // Utility function to calculate exact text positioning using canvas metrics
@@ -559,59 +600,85 @@ export const Canvas: React.FC = () => {
     const newText = e.target.value;
     setImmediateTextContent(newText);
     
-    const fontSize = toolStore.toolSettings.fontSize || 16;
-    const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
-    const bold = toolStore.toolSettings.textBold || false;
-    const italic = toolStore.toolSettings.textItalic || false;
-    
-    const minWidth = 100;
-    const textarea = e.target;
-    
-    // Calculate available space from text position to screen edge
-    const canvasRect = canvasRef.current?.getBoundingClientRect();
-    if (canvasRect && immediateTextPosition) {
-      const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
+    if (immediateTextObjectId && objects[immediateTextObjectId]) {
+      const textObject = objects[immediateTextObjectId];
+      const isSticky = textObject.type === 'sticky-note';
       
-      // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
-      const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
-      const effectiveWidth = availableWidth - textPadding;
-      textarea.style.width = effectiveWidth + 'px';
-      textarea.style.maxWidth = effectiveWidth + 'px';
-      
-      // Measure text with the same width for consistent wrapping
-      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, effectiveWidth);
-      
-      // Update textarea height to match wrapped text height so cursor moves correctly
-      textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + 'px';
-      
-      // Update canvas object - only update content, not dimensions during typing to prevent cursor jumps
-      if (immediateTextObjectId && objects[immediateTextObjectId]) {
-        const textObject = objects[immediateTextObjectId];
+      if (isSticky) {
+        // For sticky notes: adjust font size as user types to maintain fit
+        const padding = 32;
+        const availableWidth = textObject.width - padding;
+        const availableHeight = textObject.height - padding;
+        
+        const optimalFontSize = calculateOptimalFontSize(
+          newText || 'Sticky Note',
+          availableWidth,
+          availableHeight,
+          textObject.data.fontFamily,
+          textObject.data.bold,
+          textObject.data.italic
+        );
+        
+        // Update both content and font size, but NEVER change dimensions
         updateObject(immediateTextObjectId, {
           data: {
             ...textObject.data,
-            content: newText || ''
+            content: newText || '',
+            fontSize: optimalFontSize
           }
-          // Don't update width/height during active typing to prevent cursor position jumps
+          // Never update width/height for sticky notes
         });
-      }
-    } else {
-      // Fallback to original behavior if we can't calculate boundaries
-      const metrics = measureText(newText || '', fontSize, fontFamily, bold, italic);
-      const newWidth = Math.max(metrics.width + 20, minWidth);
-      textarea.style.width = newWidth + 'px';
-      textarea.style.height = Math.max(metrics.height + 10, fontSize * 1.2) + 'px';
-      
-      if (immediateTextObjectId && objects[immediateTextObjectId]) {
-        const textObject = objects[immediateTextObjectId];
-        updateObject(immediateTextObjectId, {
-          data: {
-            ...textObject.data,
-            content: newText || ''
-          },
-          width: newWidth,
-          height: Math.max(metrics.height, fontSize * 1.2)
-        });
+        
+        // Update textarea font size to match
+        const textarea = e.target;
+        textarea.style.fontSize = optimalFontSize + 'px';
+        
+      } else {
+        // For regular text: expand bounds as needed (existing behavior)
+        const fontSize = toolStore.toolSettings.fontSize || 16;
+        const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
+        const bold = toolStore.toolSettings.textBold || false;
+        const italic = toolStore.toolSettings.textItalic || false;
+        
+        const minWidth = 100;
+        const textarea = e.target;
+        
+        // Calculate available space from text position to screen edge
+        const canvasRect = canvasRef.current?.getBoundingClientRect();
+        if (canvasRect && immediateTextPosition) {
+          const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10;
+          
+          const textPadding = 8;
+          const effectiveWidth = availableWidth - textPadding;
+          textarea.style.width = effectiveWidth + 'px';
+          textarea.style.maxWidth = effectiveWidth + 'px';
+          
+          const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, effectiveWidth);
+          textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + 'px';
+          
+          // Update canvas object - only update content, not dimensions during typing
+          updateObject(immediateTextObjectId, {
+            data: {
+              ...textObject.data,
+              content: newText || ''
+            }
+          });
+        } else {
+          // Fallback behavior for regular text
+          const metrics = measureText(newText || '', fontSize, fontFamily, bold, italic);
+          const newWidth = Math.max(metrics.width + 20, minWidth);
+          textarea.style.width = newWidth + 'px';
+          textarea.style.height = Math.max(metrics.height + 10, fontSize * 1.2) + 'px';
+          
+          updateObject(immediateTextObjectId, {
+            data: {
+              ...textObject.data,
+              content: newText || ''
+            },
+            width: newWidth,
+            height: Math.max(metrics.height, fontSize * 1.2)
+          });
+        }
       }
     }
     

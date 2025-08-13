@@ -784,6 +784,15 @@ export const useCanvasInteractions = () => {
         const objectId = whiteboardStore.addObject(stickyNoteObject, userId);
         console.log('📝 Created sticky note:', objectId.slice(0, 8));
         
+        // Immediately start editing the sticky note
+        triggerImmediateTextEditing({
+          x: coords.x - defaultSize / 2 + 16, // Account for padding
+          y: coords.y - defaultSize / 2 + 16
+        });
+        
+        // Set the sticky note as the immediate text object
+        isImmediateTextEditingRef.current = true;
+        
         if (redrawCanvasRef.current) {
           redrawCanvasRef.current();
         }
