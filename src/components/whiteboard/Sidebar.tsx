@@ -17,7 +17,7 @@ export const WhiteboardSidebar: React.FC = () => {
         overflow: 'visible'
       }}>
         <div className="flex flex-col bg-sidebar border-sidebar-border">
-          <div className="p-3">
+          <div className="p-2">
             <DynamicToolSettings />
           </div>
         </div>
