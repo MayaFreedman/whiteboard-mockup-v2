@@ -10,6 +10,7 @@ import { useActionBatching } from '../useActionBatching';
 import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 import { useMultiplayer } from '../useMultiplayer';
+import { calculateOptimalFontSize } from '../../utils/stickyNoteUtils';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -225,7 +226,6 @@ export const useCanvasInteractions = () => {
     const availableHeight = height - padding;
     
     // Calculate font size for a single letter 'A' (typically the widest character)
-    const { calculateOptimalFontSize } = require('../../utils/stickyNoteUtils');
     const singleLetterFontSize = calculateOptimalFontSize(
       'A', // Single letter to fit at maximum size
       availableWidth,
