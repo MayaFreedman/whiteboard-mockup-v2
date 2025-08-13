@@ -201,9 +201,12 @@ export const Canvas: React.FC = () => {
         console.log('📝 Positioning textarea for sticky note:', stickyNote);
         
         if (stickyNote) {
+          // Account for shadow offset to align textarea perfectly with rendered sticky note
+          const shadowOffsetX = 2;
+          const shadowOffsetY = 2;
           const stickyScreenCoords = {
-            x: stickyNote.x + whiteboardRect.left, // No additional padding since textarea has its own padding
-            y: stickyNote.y + whiteboardRect.top - 60 // Adjustment for viewport
+            x: stickyNote.x + whiteboardRect.left - shadowOffsetX, // Compensate for shadow offset
+            y: stickyNote.y + whiteboardRect.top - 60 - shadowOffsetY // Adjustment for viewport and shadow
           };
           console.log('📝 Calculated sticky screen coords:', stickyScreenCoords);
           setImmediateTextPosition(stickyScreenCoords);
@@ -1171,8 +1174,13 @@ export const Canvas: React.FC = () => {
           ref={textareaRef}
           className="absolute border-none resize-none outline-none overflow-hidden"
           style={{
-            left: textEditorPosition.x,
-            top: textEditorPosition.y,
+            // Account for shadow offset to align perfectly with rendered sticky note
+            left: objects[editingTextId]?.type === 'sticky-note' 
+              ? textEditorPosition.x - 2 // Compensate for shadow offset
+              : textEditorPosition.x,
+            top: objects[editingTextId]?.type === 'sticky-note'
+              ? textEditorPosition.y - 2 // Compensate for shadow offset
+              : textEditorPosition.y,
             width: textEditorPosition.width,
             height: textEditorPosition.height,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
@@ -1225,8 +1233,13 @@ export const Canvas: React.FC = () => {
           data-immediate-text="true"
           className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
           style={{
-            left: immediateTextPosition.x,
-            top: immediateTextPosition.y,
+            // Account for shadow offset to align perfectly with rendered sticky note
+            left: objects[immediateTextObjectId]?.type === 'sticky-note' 
+              ? immediateTextPosition.x - 2 // Compensate for shadow offset
+              : immediateTextPosition.x,
+            top: objects[immediateTextObjectId]?.type === 'sticky-note'
+              ? immediateTextPosition.y - 2 // Compensate for shadow offset  
+              : immediateTextPosition.y,
             width: objects[immediateTextObjectId]?.type === 'sticky-note' 
               ? (objects[immediateTextObjectId]?.width || 150) // Full width of sticky note
               : 200, // Dynamic width for text objects
