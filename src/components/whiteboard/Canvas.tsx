@@ -263,9 +263,11 @@ export const Canvas: React.FC = () => {
     // Use the exact same line height calculation as canvas
     const lineHeight = Math.round(textData.fontSize * 1.2);
     
+    const canvasRect = canvas.getBoundingClientRect();
+    
     return {
-      x: Math.round(textObject.x + 4), // Same 4px padding as canvas
-      y: Math.round(textObject.y + 4), // Same 4px padding as canvas
+      x: Math.round(textObject.x + 4 + canvasRect.left), // Canvas position + padding + screen offset
+      y: Math.round(textObject.y + 4 + canvasRect.top), // Canvas position + padding + screen offset
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight
@@ -927,8 +929,8 @@ export const Canvas: React.FC = () => {
           data-immediate-text="true"
           className="absolute bg-transparent border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
           style={{
-            left: immediateTextPosition.x + (canvasRef.current?.getBoundingClientRect().left || 0),
-            top: immediateTextPosition.y + (canvasRef.current?.getBoundingClientRect().top || 0),
+            left: immediateTextPosition.x,
+            top: immediateTextPosition.y,
             width: 200, // Initial width that allows natural wrapping
             height: toolStore.toolSettings.fontSize * 1.2 || 20, // Height based on font size
             fontSize: toolStore.toolSettings.fontSize || 16,
