@@ -208,6 +208,13 @@ export const Canvas: React.FC = () => {
             x: stickyNote.x + whiteboardRect.left - shadowOffsetX, // Compensate for shadow offset
             y: stickyNote.y + whiteboardRect.top - 60 - shadowOffsetY // Adjustment for viewport and shadow
           };
+          console.log('📝 Immediate positioning details:', {
+            stickyNotePos: { x: stickyNote.x, y: stickyNote.y },
+            whiteboardRect: { left: whiteboardRect.left, top: whiteboardRect.top },
+            shadowOffset: { x: shadowOffsetX, y: shadowOffsetY },
+            finalCoords: stickyScreenCoords
+          });
+          console.log('📝 Calculated sticky screen coords:', stickyScreenCoords);
           setImmediateTextPosition(stickyScreenCoords);
         } else {
           console.warn('📝 Sticky note object not found, using default coords');
@@ -473,6 +480,18 @@ export const Canvas: React.FC = () => {
     // For sticky notes, account for shadow offset to match immediate editing positioning
     const shadowOffsetX = isSticky ? 2 : 0;
     const shadowOffsetY = isSticky ? 2 : 0;
+    
+    console.log('📏 calculateTextPosition details:', {
+      objectType: textObject.type,
+      objectPos: { x: textObject.x, y: textObject.y },
+      rectOffset: { left: rect.left, top: rect.top },
+      padding,
+      shadowOffset: { x: shadowOffsetX, y: shadowOffsetY },
+      finalCalculation: {
+        x: Math.round(textObject.x + rect.left - shadowOffsetX),
+        y: Math.round(textObject.y + rect.top - 60 - shadowOffsetY)
+      }
+    });
     
     return {
       x: Math.round(textObject.x + rect.left - shadowOffsetX), // Match immediate editing positioning

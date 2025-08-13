@@ -601,6 +601,14 @@ export const useCanvasRendering = (
 
       case 'sticky-note': {
         console.log('🎨 Rendering sticky note:', obj.id?.slice(0, 8), 'at', { x: obj.x, y: obj.y, width: obj.width, height: obj.height });
+        console.log('🎨 Sticky note data:', obj.data);
+        console.log('🎨 Sticky note content check:', { 
+          hasData: !!obj.data, 
+          contentUndefined: obj.data?.content !== undefined,
+          hasWidth: !!obj.width, 
+          hasHeight: !!obj.height,
+          shouldRender: obj.data?.content !== undefined && obj.width && obj.height 
+        });
         
         if (obj.data && obj.width && obj.height) { // Sticky notes should render even with empty content
           const stickyNoteData = obj.data as any; // StickyNoteData extends TextData
@@ -619,6 +627,7 @@ export const useCanvasRendering = (
           ctx.save();
           
           // Shadow - always apply shadow to sticky notes for consistent preview
+          console.log('🎨 Applying shadow to sticky note:', obj.id?.slice(0, 8));
           ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
           ctx.shadowBlur = 6;
           ctx.shadowOffsetX = 2;
@@ -724,8 +733,19 @@ export const useCanvasRendering = (
               ctx.moveTo(underlineStartX, underlineY);
               ctx.lineTo(underlineStartX + textWidth, underlineY);
               ctx.stroke();
-            }
           }
+          }
+          
+          ctx.restore();
+          console.log('✅ Successfully rendered sticky note:', obj.id?.slice(0, 8));
+        } else {
+          console.warn('⚠️ Skipping sticky note render - missing data:', { 
+            hasData: !!obj.data,
+            hasWidth: !!obj.width, 
+            hasHeight: !!obj.height,
+            data: obj.data 
+          });
+        }
           
           ctx.restore();
         }
