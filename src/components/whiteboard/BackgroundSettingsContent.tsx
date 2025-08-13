@@ -35,12 +35,18 @@ export const BackgroundSettingsContent: React.FC = () => {
     }
   };
 
-  const handleSelectPresetBg = (bgUrl: string) => {
-    updateSettings({ backgroundColor: bgUrl }, userId);
+  const handleSelectPresetBg = async (bgUrl: string) => {
+    try { 
+      await preloadAndCacheImage(bgUrl); 
+    } catch {}
+    updateSettings({ backgroundColor: `url(${bgUrl})` }, userId);
   };
 
-  const handleSelectCustomBg = (bg: any) => {
-    updateSettings({ backgroundColor: bg.dataUrl }, userId);
+  const handleSelectCustomBg = async (bg: any) => {
+    try { 
+      await preloadAndCacheImage(bg.dataUrl); 
+    } catch {}
+    updateSettings({ backgroundColor: `url(${bg.dataUrl})` }, userId);
   };
 
   const handleDeleteBackground = (bgId: string) => {
@@ -82,7 +88,7 @@ export const BackgroundSettingsContent: React.FC = () => {
       setIsBgUploading(true);
       const newBg = await addCustomBackground(file, file.name);
       setCustomBackgrounds(getCustomBackgrounds());
-      updateSettings({ backgroundColor: newBg.dataUrl }, userId);
+      updateSettings({ backgroundColor: `url(${newBg.dataUrl})` }, userId);
     } catch (error) {
       console.error('Failed to upload background:', error);
     } finally {
