@@ -105,13 +105,23 @@ export const useObjectDetection = () => {
    * Checks if a point is near text with improved hit area using accurate measurement
    */
   const isPointInText = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
-    if (!obj.data?.content && obj.data?.content !== '') return false;
-    
-    const textData = obj.data;
-    const content = textData.content || 'Double-click to edit';
     const isSticky = obj.type === 'sticky-note';
+    
+    // For sticky notes, always check hit detection (even when empty)
+    // For text objects, skip if no content 
+    if (!isSticky && (!obj.data?.content && obj.data?.content !== '')) return false;
+    
+    const textData = obj.data || {};
+    const content = textData.content || (isSticky ? '' : 'Double-click to edit');
     const padding = isSticky ? 16 : 4; // 16px for sticky notes, 4px for text
     
+    // For empty sticky notes, use simple bounds checking since there's no text to measure
+    if (isSticky && (!content || content.trim() === '')) {
+      return x >= obj.x && x <= obj.x + (obj.width || 0) && 
+             y >= obj.y && y <= obj.y + (obj.height || 0);
+    }
+    
+    // For sticky notes with content or text objects, use precise text bounds
     return isPointInTextBounds(
       x, y,
       obj.x + padding, // Account for canvas padding
