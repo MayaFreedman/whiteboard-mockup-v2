@@ -465,18 +465,33 @@ export const Toolbar: React.FC = () => {
                             ? 'linear-gradient(45deg, #ff0000, #ff8800, #ffff00, #88ff00, #00ff88, #0088ff, #8800ff, #ff0088)'
                             : undefined
                         }}
-                        onClick={() => colorPickerRef.current?.click()}
-                        title={isRainbow ? "Click to choose custom color" : "Click to change custom color"}
+                        onClick={() => {
+                          if (isRainbow) {
+                            // If still rainbow, open picker on first click
+                            colorPickerRef.current?.click();
+                          } else {
+                            // If custom color is set, select it
+                            handleColorSelect(color);
+                          }
+                        }}
+                        title={isRainbow ? "Click to choose custom color" : "Click to select color, or click rainbow dot to change"}
                       />
                       
-                      {/* Rainbow dot indicator when custom color is set */}
+                      {/* Rainbow dot indicator when custom color is set - clickable to open picker */}
                       {hasCustomColor && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-background flex items-center justify-center"
-                             style={{
-                               background: 'linear-gradient(45deg, #ff0000, #ff8800, #ffff00, #88ff00, #00ff88, #0088ff, #8800ff, #ff0088)'
-                             }}>
-                          <div className="w-1 h-1 bg-white rounded-full" />
-                        </div>
+                        <button
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-background flex items-center justify-center hover:scale-110 transition-transform duration-200 cursor-pointer"
+                          style={{
+                            background: 'linear-gradient(45deg, #ff0000, #ff8800, #ffff00, #88ff00, #00ff88, #0088ff, #8800ff, #ff0088)'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent triggering the main button
+                            colorPickerRef.current?.click();
+                          }}
+                          title="Click to change custom color"
+                        >
+                          <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                        </button>
                       )}
                       
                       {/* Hidden color input */}
