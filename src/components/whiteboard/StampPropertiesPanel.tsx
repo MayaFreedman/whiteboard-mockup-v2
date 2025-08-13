@@ -1,7 +1,5 @@
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { useActionBatching } from '../../hooks/useActionBatching';
-import { useUser } from '../../contexts/UserContext';
 import { SliderSetting } from './settings/SliderSetting';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
@@ -16,9 +14,6 @@ export const StampPropertiesPanel: React.FC<StampPropertiesPanelProps> = ({
   selectedObjectId
 }) => {
   const { updateObject, objects } = useWhiteboardStore();
-  const { startBatch, endBatch } = useActionBatching({ batchTimeout: 500, maxBatchSize: 200 });
-  const { userId } = useUser();
-  const sizeBatchActiveRef = React.useRef(false);
   
   const selectedObject = objects[selectedObjectId];
   
@@ -27,7 +22,7 @@ export const StampPropertiesPanel: React.FC<StampPropertiesPanelProps> = ({
   }
 
   const handlePropertyChange = (property: string, value: any) => {
-    updateObject(selectedObjectId, { [property]: value }, userId);
+    updateObject(selectedObjectId, { [property]: value });
   };
 
   return (
@@ -41,8 +36,6 @@ export const StampPropertiesPanel: React.FC<StampPropertiesPanelProps> = ({
             <Input
               type="number"
               value={Math.round(selectedObject.width || 100)}
-              onFocus={() => { if (!sizeBatchActiveRef.current) { startBatch('UPDATE_OBJECT', selectedObjectId, userId); sizeBatchActiveRef.current = true; } }}
-              onBlur={() => { if (sizeBatchActiveRef.current) { endBatch(); sizeBatchActiveRef.current = false; } }}
               onChange={(e) => handlePropertyChange('width', parseFloat(e.target.value) || 20)}
               className="h-8 text-xs"
               min="20"
@@ -54,8 +47,6 @@ export const StampPropertiesPanel: React.FC<StampPropertiesPanelProps> = ({
             <Input
               type="number"
               value={Math.round(selectedObject.height || 100)}
-              onFocus={() => { if (!sizeBatchActiveRef.current) { startBatch('UPDATE_OBJECT', selectedObjectId, userId); sizeBatchActiveRef.current = true; } }}
-              onBlur={() => { if (sizeBatchActiveRef.current) { endBatch(); sizeBatchActiveRef.current = false; } }}
               onChange={(e) => handlePropertyChange('height', parseFloat(e.target.value) || 20)}
               className="h-8 text-xs"
               min="20"
@@ -74,9 +65,7 @@ export const StampPropertiesPanel: React.FC<StampPropertiesPanelProps> = ({
         min={10}
         max={100}
         step={5}
-        onChangeStart={() => startBatch('UPDATE_OBJECT', selectedObjectId, userId)}
         onChange={(value) => handlePropertyChange('opacity', value / 100)}
-        onCommit={() => endBatch()}
         valueFormatter={(value) => `${value}%`}
       />
     </div>

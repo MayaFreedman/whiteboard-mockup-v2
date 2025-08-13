@@ -5,11 +5,9 @@ import { useWhiteboardStore } from '../../stores/whiteboardStore';
 interface ResizeHandlesProps {
   objectId: string;
   onResize: (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => void;
-  onResizeStart?: (objectId: string) => void;
-  onResizeEnd?: (objectId: string) => void;
 }
 
-export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize, onResizeStart, onResizeEnd }) => {
+export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize }) => {
   const { objects } = useWhiteboardStore();
   const obj = objects[objectId];
   
@@ -30,8 +28,6 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
   const handleMouseDown = (e: React.MouseEvent, handleId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    onResizeStart?.(objectId);
     
     const startX = e.clientX;
     const startY = e.clientY;
@@ -101,12 +97,12 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
     const handleMouseUp = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      onResizeEnd?.(objectId);
     };
     
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
+
   return (
     <>
       {/* Selection outline */}

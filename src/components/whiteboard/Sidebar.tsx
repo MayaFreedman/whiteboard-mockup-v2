@@ -178,14 +178,6 @@ export const WhiteboardSidebar: React.FC = () => {
     name: 'Treehouse',
     url: '/backgrounds/Treehouse.png',
     preview: '/backgrounds/Treehouse.png'
-  }, {
-    name: 'Playground',
-    url: '/lovable-uploads/c25b3d56-306c-4fe6-8c2a-888021e6506c.png',
-    preview: '/lovable-uploads/c25b3d56-306c-4fe6-8c2a-888021e6506c.png'
-  }, {
-    name: 'Beach',
-    url: '/lovable-uploads/b965b963-e42b-4571-86ac-19ab173d2491.png',
-    preview: '/lovable-uploads/b965b963-e42b-4571-86ac-19ab173d2491.png'
   }];
   return <>
       <UISidebar side="left" className="border-r w-96" collapsible="offcanvas" style={{

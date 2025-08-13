@@ -50,7 +50,6 @@ export const Canvas: React.FC = () => {
   const { activeTool } = toolStore;
   const { userId } = useUser();
   const { startBatch, endBatch } = useActionBatching({ batchTimeout: 100, maxBatchSize: 50 });
-  const { startBatch: startResizeBatch, endBatch: endResizeBatch } = useActionBatching({ batchTimeout: 0, maxBatchSize: 500 });
   const { activeWhiteboardSize, userScreenSizes } = useScreenSizeStore();
   
   // Only show grey overlay when there are multiple users
@@ -176,7 +175,7 @@ export const Canvas: React.FC = () => {
       }
     }
 
-    updateObject(objectId, updates, userId);
+    updateObject(objectId, updates);
     // Don't call redrawCanvas here - let the state change trigger it naturally for smoother updates
     
     // Clear the flag after a short delay to allow the resize operation to complete
@@ -310,27 +309,12 @@ export const Canvas: React.FC = () => {
         availableWidth
       );
       
-      // Horizontal offset based on text alignment within available area
-      let alignOffset = 0;
-      switch (textData.textAlign || 'left') {
-        case 'center':
-          alignOffset = (availableWidth - metrics.width) / 2;
-          break;
-        case 'right':
-          alignOffset = (availableWidth - metrics.width);
-          break;
-        default:
-          alignOffset = 0;
-      }
+      // Check if click is within the actual text bounds
+      const textStartX = obj.x + 4; // Account for padding
+      const textStartY = obj.y + 4; // Account for padding
       
-      // Clamp offset to avoid negative shift if metrics exceed available width (safety)
-      if (!isFinite(alignOffset)) alignOffset = 0;
-      
-      // Actual text bounds inside the textbox considering padding and alignment
-      const textStartX = obj.x + 4 + Math.max(0, alignOffset);
-      const textStartY = obj.y + 4; // top padding
-      const textEndX = textStartX + metrics.width;
-      const textEndY = textStartY + metrics.height;
+      let textEndX = textStartX + metrics.width;
+      let textEndY = textStartY + metrics.height;
       
       // Add some tolerance for easier clicking
       const tolerance = 8;
@@ -339,9 +323,6 @@ export const Canvas: React.FC = () => {
       
       console.log('🖱️ Checking text object with accurate bounds:', {
         id: id.slice(0, 8),
-        textAlign: textData.textAlign,
-        availableWidth,
-        alignOffset,
         textBounds: { x: textStartX, y: textStartY, width: metrics.width, height: metrics.height },
         clickPos: { x, y },
         tolerance,
@@ -700,23 +681,13 @@ export const Canvas: React.FC = () => {
       return;
     }
     
-    // Handle click outside immediate text editing area - only complete if user has typed something
-    if (isImmediateTextEditing && immediateTextContent.trim() !== '') {
+    // Handle click outside immediate text editing area - complete the text
+    // This should work regardless of which tool is active
+    if (isImmediateTextEditing) {
       console.log('🖱️ Click outside immediate text editing - completing text');
       handleImmediateTextComplete();
       // Don't return here - allow the tool interaction to continue
       // This ensures we can start a new text editing session immediately
-    } else if (isImmediateTextEditing && immediateTextContent.trim() === '') {
-      // Cancel if no content entered
-      console.log('🖱️ Click outside immediate text editing - canceling empty text');
-      if (immediateTextObjectId && objects[immediateTextObjectId]) {
-        deleteObject(immediateTextObjectId, userId);
-      }
-      setIsImmediateTextEditing(false);
-      setImmediateTextPosition(null);
-      setImmediateTextContent('');
-      setImmediateTextObjectId(null);
-      redrawCanvas();
     }
 
     // Handle click outside regular text editing area - complete the text editing
@@ -760,14 +731,6 @@ export const Canvas: React.FC = () => {
     interactions.handleMouseLeave();
   };
 
-  // Compute whiteboard offsets when it's centered inside the container
-  const whiteboardLeftOffset = containerRef.current && activeWhiteboardSize.width < (containerRef.current.offsetWidth || 0)
-    ? Math.max(0, Math.floor((containerRef.current.offsetWidth - activeWhiteboardSize.width) / 2))
-    : 0;
-  const whiteboardTopOffset = containerRef.current && activeWhiteboardSize.height < (containerRef.current.offsetHeight || 0)
-    ? Math.max(0, Math.floor((containerRef.current.offsetHeight - activeWhiteboardSize.height) / 2))
-    : 0;
-
   return (
     <div 
       ref={containerRef}
@@ -810,110 +773,6 @@ export const Canvas: React.FC = () => {
           onMouseLeave={onMouseLeave}
           onDoubleClick={handleDoubleClick}
         />
-
-        {/* In-whiteboard overlays (aligned to whiteboard origin) */}
-        {/* Text Editor Overlay - Positioned to match canvas text exactly */}
-        {editingTextId && textEditorPosition && (
-          <textarea
-            ref={textareaRef}
-            className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
-            style={{
-              left: textEditorPosition.x,
-              top: textEditorPosition.y,
-              width: textEditorPosition.width,
-              height: textEditorPosition.height,
-              fontSize: objects[editingTextId]?.data?.fontSize || 16,
-              fontFamily: objects[editingTextId]?.data?.fontFamily || 'Arial',
-              fontWeight: objects[editingTextId]?.data?.bold ? 'bold' : 'normal',
-              fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
-              textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
-              textAlign: objects[editingTextId]?.data?.textAlign || 'left',
-              color: 'transparent', // Make the text invisible
-              caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
-              zIndex: 1000,
-              lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
-              padding: '0', // Remove default textarea padding since we handle it with positioning
-              margin: '0', // Remove default margins
-              border: 'none', // Remove borders
-              wordWrap: 'break-word', // Enable word wrapping
-              whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
-              overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior
-              // Font rendering optimizations to match canvas
-              textRendering: 'optimizeLegibility',
-              fontSmooth: 'antialiased',
-              WebkitFontSmoothing: 'antialiased',
-              MozOsxFontSmoothing: 'grayscale',
-              // Disable browser text selection styling
-              WebkitTextSizeAdjust: '100%',
-              // Ensure consistent box model
-              boxSizing: 'border-box'
-            }}
-            value={editingText}
-            onChange={handleTextChange}
-            onBlur={handleTextEditComplete}
-            onKeyDown={handleTextKeyDown}
-            autoFocus
-          />
-        )}
-
-        {/* Immediate Text Editor Overlay - For click-to-type functionality */}
-        {isImmediateTextEditing && immediateTextPosition && (
-          <textarea
-            data-immediate-text="true"
-            className="absolute bg-transparent border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
-            style={{
-              left: immediateTextPosition.x,
-              top: immediateTextPosition.y,
-              width: 200, // Initial width that allows natural wrapping
-              height: toolStore.toolSettings.fontSize * 1.2 || 20, // Height based on font size
-              fontSize: toolStore.toolSettings.fontSize || 16,
-              fontFamily: toolStore.toolSettings.fontFamily || 'Arial',
-              fontWeight: toolStore.toolSettings.textBold ? 'bold' : 'normal',
-              fontStyle: toolStore.toolSettings.textItalic ? 'italic' : 'normal',
-              textDecoration: toolStore.toolSettings.textUnderline ? 'underline' : 'none',
-              textAlign: 'left',
-              color: 'transparent', // Make text invisible like double-click editing
-              zIndex: 1001, // Higher than regular text editing
-              lineHeight: (toolStore.toolSettings.fontSize * 1.2 || 20) + 'px',
-              padding: '0', // Remove padding to match canvas text positioning exactly
-              margin: '0',
-              border: 'none',
-              whiteSpace: 'pre-wrap', // Enable text wrapping from the start
-              overflowWrap: 'break-word',
-              wordBreak: 'break-word',
-              wordWrap: 'break-word',
-              overflow: 'visible', // Allow content to extend beyond bounds
-              textRendering: 'optimizeLegibility',
-              fontSmooth: 'antialiased',
-              WebkitFontSmoothing: 'antialiased',
-              MozOsxFontSmoothing: 'grayscale',
-              caretColor: toolStore.toolSettings.strokeColor || '#000000', // Ensure cursor is visible and matches text color
-              WebkitTextSizeAdjust: '100%',
-              boxSizing: 'border-box',
-              background: 'transparent', // Match canvas text - no background
-              minHeight: (toolStore.toolSettings.fontSize || 16) * 1.2 + 'px',
-              // Set placeholder color to match stroke color with reduced opacity
-              '--placeholder-color': `${toolStore.toolSettings.strokeColor || '#000000'}B3`
-            } as React.CSSProperties & { '--placeholder-color': string }}
-            value={immediateTextContent}
-            onChange={handleImmediateTextChange}
-            onBlur={handleImmediateTextComplete}
-            onKeyDown={handleImmediateTextKeyDown}
-            placeholder="Type here..."
-            autoFocus
-          />
-        )}
-
-        {/* Resize Handles for Selected Objects (aligned within whiteboard) */}
-        {activeTool === 'select' && selectedObjectIds.map(objectId => (
-          <ResizeHandles
-            key={objectId}
-            objectId={objectId}
-            onResizeStart={() => startResizeBatch('UPDATE_OBJECT', objectId, userId)}
-            onResize={(id, bounds) => handleResize(id, bounds)}
-            onResizeEnd={() => endResizeBatch()}
-          />
-        ))}
       </div>
       
       {/* Enhanced non-whiteboard areas - only show in multiplayer */}
@@ -1092,6 +951,14 @@ export const Canvas: React.FC = () => {
       {/* Custom Cursor */}
       <CustomCursor canvas={canvasRef.current} />
       
+      {/* Resize Handles for Selected Objects */}
+      {activeTool === 'select' && selectedObjectIds.map(objectId => (
+        <ResizeHandles
+          key={objectId}
+          objectId={objectId}
+          onResize={handleResize}
+        />
+      ))}
       
     </div>
   );
