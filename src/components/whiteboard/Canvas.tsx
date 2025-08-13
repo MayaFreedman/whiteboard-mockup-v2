@@ -694,6 +694,15 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    console.log('🖱️ REACT MOUSE DOWN EVENT RECEIVED:', {
+      activeTool,
+      hasCanvas: !!canvasRef.current,
+      isHandlingDoubleClick,
+      editingTextId: !!editingTextId,
+      isImmediateTextEditing,
+      eventTarget: event.target
+    });
+    
     // Block interactions during double-click protection
     if (isHandlingDoubleClick) {
       console.log('🖱️ Mouse down blocked - double-click protection active');
@@ -717,8 +726,10 @@ export const Canvas: React.FC = () => {
     }
 
     if (canvasRef.current) {
-      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick, 'editing text:', !!editingTextId, 'immediate editing:', isImmediateTextEditing);
+      console.log('🖱️ Calling interactions.handlePointerDown');
       interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
+    } else {
+      console.log('🖱️ No canvas ref available');
     }
   };
 
