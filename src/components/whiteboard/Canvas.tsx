@@ -700,13 +700,23 @@ export const Canvas: React.FC = () => {
       return;
     }
     
-    // Handle click outside immediate text editing area - complete the text
-    // This should work regardless of which tool is active
-    if (isImmediateTextEditing) {
+    // Handle click outside immediate text editing area - only complete if user has typed something
+    if (isImmediateTextEditing && immediateTextContent.trim() !== '') {
       console.log('🖱️ Click outside immediate text editing - completing text');
       handleImmediateTextComplete();
       // Don't return here - allow the tool interaction to continue
       // This ensures we can start a new text editing session immediately
+    } else if (isImmediateTextEditing && immediateTextContent.trim() === '') {
+      // Cancel if no content entered
+      console.log('🖱️ Click outside immediate text editing - canceling empty text');
+      if (immediateTextObjectId && objects[immediateTextObjectId]) {
+        deleteObject(immediateTextObjectId, userId);
+      }
+      setIsImmediateTextEditing(false);
+      setImmediateTextPosition(null);
+      setImmediateTextContent('');
+      setImmediateTextObjectId(null);
+      redrawCanvas();
     }
 
     // Handle click outside regular text editing area - complete the text editing

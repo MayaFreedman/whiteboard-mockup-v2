@@ -718,9 +718,9 @@ export const useCanvasInteractions = () => {
         const isClickingOnExistingText = clickedObject && clickedObject.type === 'text';
         
         if (isClickingOnExistingText) {
-          console.log('📝 Clicked on existing text object - preventing immediate text editing, waiting for potential double-click');
-          // Don't set up immediate text editing when clicking on existing text
-          // This allows double-click editing to work properly
+          console.log('📝 Clicked on existing text object - selecting it');
+          // Select the text object for now (double-click will handle editing)
+          whiteboardStore.selectObjects([clickedObjectId], userId);
           return;
         }
 
@@ -896,7 +896,8 @@ export const useCanvasInteractions = () => {
           const deltaX = Math.abs(coords.x - textClickStartPosRef.current.x);
           const deltaY = Math.abs(coords.y - textClickStartPosRef.current.y);
           
-          if (deltaX > 5 || deltaY > 5) {
+          // Increase threshold to 15px to reduce sensitivity
+          if (deltaX > 15 || deltaY > 15) {
             console.log('📝 Drag detected - entering drag mode');
             isDrawingRef.current = true; // Now mark as drawing since it's a drag
           }
