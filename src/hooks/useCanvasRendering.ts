@@ -619,13 +619,11 @@ export const useCanvasRendering = (
           // Draw sticky note background with shadow and rounded corners
           ctx.save();
           
-          // Shadow
-          if (stickyNoteData.hasShadow) {
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-            ctx.shadowBlur = 6;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
-          }
+          // Shadow - always apply shadow to sticky notes for consistent preview
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+          ctx.shadowBlur = 6;
+          ctx.shadowOffsetX = 2;
+          ctx.shadowOffsetY = 2;
           
           // Background with rounded corners
           const cornerRadius = 8;
