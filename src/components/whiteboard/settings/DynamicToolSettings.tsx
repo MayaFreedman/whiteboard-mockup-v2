@@ -217,24 +217,24 @@ export const DynamicToolSettings: React.FC = () => {
   // Handle stamp tool with optimized rendering
   if (activeTool === 'stamp') {
     return <ToolSettingCard title="Stamp Settings">
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Size slider */}
           <SliderSetting label="Stamp Size" value={toolSettings.stampSize || 10} min={5} max={20} step={1} onChange={value => updateToolSettings({
           stampSize: value
         })} valueFormatter={value => `${value * 10}px`} showValue={true} />
           
           {/* Category selector */}
-          <div className="space-y-2">
+            <div className="space-y-1">
             <label className="text-sm font-medium">Category</label>
             <TooltipProvider delayDuration={100}>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1">
                 {categories.map(category => {
                 const IconComp = categoryIcons[category] || Circle;
                 const label = category === 'all' ? 'All Icons' : getCategoryDisplayName(category);
                 const isActive = selectedCategory === category;
                 return <Tooltip key={category}>
                       <TooltipTrigger asChild>
-                        <button className={`h-9 w-9 rounded-full flex items-center justify-center transition-colors ${isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`} onClick={() => handleCategoryChange(category)} aria-label={label} aria-pressed={isActive}>
+                        <button className={`h-8 w-8 rounded-full flex items-center justify-center transition-colors ${isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`} onClick={() => handleCategoryChange(category)} aria-label={label} aria-pressed={isActive}>
                           <IconComp className="h-4 w-4" />
                           <span className="sr-only">{label}</span>
                         </button>
@@ -247,7 +247,7 @@ export const DynamicToolSettings: React.FC = () => {
           </div>
 
           {/* Search input */}
-          <div className="space-y-2">
+          <div className="space-y-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input ref={searchInputRef} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search emojis" className="pl-9" aria-label="Search emojis" />
@@ -299,7 +299,7 @@ export const DynamicToolSettings: React.FC = () => {
   const toolConfig = toolsConfig[activeTool];
   if (toolConfig) {
     return <ToolSettingCard title={`${toolConfig.displayName} Settings`}>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {toolConfig.settings.map(setting => <ToolSettingRenderer key={setting.key} setting={setting} toolSettings={toolSettings} updateToolSettings={updateToolSettings} />)}
         </div>
       </ToolSettingCard>;

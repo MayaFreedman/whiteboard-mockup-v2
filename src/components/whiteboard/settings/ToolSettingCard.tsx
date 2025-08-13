@@ -15,16 +15,16 @@ export const ToolSettingCard: React.FC<ToolSettingCardProps> = ({ title, childre
   
   return (
     <Card>
-      <CardHeader className="bg-company-light-pink py-3 px-6 rounded-t-lg">
+      <CardHeader className="bg-company-light-pink py-2 px-4 rounded-t-lg">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg text-company-light-pink-foreground">{title}</CardTitle>
-          <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/20">
+          <CardTitle className="text-base text-company-light-pink-foreground">{title}</CardTitle>
+          <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/20">
             <ChevronsLeft className="h-4 w-4" />
             <span className="sr-only">Collapse sidebar</span>
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="pt-6 px-6">
+      <CardContent className="pt-4 px-4">
         {children}
       </CardContent>
     </Card>

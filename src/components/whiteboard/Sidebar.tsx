@@ -11,13 +11,13 @@ export const WhiteboardSidebar: React.FC = () => {
         transform: open ? 'translateX(0)' : 'translateX(-100%)',
         transition: 'transform 0.2s ease-linear',
         top: 'var(--toolbar-height, 64px)',
-        width: '384px', // w-96 equivalent
+        width: '320px', // Reduced from 384px (w-96) to 320px (w-80)
         height: 'auto',
         maxHeight: 'calc(100vh - var(--toolbar-height, 64px))',
         overflow: 'visible'
       }}>
         <div className="flex flex-col bg-sidebar border-sidebar-border">
-          <div className="p-4">
+          <div className="p-3">
             <DynamicToolSettings />
           </div>
         </div>
