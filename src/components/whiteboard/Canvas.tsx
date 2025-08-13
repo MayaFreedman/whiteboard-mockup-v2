@@ -202,8 +202,8 @@ export const Canvas: React.FC = () => {
         
         if (stickyNote) {
           const stickyScreenCoords = {
-            x: stickyNote.x + whiteboardRect.left + 16, // 16px padding
-            y: stickyNote.y + whiteboardRect.top + 16 - 60 // 16px padding and adjustment
+            x: stickyNote.x + whiteboardRect.left, // No additional padding since textarea has its own padding
+            y: stickyNote.y + whiteboardRect.top - 60 // Adjustment for viewport
           };
           console.log('📝 Calculated sticky screen coords:', stickyScreenCoords);
           setImmediateTextPosition(stickyScreenCoords);
@@ -1225,10 +1225,10 @@ export const Canvas: React.FC = () => {
             left: immediateTextPosition.x,
             top: immediateTextPosition.y,
             width: objects[immediateTextObjectId]?.type === 'sticky-note' 
-              ? (objects[immediateTextObjectId]?.width || 150) - 32 // Fixed width for sticky notes minus padding
+              ? (objects[immediateTextObjectId]?.width || 150) // Full width of sticky note
               : 200, // Dynamic width for text objects
             height: objects[immediateTextObjectId]?.type === 'sticky-note'
-              ? (objects[immediateTextObjectId]?.height || 150) - 32 // Fixed height for sticky notes minus padding
+              ? (objects[immediateTextObjectId]?.height || 150) // Full height of sticky note
               : (objects[immediateTextObjectId]?.data?.fontSize || toolStore.toolSettings.fontSize) * 1.2 || 20,
             fontSize: objects[immediateTextObjectId]?.data?.fontSize || toolStore.toolSettings.fontSize || 16,
             fontFamily: objects[immediateTextObjectId]?.data?.fontFamily || toolStore.toolSettings.fontFamily || 'Arial',
@@ -1243,7 +1243,7 @@ export const Canvas: React.FC = () => {
             borderRadius: objects[immediateTextObjectId]?.type === 'sticky-note' ? '8px' : '0',
             zIndex: 1001, // Higher than regular text editing
             lineHeight: (objects[immediateTextObjectId]?.data?.fontSize || toolStore.toolSettings.fontSize || 16) * 1.2 + 'px',
-            padding: '0', // Remove padding to match canvas text positioning exactly
+            padding: objects[immediateTextObjectId]?.type === 'sticky-note' ? '16px' : '0', // Match canvas padding
             margin: '0',
             border: 'none',
             whiteSpace: 'pre-wrap', // Enable text wrapping from the start
