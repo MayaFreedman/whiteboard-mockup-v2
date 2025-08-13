@@ -74,11 +74,11 @@ export const Canvas: React.FC = () => {
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Handle tool selection logic (clearing selection when switching tools)
+  useToolSelection();
+  
   // Initialize interactions hook first to get the preview functions
   const interactions = useCanvasInteractions();
-  
-  // Handle tool selection logic (clearing selection when switching tools)
-  useToolSelection(interactions.clearTextInteractionState);
   
   // Initialize rendering hook with both preview functions AND editing state
   const { redrawCanvas, isManualResizing } = useCanvasRendering(
@@ -694,15 +694,6 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    console.log('🖱️ REACT MOUSE DOWN EVENT RECEIVED:', {
-      activeTool,
-      hasCanvas: !!canvasRef.current,
-      isHandlingDoubleClick,
-      editingTextId: !!editingTextId,
-      isImmediateTextEditing,
-      eventTarget: event.target
-    });
-    
     // Block interactions during double-click protection
     if (isHandlingDoubleClick) {
       console.log('🖱️ Mouse down blocked - double-click protection active');
@@ -710,9 +701,9 @@ export const Canvas: React.FC = () => {
     }
     
     // Handle click outside immediate text editing area - complete the text
-    // BUT NOT if we're just starting a new text editing session
-    if (isImmediateTextEditing && immediateTextContent.trim() !== '') {
-      console.log('🖱️ Click outside immediate text editing - completing text with content');
+    // This should work regardless of which tool is active
+    if (isImmediateTextEditing) {
+      console.log('🖱️ Click outside immediate text editing - completing text');
       handleImmediateTextComplete();
       // Don't return here - allow the tool interaction to continue
       // This ensures we can start a new text editing session immediately
@@ -726,10 +717,8 @@ export const Canvas: React.FC = () => {
     }
 
     if (canvasRef.current) {
-      console.log('🖱️ Calling interactions.handlePointerDown');
+      console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick, 'editing text:', !!editingTextId, 'immediate editing:', isImmediateTextEditing);
       interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
-    } else {
-      console.log('🖱️ No canvas ref available');
     }
   };
 
