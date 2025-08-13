@@ -1229,9 +1229,8 @@ export const Canvas: React.FC = () => {
             margin: '0', // Remove default margins
             border: 'none', // Remove borders
             borderRadius: objects[editingTextId]?.type === 'sticky-note' ? '8px' : '0',
-            boxShadow: objects[editingTextId]?.type === 'sticky-note' 
-              ? '2px 2px 6px rgba(0, 0, 0, 0.15)'
-              : 'none',
+            // No shadow on textarea - let the underlying rendered sticky note provide the shadow
+            boxShadow: 'none',
             wordWrap: 'break-word', // Enable word wrapping
             whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
             overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior
@@ -1288,9 +1287,8 @@ export const Canvas: React.FC = () => {
             padding: objects[immediateTextObjectId]?.type === 'sticky-note' ? '16px' : '0', // Match canvas padding
             margin: '0',
             border: 'none',
-            boxShadow: objects[immediateTextObjectId]?.type === 'sticky-note' 
-              ? '2px 2px 6px rgba(0, 0, 0, 0.15)'
-              : 'none',
+            // No shadow on textarea - let the underlying rendered sticky note provide the shadow
+            boxShadow: 'none',
             whiteSpace: 'pre-wrap', // Enable text wrapping from the start
             overflowWrap: 'break-word',
             wordBreak: 'break-word',
