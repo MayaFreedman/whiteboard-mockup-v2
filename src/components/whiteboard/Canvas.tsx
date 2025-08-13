@@ -253,22 +253,26 @@ export const Canvas: React.FC = () => {
       const currentHeight = obj.height;
       
       if (obj.type === 'sticky-note') {
-        // For sticky notes: scale font size proportionally to maintain text fit
-        const scaleX = newBounds.width / currentWidth;
-        const scaleY = newBounds.height / currentHeight;
-        const scale = Math.max(0.1, Math.min(5, (scaleX + scaleY) / 2));
+        // For sticky notes: recalculate optimal font size to fit content within new dimensions
+        const padding = 32;
+        const availableWidth = newBounds.width - padding;
+        const availableHeight = newBounds.height - padding;
         
-        // Calculate new font size based on new dimensions (proportional to size)
-        const baseFontSize = Math.min(newBounds.width, newBounds.height) * 0.08;
-        const minFontSize = 8;
-        const maxFontSize = 32;
-        const newFontSize = Math.max(minFontSize, Math.min(maxFontSize, baseFontSize));
+        const currentContent = obj.data?.content || 'Sticky Note';
+        const optimalFontSize = calculateOptimalFontSize(
+          currentContent,
+          availableWidth,
+          availableHeight,
+          obj.data?.fontFamily || 'Arial',
+          obj.data?.bold || false,
+          obj.data?.italic || false
+        );
         
         const updates = {
           ...newBounds,
           data: {
             ...(obj.data || {}),
-            fontSize: Math.round(newFontSize),
+            fontSize: optimalFontSize,
           },
         };
         
@@ -579,13 +583,15 @@ export const Canvas: React.FC = () => {
         }
       });
       
-      // Auto-resize text bounds to fit content (or adjust font for sticky notes)
-      setTimeout(() => {
-        const updatedObject = objects[editingTextId];
-        if (updatedObject) {
-          updateTextBounds(updatedObject, contentToSave);
-        }
-      }, 0);
+      // Auto-resize text bounds to fit content - but NOT for sticky notes
+      if (!isSticky) {
+        setTimeout(() => {
+          const updatedObject = objects[editingTextId];
+          if (updatedObject) {
+            updateTextBounds(updatedObject, contentToSave);
+          }
+        }, 0);
+      }
       
       redrawCanvas();
     }
@@ -691,21 +697,26 @@ export const Canvas: React.FC = () => {
     
     if (immediateTextObjectId && objects[immediateTextObjectId]) {
       if (finalText) {
+        const textObject = objects[immediateTextObjectId];
+        const isSticky = textObject.type === 'sticky-note';
+        
         // Keep the existing object with final content
         updateObject(immediateTextObjectId, {
           data: {
-            ...objects[immediateTextObjectId].data,
+            ...textObject.data,
             content: finalText
           }
         });
         
-        // Final resize to fit content
-        setTimeout(() => {
-          const updatedObject = objects[immediateTextObjectId];
-          if (updatedObject) {
-            updateTextBounds(updatedObject, finalText);
-          }
-        }, 0);
+        // Final resize to fit content - but NOT for sticky notes
+        if (!isSticky) {
+          setTimeout(() => {
+            const updatedObject = objects[immediateTextObjectId];
+            if (updatedObject) {
+              updateTextBounds(updatedObject, finalText);
+            }
+          }, 0);
+        }
       } else {
         // Delete the object if no text was entered
         deleteObject(immediateTextObjectId, userId);
@@ -730,27 +741,60 @@ export const Canvas: React.FC = () => {
     const textarea = e.target;
     if (editingTextId && objects[editingTextId] && textEditorPosition) {
       const textObject = objects[editingTextId];
-      const fontSize = textObject.data?.fontSize || 16;
-      const fontFamily = textObject.data?.fontFamily || 'Arial';
-      const bold = textObject.data?.bold || false;
-      const italic = textObject.data?.italic || false;
+      const isSticky = textObject.type === 'sticky-note';
       
-      // Measure text to get proper height
-      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, textEditorPosition.width);
-      
-      // Update textarea height so it expands downward and cursor moves correctly
-      const newHeight = Math.max(wrappedMetrics.height, fontSize * 1.2);
-      textarea.style.height = newHeight + 'px';
-      
-      // Also update the canvas object bounds to match
-      const isFixedH = !!textObject.data?.fixedHeight;
-      updateObject(editingTextId, {
-        data: {
-          ...textObject.data,
-          content: newText
-        },
-        ...(isFixedH ? {} : { height: newHeight })
-      }, userId);
+      if (isSticky) {
+        // For sticky notes: adjust font size as user types to maintain fit
+        const padding = 32;
+        const availableWidth = textObject.width - padding;
+        const availableHeight = textObject.height - padding;
+        
+        const optimalFontSize = calculateOptimalFontSize(
+          newText || 'Sticky Note',
+          availableWidth,
+          availableHeight,
+          textObject.data.fontFamily,
+          textObject.data.bold,
+          textObject.data.italic
+        );
+        
+        // Update both content and font size, but NEVER change dimensions
+        updateObject(editingTextId, {
+          data: {
+            ...textObject.data,
+            content: newText,
+            fontSize: optimalFontSize
+          }
+          // Never update width/height for sticky notes
+        }, userId);
+        
+        // Update textarea font size to match
+        textarea.style.fontSize = optimalFontSize + 'px';
+        
+      } else {
+        // For regular text: expand bounds as needed (existing behavior)
+        const fontSize = textObject.data?.fontSize || 16;
+        const fontFamily = textObject.data?.fontFamily || 'Arial';
+        const bold = textObject.data?.bold || false;
+        const italic = textObject.data?.italic || false;
+        
+        // Measure text to get proper height
+        const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, textEditorPosition.width);
+        
+        // Update textarea height so it expands downward and cursor moves correctly
+        const newHeight = Math.max(wrappedMetrics.height, fontSize * 1.2);
+        textarea.style.height = newHeight + 'px';
+        
+        // Also update the canvas object bounds to match
+        const isFixedH = !!textObject.data?.fixedHeight;
+        updateObject(editingTextId, {
+          data: {
+            ...textObject.data,
+            content: newText
+          },
+          ...(isFixedH ? {} : { height: newHeight })
+        }, userId);
+      }
     }
     
     console.log('✏️ Text changed:', {
