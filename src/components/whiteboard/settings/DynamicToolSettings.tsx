@@ -12,6 +12,7 @@ import { EraserSettings } from '../EraserSettings';
 import { ShapePropertiesPanel } from '../ShapePropertiesPanel';
 import { TextPropertiesPanel } from '../TextPropertiesPanel';
 import { StampPropertiesPanel } from '../StampPropertiesPanel';
+import { StickyNotePropertiesPanel } from '../StickyNotePropertiesPanel';
 import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName, getAllIcons } from '../../../utils/iconRegistry';
 import { CustomStampUpload, type CustomStampUploadHandle } from './CustomStampUpload';
 import { SkinTonePicker } from './SkinTonePicker';
@@ -188,6 +189,10 @@ export const DynamicToolSettings: React.FC = () => {
     if (obj?.type === 'text') {
       return <ToolSettingCard title="Text Properties">
           <TextPropertiesPanel selectedObjectId={selectedObjectIds[0]} />
+        </ToolSettingCard>;
+    } else if (obj?.type === 'sticky-note') {
+      return <ToolSettingCard title="Sticky Note Properties">
+          <StickyNotePropertiesPanel selectedObjectId={selectedObjectIds[0]} />
         </ToolSettingCard>;
     } else if (obj?.type === 'image') {
       return <ToolSettingCard title="Stamp Properties">

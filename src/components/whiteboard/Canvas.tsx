@@ -260,7 +260,8 @@ export const Canvas: React.FC = () => {
     const textData = textObject.data;
     const isFixedW = !!textData.fixedWidth;
     const isFixedH = !!textData.fixedHeight;
-    const padding = 8;
+    const isSticky = textObject.type === 'sticky-note';
+    const padding = isSticky ? 32 : 8; // 32px for sticky notes (16px on each side), 8px for text
     const isPlaceholder = !content || content.trim() === '' || content === 'Double-click to edit';
 
     const maxWidth = isFixedW ? Math.max((textObject.width || 0) - padding, 0) : undefined;
@@ -274,9 +275,12 @@ export const Canvas: React.FC = () => {
     );
     
     console.log('📏 Text bounds update:', {
+      type: textObject.type,
       content: content?.slice(0, 50) + (content && content.length > 50 ? '...' : ''),
       isFixedWidth: isFixedW,
       isFixedHeight: isFixedH,
+      isSticky,
+      padding,
       availableWidth: maxWidth,
       measuredDimensions: { width: metrics.width, height: metrics.height },
       lineCount: metrics.lines.length
@@ -300,7 +304,8 @@ export const Canvas: React.FC = () => {
       if (newWidth !== textObject.width) updates.width = newWidth;
     } else {
       // Neither fixed - update both
-      const newWidth = Math.max(measuredWidth, 100);
+      const minWidth = isSticky ? 150 : 100; // Minimum width for sticky notes vs text
+      const newWidth = Math.max(measuredWidth, minWidth);
       const newHeight = measuredHeight;
       if (newWidth !== textObject.width) updates.width = newWidth;
       if (newHeight !== textObject.height) updates.height = newHeight;
@@ -317,6 +322,8 @@ export const Canvas: React.FC = () => {
     if (!ctx || !textObject.data) return null;
 
     const textData = textObject.data;
+    const isSticky = textObject.type === 'sticky-note';
+    const padding = isSticky ? 16 : 4; // 16px for sticky notes, 4px for text
     
     // Set the exact same font properties as canvas rendering
     let fontStyle = '';
@@ -332,10 +339,10 @@ export const Canvas: React.FC = () => {
     const rect = whiteboardContainer ? whiteboardContainer.getBoundingClientRect() : canvas.getBoundingClientRect();
     
     return {
-      x: Math.round(textObject.x + 4 + rect.left), // Canvas position + padding + screen offset
-      y: Math.round(textObject.y + 4 + rect.top - 70), // Canvas position + padding + screen offset - 70px adjustment
-      width: Math.round(textObject.width - 8), // Account for left/right padding
-      height: Math.round(textObject.height - 8), // Account for top/bottom padding
+      x: Math.round(textObject.x + padding + rect.left), // Canvas position + padding + screen offset
+      y: Math.round(textObject.y + padding + rect.top - 70), // Canvas position + padding + screen offset - 70px adjustment
+      width: Math.round(textObject.width - (padding * 2)), // Account for left/right padding
+      height: Math.round(textObject.height - (padding * 2)), // Account for top/bottom padding
       lineHeight: lineHeight
     };
   };
@@ -407,8 +414,9 @@ export const Canvas: React.FC = () => {
       const isInBounds = x >= (textStartX - tolerance) && x <= (textEndX + tolerance) &&
                         y >= (textStartY - tolerance) && y <= (textEndY + tolerance);
       
-      console.log('🖱️ Checking text object with accurate bounds:', {
+      console.log('🖱️ Checking text/sticky note object with accurate bounds:', {
         id: id.slice(0, 8),
+        type: obj.type,
         textAlign: textData.textAlign,
         availableWidth,
         alignOffset,
@@ -423,7 +431,7 @@ export const Canvas: React.FC = () => {
     
     if (textObject) {
       const [objectId, obj] = textObject;
-      console.log('🖱️ Found text object to edit:', objectId.slice(0, 8));
+      console.log('🖱️ Found text/sticky note object to edit:', objectId.slice(0, 8), 'type:', obj.type);
       
       setEditingTextId(objectId);
       
@@ -449,7 +457,7 @@ export const Canvas: React.FC = () => {
         }, 0);
       }
     } else {
-      console.log('🖱️ No text object found at double-click position');
+      console.log('🖱️ No text/sticky note object found at double-click position');
     }
     
     // Reset protection flag after a shorter delay - reduced to 200ms

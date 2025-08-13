@@ -599,6 +599,142 @@ export const useCanvasRendering = (
         break;
       }
 
+      case 'sticky-note': {
+        if (obj.data?.content && obj.width && obj.height) {
+          const stickyNoteData = obj.data as any; // StickyNoteData extends TextData
+          
+          // Get the text content to render - use live editing text if this object is being edited
+          const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
+          let contentToRender = isBeingEdited && editingText !== undefined ? editingText : stickyNoteData.content;
+          
+          // Always show placeholder for empty content
+          if (!contentToRender || contentToRender.trim() === '') {
+            contentToRender = 'Double-click to edit';
+          }
+
+          // Draw sticky note background with shadow and rounded corners
+          ctx.save();
+          
+          // Shadow
+          if (stickyNoteData.hasShadow) {
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+          }
+          
+          // Background with rounded corners
+          const cornerRadius = 8;
+          ctx.fillStyle = stickyNoteData.backgroundColor || '#FEF08A';
+          ctx.beginPath();
+          ctx.roundRect(obj.x, obj.y, obj.width, obj.height, cornerRadius);
+          ctx.fill();
+          
+          // Reset shadow for text
+          ctx.shadowColor = 'transparent';
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+          
+          // Set font properties for text
+          let fontStyle = '';
+          if (stickyNoteData.italic) fontStyle += 'italic ';
+          if (stickyNoteData.bold) fontStyle += 'bold ';
+          
+          ctx.font = `${fontStyle}${stickyNoteData.fontSize}px ${stickyNoteData.fontFamily}`;
+          
+          // Make placeholder text lighter
+          if (contentToRender === 'Double-click to edit') {
+            ctx.fillStyle = '#666666B3'; // 70% opacity for placeholder
+          } else {
+            ctx.fillStyle = '#333333'; // Darker text for readability on sticky notes
+          }
+          ctx.textBaseline = 'top';
+          
+          // Handle text alignment
+          switch (stickyNoteData.textAlign) {
+            case 'left':
+              ctx.textAlign = 'left';
+              break;
+            case 'center':
+              ctx.textAlign = 'center';
+              break;
+            case 'right':
+              ctx.textAlign = 'right';
+              break;
+            default:
+              ctx.textAlign = 'left';
+          }
+          
+          // Calculate text positions with padding
+          const padding = 16; // 16px padding on all sides
+          const textXBase = Math.round(obj.x + padding);
+          const textYBase = Math.round(obj.y + padding);
+          
+          // Calculate available width for text wrapping
+          const availableWidth = Math.max(obj.width - (padding * 2), 50);
+          
+          // Measure text with same function as text tool
+          const textMetrics = measureText(
+            contentToRender,
+            stickyNoteData.fontSize,
+            stickyNoteData.fontFamily,
+            stickyNoteData.bold,
+            stickyNoteData.italic,
+            availableWidth
+          );
+          
+          // Render each line with proper alignment
+          for (let i = 0; i < textMetrics.lines.length; i++) {
+            const line = textMetrics.lines[i];
+            const lineY = Math.round(textYBase + (i * textMetrics.lineHeight));
+            
+            let textX = textXBase;
+            if (stickyNoteData.textAlign === 'center') {
+              textX = Math.round(obj.x + obj.width / 2);
+            } else if (stickyNoteData.textAlign === 'right') {
+              textX = Math.round(obj.x + obj.width - padding);
+            }
+            
+            ctx.fillText(line, textX, lineY);
+          }
+          
+          // Draw underline if enabled
+          if (stickyNoteData.underline) {
+            ctx.save();
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i < textMetrics.lines.length; i++) {
+              const lineText = textMetrics.lines[i];
+              if (lineText.length === 0) continue;
+              
+              const textMeasurement = ctx.measureText(lineText);
+              const textWidth = textMeasurement.width;
+              
+              let underlineStartX = textXBase;
+              if (stickyNoteData.textAlign === 'center') {
+                underlineStartX = Math.round(obj.x + obj.width / 2 - textWidth / 2);
+              } else if (stickyNoteData.textAlign === 'right') {
+                underlineStartX = Math.round(obj.x + obj.width - padding - textWidth);
+              }
+              
+              const underlineY = Math.round(textYBase + (i * textMetrics.lineHeight) + stickyNoteData.fontSize + 2);
+              
+              ctx.beginPath();
+              ctx.moveTo(underlineStartX, underlineY);
+              ctx.lineTo(underlineStartX + textWidth, underlineY);
+              ctx.stroke();
+            }
+            
+            ctx.restore();
+          }
+          
+          ctx.restore();
+        }
+        break;
+      }
+
       case 'text': {
         if (obj.data?.content && obj.width && obj.height) {
           const textData = obj.data as TextData;

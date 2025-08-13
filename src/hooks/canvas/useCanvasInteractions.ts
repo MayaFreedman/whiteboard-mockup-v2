@@ -202,6 +202,49 @@ export const useCanvasInteractions = () => {
   }, []);
 
   /**
+   * Creates sticky note objects with proper data structure
+   */
+  const createStickyNoteObject = useCallback((
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
+    const stickyNoteColors = {
+      yellow: '#FEF08A',
+      pink: '#FBCFE8', 
+      blue: '#BFDBFE',
+      green: '#BBF7D0'
+    };
+
+    const stickyNoteData = {
+      content: 'Sticky Note',
+      fontSize: toolStore.toolSettings.fontSize,
+      fontFamily: toolStore.toolSettings.fontFamily,
+      bold: toolStore.toolSettings.textBold,
+      italic: toolStore.toolSettings.textItalic,
+      underline: toolStore.toolSettings.textUnderline,
+      textAlign: toolStore.toolSettings.textAlign,
+      backgroundColor: stickyNoteColors[toolStore.toolSettings.stickyNoteStyle] || stickyNoteColors.yellow,
+      stickyNoteStyle: toolStore.toolSettings.stickyNoteStyle,
+      hasShadow: true
+    };
+
+    return {
+      type: 'sticky-note',
+      x,
+      y,
+      width: Math.max(width, 150),
+      height: Math.max(height, 150),
+      stroke: '#333333',
+      fill: 'transparent',
+      strokeWidth: 1,
+      opacity: 1,
+      data: stickyNoteData
+    };
+  }, [toolStore.toolSettings]);
+
+  /**
    * Creates icon stamp objects
    */
   const createStampObject = useCallback((
@@ -709,6 +752,35 @@ export const useCanvasInteractions = () => {
         break;
       }
 
+      case 'sticky-note': {
+        // Check if we're clicking on an existing sticky note object
+        const clickedObjectId = findObjectAt(coords.x, coords.y);
+        const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
+        const isClickingOnExistingStickyNote = clickedObject && clickedObject.type === 'sticky-note';
+        
+        if (isClickingOnExistingStickyNote) {
+          console.log('📝 Clicked on existing sticky note - preventing creation, waiting for potential double-click');
+          return;
+        }
+
+        // Create sticky note immediately on click with default size
+        const defaultSize = 150;
+        const stickyNoteObject = createStickyNoteObject(
+          coords.x - defaultSize / 2,
+          coords.y - defaultSize / 2,
+          defaultSize,
+          defaultSize
+        );
+        
+        const objectId = whiteboardStore.addObject(stickyNoteObject, userId);
+        console.log('📝 Created sticky note:', objectId.slice(0, 8));
+        
+        if (redrawCanvasRef.current) {
+          redrawCanvasRef.current();
+        }
+        break;
+      }
+
       case 'text': {
         // Additional check to prevent text creation while editing
         if (isEditingTextRef.current) {
@@ -830,7 +902,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, createStampObject, userId, startBatch]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, createStickyNoteObject, createStampObject, userId, startBatch]);
 
   /**
    * Handles pointer movement during interaction
