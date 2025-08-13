@@ -280,7 +280,9 @@ export const Toolbar: React.FC = () => {
     updateToolSettings, 
     getActiveColors,
     activeColorPalette,
-    setPaletteCustomColor
+    setPaletteCustomColor,
+    colorPalettes,
+    setActiveColorPalette
   } = useToolStore();
   
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -398,9 +400,44 @@ export const Toolbar: React.FC = () => {
 
           {/* Color Palette Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className={`text-sm font-medium whitespace-nowrap ${isMobile ? 'hidden' : ''}`}>
-              Colors:
-            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`p-2 gap-1 text-sm font-medium ${isMobile ? 'px-2' : ''}`}
+                  title="Select color palette"
+                >
+                  <span className={isMobile ? 'hidden' : ''}>Colors</span>
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="bg-popover">
+                {Object.entries(colorPalettes).map(([paletteName, palette]) => (
+                  <DropdownMenuItem
+                    key={paletteName}
+                    onClick={() => setActiveColorPalette(paletteName as 'basic' | 'vibrant' | 'pastel' | 'professional')}
+                    className="flex items-center gap-3 cursor-pointer pr-8"
+                  >
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="capitalize">{paletteName}</span>
+                      <div className="flex gap-0.5">
+                        {palette.slice(0, 6).map((color, index) => (
+                          <div
+                            key={index}
+                            className="w-3 h-3 rounded-full border border-border/20"
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {activeColorPalette === paletteName && (
+                      <span className="ml-auto">✓</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <div className="flex gap-1 items-center">
               {allColors.map((color, index) => {
                 const isCustomColor = index === customColorIndex;
