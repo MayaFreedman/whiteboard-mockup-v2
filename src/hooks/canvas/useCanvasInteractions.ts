@@ -53,6 +53,10 @@ export const useCanvasInteractions = () => {
   
   // Multi-object dragging state
   const initialDragPositionsRef = useRef<Record<string, { x: number; y: number }>>({});
+  
+  // Refs for tracking drag optimization
+  const dragDeltasRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const liveDragPositionsRef = useRef<Record<string, { x: number; y: number }>>({});
 
   /**
    * Checks if coordinates are within the active whiteboard boundaries
@@ -855,6 +859,10 @@ export const useCanvasInteractions = () => {
             initialPositions: Object.keys(initialDragPositionsRef.current).length
           });
           
+          // Store current drag deltas for live rendering without creating actions
+          dragDeltasRef.current = { x: deltaX, y: deltaY };
+          
+          // Apply visual updates without persisting to store during drag
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const initialPos = initialDragPositionsRef.current[objectId];
             if (initialPos) {
@@ -862,9 +870,9 @@ export const useCanvasInteractions = () => {
                 x: initialPos.x + deltaX,
                 y: initialPos.y + deltaY
               };
-              console.log('🔄 Moving object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
-              // Use absolute positioning based on initial stored positions
-              whiteboardStore.updateObject(objectId, newPos, userId);
+              console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
+              // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
+              liveDragPositionsRef.current[objectId] = newPos;
             } else {
               console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
             }
@@ -998,24 +1006,29 @@ export const useCanvasInteractions = () => {
     switch (activeTool) {
       case 'select': {
         if (isDraggingRef.current) {
-          console.log('🔄 Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), ending batch:', currentBatchIdRef.current?.slice(0, 8), 'for user:', userId.slice(0, 8));
+          console.log('🔄 Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
           
-          // Debug: Check batch state before ending
-          const currentBatch = whiteboardStore.getState().currentBatch;
-          console.log('🔍 Batch state before ending:', {
-            batchId: currentBatch.id,
-            actionCount: currentBatch.actions.length,
-            actionTypes: currentBatch.actions.map(a => a.type)
+          // Create optimized drag completion batch with only final positions
+          const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE', 'multi-object', userId);
+          
+          // Apply final positions for all dragged objects in a single batch
+          whiteboardStore.selectedObjectIds.forEach(objectId => {
+            const finalPos = liveDragPositionsRef.current[objectId];
+            if (finalPos) {
+              console.log('🎯 Final position for object:', objectId.slice(0, 8), finalPos);
+              whiteboardStore.updateObject(objectId, finalPos, userId);
+            }
           });
           
-          // END BATCH for object dragging
-          if (currentBatchIdRef.current) {
-            endBatch();
-            currentBatchIdRef.current = null;
-            draggedObjectIdRef.current = null;
-          }
-          // Clear initial drag positions
+          // End the optimized batch
+          whiteboardStore.endActionBatch();
+          
+          // Clean up drag state
+          currentBatchIdRef.current = null;
+          draggedObjectIdRef.current = null;
           initialDragPositionsRef.current = {};
+          liveDragPositionsRef.current = {};
+          dragDeltasRef.current = { x: 0, y: 0 };
         } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
           // Complete selection box
           const objectIds = findObjectsInSelectionBox(selectionBoxRef.current);
@@ -1310,6 +1323,8 @@ export const useCanvasInteractions = () => {
     getCurrentDrawingPreview,
     getCurrentShapePreview,
     getCurrentSelectionBox,
+    getCurrentDragDeltas: () => dragDeltasRef.current,
+    getLiveDragPositions: () => liveDragPositionsRef.current,
     setRedrawCanvas,
     setDoubleClickProtection,
     setEditingState,

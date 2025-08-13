@@ -323,7 +323,22 @@ export const useMultiplayerSync = () => {
           
           if (isReadyToSend()) {
             try {
-              sendWhiteboardAction(state.lastAction)
+              // Special handling for BATCH_UPDATE actions - optimize payload
+              let actionToSend = state.lastAction;
+              if (state.lastAction.type === 'BATCH_UPDATE') {
+                console.log('🎯 Optimizing batch for network:', {
+                  originalSize: state.lastAction.payload.actions?.length || 0,
+                  actionType: state.lastAction.type
+                });
+                
+                // Verify payload size is reasonable for batch operations
+                const payloadSize = JSON.stringify(actionToSend).length;
+                if (payloadSize > 50000) { // 50KB limit
+                  console.warn('⚠️ Large batch payload detected:', payloadSize, 'bytes');
+                }
+              }
+              
+              sendWhiteboardAction(actionToSend)
               sentActionIdsRef.current.add(state.lastAction.id)
               
               // Clean up old IDs to prevent memory leak

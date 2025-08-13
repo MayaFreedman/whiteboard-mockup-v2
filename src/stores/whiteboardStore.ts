@@ -176,7 +176,9 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                            state.currentBatch.objectId === getActionObjectId(action) ||
                            (state.currentBatch.actionType === 'ERASE_PATH' && action.type === 'ERASE_PATH') ||
                            // Multi-delete batch: allow any DELETE_OBJECT to be added
-                           (state.currentBatch.objectId === 'multi-delete' && action.type === 'DELETE_OBJECT')
+                           (state.currentBatch.objectId === 'multi-delete' && action.type === 'DELETE_OBJECT') ||
+                           // Drag completion batch: allow any UPDATE_OBJECT for multi-object drags
+                           (state.currentBatch.actionType === 'DRAG_COMPLETE' && action.type === 'UPDATE_OBJECT')
                          ) &&
                          (Date.now() - (state.currentBatch.startTime || 0)) < 10000; // 10 second timeout
     

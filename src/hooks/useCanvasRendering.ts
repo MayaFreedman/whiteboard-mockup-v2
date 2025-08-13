@@ -81,7 +81,9 @@ export const useCanvasRendering = (
   getCurrentShapePreview: () => any,
   getCurrentSelectionBox: () => any,
   editingTextId?: string | null,
-  editingText?: string
+  editingText?: string,
+  getCurrentDragDeltas?: () => { x: number; y: number },
+  getLiveDragPositions?: () => Record<string, { x: number; y: number }>
 ) => {
   const { objects, selectedObjectIds, viewport, settings } = useWhiteboardStore();
   const { toolSettings } = useToolStore();
@@ -962,15 +964,27 @@ export const useCanvasRendering = (
    */
   const renderAllObjects = useCallback((ctx: CanvasRenderingContext2D) => {
     const objectEntries = Object.entries(objects);
+    const liveDragPositions = getLiveDragPositions ? getLiveDragPositions() : {};
     
     // Sort by creation time to maintain z-order
     objectEntries.sort(([, a], [, b]) => a.createdAt - b.createdAt);
     
     objectEntries.forEach(([id, obj]) => {
       const isSelected = selectedObjectIds.includes(id);
-      renderObject(ctx, obj, isSelected);
+      
+      // Apply live drag position if object is being dragged
+      let renderObj = obj;
+      if (liveDragPositions[id]) {
+        renderObj = {
+          ...obj,
+          x: liveDragPositions[id].x,
+          y: liveDragPositions[id].y
+        };
+      }
+      
+      renderObject(ctx, renderObj, isSelected);
     });
-  }, [objects, selectedObjectIds, renderObject]);
+  }, [objects, selectedObjectIds, renderObject, getLiveDragPositions]);
 
   // Throttle canvas redraws to improve performance during drawing
   const lastRedrawTime = useRef<number>(0);

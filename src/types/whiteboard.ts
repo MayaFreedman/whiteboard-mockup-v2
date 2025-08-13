@@ -196,6 +196,13 @@ export interface SyncRedoAction extends BaseAction {
   };
 }
 
+export interface DragCompleteAction extends BaseAction {
+  type: 'DRAG_COMPLETE';
+  payload: {
+    actions: WhiteboardAction[];
+  };
+}
+
 export type WhiteboardAction = 
   | AddObjectAction
   | UpdateObjectAction
@@ -211,7 +218,8 @@ export type WhiteboardAction =
   |DeleteObjectsInAreaAction
   | ErasePathAction
   | SyncUndoAction
-  | SyncRedoAction;
+  | SyncRedoAction
+  | DragCompleteAction;
 
 // Text-specific interfaces for better type safety
 export interface TextData {

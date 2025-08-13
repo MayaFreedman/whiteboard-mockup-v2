@@ -80,25 +80,44 @@ export const Canvas: React.FC = () => {
   useToolSelection();
   
   // Initialize interactions hook first to get the preview functions
-  const interactions = useCanvasInteractions();
+  const {
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handleMouseLeave,
+    isDrawing,
+    isDragging,
+    getCurrentDrawingPreview,
+    getCurrentShapePreview,
+    getCurrentSelectionBox,
+    getCurrentDragDeltas,
+    getLiveDragPositions,
+    setRedrawCanvas,
+    setDoubleClickProtection,
+    setEditingState,
+    setImmediateTextTrigger,
+    clearTextInteractionState
+  } = useCanvasInteractions();
   
   // Initialize rendering hook with both preview functions AND editing state
   const { redrawCanvas, isManualResizing } = useCanvasRendering(
     canvasRef.current, 
-    interactions.getCurrentDrawingPreview,
-    interactions.getCurrentShapePreview,
-    interactions.getCurrentSelectionBox,
+    getCurrentDrawingPreview,
+    getCurrentShapePreview,
+    getCurrentSelectionBox,
     editingTextId,
-    editingText
+    editingText,
+    getCurrentDragDeltas,
+    getLiveDragPositions
   );
   
   // Update interactions hook with redraw function and double-click protection AND editing state
-  interactions.setRedrawCanvas(redrawCanvas);
-  interactions.setDoubleClickProtection(isHandlingDoubleClick);
-  interactions.setEditingState(editingTextId !== null || isImmediateTextEditing);
+  setRedrawCanvas(redrawCanvas);
+  setDoubleClickProtection(isHandlingDoubleClick);
+  setEditingState(editingTextId !== null || isImmediateTextEditing);
   
   // Set callback for immediate text editing
-  interactions.setImmediateTextTrigger((coords) => {
+  setImmediateTextTrigger((coords) => {
     console.log('📝 Immediate text editing triggered by interactions hook at canvas coords:', coords);
     
     // The coordinates from interactions are canvas-relative
@@ -315,7 +334,7 @@ export const Canvas: React.FC = () => {
     
     // CRITICAL: Clear any residual text interaction state from previous single clicks
     // This prevents phantom text editor from appearing when clicking on empty space
-    interactions.clearTextInteractionState();
+    clearTextInteractionState();
     
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -630,17 +649,17 @@ export const Canvas: React.FC = () => {
 
     const handleTouchStart = (event: TouchEvent) => {
       event.preventDefault();
-      interactions.handlePointerDown(event, canvas);
+      handlePointerDown(event, canvas);
     };
 
     const handleTouchMove = (event: TouchEvent) => {
       event.preventDefault();
-      interactions.handlePointerMove(event, canvas);
+      handlePointerMove(event, canvas);
     };
 
     const handleTouchEnd = (event: TouchEvent) => {
       event.preventDefault();
-      interactions.handlePointerUp(event, canvas);
+      handlePointerUp(event, canvas);
     };
 
     // Add touch event listeners with { passive: false } to allow preventDefault
@@ -653,7 +672,7 @@ export const Canvas: React.FC = () => {
       canvas.removeEventListener('touchmove', handleTouchMove);
       canvas.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [interactions]);
+  }, [handlePointerDown, handlePointerMove, handlePointerUp]);
 
   // Handle keyboard events for object deletion
   useEffect(() => {
@@ -748,7 +767,7 @@ export const Canvas: React.FC = () => {
 
     if (canvasRef.current) {
       console.log('🖱️ Mouse down - protection flag:', isHandlingDoubleClick, 'editing text:', !!editingTextId, 'immediate editing:', isImmediateTextEditing);
-      interactions.handlePointerDown(event.nativeEvent, canvasRef.current);
+      handlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -758,7 +777,7 @@ export const Canvas: React.FC = () => {
    */
   const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      interactions.handlePointerMove(event.nativeEvent, canvasRef.current);
+      handlePointerMove(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -768,7 +787,7 @@ export const Canvas: React.FC = () => {
    */
   const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      interactions.handlePointerUp(event.nativeEvent, canvasRef.current);
+      handlePointerUp(event.nativeEvent, canvasRef.current);
     }
   };
 
@@ -777,7 +796,7 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    interactions.handleMouseLeave();
+    handleMouseLeave();
   };
 
   return (
@@ -811,7 +830,7 @@ export const Canvas: React.FC = () => {
           style={{
             width: activeWhiteboardSize.width,
             height: activeWhiteboardSize.height,
-            cursor: interactions.isDragging ? 'grabbing' : getCursorStyle(activeTool),
+            cursor: isDragging ? 'grabbing' : getCursorStyle(activeTool),
             touchAction: 'none', // Prevent default touch behaviors
             backgroundColor: 'hsl(var(--background))',
             borderRadius: hasMultipleUsers ? '12px' : '4px'
