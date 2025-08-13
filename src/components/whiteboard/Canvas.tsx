@@ -1204,10 +1204,10 @@ export const Canvas: React.FC = () => {
               ? textEditorPosition.y - 2 // Compensate for shadow offset
               : textEditorPosition.y,
             width: objects[editingTextId]?.type === 'sticky-note' 
-              ? textEditorPosition.width // Use full width for sticky notes
+              ? objects[editingTextId]?.width // Use actual object width for consistency
               : textEditorPosition.width,
             height: objects[editingTextId]?.type === 'sticky-note'
-              ? textEditorPosition.height // Use full height for sticky notes  
+              ? objects[editingTextId]?.height // Use actual object height for consistency  
               : textEditorPosition.height,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
             fontFamily: objects[editingTextId]?.data?.fontFamily || 'Arial',
