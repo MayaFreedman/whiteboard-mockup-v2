@@ -1195,6 +1195,10 @@ export const Canvas: React.FC = () => {
             margin: '0', // Remove default margins
             border: 'none', // Remove borders
             borderRadius: objects[editingTextId]?.type === 'sticky-note' ? '8px' : '0',
+            // Add sticky note shadow effect to match canvas rendering  
+            boxShadow: objects[editingTextId]?.type === 'sticky-note' 
+              ? '2px 2px 6px rgba(0, 0, 0, 0.15)' 
+              : 'none',
             wordWrap: 'break-word', // Enable word wrapping
             whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
             overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior
@@ -1241,6 +1245,10 @@ export const Canvas: React.FC = () => {
               : 'transparent',
             color: objects[immediateTextObjectId]?.type === 'sticky-note' ? '#333333' : 'transparent',
             borderRadius: objects[immediateTextObjectId]?.type === 'sticky-note' ? '8px' : '0',
+            // Add sticky note shadow effect to match canvas rendering
+            boxShadow: objects[immediateTextObjectId]?.type === 'sticky-note' 
+              ? '2px 2px 6px rgba(0, 0, 0, 0.15)' 
+              : 'none',
             zIndex: 1001, // Higher than regular text editing
             lineHeight: (objects[immediateTextObjectId]?.data?.fontSize || toolStore.toolSettings.fontSize || 16) * 1.2 + 'px',
             padding: objects[immediateTextObjectId]?.type === 'sticky-note' ? '16px' : '0', // Match canvas padding
