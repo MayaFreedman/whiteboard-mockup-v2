@@ -1261,7 +1261,7 @@ export const Canvas: React.FC = () => {
       {isImmediateTextEditing && immediateTextPosition && immediateTextObjectId && (
         <textarea
           data-immediate-text="true"
-          className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
+          className="absolute border-none resize-none outline-none overflow-hidden"
           style={{
             // Account for shadow offset to align perfectly with rendered sticky note
             left: objects[immediateTextObjectId]?.type === 'sticky-note' 
@@ -1271,10 +1271,10 @@ export const Canvas: React.FC = () => {
               ? immediateTextPosition.y - 2 // Compensate for shadow offset  
               : immediateTextPosition.y,
             width: objects[immediateTextObjectId]?.type === 'sticky-note' 
-              ? (objects[immediateTextObjectId]?.width || 150) // Full width of sticky note
+              ? objects[immediateTextObjectId]?.width // Remove fallback for consistency
               : 200, // Dynamic width for text objects
             height: objects[immediateTextObjectId]?.type === 'sticky-note'
-              ? (objects[immediateTextObjectId]?.height || 150) // Full height of sticky note
+              ? objects[immediateTextObjectId]?.height // Remove fallback for consistency
               : (objects[immediateTextObjectId]?.data?.fontSize || toolStore.toolSettings.fontSize) * 1.2 || 20,
             fontSize: objects[immediateTextObjectId]?.data?.fontSize || toolStore.toolSettings.fontSize || 16,
             fontFamily: objects[immediateTextObjectId]?.data?.fontFamily || toolStore.toolSettings.fontFamily || 'Arial',
