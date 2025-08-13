@@ -1211,10 +1211,10 @@ export const Canvas: React.FC = () => {
               : textEditorPosition.height,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
             fontFamily: objects[editingTextId]?.data?.fontFamily || 'Arial',
-            fontWeight: objects[editingTextId]?.data?.bold ? 'bold' : 'normal',
-            fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
-            textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
-            textAlign: objects[editingTextId]?.data?.textAlign || 'left',
+            fontWeight: objects[editingTextId]?.data?.bold || (objects[editingTextId]?.type !== 'sticky-note' && toolStore.toolSettings.textBold) ? 'bold' : 'normal',
+            fontStyle: objects[editingTextId]?.data?.italic || (objects[editingTextId]?.type !== 'sticky-note' && toolStore.toolSettings.textItalic) ? 'italic' : 'normal',
+            textDecoration: objects[editingTextId]?.data?.underline || (objects[editingTextId]?.type !== 'sticky-note' && toolStore.toolSettings.textUnderline) ? 'underline' : 'none',
+            textAlign: objects[editingTextId]?.data?.textAlign || (objects[editingTextId]?.type === 'sticky-note' ? 'left' : toolStore.toolSettings.textAlign) || 'left',
             // Make background transparent for text, but match sticky note color for sticky notes
             backgroundColor: objects[editingTextId]?.type === 'sticky-note' 
               ? objects[editingTextId]?.data?.backgroundColor || '#FEF08A'
@@ -1224,7 +1224,9 @@ export const Canvas: React.FC = () => {
               ? '#333333' 
               : (objects[editingTextId]?.stroke || '#000000'),
             zIndex: 1000,
-            lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
+            lineHeight: objects[editingTextId]?.type === 'sticky-note' 
+              ? (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px' // Match immediate editing calculation
+              : textEditorPosition.lineHeight + 'px',
             padding: objects[editingTextId]?.type === 'sticky-note' ? '16px' : '0', // Match canvas padding exactly
             margin: '0', // Remove default margins
             border: 'none', // Remove borders
@@ -1234,6 +1236,7 @@ export const Canvas: React.FC = () => {
             wordWrap: 'break-word', // Enable word wrapping
             whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
             overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior
+            wordBreak: 'break-word', // Match immediate editing
             // Font rendering optimizations to match canvas
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
@@ -1242,7 +1245,11 @@ export const Canvas: React.FC = () => {
             // Disable browser text selection styling
             WebkitTextSizeAdjust: '100%',
             // Ensure consistent box model
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            // Add minHeight for consistency with immediate editing
+            minHeight: objects[editingTextId]?.type === 'sticky-note' 
+              ? (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px'
+              : 'auto'
           }}
           value={editingText}
           onChange={handleTextChange}
@@ -1276,7 +1283,7 @@ export const Canvas: React.FC = () => {
             fontWeight: objects[immediateTextObjectId]?.data?.bold || toolStore.toolSettings.textBold ? 'bold' : 'normal',
             fontStyle: objects[immediateTextObjectId]?.data?.italic || toolStore.toolSettings.textItalic ? 'italic' : 'normal',
             textDecoration: objects[immediateTextObjectId]?.data?.underline || toolStore.toolSettings.textUnderline ? 'underline' : 'none',
-            textAlign: objects[immediateTextObjectId]?.data?.textAlign || toolStore.toolSettings.textAlign || 'center',
+            textAlign: objects[immediateTextObjectId]?.data?.textAlign || (objects[immediateTextObjectId]?.type === 'sticky-note' ? 'left' : toolStore.toolSettings.textAlign) || 'left',
             backgroundColor: objects[immediateTextObjectId]?.type === 'sticky-note' 
               ? objects[immediateTextObjectId]?.data?.backgroundColor || '#FEF08A'
               : 'transparent',
