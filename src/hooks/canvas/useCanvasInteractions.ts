@@ -706,51 +706,29 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        // Additional check to prevent text creation while editing
-        if (isEditingTextRef.current) {
-          console.log('📝 Text creation blocked - currently editing text');
-          return;
-        }
-
         // Check if we're clicking on an existing text object
         const clickedObjectId = findObjectAt(coords.x, coords.y);
         const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
         const isClickingOnExistingText = clickedObject && clickedObject.type === 'text';
         
-        console.log('📝 Text tool click analysis:', {
+        console.log('📝 Text tool click - simplified logic:', {
           hasClickedObject: !!clickedObjectId,
           isExistingText: isClickingOnExistingText,
-          coords
+          coords,
+          editingTextId: isEditingTextRef.current
         });
         
         if (isClickingOnExistingText) {
-          // For existing text objects, allow selection but prevent immediate creation
-          // The double-click event will handle editing of existing text
+          // For existing text objects, select them (double-click will handle editing)
           whiteboardStore.selectObjects([clickedObjectId!], userId);
           console.log('📝 Selected existing text object:', clickedObjectId!.slice(0, 8));
           return;
         }
 
-        // Store click position for drag detection (only for new text creation)
-        textClickStartPosRef.current = coords;
-        
-        // Don't set timer or drawing state - wait to see if it's a click or drag
-        lastPointRef.current = coords;
-        pathStartRef.current = coords;
-        
-        // Prepare shape preview but don't mark as drawing yet
-        currentShapePreviewRef.current = {
-          type: 'text',
-          startX: coords.x,
-          startY: coords.y,
-          endX: coords.x,
-          endY: coords.y,
-          strokeColor: toolStore.toolSettings.strokeColor,
-          strokeWidth: 1,
-          opacity: 1
-        };
-        
-        console.log('📝 Started text interaction on empty space (waiting for click/drag decision):', coords, 'for user:', userId.slice(0, 8));
+        // For clicks on empty space, immediately create and start editing text
+        // This simplifies the logic and eliminates the click/drag detection issues
+        console.log('📝 Creating new text at:', coords);
+        triggerImmediateTextEditing(coords);
         break;
       }
 
@@ -898,31 +876,7 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        // Check for drag intent: if significant movement is detected, enter drag mode
-        if (textClickStartPosRef.current && !isDrawingRef.current) {
-          const deltaX = Math.abs(coords.x - textClickStartPosRef.current.x);
-          const deltaY = Math.abs(coords.y - textClickStartPosRef.current.y);
-          
-          // Increased threshold to prevent accidental drag detection from small movements
-          if (deltaX > 10 || deltaY > 10) {
-            console.log('📝 Drag detected - entering drag mode', { deltaX, deltaY });
-            isDrawingRef.current = true; // Now mark as drawing since it's a drag
-          }
-        }
-        
-        // Update shape preview for drag mode only if we're actually drawing
-        if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
-          currentShapePreviewRef.current.endX = coords.x;
-          currentShapePreviewRef.current.endY = coords.y;
-          
-          if (redrawCanvasRef.current) {
-            requestAnimationFrame(() => {
-              if (redrawCanvasRef.current && isDrawingRef.current) {
-                redrawCanvasRef.current();
-              }
-            });
-          }
-        }
+        // Text tool now immediately creates text on click, no drag detection needed
         break;
       }
       
@@ -1059,57 +1013,13 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        console.log('📝 Text pointer up - checking mode:', {
-          wasDrawing: isDrawingRef.current,
-          hasClickStartPos: !!textClickStartPosRef.current,
-          clickStartPos: textClickStartPosRef.current
-        });
+        // Text tool now immediately creates text on pointer down, so nothing to do on pointer up
+        console.log('📝 Text pointer up - text created immediately on click');
         
-        // Additional check to prevent text creation while editing
-        if (isEditingTextRef.current) {
-          console.log('📝 Text creation blocked in pointer up - currently editing text');
-          isDrawingRef.current = false;
-          currentShapePreviewRef.current = null;
-          textClickStartPosRef.current = null;
-          return;
-        }
-
-        // Decide: was this a click or a drag?
-        if (!isDrawingRef.current && textClickStartPosRef.current) {
-          // This was a click (no drag detected) - trigger immediate text editing
-          console.log('📝 Single click detected - triggering immediate text editing at:', textClickStartPosRef.current);
-          triggerImmediateTextEditing(textClickStartPosRef.current);
-        } else if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
-          // This was a drag - create text box
-          const preview = currentShapePreviewRef.current;
-          const width = Math.abs(preview.endX - preview.startX);
-          const height = Math.abs(preview.endY - preview.startY);
-          
-          // Clear preview IMMEDIATELY before creating final object
-          currentShapePreviewRef.current = null;
-          
-          if (width > 10 && height > 10) {
-            const textObject = createTextObject(
-              Math.min(preview.startX, preview.endX),
-              Math.min(preview.startY, preview.endY),
-              width,
-              height,
-              preview.strokeColor
-            );
-
-            const objectId = whiteboardStore.addObject(textObject, userId);
-            console.log('📝 Created text object via drag:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
-          }
-          
-          // Force immediate redraw after object creation
-          if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
-          }
-        }
-        
-        // Reset all states
+        // Clean up any remaining state
         textClickStartPosRef.current = null;
         isDrawingRef.current = false;
+        currentShapePreviewRef.current = null;
         break;
       }
 
