@@ -797,8 +797,11 @@ export const useCanvasInteractions = () => {
         
         const objectId = whiteboardStore.addObject(stickyNoteObject, userId);
         console.log('📝 Created sticky note:', objectId.slice(0, 8), 'with initial font size:', stickyNoteObject.data.fontSize);
+        console.log('📝 Sticky note object:', stickyNoteObject);
+        console.log('📝 Sticky note position:', { x: stickyNoteObject.x, y: stickyNoteObject.y, width: stickyNoteObject.width, height: stickyNoteObject.height });
         
         // Immediately start editing the sticky note with the object ID
+        console.log('📝 Starting immediate text editing for sticky note:', objectId.slice(0, 8));
         triggerImmediateTextEditing({
           x: coords.x, // Center position
           y: coords.y
@@ -808,6 +811,14 @@ export const useCanvasInteractions = () => {
         isImmediateTextEditingRef.current = true;
         
         // Store the object ID for immediate text editing - will be handled by Canvas component
+        console.log('📝 Triggering immediate text editing with coords:', coords);
+        
+        if (redrawCanvasRef.current) {
+          console.log('📝 Calling redrawCanvas for sticky note');
+          redrawCanvasRef.current();
+        } else {
+          console.warn('📝 No redrawCanvas function available');
+        }
         
         if (redrawCanvasRef.current) {
           redrawCanvasRef.current();

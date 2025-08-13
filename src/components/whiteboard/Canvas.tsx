@@ -149,8 +149,13 @@ export const Canvas: React.FC = () => {
     
     // Check if we're working with a sticky note tool
     if (activeTool === 'sticky-note') {
+      console.log('📝 Processing sticky note immediate editing');
+      console.log('📝 Current objects count:', Object.keys(objects).length);
+      console.log('📝 Looking for recent sticky notes...');
+      
       // For sticky notes, find the most recently created sticky note object
       const allStickyNotes = Object.entries(objects).filter(([id, obj]) => obj.type === 'sticky-note');
+      console.log('📝 Found sticky notes:', allStickyNotes.length);
       
       let stickyNoteId = null;
       if (allStickyNotes.length > 0) {
@@ -160,11 +165,14 @@ export const Canvas: React.FC = () => {
         )[0];
         stickyNoteId = mostRecentNote[0];
         console.log('📝 Found most recent sticky note:', stickyNoteId.slice(0, 8));
+        console.log('📝 Sticky note details:', mostRecentNote[1]);
       } else {
         console.log('📝 No sticky note found immediately, will search after delay');
         // Small delay to allow the sticky note creation to complete
         setTimeout(() => {
+          console.log('📝 Delayed search for sticky notes...');
           const allStickyNotes = Object.entries(objects).filter(([id, obj]) => obj.type === 'sticky-note');
+          console.log('📝 Found sticky notes after delay:', allStickyNotes.length);
           
           if (allStickyNotes.length > 0) {
             const mostRecentNote = allStickyNotes.sort((a, b) => 
@@ -173,28 +181,39 @@ export const Canvas: React.FC = () => {
             const delayedStickyNoteId = mostRecentNote[0];
             setImmediateTextObjectId(delayedStickyNoteId);
             console.log('📝 Found sticky note after delay:', delayedStickyNoteId.slice(0, 8));
+          } else {
+            console.warn('📝 Still no sticky notes found after delay');
           }
         }, 50);
       }
       
       setIsImmediateTextEditing(true);
+      console.log('📝 Set immediate text editing to true');
+      
       if (stickyNoteId) {
         // Position the textarea in the center of the sticky note
         const stickyNote = objects[stickyNoteId];
+        console.log('📝 Positioning textarea for sticky note:', stickyNote);
+        
         if (stickyNote) {
           const stickyScreenCoords = {
             x: stickyNote.x + whiteboardRect.left + 16, // 16px padding
             y: stickyNote.y + whiteboardRect.top + 16 - 60 // 16px padding and adjustment
           };
+          console.log('📝 Calculated sticky screen coords:', stickyScreenCoords);
           setImmediateTextPosition(stickyScreenCoords);
         } else {
+          console.warn('📝 Sticky note object not found, using default coords');
           setImmediateTextPosition(screenCoords);
         }
         setImmediateTextObjectId(stickyNoteId);
+        console.log('📝 Set immediate text object ID:', stickyNoteId.slice(0, 8));
       } else {
+        console.log('📝 No sticky note ID, using screen coords');
         setImmediateTextPosition(screenCoords);
       }
       setImmediateTextContent('');
+      console.log('📝 Immediate text editing setup complete');
     } else {
       // For regular text tool, create text object as before
       const fontSize = toolStore.toolSettings.fontSize || 16;
@@ -729,8 +748,14 @@ export const Canvas: React.FC = () => {
           }, 0);
         }
       } else {
-        // Delete the object if no text was entered
-        deleteObject(immediateTextObjectId, userId);
+        // For text objects, delete if no text was entered
+        // For sticky notes, keep them even if empty (they're visual notes)
+        if (objects[immediateTextObjectId]?.type === 'text') {
+          deleteObject(immediateTextObjectId, userId);
+          console.log('🗑️ Deleted empty text object');
+        } else {
+          console.log('📝 Keeping empty sticky note - visual notes should persist');
+        }
       }
       
       redrawCanvas();
@@ -834,9 +859,16 @@ export const Canvas: React.FC = () => {
       event.preventDefault();
       handleImmediateTextComplete();
     } else if (event.key === 'Escape') {
-      // Cancel immediate text editing and clean up the canvas object
+      // Cancel immediate text editing 
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
-        deleteObject(immediateTextObjectId, userId);
+        // For text objects, delete on escape since they were just created
+        // For sticky notes, keep them since they're meant to be visual elements
+        if (objects[immediateTextObjectId].type === 'text') {
+          deleteObject(immediateTextObjectId, userId);
+          console.log('🗑️ Deleted text object on escape');
+        } else {
+          console.log('📝 Keeping sticky note on escape - visual notes should persist');
+        }
         redrawCanvas();
       }
       setIsImmediateTextEditing(false);

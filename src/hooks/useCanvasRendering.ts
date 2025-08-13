@@ -600,7 +600,10 @@ export const useCanvasRendering = (
       }
 
       case 'sticky-note': {
-        if (obj.data?.content && obj.width && obj.height) {
+        console.log('🎨 Rendering sticky note:', obj.id?.slice(0, 8), 'at', { x: obj.x, y: obj.y, width: obj.width, height: obj.height });
+        console.log('🎨 Sticky note data:', obj.data);
+        
+        if (obj.data?.content !== undefined && obj.width && obj.height) {
           const stickyNoteData = obj.data as any; // StickyNoteData extends TextData
           
           // Get the text content to render - use live editing text if this object is being edited
@@ -726,9 +729,17 @@ export const useCanvasRendering = (
               ctx.lineTo(underlineStartX + textWidth, underlineY);
               ctx.stroke();
             }
-            
-            ctx.restore();
-          }
+          
+          ctx.restore();
+          console.log('✅ Successfully rendered sticky note:', obj.id?.slice(0, 8));
+        } else {
+          console.warn('⚠️ Skipping sticky note render - missing data:', { 
+            hasContent: !!obj.data?.content, 
+            hasWidth: !!obj.width, 
+            hasHeight: !!obj.height,
+            data: obj.data 
+          });
+        }
           
           ctx.restore();
         }
