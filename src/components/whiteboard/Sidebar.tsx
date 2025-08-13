@@ -7,16 +7,19 @@ import { DynamicToolSettings } from './settings/DynamicToolSettings';
 export const WhiteboardSidebar: React.FC = () => {
   const { open, toggleSidebar } = useSidebar();
   return <>
-      <div className="fixed left-0 z-40 border-r w-96 bg-background" style={{
-      transform: open ? 'translateX(0)' : 'translateX(-100%)',
-      transition: 'transform 0.2s ease-linear',
-      marginTop: 'var(--toolbar-height, 0px)',
-      height: 'auto',
-      maxHeight: 'calc(100vh - var(--toolbar-height, 64px))',
-      overflow: 'visible'
-    }}>
-        <div className="p-4">
-          <DynamicToolSettings />
+      <div className="fixed left-0 z-10 border-r bg-sidebar" style={{
+        transform: open ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.2s ease-linear',
+        marginTop: 'var(--toolbar-height, 0px)',
+        width: '384px', // w-96 equivalent
+        height: 'auto',
+        maxHeight: 'calc(100vh - var(--toolbar-height, 64px))',
+        overflow: 'visible'
+      }}>
+        <div className="flex flex-col bg-sidebar border-sidebar-border">
+          <div className="p-4">
+            <DynamicToolSettings />
+          </div>
         </div>
       </div>
 
