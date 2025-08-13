@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { BackgroundSettings } from './BackgroundSettings';
+
 import { 
   Pencil, 
   Brush,
@@ -291,7 +291,7 @@ export const Toolbar: React.FC = () => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const colorPickerRef = useRef<HTMLInputElement>(null);
   const isMobile = useResponsiveBreakpoint(activeColorPalette);
-  const [backgroundSettingsOpen, setBackgroundSettingsOpen] = useState(false);
+  
   
   // Update CSS custom property for toolbar height
   useToolbarHeight(toolbarRef, activeTool);
@@ -324,11 +324,7 @@ export const Toolbar: React.FC = () => {
    * @param toolId - The ID of the tool to select
    */
   const handleToolSelect = (toolId: string) => {
-    if (toolId === 'background') {
-      setBackgroundSettingsOpen(true);
-    } else {
-      setActiveTool(toolId as any);
-    }
+    setActiveTool(toolId as any);
   };
 
   // Find the currently selected shape for the dropdown button
@@ -543,11 +539,6 @@ export const Toolbar: React.FC = () => {
         </div>
       </div>
       
-      {/* Background Settings Dialog */}
-      <BackgroundSettings 
-        open={backgroundSettingsOpen} 
-        onOpenChange={setBackgroundSettingsOpen} 
-      />
     </div>
   );
 };

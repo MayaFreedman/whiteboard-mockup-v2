@@ -15,6 +15,7 @@ import { StampPropertiesPanel } from '../StampPropertiesPanel';
 import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName, getAllIcons } from '../../../utils/iconRegistry';
 import { CustomStampUpload, type CustomStampUploadHandle } from './CustomStampUpload';
 import { SkinTonePicker } from './SkinTonePicker';
+import { BackgroundSettingsContent } from '../BackgroundSettingsContent';
 // Removed preloadCategoryEmojis import - now using progressive loading
 
 import { Input } from '../../ui/input';
@@ -203,6 +204,13 @@ export const DynamicToolSettings: React.FC = () => {
   if (activeTool === 'eraser') {
     return <ToolSettingCard title="Eraser Settings">
         <EraserSettings />
+      </ToolSettingCard>;
+  }
+
+  // Background tool
+  if (activeTool === 'background') {
+    return <ToolSettingCard title="Background Settings">
+        <BackgroundSettingsContent />
       </ToolSettingCard>;
   }
 
