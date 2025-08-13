@@ -722,6 +722,7 @@ export const useCanvasRendering = (
               
               ctx.beginPath();
               ctx.moveTo(underlineStartX, underlineY);
+              ctx.lineTo(underlineStartX + textWidth, underlineY);
               ctx.stroke();
             }
           }
