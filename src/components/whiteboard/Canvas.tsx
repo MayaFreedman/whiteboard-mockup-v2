@@ -103,26 +103,28 @@ export const Canvas: React.FC = () => {
     
     // The coordinates from interactions are canvas-relative
     // For textarea positioning, we need to convert them back to screen coordinates
-    // by adding the canvas container's screen position
     const containerElement = containerRef.current;
     if (!containerElement) {
       console.warn('Container ref not available for coordinate conversion');
       return;
     }
     
-    const containerRect = containerElement.getBoundingClientRect();
     const whiteboardDiv = containerElement.querySelector('.absolute.bg-background') as HTMLElement;
     const whiteboardRect = whiteboardDiv?.getBoundingClientRect();
     
-    const screenCoords = whiteboardRect ? {
+    if (!whiteboardRect) {
+      console.warn('Whiteboard div not found for coordinate conversion');
+      return;
+    }
+    
+    const screenCoords = {
       x: coords.x + whiteboardRect.left,
       y: coords.y + whiteboardRect.top
-    } : {
-      x: coords.x + containerRect.left,
-      y: coords.y + containerRect.top
     };
     
-    console.log('📝 Converted to screen coords:', screenCoords);
+    console.log('📝 Canvas coords:', coords);
+    console.log('📝 Whiteboard rect:', whiteboardRect);
+    console.log('📝 Final screen coords:', screenCoords);
     
     // Create canvas text object immediately with empty content
     const fontSize = toolStore.toolSettings.fontSize || 16;
