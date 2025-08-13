@@ -74,11 +74,11 @@ export const Canvas: React.FC = () => {
   const [isHandlingDoubleClick, setIsHandlingDoubleClick] = useState(false);
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Handle tool selection logic (clearing selection when switching tools)
-  useToolSelection();
-  
   // Initialize interactions hook first to get the preview functions
   const interactions = useCanvasInteractions();
+  
+  // Handle tool selection logic (clearing selection when switching tools)
+  useToolSelection(interactions.clearTextInteractionState);
   
   // Initialize rendering hook with both preview functions AND editing state
   const { redrawCanvas, isManualResizing } = useCanvasRendering(

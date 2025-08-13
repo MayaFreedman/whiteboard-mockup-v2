@@ -7,7 +7,7 @@ import { useWhiteboardStore } from '../stores/whiteboardStore';
  * Custom hook that handles clearing selection when switching away from select tool
  * This avoids circular dependencies between stores
  */
-export const useToolSelection = () => {
+export const useToolSelection = (clearTextInteractionState?: () => void) => {
   const { activeTool } = useToolStore();
   const { clearSelection } = useWhiteboardStore();
   
@@ -17,5 +17,11 @@ export const useToolSelection = () => {
       clearSelection();
       console.log('🎯 Cleared selection when switching from select tool');
     }
-  }, [activeTool, clearSelection]);
+    
+    // Reset text editing state when switching tools
+    if (clearTextInteractionState) {
+      clearTextInteractionState();
+      console.log('🔧 Tool changed, cleared text editing state');
+    }
+  }, [activeTool, clearSelection, clearTextInteractionState]);
 };

@@ -583,9 +583,16 @@ export const useCanvasInteractions = () => {
   const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     event.preventDefault();
     
-    // Check double-click protection OR text editing state
-    if (doubleClickProtectionRef.current || isEditingTextRef.current) {
-      console.log('🛡️ Pointer down blocked - protection:', doubleClickProtectionRef.current, 'editing:', isEditingTextRef.current);
+    console.log('👆 POINTER DOWN:', {
+      activeTool: toolStore.activeTool,
+      doubleClickProtection: doubleClickProtectionRef.current,
+      isEditingText: isEditingTextRef.current,
+      userId: userId.slice(0, 8)
+    });
+    
+    // Check double-click protection OR text editing state (only if editing existing text)
+    if (doubleClickProtectionRef.current) {
+      console.log('🛡️ Pointer down blocked - double click protection active');
       return;
     }
     
