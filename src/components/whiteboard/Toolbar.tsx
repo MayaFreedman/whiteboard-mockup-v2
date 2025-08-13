@@ -354,7 +354,7 @@ export const Toolbar: React.FC = () => {
         `}</style>
         
         {/* Main Toolbar Content */}
-        <div className="min-h-16 flex items-center px-4 gap-2 w-max">
+        <div className="min-h-16 flex items-center px-4 gap-1 w-max">
           {/* Basic Tools Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {BASIC_TOOLS.map((tool) => (
