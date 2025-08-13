@@ -370,7 +370,7 @@ export const Toolbar: React.FC = () => {
           <Separator orientation="vertical" className="h-8 flex-shrink-0" />
 
           {/* Shapes Dropdown Section */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -403,7 +403,7 @@ export const Toolbar: React.FC = () => {
           </div>
 
           {/* Color Palette Section */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
