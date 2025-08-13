@@ -473,8 +473,9 @@ export const Canvas: React.FC = () => {
     // Use the exact same line height calculation as canvas
     const lineHeight = Math.round(textData.fontSize * 1.2);
     
-    // Use whiteboard container rect to be consistent with coordinate conversion
-    const whiteboardContainer = canvas.closest('.absolute.bg-background') as HTMLElement;
+    // Use the same method as immediate editing for consistency
+    const containerElement = canvas.closest('.whiteboard-container') || canvas.parentElement;
+    const whiteboardContainer = containerElement?.querySelector('.absolute.bg-background') as HTMLElement;
     const rect = whiteboardContainer ? whiteboardContainer.getBoundingClientRect() : canvas.getBoundingClientRect();
     
     // For sticky notes, account for shadow offset to match immediate editing positioning
@@ -494,8 +495,8 @@ export const Canvas: React.FC = () => {
     });
     
     return {
-      x: Math.round(textObject.x + rect.left - shadowOffsetX), // Match immediate editing positioning
-      y: Math.round(textObject.y + rect.top - 60 - shadowOffsetY), // Match immediate editing positioning  
+      x: textObject.x + rect.left - shadowOffsetX, // Remove Math.round for consistency
+      y: textObject.y + rect.top - 60 - shadowOffsetY, // Remove Math.round for consistency
       width: Math.round(textObject.width), // Use full width for sticky notes
       height: Math.round(textObject.height), // Use full height for sticky notes
       lineHeight: lineHeight
