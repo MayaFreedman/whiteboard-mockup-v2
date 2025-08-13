@@ -92,15 +92,8 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
       updateToolSettings({ stickyNoteStyle: updates.stickyNoteStyle });
     }
 
-    // Update text bounds if content-affecting properties changed
-    if (updates.fontSize || updates.fontFamily || updates.bold || updates.italic) {
-      setTimeout(() => {
-        const updatedObj = objects[selectedObjectId] as StickyNoteObject;
-        if (updatedObj) {
-          updateTextBounds(updatedObj, updatedObj.data.content || '');
-        }
-      }, 10);
-    }
+    // For sticky notes, don't update bounds - just adjust font size for the content to fit
+    // The sticky note maintains its size and the text adapts
   };
 
   /**
@@ -138,17 +131,21 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
         </div>
       </div>
 
-      {/* Font Size */}
+      {/* Font Size - Show current calculated size but allow manual adjustment */}
       <SliderSetting
         label="Font Size"
         value={stickyNoteData.fontSize}
         min={8}
-        max={24}
-        step={2}
+        max={32}
+        step={1}
         onChange={(value) => handleStickyNotePropertyChange({ fontSize: value })}
         valueFormatter={(value) => `${value}px`}
         showValue={true}
       />
+      
+      <div className="text-xs text-muted-foreground">
+        Note: Font size automatically adjusts when typing to fit the sticky note
+      </div>
 
       {/* Font Family */}
       <SelectSetting

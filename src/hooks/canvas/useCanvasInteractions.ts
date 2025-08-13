@@ -217,17 +217,26 @@ export const useCanvasInteractions = () => {
       green: '#BBF7D0'
     };
 
+    // Calculate initial font size based on sticky note dimensions
+    // Use a scaling factor where font size is proportional to note size
+    const baseFontSize = Math.min(width, height) * 0.08; // 8% of smallest dimension
+    const minFontSize = 8;
+    const maxFontSize = 32;
+    const calculatedFontSize = Math.max(minFontSize, Math.min(maxFontSize, baseFontSize));
+
     const stickyNoteData = {
       content: 'Sticky Note',
-      fontSize: toolStore.toolSettings.fontSize,
+      fontSize: calculatedFontSize,
       fontFamily: toolStore.toolSettings.fontFamily,
       bold: toolStore.toolSettings.textBold,
       italic: toolStore.toolSettings.textItalic,
       underline: toolStore.toolSettings.textUnderline,
-      textAlign: toolStore.toolSettings.textAlign,
+      textAlign: 'center' as const, // Default to center for sticky notes
       backgroundColor: stickyNoteColors[toolStore.toolSettings.stickyNoteStyle] || stickyNoteColors.yellow,
       stickyNoteStyle: toolStore.toolSettings.stickyNoteStyle,
-      hasShadow: true
+      hasShadow: true,
+      // Mark as sticky note to prevent auto-resizing
+      isFixedSize: true
     };
 
     return {
