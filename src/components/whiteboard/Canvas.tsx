@@ -483,16 +483,15 @@ export const Canvas: React.FC = () => {
       // Update textarea height to match wrapped text height so cursor moves correctly
       textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + 'px';
       
-      // Update canvas object - use same width as textarea for consistent wrapping
+      // Update canvas object - only update content, not dimensions during typing to prevent cursor jumps
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
         const textObject = objects[immediateTextObjectId];
         updateObject(immediateTextObjectId, {
           data: {
             ...textObject.data,
             content: newText || ''
-          },
-          width: availableWidth, // Canvas object width (includes padding)
-          height: Math.max(wrappedMetrics.height, fontSize * 1.2)
+          }
+          // Don't update width/height during active typing to prevent cursor position jumps
         });
       }
     } else {
