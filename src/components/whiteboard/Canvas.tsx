@@ -22,6 +22,7 @@ const getCursorStyle = (activeTool: string): string => {
   switch (activeTool) {
     case 'select':
       return 'default';
+    case 'sticky-note':
     case 'text':
       return 'text';
     case 'hand':
@@ -206,8 +207,8 @@ export const Canvas: React.FC = () => {
     
     const obj = objects[objectId];
 
-    if (obj && obj.type === 'text' && typeof obj.width === 'number' && typeof obj.height === 'number') {
-      // For text objects, scale font size AND update dimensions
+    if (obj && (obj.type === 'text' || obj.type === 'sticky-note') && typeof obj.width === 'number' && typeof obj.height === 'number') {
+      // For text/sticky note objects, scale font size AND update dimensions
       const currentWidth = obj.width;
       const currentHeight = obj.height;
       
@@ -371,13 +372,15 @@ export const Canvas: React.FC = () => {
     
     // Find text object at click position using improved hit detection
     const textObject = Object.entries(objects).find(([id, obj]) => {
-      if (obj.type !== 'text' || !obj.width || !obj.height || !obj.data) return false;
+      if ((obj.type !== 'text' && obj.type !== 'sticky-note') || !obj.width || !obj.height || !obj.data) return false;
       
       const textData = obj.data;
       const currentContent = textData.content || 'Double-click to edit';
       
       // Use accurate text measurement for hit detection with same available width as canvas
-      const availableWidth = obj.width - 8; // Same calculation as canvas rendering
+      const isSticky = obj.type === 'sticky-note';
+      const padding = isSticky ? 32 : 8; // 32px for sticky notes (16px on each side), 8px for text
+      const availableWidth = obj.width - padding; // Same calculation as canvas rendering
       const metrics = measureText(
         currentContent,
         textData.fontSize,
@@ -404,8 +407,8 @@ export const Canvas: React.FC = () => {
       if (!isFinite(alignOffset)) alignOffset = 0;
       
       // Actual text bounds inside the textbox considering padding and alignment
-      const textStartX = obj.x + 4 + Math.max(0, alignOffset);
-      const textStartY = obj.y + 4; // top padding
+      const textStartX = obj.x + (padding / 2) + Math.max(0, alignOffset);
+      const textStartY = obj.y + (padding / 2); // top padding
       const textEndX = textStartX + metrics.width;
       const textEndY = textStartY + metrics.height;
       
@@ -419,6 +422,7 @@ export const Canvas: React.FC = () => {
         type: obj.type,
         textAlign: textData.textAlign,
         availableWidth,
+        padding,
         alignOffset,
         textBounds: { x: textStartX, y: textStartY, width: metrics.width, height: metrics.height },
         clickPos: { x, y },
@@ -956,7 +960,7 @@ export const Canvas: React.FC = () => {
       {editingTextId && textEditorPosition && (
         <textarea
           ref={textareaRef}
-          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
+          className="absolute border-none resize-none outline-none overflow-hidden"
           style={{
             left: textEditorPosition.x,
             top: textEditorPosition.y,
@@ -968,13 +972,20 @@ export const Canvas: React.FC = () => {
             fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
             textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
             textAlign: objects[editingTextId]?.data?.textAlign || 'left',
-            color: 'transparent', // Make the text invisible
-            caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
+            // Make background transparent for text, but match sticky note color for sticky notes
+            backgroundColor: objects[editingTextId]?.type === 'sticky-note' 
+              ? objects[editingTextId]?.data?.backgroundColor || '#FEF08A'
+              : 'transparent',
+            color: objects[editingTextId]?.type === 'sticky-note' ? '#333333' : 'transparent',
+            caretColor: objects[editingTextId]?.type === 'sticky-note' 
+              ? '#333333' 
+              : (objects[editingTextId]?.stroke || '#000000'),
             zIndex: 1000,
             lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
             padding: '0', // Remove default textarea padding since we handle it with positioning
             margin: '0', // Remove default margins
             border: 'none', // Remove borders
+            borderRadius: objects[editingTextId]?.type === 'sticky-note' ? '8px' : '0',
             wordWrap: 'break-word', // Enable word wrapping
             whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
             overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior

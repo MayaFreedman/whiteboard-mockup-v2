@@ -109,18 +109,20 @@ export const useObjectDetection = () => {
     
     const textData = obj.data;
     const content = textData.content || 'Double-click to edit';
+    const isSticky = obj.type === 'sticky-note';
+    const padding = isSticky ? 16 : 4; // 16px for sticky notes, 4px for text
     
     return isPointInTextBounds(
       x, y,
-      obj.x + 4, // Account for canvas padding
-      obj.y + 4, // Account for canvas padding
+      obj.x + padding, // Account for canvas padding
+      obj.y + padding, // Account for canvas padding
       content,
       textData.fontSize || 16,
       textData.fontFamily || 'Arial',
       textData.bold || false,
       textData.italic || false,
       textData.textAlign || 'left',
-      obj.width ? obj.width - 8 : undefined, // Available width minus padding
+      obj.width ? obj.width - (padding * 2) : undefined, // Available width minus padding
       8 // Padding for easier selection
     );
   }, []);
@@ -243,10 +245,12 @@ export const useObjectDetection = () => {
           break;
         }
         
-        case 'text': {
+        case 'text':
+        case 'sticky-note': {
           isHit = isPointInText(obj, x, y);
-          console.log('📝 Text hit test (improved):', {
+          console.log('📝 Text/Sticky note hit test (improved):', {
             id: id.slice(0, 8),
+            type: obj.type,
             position: { x: obj.x, y: obj.y },
             content: obj.data?.content,
             isHit
