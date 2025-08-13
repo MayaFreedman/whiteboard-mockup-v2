@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { useScreenSizeStore } from '../../stores/screenSizeStore';
 
 interface ResizeHandlesProps {
   objectId: string;
@@ -12,35 +11,20 @@ interface ResizeHandlesProps {
 
 export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize, onResizeStart, onResizeEnd }) => {
   const { objects } = useWhiteboardStore();
-  const { activeWhiteboardSize } = useScreenSizeStore();
   const obj = objects[objectId];
   
   if (!obj || !obj.width || !obj.height) return null;
 
-  // Calculate canvas offset within its container
-  const canvasElement = document.getElementById('whiteboard-canvas');
-  const containerElement = canvasElement?.parentElement?.parentElement; // Canvas -> whiteboard div -> container
-  
-  let canvasOffsetX = 0;
-  let canvasOffsetY = 0;
-  
-  if (canvasElement && containerElement) {
-    const canvasRect = canvasElement.getBoundingClientRect();
-    const containerRect = containerElement.getBoundingClientRect();
-    canvasOffsetX = canvasRect.left - containerRect.left;
-    canvasOffsetY = canvasRect.top - containerRect.top;
-  }
-
   const handleSize = 8;
   const handles = [
-    { id: 'nw', x: obj.x + canvasOffsetX - handleSize/2, y: obj.y + canvasOffsetY - handleSize/2, cursor: 'nw-resize' },
-    { id: 'n', x: obj.x + obj.width/2 + canvasOffsetX - handleSize/2, y: obj.y + canvasOffsetY - handleSize/2, cursor: 'n-resize' },
-    { id: 'ne', x: obj.x + obj.width + canvasOffsetX - handleSize/2, y: obj.y + canvasOffsetY - handleSize/2, cursor: 'ne-resize' },
-    { id: 'e', x: obj.x + obj.width + canvasOffsetX - handleSize/2, y: obj.y + obj.height/2 + canvasOffsetY - handleSize/2, cursor: 'e-resize' },
-    { id: 'se', x: obj.x + obj.width + canvasOffsetX - handleSize/2, y: obj.y + obj.height + canvasOffsetY - handleSize/2, cursor: 'se-resize' },
-    { id: 's', x: obj.x + obj.width/2 + canvasOffsetX - handleSize/2, y: obj.y + obj.height + canvasOffsetY - handleSize/2, cursor: 's-resize' },
-    { id: 'sw', x: obj.x + canvasOffsetX - handleSize/2, y: obj.y + obj.height + canvasOffsetY - handleSize/2, cursor: 'sw-resize' },
-    { id: 'w', x: obj.x + canvasOffsetX - handleSize/2, y: obj.y + obj.height/2 + canvasOffsetY - handleSize/2, cursor: 'w-resize' },
+    { id: 'nw', x: obj.x - handleSize/2, y: obj.y - handleSize/2, cursor: 'nw-resize' },
+    { id: 'n', x: obj.x + obj.width/2 - handleSize/2, y: obj.y - handleSize/2, cursor: 'n-resize' },
+    { id: 'ne', x: obj.x + obj.width - handleSize/2, y: obj.y - handleSize/2, cursor: 'ne-resize' },
+    { id: 'e', x: obj.x + obj.width - handleSize/2, y: obj.y + obj.height/2 - handleSize/2, cursor: 'e-resize' },
+    { id: 'se', x: obj.x + obj.width - handleSize/2, y: obj.y + obj.height - handleSize/2, cursor: 'se-resize' },
+    { id: 's', x: obj.x + obj.width/2 - handleSize/2, y: obj.y + obj.height - handleSize/2, cursor: 's-resize' },
+    { id: 'sw', x: obj.x - handleSize/2, y: obj.y + obj.height - handleSize/2, cursor: 'sw-resize' },
+    { id: 'w', x: obj.x - handleSize/2, y: obj.y + obj.height/2 - handleSize/2, cursor: 'w-resize' },
   ];
 
   const handleMouseDown = (e: React.MouseEvent, handleId: string) => {
@@ -129,8 +113,8 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
       <div
         style={{
           position: 'absolute',
-          left: obj.x + canvasOffsetX - 2,
-          top: obj.y + canvasOffsetY - 2,
+          left: obj.x - 2,
+          top: obj.y - 2,
           width: obj.width + 4,
           height: obj.height + 4,
           border: '2px dashed #007acc',
