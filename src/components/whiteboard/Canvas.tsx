@@ -119,7 +119,7 @@ export const Canvas: React.FC = () => {
     
     const screenCoords = {
       x: coords.x + whiteboardRect.left,
-      y: coords.y + whiteboardRect.top - 76  // Adjusted to match canvas text padding (4px)
+      y: coords.y + whiteboardRect.top - 72  // Further adjusted to align with canvas text
     };
     
     console.log('📝 Canvas coords:', coords);
