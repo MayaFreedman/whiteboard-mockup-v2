@@ -10,7 +10,7 @@ export const WhiteboardSidebar: React.FC = () => {
       <div className="fixed left-0 z-10 border-r border-b bg-sidebar" style={{
         transform: open ? 'translateX(0)' : 'translateX(-100%)',
         transition: 'transform 0.2s ease-linear',
-        marginTop: 'var(--toolbar-height, 0px)',
+        top: 'var(--toolbar-height, 64px)',
         width: '384px', // w-96 equivalent
         height: 'auto',
         maxHeight: 'calc(100vh - var(--toolbar-height, 64px))',
