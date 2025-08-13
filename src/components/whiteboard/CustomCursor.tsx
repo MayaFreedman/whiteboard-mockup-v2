@@ -49,7 +49,8 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ canvas }) => {
       // Check if cursor is within canvas bounds
       const isInBounds = x >= 0 && x <= rect.width && y >= 0 && y <= rect.height;
       
-      setCursorPosition({ x: event.clientX, y: event.clientY });
+      // Position cursor relative to canvas bounds (like ResizeHandles)
+      setCursorPosition({ x: rect.left + x, y: rect.top + y });
       setIsVisible(isInBounds);
     };
 
