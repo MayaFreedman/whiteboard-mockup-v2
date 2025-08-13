@@ -99,7 +99,16 @@ export const Canvas: React.FC = () => {
   
   // Set callback for immediate text editing
   interactions.setImmediateTextTrigger((coords) => {
-    console.log('📝 Immediate text editing triggered by interactions hook at:', coords);
+    console.log('📝 Immediate text editing triggered by interactions hook at canvas coords:', coords);
+    
+    // Convert canvas coordinates to screen coordinates for textarea positioning
+    const canvasRect = canvasRef.current?.getBoundingClientRect();
+    const screenCoords = canvasRect ? {
+      x: coords.x + canvasRect.left,
+      y: coords.y + canvasRect.top
+    } : coords;
+    
+    console.log('📝 Converted to screen coords:', screenCoords);
     
     // Create canvas text object immediately with empty content
     const fontSize = toolStore.toolSettings.fontSize || 16;
@@ -135,7 +144,7 @@ export const Canvas: React.FC = () => {
     console.log('📝 Created immediate text object:', objectId.slice(0, 8));
     
     setIsImmediateTextEditing(true);
-    setImmediateTextPosition(coords);
+    setImmediateTextPosition(screenCoords);
     setImmediateTextContent('');
     setImmediateTextObjectId(objectId);
     
