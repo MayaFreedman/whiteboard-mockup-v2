@@ -1211,10 +1211,10 @@ export const Canvas: React.FC = () => {
               : textEditorPosition.height,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
             fontFamily: objects[editingTextId]?.data?.fontFamily || 'Arial',
-            fontWeight: objects[editingTextId]?.data?.bold || (objects[editingTextId]?.type !== 'sticky-note' && toolStore.toolSettings.textBold) ? 'bold' : 'normal',
-            fontStyle: objects[editingTextId]?.data?.italic || (objects[editingTextId]?.type !== 'sticky-note' && toolStore.toolSettings.textItalic) ? 'italic' : 'normal',
-            textDecoration: objects[editingTextId]?.data?.underline || (objects[editingTextId]?.type !== 'sticky-note' && toolStore.toolSettings.textUnderline) ? 'underline' : 'none',
-            textAlign: objects[editingTextId]?.data?.textAlign || (objects[editingTextId]?.type === 'sticky-note' ? 'left' : toolStore.toolSettings.textAlign) || 'left',
+            fontWeight: objects[editingTextId]?.data?.bold ? 'bold' : 'normal',
+            fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
+            textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
+            textAlign: objects[editingTextId]?.data?.textAlign || 'left',
             // Make background transparent for text, but match sticky note color for sticky notes
             backgroundColor: objects[editingTextId]?.type === 'sticky-note' 
               ? objects[editingTextId]?.data?.backgroundColor || '#FEF08A'
@@ -1224,9 +1224,7 @@ export const Canvas: React.FC = () => {
               ? '#333333' 
               : (objects[editingTextId]?.stroke || '#000000'),
             zIndex: 1000,
-            lineHeight: objects[editingTextId]?.type === 'sticky-note' 
-              ? (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px' // Match immediate editing calculation
-              : textEditorPosition.lineHeight + 'px',
+            lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
             padding: objects[editingTextId]?.type === 'sticky-note' ? '16px' : '0', // Match canvas padding exactly
             margin: '0', // Remove default margins
             border: 'none', // Remove borders
@@ -1248,7 +1246,7 @@ export const Canvas: React.FC = () => {
             boxSizing: 'border-box',
             // Add minHeight for consistency with immediate editing
             minHeight: objects[editingTextId]?.type === 'sticky-note' 
-              ? (objects[editingTextId]?.data?.fontSize || 16) * 1.2 + 'px'
+              ? textEditorPosition.lineHeight + 'px'
               : 'auto'
           }}
           value={editingText}
