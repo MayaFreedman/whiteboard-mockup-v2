@@ -147,21 +147,25 @@ export const Canvas: React.FC = () => {
     console.log('📝 Whiteboard rect:', whiteboardRect);
     console.log('📝 Final screen coords:', screenCoords);
     
+    // Get fresh objects from store to avoid stale state
+    const freshObjects = whiteboardStore.getState().objects;
+    
     // Check if we're working with a sticky note tool
     if (activeTool === 'sticky-note') {
       console.log('📝 Processing sticky note immediate editing');
-      console.log('📝 Current objects count:', Object.keys(objects).length);
+      console.log('📝 Current objects count (from props):', Object.keys(objects).length);
+      console.log('📝 Fresh objects count (from store):', Object.keys(freshObjects).length);
       console.log('📝 Looking for recent sticky notes...');
       
-      // For sticky notes, find the most recently created sticky note object
-      const allStickyNotes = Object.entries(objects).filter(([id, obj]) => obj.type === 'sticky-note');
+      // For sticky notes, find the most recently created sticky note object using fresh data
+      const allStickyNotes = Object.entries(freshObjects).filter(([id, obj]) => (obj as any).type === 'sticky-note');
       console.log('📝 Found sticky notes:', allStickyNotes.length);
       
       let stickyNoteId = null;
       if (allStickyNotes.length > 0) {
         // Find the most recently created sticky note (by createdAt timestamp)
         const mostRecentNote = allStickyNotes.sort((a, b) => 
-          new Date(b[1].createdAt || 0).getTime() - new Date(a[1].createdAt || 0).getTime()
+          new Date((b[1] as any).createdAt || 0).getTime() - new Date((a[1] as any).createdAt || 0).getTime()
         )[0];
         stickyNoteId = mostRecentNote[0];
         console.log('📝 Found most recent sticky note:', stickyNoteId.slice(0, 8));
@@ -171,12 +175,13 @@ export const Canvas: React.FC = () => {
         // Small delay to allow the sticky note creation to complete
         setTimeout(() => {
           console.log('📝 Delayed search for sticky notes...');
-          const allStickyNotes = Object.entries(objects).filter(([id, obj]) => obj.type === 'sticky-note');
+          const delayedFreshObjects = whiteboardStore.getState().objects;
+          const allStickyNotes = Object.entries(delayedFreshObjects).filter(([id, obj]) => (obj as any).type === 'sticky-note');
           console.log('📝 Found sticky notes after delay:', allStickyNotes.length);
           
           if (allStickyNotes.length > 0) {
             const mostRecentNote = allStickyNotes.sort((a, b) => 
-              new Date(b[1].createdAt || 0).getTime() - new Date(a[1].createdAt || 0).getTime()
+              new Date((b[1] as any).createdAt || 0).getTime() - new Date((a[1] as any).createdAt || 0).getTime()
             )[0];
             const delayedStickyNoteId = mostRecentNote[0];
             setImmediateTextObjectId(delayedStickyNoteId);
@@ -191,8 +196,8 @@ export const Canvas: React.FC = () => {
       console.log('📝 Set immediate text editing to true');
       
       if (stickyNoteId) {
-        // Position the textarea in the center of the sticky note
-        const stickyNote = objects[stickyNoteId];
+        // Position the textarea in the center of the sticky note using fresh objects
+        const stickyNote = freshObjects[stickyNoteId];
         console.log('📝 Positioning textarea for sticky note:', stickyNote);
         
         if (stickyNote) {
