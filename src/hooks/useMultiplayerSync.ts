@@ -108,10 +108,12 @@ export const useMultiplayerSync = () => {
       }
       responseTimeoutRef.current = setTimeout(() => {
         if (!hasReceivedInitialStateRef.current) {
-          console.warn('⏳ No state response received; assuming empty room')
-          setIsWaitingForInitialState(false)
-          // allow a future retry if needed
-          hasRequestedStateRef.current = false
+          console.warn('⏳ No state response received; assuming empty room');
+          // Finalize initial state attempt to avoid infinite loader/retry loop
+          hasReceivedInitialStateRef.current = true;
+          setIsWaitingForInitialState(false);
+          // allow a future manual retry if needed (keep requested=false)
+          hasRequestedStateRef.current = false;
         }
       }, 2000)
     } catch (error) {
@@ -154,7 +156,7 @@ export const useMultiplayerSync = () => {
       
       // Handle state response messages
       if (message.type === 'state_response') {
-        console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length)
+        console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length, ' ourSession:', room.sessionId)
         
         // Only apply if this response is for us AND we haven't already applied initial state
         if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
@@ -230,7 +232,14 @@ export const useMultiplayerSync = () => {
           if (action.type === 'BATCH_UPDATE') {
             console.log('🔄 Processing remote BATCH_UPDATE:', action.id?.slice(0, 8), 'with', action.payload.actions?.length, 'nested actions')
             if (action.payload.actions && Array.isArray(action.payload.actions)) {
+              // Apply updates to objects
               whiteboardStore.batchUpdate(action.payload.actions)
+              // Record the batch as a single action in history for the sender
+              try {
+                whiteboardStore.recordAction(action)
+              } catch (e) {
+                console.warn('⚠️ Failed to record remote batch action in history:', e)
+              }
             }
           } else {
             whiteboardStore.applyRemoteAction(action)

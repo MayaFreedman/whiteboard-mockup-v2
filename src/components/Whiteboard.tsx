@@ -16,14 +16,14 @@ import { DEV_MODE } from '../config/devMode';
  */
 export const Whiteboard: React.FC = () => {
   // Initialize multiplayer sync and get loading state
-  const { isWaitingForInitialState } = useMultiplayerSync();
+  const { isConnected, isWaitingForInitialState } = useMultiplayerSync();
   const { activeWhiteboardSize } = useScreenSizeStore();
   const [showLoader, setShowLoader] = useState(false);
 
   // Show loader only when actually waiting for initial state from other users
   useEffect(() => {
-    setShowLoader(isWaitingForInitialState);
-  }, [isWaitingForInitialState]);
+    setShowLoader(isConnected && isWaitingForInitialState);
+  }, [isConnected, isWaitingForInitialState]);
 
   return (
     <SidebarProvider>
