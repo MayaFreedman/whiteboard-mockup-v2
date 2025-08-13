@@ -927,8 +927,8 @@ export const Canvas: React.FC = () => {
           data-immediate-text="true"
           className="absolute bg-transparent border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
           style={{
-            left: immediateTextPosition.x,
-            top: immediateTextPosition.y,
+            left: immediateTextPosition.x + (canvasRef.current?.getBoundingClientRect().left || 0),
+            top: immediateTextPosition.y + (canvasRef.current?.getBoundingClientRect().top || 0),
             width: 200, // Initial width that allows natural wrapping
             height: toolStore.toolSettings.fontSize * 1.2 || 20, // Height based on font size
             fontSize: toolStore.toolSettings.fontSize || 16,
