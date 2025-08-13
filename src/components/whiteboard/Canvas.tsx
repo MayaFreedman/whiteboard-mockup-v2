@@ -263,13 +263,9 @@ export const Canvas: React.FC = () => {
     // Use the exact same line height calculation as canvas
     const lineHeight = Math.round(textData.fontSize * 1.2);
     
-    // Get canvas offset for coordinate transformation
-    const rect = canvas.getBoundingClientRect();
-    const { canvasOffset } = useCanvasOffset();
-    
     return {
-      x: Math.round(rect.left + canvasOffset.x + textObject.x + 4), // Apply canvas offset + padding
-      y: Math.round(rect.top + canvasOffset.y + textObject.y + 4), // Apply canvas offset + padding
+      x: Math.round(textObject.x + 4), // Same 4px padding as canvas
+      y: Math.round(textObject.y + 4), // Same 4px padding as canvas
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight
