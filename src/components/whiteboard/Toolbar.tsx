@@ -448,37 +448,8 @@ export const Toolbar: React.FC = () => {
                 
                 if (isCustomColor) {
                   const isRainbow = color === 'rainbow-gradient';
-                  let longPressTimer: NodeJS.Timeout | null = null;
-                  let isLongPress = false;
-
-                  const handleMouseDown = () => {
-                    isLongPress = false;
-                    longPressTimer = setTimeout(() => {
-                      isLongPress = true;
-                      colorPickerRef.current?.click();
-                    }, 500); // 500ms for long press
-                  };
-
-                  const handleMouseUp = () => {
-                    if (longPressTimer) {
-                      clearTimeout(longPressTimer);
-                    }
-                    if (!isLongPress) {
-                      // Short click - if rainbow default, open picker, otherwise select color
-                      if (isRainbow) {
-                        colorPickerRef.current?.click();
-                      } else {
-                        handleColorSelect(color);
-                      }
-                    }
-                  };
-
-                  const handleMouseLeave = () => {
-                    if (longPressTimer) {
-                      clearTimeout(longPressTimer);
-                    }
-                  };
-                  
+                  const hasCustomColor = !isRainbow; // Show dot if user has set a custom color
+                   
                   return (
                     <div key={`custom-color-slot`} className="relative w-6 h-6 flex-shrink-0">
                       {/* Interactive button area */}
@@ -494,13 +465,19 @@ export const Toolbar: React.FC = () => {
                             ? 'linear-gradient(45deg, #ff0000, #ff8800, #ffff00, #88ff00, #00ff88, #0088ff, #8800ff, #ff0088)'
                             : undefined
                         }}
-                        onMouseDown={handleMouseDown}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseLeave}
-                        onTouchStart={handleMouseDown}
-                        onTouchEnd={handleMouseUp}
-                        title="Click to select, hold to change custom color"
+                        onClick={() => colorPickerRef.current?.click()}
+                        title={isRainbow ? "Click to choose custom color" : "Click to change custom color"}
                       />
+                      
+                      {/* Rainbow dot indicator when custom color is set */}
+                      {hasCustomColor && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-background flex items-center justify-center"
+                             style={{
+                               background: 'linear-gradient(45deg, #ff0000, #ff8800, #ffff00, #88ff00, #00ff88, #0088ff, #8800ff, #ff0088)'
+                             }}>
+                          <div className="w-1 h-1 bg-white rounded-full" />
+                        </div>
+                      )}
                       
                       {/* Hidden color input */}
                       <input
