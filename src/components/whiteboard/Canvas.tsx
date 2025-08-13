@@ -288,11 +288,13 @@ export const Canvas: React.FC = () => {
     // Use the exact same line height calculation as canvas
     const lineHeight = Math.round(textData.fontSize * 1.2);
     
-    const canvasRect = canvas.getBoundingClientRect();
+    // Use whiteboard container rect to be consistent with coordinate conversion
+    const whiteboardContainer = canvas.closest('.absolute.bg-background') as HTMLElement;
+    const rect = whiteboardContainer ? whiteboardContainer.getBoundingClientRect() : canvas.getBoundingClientRect();
     
     return {
-      x: Math.round(textObject.x + 4 + canvasRect.left), // Canvas position + padding + screen offset
-      y: Math.round(textObject.y + 4 + canvasRect.top), // Canvas position + padding + screen offset
+      x: Math.round(textObject.x + 4 + rect.left), // Canvas position + padding + screen offset
+      y: Math.round(textObject.y + 4 + rect.top), // Canvas position + padding + screen offset
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight

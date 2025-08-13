@@ -17,14 +17,6 @@ export const useCanvasCoordinates = () => {
     const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
     const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
     
-    console.log('🎯 Coordinate conversion:', {
-      clientX,
-      clientY,
-      rectLeft: rect.left,
-      rectTop: rect.top,
-      usingWhiteboard: !!whiteboardContainer
-    });
-    
     // Convert to canvas coordinates
     return {
       x: clientX - rect.left,
