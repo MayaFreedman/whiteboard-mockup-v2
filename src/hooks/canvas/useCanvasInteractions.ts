@@ -988,6 +988,17 @@ export const useCanvasInteractions = () => {
           return;
         }
 
+        // Check if there's a current selection - if so, just deselect instead of creating a new text box
+        if (whiteboardStore.selectedObjectIds.length > 0) {
+          console.log('📝 TEXT TOOL - Clicked empty space with selection, deselecting:', 
+                      whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)));
+          whiteboardStore.clearSelection(userId);
+          return;
+        }
+
+        // Only create new text box if no selection exists
+        console.log('📝 TEXT TOOL - Clicked empty space with no selection, setting up for text creation');
+
         // Store click position for drag detection (only for new text creation)
         textClickStartPosRef.current = coords;
         
