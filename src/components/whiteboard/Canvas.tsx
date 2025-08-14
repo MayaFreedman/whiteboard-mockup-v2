@@ -648,6 +648,9 @@ export const Canvas: React.FC = () => {
       const [objectId, obj] = stickyNoteObject;
       console.log("🗒️ Found sticky note to edit:", objectId.slice(0, 8));
 
+      // Clear selection when entering edit mode
+      whiteboardStore.clearSelection(userId);
+
       // For sticky notes, trigger immediate text editing using the existing system
       const coords = { x: x, y: y };
       
