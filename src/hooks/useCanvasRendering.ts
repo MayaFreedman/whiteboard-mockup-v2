@@ -745,8 +745,8 @@ export const useCanvasRendering = (
             );
             const lines = textMetrics.lines;
             const lineHeight = textMetrics.lineHeight;
-            // Simplified positioning: start from top + padding (16px) to match textarea
-            const startY = obj.y + 16;
+            // Simplified positioning: start from top + padding (20px) to match textarea
+            const startY = obj.y + 20;
 
             let startX = obj.x + obj.width / 2;
             
