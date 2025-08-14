@@ -1408,7 +1408,7 @@ export const Canvas: React.FC = () => {
                     ? "underline"
                     : "none",
                   textAlign: isEditingStickyNote ? "center" : "left",
-                  verticalAlign: isEditingStickyNote ? "top" : "top", // Changed from 'middle' to 'top' for better cursor alignment
+                  verticalAlign: isEditingStickyNote ? "middle" : "top", // Match canvas textBaseline: 'middle'
                   color: isEditingStickyNote
                     ? editingObject.stroke || "#000000"
                     : "transparent", // Make sticky note text visible
