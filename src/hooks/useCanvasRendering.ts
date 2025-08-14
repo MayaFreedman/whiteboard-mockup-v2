@@ -642,12 +642,12 @@ export const useCanvasRendering = (
               ctx.textAlign = 'left';
           }
           
-          // Calculate pixel-aligned text positions - use consistent 4px top padding
-          const textXBase = Math.round(obj.x + 4); // Add 4px left padding to match textarea
-          const textYBase = Math.round(obj.y + 4); // 4px padding from top
+          // Calculate pixel-aligned text positions - use consistent 8px padding to match textarea
+          const textXBase = Math.round(obj.x + 8); // Add 8px left padding to match textarea
+          const textYBase = Math.round(obj.y + 8); // 8px padding from top to match textarea
           
-          // Calculate available width for text wrapping (subtract padding)
-          const availableWidth = Math.max(obj.width - 8, 50); // Subtract left and right padding, minimum 50px
+          // Calculate available width for text wrapping (subtract padding) - must match text sizing algorithm
+          const availableWidth = Math.max(obj.width - 16, 50); // Subtract left and right padding (8px each), minimum 50px
           
           // Use the same measureText function as the measurement system for consistent wrapping
           const textMetrics = measureText(
@@ -675,7 +675,7 @@ export const useCanvasRendering = (
             if (textData.textAlign === 'center') {
               textX = Math.round(obj.x + obj.width / 2);
             } else if (textData.textAlign === 'right') {
-              textX = Math.round(obj.x + obj.width - 4); // Subtract right padding
+              textX = Math.round(obj.x + obj.width - 8); // Subtract right padding (8px)
             }
             
             ctx.fillText(line, textX, lineY);
@@ -701,7 +701,7 @@ export const useCanvasRendering = (
               if (textData.textAlign === 'center') {
                 underlineStartX = Math.round((obj.x + obj.width / 2) - textWidth / 2);
               } else if (textData.textAlign === 'right') {
-                underlineStartX = Math.round((obj.x + obj.width - 4) - textWidth);
+                underlineStartX = Math.round((obj.x + obj.width - 8) - textWidth); // Use 8px padding
               }
               
               const underlineEndX = Math.round(underlineStartX + textWidth);
