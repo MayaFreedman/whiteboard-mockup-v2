@@ -974,8 +974,13 @@ export const useCanvasInteractions = () => {
               }
             });
             
+            // START BATCH for object dragging (identical to select tool)
+            const actionType = newSelection.length > 1 ? 'MULTI_OBJECT_DRAG' : 'UPDATE_OBJECT';
+            currentBatchIdRef.current = startBatch(actionType, existingClickedObjectId, userId);
+            draggedObjectIdRef.current = existingClickedObjectId;
+            isDraggingRef.current = true;
             dragStartRef.current = coords;
-            console.log('📝 TEXT TOOL - Drag start position set:', coords);
+            console.log('📝 TEXT TOOL - Started dragging immediately (like select tool):', newSelection.length, 'object(s):', existingClickedObjectId.slice(0, 8));
           }
           
           // Don't set up immediate text editing when clicking on existing text
@@ -1309,30 +1314,6 @@ export const useCanvasInteractions = () => {
           coords,
           textClickStartPos: textClickStartPosRef.current
         });
-        
-        // Check for drag detection on selected objects (initiate dragging)
-        if (!isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
-          const deltaX = Math.abs(coords.x - dragStartRef.current.x);
-          const deltaY = Math.abs(coords.y - dragStartRef.current.y);
-          const dragThreshold = 3;
-          
-          if (deltaX > dragThreshold || deltaY > dragThreshold) {
-            console.log('📝 TEXT TOOL - Drag threshold exceeded, starting drag operation');
-            
-            // Start the optimized batch for dragging
-            const firstObjectId = whiteboardStore.selectedObjectIds[0];
-            const actionType = whiteboardStore.selectedObjectIds.length > 1 ? 'MULTI_OBJECT_DRAG' : 'UPDATE_OBJECT';
-            currentBatchIdRef.current = startBatch(actionType, firstObjectId, userId);
-            draggedObjectIdRef.current = firstObjectId;
-            isDraggingRef.current = true;
-            
-            console.log('📝 TEXT TOOL - Started dragging', whiteboardStore.selectedObjectIds.length, 'object(s):', {
-              firstObjectId: firstObjectId.slice(0, 8),
-              batchId: currentBatchIdRef.current?.slice(0, 8),
-              selectedObjects: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8))
-            });
-          }
-        }
         
         // Handle dragging existing selected text objects (like select tool)
         if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
