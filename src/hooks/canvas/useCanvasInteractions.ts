@@ -1589,12 +1589,19 @@ export const useCanvasInteractions = () => {
           // Clean up drag state - CRITICAL: ensure all refs are properly reset
           draggedObjectIdRef.current = null;
           initialDragPositionsRef.current = {};
-          liveDragPositionsRef.current = {};
           dragDeltasRef.current = { x: 0, y: 0 };
           
           // Ensure dragging state is fully reset
           isDraggingRef.current = false;
           dragStartRef.current = null;
+          
+          // Clear live positions AFTER a redraw to ensure the final store positions are rendered
+          setTimeout(() => {
+            liveDragPositionsRef.current = {};
+            if (redrawCanvasRef.current) {
+              redrawCanvasRef.current();
+            }
+          }, 0);
           
           console.log('✅ Drag completion and cleanup finished successfully');
         } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
