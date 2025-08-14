@@ -536,6 +536,30 @@ export const useCanvasInteractions = () => {
   const endCurrentDrawing = useCallback(() => {
     const activeTool = toolStore.activeTool;
     
+    // Handle select tool dragging when mouse leaves screen
+    if (activeTool === 'select' && isDraggingRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+      console.log('🔄 Mouse left screen during drag - saving final positions for', whiteboardStore.selectedObjectIds.length, 'object(s)');
+      
+      // Create batch for final drag completion
+      const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE', 'multi-object', userId);
+      
+      // Apply final positions for all dragged objects
+      whiteboardStore.selectedObjectIds.forEach(objectId => {
+        const finalPos = liveDragPositionsRef.current[objectId];
+        if (finalPos) {
+          // Final constraint check before saving
+          const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
+          console.log('🎯 Final off-screen position for object:', objectId.slice(0, 8), constrainedFinalPos);
+          whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
+        }
+      });
+      
+      // End the batch
+      whiteboardStore.endActionBatch();
+      
+      console.log('🧹 Completed off-screen drag, cleaning up state');
+    }
+    
     if ((activeTool === 'pencil' || activeTool === 'brush') && 
         isDrawingRef.current && 
         pathBuilderRef.current && 
