@@ -1569,6 +1569,11 @@ export const useCanvasInteractions = () => {
               console.log('🎯 DRAG END - Applying final position for object:', objectId.slice(0, 8), 'from live:', finalPos, 'to constrained:', constrainedFinalPos);
               whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
               
+              // Force canvas re-render immediately after updating store
+              if (redrawCanvasRef.current) {
+                redrawCanvasRef.current();
+              }
+              
               // Verify the update took
               setTimeout(() => {
                 const verifyPos = whiteboardStore.objects[objectId];
