@@ -340,7 +340,7 @@ export const Canvas: React.FC = () => {
       const changedHeight = newBounds.height !== obj.height;
 
       const updates = {
-        ...newBounds, // Include new position and dimensions
+        ...newBounds, // Include new position and dimensions - respect the bounds from ResizeHandles
         data: {
           ...(obj.data || {}),
           fontSize: newFontSize,
