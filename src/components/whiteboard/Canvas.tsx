@@ -1140,7 +1140,7 @@ export const Canvas: React.FC = () => {
               fontStyle: isEditingStickyNote ? (editingObject.data?.italic ? 'italic' : 'normal') : (toolStore.toolSettings.textItalic ? 'italic' : 'normal'),
               textDecoration: isEditingStickyNote ? (editingObject.data?.underline ? 'underline' : 'none') : (toolStore.toolSettings.textUnderline ? 'underline' : 'none'),
               textAlign: isEditingStickyNote ? 'center' : 'left',
-              color: isEditingStickyNote ? (editingObject.stroke || '#000000') : (toolStore.toolSettings.strokeColor || '#000000'),
+              color: 'transparent',
               zIndex: 1001,
               lineHeight: `${fontSize * 1.2}px`,
               padding: isEditingStickyNote ? '8px' : '0',
@@ -1158,9 +1158,9 @@ export const Canvas: React.FC = () => {
               caretColor: toolStore.toolSettings.strokeColor || '#000000',
               WebkitTextSizeAdjust: '100%',
               boxSizing: 'border-box',
-              backgroundColor: isEditingStickyNote ? (editingObject.data?.backgroundColor || '#fff3cd') : 'rgba(255,255,255,0.9)',
-              borderRadius: isEditingStickyNote ? '8px' : '4px',
-              boxShadow: isEditingStickyNote ? '0px 2px 8px rgba(0,0,0,0.1)' : '0px 1px 4px rgba(0,0,0,0.1)',
+              backgroundColor: 'transparent',
+              borderRadius: '0px',
+              boxShadow: 'none',
               minHeight: fontSize * 1.2 + 'px',
               '--placeholder-color': `${toolStore.toolSettings.strokeColor || '#000000'}B3`
             } as React.CSSProperties & { '--placeholder-color': string }}
