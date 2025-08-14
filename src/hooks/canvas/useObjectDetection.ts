@@ -264,6 +264,17 @@ export const useObjectDetection = () => {
           break;
         }
         
+        case 'sticky-note': {
+          isHit = isPointInRectangle(obj, x, y);
+          console.log('🗒️ Sticky note hit test:', {
+            id: id.slice(0, 8),
+            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+            clickCoords: { x, y },
+            isHit
+          });
+          break;
+        }
+        
         case 'triangle':
         case 'diamond':
         case 'pentagon':
