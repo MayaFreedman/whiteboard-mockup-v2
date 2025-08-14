@@ -599,159 +599,6 @@ export const useCanvasRendering = (
         break;
       }
 
-      case 'sticky-note': {
-        console.log('🎨 Rendering sticky note:', obj.id?.slice(0, 8), 'at', { x: obj.x, y: obj.y, width: obj.width, height: obj.height });
-        console.log('🎨 Sticky note data:', obj.data);
-        console.log('🎨 Sticky note content check:', { 
-          hasData: !!obj.data, 
-          contentUndefined: obj.data?.content !== undefined,
-          hasWidth: !!obj.width, 
-          hasHeight: !!obj.height,
-          shouldRender: obj.data?.content !== undefined && obj.width && obj.height 
-        });
-        
-        if (obj.width && obj.height) { // Sticky notes should always render with shadow when they have dimensions
-          const stickyNoteData = obj.data || {}; // Ensure we have data object even if empty
-          
-          // Get the text content to render - use live editing text if this object is being edited
-          const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
-          let contentToRender = isBeingEdited && editingText !== undefined ? editingText : stickyNoteData.content;
-          
-          // Always show placeholder for empty content
-          if (!contentToRender || contentToRender.trim() === '') {
-            // No placeholder text for sticky notes - they should be visual even when empty
-            contentToRender = '';
-          }
-
-          // Draw sticky note background with shadow and rounded corners
-          ctx.save();
-          
-          // Shadow - always apply shadow to sticky notes for consistent preview
-          console.log('🎨 Applying shadow to sticky note:', obj.id?.slice(0, 8));
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-          ctx.shadowBlur = 6;
-          ctx.shadowOffsetX = 2;
-          ctx.shadowOffsetY = 2;
-          
-          // Background with rounded corners
-          const cornerRadius = 8;
-          ctx.fillStyle = stickyNoteData.backgroundColor || '#FEF08A';
-          ctx.beginPath();
-          ctx.roundRect(obj.x, obj.y, obj.width, obj.height, cornerRadius);
-          ctx.fill();
-          
-          // Reset shadow for text
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
-          
-          // Set font properties for text
-          let fontStyle = '';
-          if (stickyNoteData.italic) fontStyle += 'italic ';
-          if (stickyNoteData.bold) fontStyle += 'bold ';
-          
-          ctx.font = `${fontStyle}${stickyNoteData.fontSize}px ${stickyNoteData.fontFamily}`;
-          
-          // Set text color for sticky notes (no placeholder styling needed since no placeholder)
-          ctx.fillStyle = '#333333'; // Darker text for readability on sticky notes
-          ctx.textBaseline = 'top';
-          
-          // Handle text alignment
-          switch (stickyNoteData.textAlign) {
-            case 'left':
-              ctx.textAlign = 'left';
-              break;
-            case 'center':
-              ctx.textAlign = 'center';
-              break;
-            case 'right':
-              ctx.textAlign = 'right';
-              break;
-            default:
-              ctx.textAlign = 'left';
-          }
-          
-          // Calculate text positions with padding
-          const padding = 16; // 16px padding on all sides
-          const textXBase = Math.round(obj.x + padding);
-          const textYBase = Math.round(obj.y + padding);
-          
-          // Calculate available width for text wrapping
-          const availableWidth = Math.max(obj.width - (padding * 2), 50);
-          
-          // Only render text if there's content (no placeholder for sticky notes)
-          if (contentToRender && contentToRender.trim() !== '') {
-            // Measure text with same function as text tool
-          const textMetrics = measureText(
-            contentToRender,
-            stickyNoteData.fontSize,
-            stickyNoteData.fontFamily,
-            stickyNoteData.bold,
-            stickyNoteData.italic,
-            availableWidth
-          );
-          
-          // Render each line with proper alignment
-          for (let i = 0; i < textMetrics.lines.length; i++) {
-            const line = textMetrics.lines[i];
-            const lineY = Math.round(textYBase + (i * textMetrics.lineHeight));
-            
-            let textX = textXBase;
-            if (stickyNoteData.textAlign === 'center') {
-              textX = Math.round(obj.x + obj.width / 2);
-            } else if (stickyNoteData.textAlign === 'right') {
-              textX = Math.round(obj.x + obj.width - padding);
-            }
-            
-            ctx.fillText(line, textX, lineY);
-          }
-          
-          // Draw underline if enabled
-          if (stickyNoteData.underline) {
-            ctx.save();
-            ctx.strokeStyle = '#333333';
-            ctx.lineWidth = 1;
-            
-            for (let i = 0; i < textMetrics.lines.length; i++) {
-              const lineText = textMetrics.lines[i];
-              if (lineText.length === 0) continue;
-              
-              const textMeasurement = ctx.measureText(lineText);
-              const textWidth = textMeasurement.width;
-              
-              let underlineStartX = textXBase;
-              if (stickyNoteData.textAlign === 'center') {
-                underlineStartX = Math.round(obj.x + obj.width / 2 - textWidth / 2);
-              } else if (stickyNoteData.textAlign === 'right') {
-                underlineStartX = Math.round(obj.x + obj.width - padding - textWidth);
-              }
-              
-              const underlineY = Math.round(textYBase + (i * textMetrics.lineHeight) + stickyNoteData.fontSize + 2);
-              
-              ctx.beginPath();
-              ctx.moveTo(underlineStartX, underlineY);
-              ctx.lineTo(underlineStartX + textWidth, underlineY);
-              ctx.stroke();
-          }
-          }
-          
-          ctx.restore();
-          console.log('✅ Successfully rendered sticky note:', obj.id?.slice(0, 8));
-        } else {
-          console.warn('⚠️ Skipping sticky note render - missing dimensions:', { 
-            hasWidth: !!obj.width, 
-            hasHeight: !!obj.height,
-            width: obj.width,
-            height: obj.height
-          });
-        }
-          
-          ctx.restore();
-        }
-        break;
-      }
-
       case 'text': {
         if (obj.data?.content && obj.width && obj.height) {
           const textData = obj.data as TextData;
@@ -877,6 +724,70 @@ export const useCanvasRendering = (
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
             ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
+            ctx.restore();
+          }
+        }
+        break;
+      }
+
+      case 'sticky-note': {
+        if (obj.width && obj.height) {
+          const stickyNoteData = obj.data;
+          const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
+          let contentToRender = isBeingEdited && editingText !== undefined ? editingText : stickyNoteData.content;
+          
+          console.log('🗒️ Rendering sticky note:', {
+            id: Object.keys(objects).find(id => objects[id] === obj)?.slice(0, 8),
+            content: contentToRender?.slice(0, 20),
+            fontSize: stickyNoteData.fontSize,
+            isBeingEdited
+          });
+          
+          // Draw sticky note background with shadow and rounded corners
+          ctx.save();
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetY = 2;
+          
+          ctx.fillStyle = stickyNoteData.backgroundColor || '#fef3c7';
+          ctx.beginPath();
+          ctx.roundRect(obj.x, obj.y, obj.width, obj.height, 8);
+          ctx.fill();
+          
+          ctx.shadowColor = 'transparent';
+          ctx.restore();
+
+          // Render text if present
+          if (contentToRender && contentToRender.trim()) {
+            const fontWeight = stickyNoteData.bold ? 'bold' : 'normal';
+            const fontStyle = stickyNoteData.italic ? 'italic' : 'normal';
+            
+            ctx.font = `${fontStyle} ${fontWeight} ${stickyNoteData.fontSize}px ${stickyNoteData.fontFamily}`;
+            ctx.fillStyle = obj.stroke || '#000000';
+            ctx.textAlign = stickyNoteData.textAlign || 'center';
+            ctx.textBaseline = 'middle';
+
+            const maxWidth = obj.width - 16;
+            const lines = wrapText(ctx, contentToRender, maxWidth);
+            const lineHeight = stickyNoteData.fontSize * 1.2;
+            const totalHeight = lines.length * lineHeight;
+            const startY = obj.y + (obj.height - totalHeight) / 2 + lineHeight / 2;
+
+            let startX = obj.x + obj.width / 2;
+            if (stickyNoteData.textAlign === 'left') startX = obj.x + 8;
+            else if (stickyNoteData.textAlign === 'right') startX = obj.x + obj.width - 8;
+
+            lines.forEach((line, index) => {
+              ctx.fillText(line, startX, startY + (index * lineHeight));
+            });
+          }
+
+          // Selection border
+          if (isSelected) {
+            ctx.save();
+            ctx.strokeStyle = '#007AFF';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(obj.x - 2, obj.y - 2, obj.width + 4, obj.height + 4);
             ctx.restore();
           }
         }

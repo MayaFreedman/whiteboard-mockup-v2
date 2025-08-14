@@ -59,8 +59,8 @@ export interface ToolSettings {
   selectedSticker?: string;
   
   // Sticky note settings
+  stickyNoteSize: number;
   stickyNoteBackgroundColor: string;
-  stickyNoteStyle: 'yellow' | 'pink' | 'blue' | 'green';
   
   // Shape properties panel settings
   shapeColorMode: 'fill' | 'stroke';
@@ -138,8 +138,8 @@ const defaultToolSettings: ToolSettings = {
   textUnderline: false,
   textAlign: 'left',
   selectedSticker: '⭐', // Default to star emoji since it works
-  stickyNoteBackgroundColor: '#FEF08A',
-  stickyNoteStyle: 'yellow',
+  stickyNoteSize: 180,
+  stickyNoteBackgroundColor: '#fef3c7',
   shapeColorMode: 'fill'
 };
 

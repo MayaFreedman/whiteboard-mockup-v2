@@ -355,13 +355,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       createdAt: now,
       updatedAt: now,
     };
-    
-    console.log('🏪 STORE: Adding object:', {
-      id: id.slice(0, 8),
-      type: object.type,
-      position: { x: object.x, y: object.y },
-      data: object.data
-    });
 
     const action: WhiteboardAction = {
       type: 'ADD_OBJECT',
@@ -453,16 +446,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   deleteObject: (id, userId = 'local') => {
     const state = get();
     const objectToDelete = state.objects[id];
-    if (!objectToDelete) {
-      console.warn('🏪 STORE: Attempted to delete non-existent object:', id.slice(0, 8));
-      return;
-    }
-    
-    console.log('🏪 STORE: Deleting object:', {
-      id: id.slice(0, 8),
-      type: objectToDelete.type,
-      position: { x: objectToDelete.x, y: objectToDelete.y }
-    });
+    if (!objectToDelete) return;
 
     const action: WhiteboardAction = {
       type: 'DELETE_OBJECT',
