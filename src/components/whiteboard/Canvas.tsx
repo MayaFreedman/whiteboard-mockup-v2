@@ -489,8 +489,8 @@ export const Canvas: React.FC = () => {
       : canvas.getBoundingClientRect();
 
     return {
-      x: Math.round(textObject.x + 4 + rect.left - 2), // Canvas position + padding + screen offset - 2 left
-      y: Math.round(textObject.y + rect.top - 60 - 2), // Match canvas text rendering position with Y offset - 2 up
+      x: Math.round(textObject.x + 4 + rect.left - 4), // Canvas position + padding + screen offset - 4 left
+      y: Math.round(textObject.y + rect.top - 60 - 7), // Match canvas text rendering position with Y offset - 7 up
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight,
