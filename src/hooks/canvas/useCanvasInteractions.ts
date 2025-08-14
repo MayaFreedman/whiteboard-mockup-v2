@@ -155,12 +155,15 @@ export const useCanvasInteractions = () => {
     draggedObjectIdRef.current = null;
     drawingObjectIdRef.current = null;
     
-    // CRITICAL: Also clear drag-specific state that was added for boundary constraints
-    initialDragPositionsRef.current = {};
-    liveDragPositionsRef.current = {};
-    dragDeltasRef.current = { x: 0, y: 0 };
+    // Only clear drag-specific state if not handling off-screen drag completion
+    // (off-screen drag will handle this cleanup with proper timing)
+    if (!isDraggingRef.current) {
+      initialDragPositionsRef.current = {};
+      liveDragPositionsRef.current = {};
+      dragDeltasRef.current = { x: 0, y: 0 };
+    }
     
-    console.log('🧹 Cleaned up batching and drag state');
+    console.log('🧹 Cleaned up batching state');
   }, [endBatch]);
 
   /**
@@ -557,7 +560,19 @@ export const useCanvasInteractions = () => {
       // End the batch
       whiteboardStore.endActionBatch();
       
-      console.log('🧹 Completed off-screen drag, cleaning up state');
+      // Trigger immediate redraw with final positions BEFORE clearing drag state
+      if (redrawCanvasRef.current) {
+        redrawCanvasRef.current();
+      }
+      
+      // Small delay to ensure render completes before clearing state
+      setTimeout(() => {
+        console.log('🧹 Completed off-screen drag, cleaning up state after render');
+        // Clear drag state after render
+        initialDragPositionsRef.current = {};
+        liveDragPositionsRef.current = {};
+        dragDeltasRef.current = { x: 0, y: 0 };
+      }, 0);
     }
     
     if ((activeTool === 'pencil' || activeTool === 'brush') && 
