@@ -1365,6 +1365,12 @@ export const useCanvasInteractions = () => {
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
+          
+          // CRITICAL: Force Canvas component re-render to update ResizeHandles positions
+          // This ensures the bounding box moves with the dragged object
+          if (forceRerenderRef.current) {
+            forceRerenderRef.current();
+          }
         }
         // Handle drag detection for creating new text boxes (only when no objects are selected)
         else if (textClickStartPosRef.current && !isDrawingRef.current && whiteboardStore.selectedObjectIds.length === 0) {
