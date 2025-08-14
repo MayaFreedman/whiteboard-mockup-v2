@@ -1257,6 +1257,13 @@ export const useCanvasInteractions = () => {
           // Multi-object dragging with absolute positioning to prevent drift
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
+          
+          // Only process movement if it's significant enough (prevents tiny movements from causing issues)
+          const movement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+          if (movement < 2) {
+            // Movement too small, skip processing
+            return;
+          }
           // Store current drag deltas for live rendering without creating actions
           dragDeltasRef.current = { x: deltaX, y: deltaY };
           
@@ -1574,7 +1581,8 @@ export const useCanvasInteractions = () => {
                 });
               }, 10);
             } else {
-              console.warn('⚠️ DRAG END - No live drag position found for object:', objectId.slice(0, 8), 'keeping at store position');
+              // No live position means no actual movement occurred - this is normal for click-without-drag
+              console.log('ℹ️ DRAG END - No movement detected for object:', objectId.slice(0, 8), '(click without significant drag)');
             }
           });
           
