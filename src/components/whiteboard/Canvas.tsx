@@ -194,7 +194,7 @@ export const Canvas: React.FC = () => {
         // CSS text alignment handles centering the text content
         const stickyScreenCoords = {
           x: existingObject.x + whiteboardRect.left,
-          y: existingObject.y + whiteboardRect.top + 8, // Match canvas text position (obj.y + 8)
+          y: existingObject.y + whiteboardRect.top - 65,
         };
 
         console.log(
