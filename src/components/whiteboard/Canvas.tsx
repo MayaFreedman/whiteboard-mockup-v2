@@ -190,15 +190,11 @@ export const Canvas: React.FC = () => {
           existingObjectId.slice(0, 8)
         );
 
-        // Calculate text position to match canvas rendering
-        // In canvas: text is centered vertically within the sticky note bounds
-        const fontSize = existingObject.data?.fontSize || 16;
-        const lineHeight = fontSize * 1.2;
-
-        // Position textarea to match the canvas text rendering position
+        // Position textarea to align with sticky note boundaries
+        // CSS text alignment handles centering the text content
         const stickyScreenCoords = {
           x: existingObject.x + whiteboardRect.left,
-          y: existingObject.y + whiteboardRect.top - 65, // Canvas renders from obj.y with text centered inside
+          y: existingObject.y + whiteboardRect.top - 65,
         };
 
         console.log(
@@ -702,30 +698,10 @@ export const Canvas: React.FC = () => {
         currentFontSize: obj.data.fontSize,
       });
 
-      // Update textarea styling to match the dynamic font size and positioning
+      // Update textarea styling to match the dynamic font size
       const textarea = e.target;
       textarea.style.fontSize = optimalFontSize + "px";
       textarea.style.lineHeight = optimalFontSize * 1.2 + "px";
-
-      // Recalculate vertical positioning to match canvas centering logic
-      if (immediateTextPosition && newText) {
-        const maxWidth = width - 16; // Same as canvas padding
-        const textMetrics = measureText(
-          newText,
-          optimalFontSize,
-          textData.fontFamily,
-          textData.bold,
-          textData.italic,
-          maxWidth
-        );
-        const totalHeight = textMetrics.lines.length * textMetrics.lineHeight;
-        const centerOffset = (height - totalHeight) / 2;
-        
-        // Update textarea position to center the text vertically
-        const adjustedTop = immediateTextPosition.y + centerOffset;
-        textarea.style.top = adjustedTop + "px";
-        textarea.style.height = totalHeight + "px";
-      }
 
       console.log("🗒️ Updated textarea font size to:", optimalFontSize + "px");
 
@@ -1397,88 +1373,76 @@ export const Canvas: React.FC = () => {
             <textarea
               data-immediate-text="true"
               className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
-                style={
-                (() => {
-                  let adjustedTop = immediateTextPosition.y;
-                  let adjustedHeight = isEditingStickyNote 
+              style={
+                {
+                  left: immediateTextPosition.x,
+                  top: immediateTextPosition.y,
+                  // For sticky notes, use the EXACT sticky note dimensions
+                  width: isEditingStickyNote ? editingObject.width : 200,
+                  height: isEditingStickyNote
                     ? editingObject.height
-                    : toolStore.toolSettings.fontSize * 1.2 || 20;
-                  
-                  // For sticky notes, position container at sticky note position
-                  // Use CSS flexbox to center content vertically like canvas textBaseline: 'middle'
-                  if (isEditingStickyNote) {
-                    adjustedTop = immediateTextPosition.y;
-                    adjustedHeight = editingObject.height;
-                  }
-                  
-                  return {
-                    left: immediateTextPosition.x,
-                    top: adjustedTop,
-                    width: isEditingStickyNote ? editingObject.width : 200,
-                    height: adjustedHeight,
-                    fontSize: fontSize,
-                    fontFamily: isEditingStickyNote
-                      ? editingObject.data?.fontFamily || "Inter"
-                      : toolStore.toolSettings.fontFamily || "Arial",
-                    fontWeight: isEditingStickyNote
-                      ? editingObject.data?.bold
-                        ? "bold"
-                        : "normal"
-                      : toolStore.toolSettings.textBold
+                    : toolStore.toolSettings.fontSize * 1.2 || 20,
+                  fontSize: fontSize,
+                  fontFamily: isEditingStickyNote
+                    ? editingObject.data?.fontFamily || "Inter"
+                    : toolStore.toolSettings.fontFamily || "Arial",
+                  fontWeight: isEditingStickyNote
+                    ? editingObject.data?.bold
                       ? "bold"
-                      : "normal",
-                    fontStyle: isEditingStickyNote
-                      ? editingObject.data?.italic
-                        ? "italic"
-                        : "normal"
-                      : toolStore.toolSettings.textItalic
+                      : "normal"
+                    : toolStore.toolSettings.textBold
+                    ? "bold"
+                    : "normal",
+                  fontStyle: isEditingStickyNote
+                    ? editingObject.data?.italic
                       ? "italic"
-                      : "normal",
-                    textDecoration: isEditingStickyNote
-                      ? editingObject.data?.underline
-                        ? "underline"
-                        : "none"
-                      : toolStore.toolSettings.textUnderline
+                      : "normal"
+                    : toolStore.toolSettings.textItalic
+                    ? "italic"
+                    : "normal",
+                  textDecoration: isEditingStickyNote
+                    ? editingObject.data?.underline
                       ? "underline"
-                      : "none",
-                    textAlign: isEditingStickyNote ? "center" : "left",
-                    color: isEditingStickyNote
-                      ? editingObject.stroke || "#000000"
-                      : "transparent",
-                    backgroundColor: isEditingStickyNote
-                      ? editingObject.data?.backgroundColor || "#fff3cd"
-                      : "transparent",
-                    zIndex: 1001,
-                    lineHeight: `${fontSize * 1.2}px`,
-                    padding: isEditingStickyNote ? "8px" : "0",
-                    margin: "0",
-                    border: "none",
-                    borderRadius: isEditingStickyNote ? "8px" : "0",
-                    boxShadow: isEditingStickyNote
-                      ? "0px 2px 8px rgba(0,0,0,0.1)"
-                      : "none",
-                    whiteSpace: "pre-wrap",
-                    overflowWrap: "break-word",
-                    wordBreak: "break-word",
-                    wordWrap: "break-word",
-                     overflow: "hidden",
-                     // Keep textarea as block element, fix size to sticky note dimensions
-                     display: "block",
-                    textRendering: "optimizeLegibility",
-                    fontSmooth: "antialiased",
-                    WebkitFontSmoothing: "antialiased",
-                    MozOsxFontSmoothing: "grayscale",
-                    caretColor: isEditingStickyNote
-                      ? editingObject.stroke || "#000000"
-                      : toolStore.toolSettings.strokeColor || "#000000",
-                    WebkitTextSizeAdjust: "100%",
-                    boxSizing: "border-box",
-                    minHeight: fontSize * 1.2 + "px",
-                    "--placeholder-color": `${
-                      toolStore.toolSettings.strokeColor || "#000000"
-                    }B3`,
-                  } as React.CSSProperties & { "--placeholder-color": string };
-                })()
+                      : "none"
+                    : toolStore.toolSettings.textUnderline
+                    ? "underline"
+                    : "none",
+                  textAlign: isEditingStickyNote ? "center" : "left",
+                  verticalAlign: isEditingStickyNote ? "top" : "top", // Changed from 'middle' to 'top' for better cursor alignment
+                  color: isEditingStickyNote
+                    ? editingObject.stroke || "#000000"
+                    : "transparent", // Make sticky note text visible
+                  backgroundColor: isEditingStickyNote
+                    ? editingObject.data?.backgroundColor || "#fff3cd"
+                    : "transparent", // Match sticky note background
+                  zIndex: 1001,
+                  lineHeight: `${fontSize * 1.2}px`, // Must match the text rendering lineHeight
+                  padding: isEditingStickyNote ? "8px" : "0", // Must match sticky note padding exactly
+                  margin: "0",
+                  border: "none",
+                  borderRadius: isEditingStickyNote ? "8px" : "0", // Match sticky note styling
+                  boxShadow: isEditingStickyNote
+                    ? "0px 2px 8px rgba(0,0,0,0.1)"
+                    : "none", // Match sticky note shadow
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "break-word",
+                  wordBreak: "break-word",
+                  wordWrap: "break-word",
+                  overflow: "hidden",
+                  textRendering: "optimizeLegibility",
+                  fontSmooth: "antialiased",
+                  WebkitFontSmoothing: "antialiased",
+                  MozOsxFontSmoothing: "grayscale",
+                  caretColor: isEditingStickyNote
+                    ? editingObject.stroke || "#000000"
+                    : toolStore.toolSettings.strokeColor || "#000000",
+                  WebkitTextSizeAdjust: "100%",
+                  boxSizing: "border-box",
+                  minHeight: fontSize * 1.2 + "px",
+                  "--placeholder-color": `${
+                    toolStore.toolSettings.strokeColor || "#000000"
+                  }B3`,
+                } as React.CSSProperties & { "--placeholder-color": string }
               }
               value={immediateTextContent}
               onChange={handleImmediateTextChange}
