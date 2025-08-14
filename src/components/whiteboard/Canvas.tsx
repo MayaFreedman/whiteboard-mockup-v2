@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useWhiteboardStore } from "../../stores/whiteboardStore";
 import { useToolStore } from "../../stores/toolStore";
 import { useCanvasInteractions } from "../../hooks/canvas/useCanvasInteractions";
@@ -77,6 +77,10 @@ export const Canvas: React.FC = () => {
 
   // Text editing state
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  
+  // Force re-render trigger for ResizeHandles during dragging
+  const [, setForceRerenderState] = useState(0);
+  const forceRerenderCallback = useCallback(() => setForceRerenderState(prev => prev + 1), []);
   const [textEditorPosition, setTextEditorPosition] = useState<{
     x: number;
     y: number;
@@ -121,6 +125,7 @@ export const Canvas: React.FC = () => {
     setDoubleClickProtection,
     setEditingState,
     setImmediateTextTrigger,
+    setForceRerender,
     clearTextInteractionState,
   } = useCanvasInteractions();
 
@@ -140,6 +145,7 @@ export const Canvas: React.FC = () => {
   setRedrawCanvas(redrawCanvas);
   setDoubleClickProtection(isHandlingDoubleClick);
   setEditingState(editingTextId !== null || isImmediateTextEditing);
+  setForceRerender(forceRerenderCallback);
 
   // Set callback for immediate text editing
   setImmediateTextTrigger((coords, existingObjectId?) => {

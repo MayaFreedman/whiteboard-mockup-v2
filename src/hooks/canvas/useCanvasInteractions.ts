@@ -17,6 +17,8 @@ import { useMultiplayer } from '../useMultiplayer';
  * Manages drawing state and coordinates tool-specific behaviors
  */
 export const useCanvasInteractions = () => {
+  // Add callback for forcing re-renders during drag
+  const forceRerenderRef = useRef<(() => void) | null>(null);
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const { userId } = useUser();
@@ -1109,6 +1111,11 @@ export const useCanvasInteractions = () => {
             }
           });
           
+          // CRITICAL: Force re-render of ResizeHandles to show updated bounding box
+          if (forceRerenderRef.current) {
+            forceRerenderRef.current();
+          }
+          
           // Check if batch is getting too large
           if (currentBatchIdRef.current) {
             checkBatchSize();
@@ -1560,6 +1567,13 @@ export const useCanvasInteractions = () => {
     console.log('🧹 Text interaction state cleared');
   }, [toolStore.activeTool]);
 
+  /**
+   * Sets the force rerender callback (called by Canvas component)
+   */
+  const setForceRerender = useCallback((rerenderFn: () => void) => {
+    forceRerenderRef.current = rerenderFn;
+  }, []);
+
   return {
     handlePointerDown,
     handlePointerMove,
@@ -1586,6 +1600,7 @@ export const useCanvasInteractions = () => {
     setDoubleClickProtection,
     setEditingState,
     setImmediateTextTrigger,
+    setForceRerender,
     clearTextInteractionState
   };
 };
