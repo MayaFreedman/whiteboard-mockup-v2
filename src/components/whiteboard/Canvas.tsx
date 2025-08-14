@@ -1134,7 +1134,7 @@ export const Canvas: React.FC = () => {
       document.removeEventListener('mouseup', handleGlobalMouseUp);
       console.log('🔧 Global mouseup listener removed');
     };
-  }, [handlePointerUp, isDragging, getCurrentDragDeltas]);
+  }, [handlePointerUp]); // Remove unstable dependencies
 
   // Handle keyboard events for object deletion
   useEffect(() => {
