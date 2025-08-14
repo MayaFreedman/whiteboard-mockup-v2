@@ -522,6 +522,32 @@ export const Canvas: React.FC = () => {
     const newText = e.target.value;
     setImmediateTextContent(newText);
     
+    // Check if we're editing a sticky note for dynamic font sizing
+    if (immediateTextObjectId && objects[immediateTextObjectId]?.type === 'sticky-note') {
+      const obj = objects[immediateTextObjectId];
+      const { width, height } = obj;
+      const textData = {
+        content: newText,
+        fontFamily: obj.data.fontFamily || 'Inter',
+        fontSize: obj.data.fontSize || 32,
+        bold: obj.data.bold || false,
+        italic: obj.data.italic || false,
+        underline: obj.data.underline || false,
+        textAlign: obj.data.textAlign || 'center'
+      };
+      
+      const optimalFontSize = calculateOptimalFontSize(newText, width - 16, height - 16, textData);
+      
+      updateObject(immediateTextObjectId, { 
+        data: {
+          ...obj.data,
+          content: newText,
+          fontSize: optimalFontSize
+        }
+      }, userId);
+      return;
+    }
+    
     const fontSize = toolStore.toolSettings.fontSize || 16;
     const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
     const bold = toolStore.toolSettings.textBold || false;
@@ -1008,20 +1034,22 @@ export const Canvas: React.FC = () => {
             fontWeight: objects[editingTextId]?.data?.bold ? 'bold' : 'normal',
             fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
             textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
-            textAlign: objects[editingTextId]?.data?.textAlign || 'left',
-            // Sticky note styling
+            // Conditional styling for sticky notes
             backgroundColor: objects[editingTextId]?.type === 'sticky-note' 
-              ? objects[editingTextId]?.data?.backgroundColor || '#fef3c7'
+              ? objects[editingTextId]?.data?.backgroundColor || '#fff3cd'
               : 'transparent',
             borderRadius: objects[editingTextId]?.type === 'sticky-note' ? '8px' : '0',
             boxShadow: objects[editingTextId]?.type === 'sticky-note' 
               ? '0px 2px 8px rgba(0,0,0,0.1)' 
               : 'none',
             padding: objects[editingTextId]?.type === 'sticky-note' ? '8px' : '0',
-            // Text visibility
+            // Text visibility and alignment
             color: objects[editingTextId]?.type === 'sticky-note' 
               ? (objects[editingTextId]?.stroke || '#000000')
               : 'transparent',
+            textAlign: objects[editingTextId]?.type === 'sticky-note' 
+              ? 'center' 
+              : (objects[editingTextId]?.data?.textAlign || 'left'),
             caretColor: objects[editingTextId]?.stroke || '#000000',
             zIndex: 1000,
             lineHeight: textEditorPosition.lineHeight + 'px',
@@ -1046,52 +1074,59 @@ export const Canvas: React.FC = () => {
       )}
 
       {/* Immediate Text Editor Overlay - For click-to-type functionality */}
-      {isImmediateTextEditing && immediateTextPosition && (
-        <textarea
-          data-immediate-text="true"
-          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
-          style={{
-            left: immediateTextPosition.x,
-            top: immediateTextPosition.y,
-            width: 200, // Initial width that allows natural wrapping
-            height: toolStore.toolSettings.fontSize * 1.2 || 20, // Height based on font size
-            fontSize: toolStore.toolSettings.fontSize || 16,
-            fontFamily: toolStore.toolSettings.fontFamily || 'Arial',
-            fontWeight: toolStore.toolSettings.textBold ? 'bold' : 'normal',
-            fontStyle: toolStore.toolSettings.textItalic ? 'italic' : 'normal',
-            textDecoration: toolStore.toolSettings.textUnderline ? 'underline' : 'none',
-            textAlign: 'left',
-            color: 'transparent', // Make text invisible like double-click editing
-            zIndex: 1001, // Higher than regular text editing
-            lineHeight: (toolStore.toolSettings.fontSize * 1.2 || 20) + 'px',
-            padding: '0', // Remove padding to match canvas text positioning exactly
-            margin: '0',
-            border: 'none',
-            whiteSpace: 'pre-wrap', // Enable text wrapping from the start
-            overflowWrap: 'break-word',
-            wordBreak: 'break-word',
-            wordWrap: 'break-word',
-            overflow: 'visible', // Allow content to extend beyond bounds
-            textRendering: 'optimizeLegibility',
-            fontSmooth: 'antialiased',
-            WebkitFontSmoothing: 'antialiased',
-            MozOsxFontSmoothing: 'grayscale',
-            caretColor: toolStore.toolSettings.strokeColor || '#000000', // Ensure cursor is visible and matches text color
-            WebkitTextSizeAdjust: '100%',
-            boxSizing: 'border-box',
-            background: 'transparent', // Match canvas text - no background
-            minHeight: (toolStore.toolSettings.fontSize || 16) * 1.2 + 'px',
-            // Set placeholder color to match stroke color with reduced opacity
-            '--placeholder-color': `${toolStore.toolSettings.strokeColor || '#000000'}B3`
-          } as React.CSSProperties & { '--placeholder-color': string }}
-          value={immediateTextContent}
-          onChange={handleImmediateTextChange}
-          onBlur={handleImmediateTextComplete}
-          onKeyDown={handleImmediateTextKeyDown}
-          placeholder="Type here..."
-          autoFocus
-        />
-      )}
+      {isImmediateTextEditing && immediateTextPosition && (() => {
+        const editingObject = immediateTextObjectId ? objects[immediateTextObjectId] : null;
+        const isEditingStickyNote = editingObject?.type === 'sticky-note';
+        const fontSize = isEditingStickyNote ? (editingObject.data?.fontSize || 32) : (toolStore.toolSettings.fontSize || 16);
+        
+        return (
+          <textarea
+            data-immediate-text="true"
+            className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
+            style={{
+              left: immediateTextPosition.x,
+              top: immediateTextPosition.y,
+              width: isEditingStickyNote ? editingObject.width : 200,
+              height: isEditingStickyNote ? editingObject.height : (toolStore.toolSettings.fontSize * 1.2 || 20),
+              fontSize: fontSize,
+              fontFamily: isEditingStickyNote ? (editingObject.data?.fontFamily || 'Inter') : (toolStore.toolSettings.fontFamily || 'Arial'),
+              fontWeight: isEditingStickyNote ? (editingObject.data?.bold ? 'bold' : 'normal') : (toolStore.toolSettings.textBold ? 'bold' : 'normal'),
+              fontStyle: isEditingStickyNote ? (editingObject.data?.italic ? 'italic' : 'normal') : (toolStore.toolSettings.textItalic ? 'italic' : 'normal'),
+              textDecoration: isEditingStickyNote ? (editingObject.data?.underline ? 'underline' : 'none') : (toolStore.toolSettings.textUnderline ? 'underline' : 'none'),
+              textAlign: isEditingStickyNote ? 'center' : 'left',
+              color: 'transparent',
+              zIndex: 1001,
+              lineHeight: `${fontSize * 1.2}px`,
+              padding: isEditingStickyNote ? '8px' : '0',
+              margin: '0',
+              border: 'none',
+              whiteSpace: 'pre-wrap',
+              overflowWrap: 'break-word',
+              wordBreak: 'break-word',
+              wordWrap: 'break-word',
+              overflow: 'visible',
+              textRendering: 'optimizeLegibility',
+              fontSmooth: 'antialiased',
+              WebkitFontSmoothing: 'antialiased',
+              MozOsxFontSmoothing: 'grayscale',
+              caretColor: toolStore.toolSettings.strokeColor || '#000000',
+              WebkitTextSizeAdjust: '100%',
+              boxSizing: 'border-box',
+              backgroundColor: isEditingStickyNote ? editingObject.data?.backgroundColor || '#fff3cd' : 'transparent',
+              borderRadius: isEditingStickyNote ? '8px' : '0px',
+              boxShadow: isEditingStickyNote ? '0px 2px 8px rgba(0,0,0,0.1)' : 'none',
+              minHeight: fontSize * 1.2 + 'px',
+              '--placeholder-color': `${toolStore.toolSettings.strokeColor || '#000000'}B3`
+            } as React.CSSProperties & { '--placeholder-color': string }}
+            value={immediateTextContent}
+            onChange={handleImmediateTextChange}
+            onBlur={handleImmediateTextComplete}
+            onKeyDown={handleImmediateTextKeyDown}
+            placeholder={isEditingStickyNote ? '' : 'Type here...'}
+            autoFocus
+          />
+        );
+      })()}
       
       {/* Custom Cursor */}
       <CustomCursor canvas={canvasRef.current} />

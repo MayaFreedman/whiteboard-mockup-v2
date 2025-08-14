@@ -159,17 +159,6 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
         }}
       />
 
-      {/* Text Alignment */}
-      <BadgeSelector
-        label="Text Alignment"
-        items={[
-          { value: 'left', label: 'Left' },
-          { value: 'center', label: 'Center' },
-          { value: 'right', label: 'Right' }
-        ]}
-        selectedValue={stickyNoteData.textAlign}
-        onChange={(value) => updateStickyNoteProperty('textAlign', value)}
-      />
 
       {/* Font Size (Read-only display) */}
       <div>
