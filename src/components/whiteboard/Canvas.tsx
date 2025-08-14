@@ -1458,8 +1458,8 @@ export const Canvas: React.FC = () => {
                 className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
               style={
                 {
-                  left: immediateTextPosition.x,
-                  top: immediateTextPosition.y,
+                  left: immediateTextPosition.x - 8,
+                  top: immediateTextPosition.y - 8,
                    // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
                    width: isEditingStickyNote ? editingObject.width : 200,
                    height: isEditingStickyNote
