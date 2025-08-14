@@ -283,13 +283,13 @@ export const useCanvasInteractions = () => {
         bold: toolStore.toolSettings.textBold,
         italic: toolStore.toolSettings.textItalic,
         underline: toolStore.toolSettings.textUnderline,
-        textAlign: toolStore.toolSettings.textAlign
+        textAlign: 'center' // Force center alignment for sticky notes
       }),
       fontFamily: toolStore.toolSettings.fontFamily,
       bold: toolStore.toolSettings.textBold,
       italic: toolStore.toolSettings.textItalic,
       underline: toolStore.toolSettings.textUnderline,
-      textAlign: toolStore.toolSettings.textAlign,
+      textAlign: 'center', // Force center alignment for sticky notes
       backgroundColor,
       stickySize: size,
       autoTextResize: true

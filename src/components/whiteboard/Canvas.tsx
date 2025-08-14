@@ -767,6 +767,27 @@ export const Canvas: React.FC = () => {
 
   // Handle immediate text input key events
   const handleImmediateTextKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // For sticky notes, allow Enter to create line breaks, only Shift+Enter completes editing
+    if (immediateTextObjectId && objects[immediateTextObjectId]?.type === 'sticky-note') {
+      if (event.key === 'Enter' && event.shiftKey) {
+        event.preventDefault();
+        handleImmediateTextComplete();
+      } else if (event.key === 'Escape') {
+        // Cancel immediate text editing and clean up the canvas object
+        if (immediateTextObjectId && objects[immediateTextObjectId]) {
+          deleteObject(immediateTextObjectId, userId);
+          redrawCanvas();
+        }
+        setIsImmediateTextEditing(false);
+        setImmediateTextPosition(null);
+        setImmediateTextContent('');
+        setImmediateTextObjectId(null);
+      }
+      // Allow Enter key to pass through for line breaks in sticky notes
+      return;
+    }
+    
+    // For regular text objects, Enter completes editing
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleImmediateTextComplete();
@@ -1147,11 +1168,11 @@ export const Canvas: React.FC = () => {
               padding: isEditingStickyNote ? '8px' : '0',
               margin: '0',
               border: 'none',
-              whiteSpace: isEditingStickyNote ? 'pre-wrap' : 'pre-wrap',
+              whiteSpace: 'pre-wrap',
               overflowWrap: 'break-word',
               wordBreak: 'break-word',
               wordWrap: 'break-word',
-              overflow: isEditingStickyNote ? 'hidden' : 'visible',
+              overflow: 'hidden',
               textRendering: 'optimizeLegibility',
               fontSmooth: 'antialiased',
               WebkitFontSmoothing: 'antialiased',
