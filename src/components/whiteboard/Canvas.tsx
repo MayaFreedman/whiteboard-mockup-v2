@@ -812,19 +812,23 @@ export const Canvas: React.FC = () => {
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
       const canvasWidth = canvasRect.width;
-      const textPositionX = immediateTextPosition.x - canvasRect.left;
-      const availableWidthToEdge = canvasWidth - textPositionX - 10; // 10px padding from canvas edge
-
-      // For single-click text, don't constrain the textarea width artificially
-      // Let it expand naturally until it would go beyond canvas edge
-      const naturalTextWidth = Math.max(200, availableWidthToEdge); // At least 200px wide
+      // Check if we're editing a sticky note
+      const isEditingStickyNote = immediateTextObjectId && objects[immediateTextObjectId]?.type === "sticky-note";
       
-      textarea.style.width = naturalTextWidth + "px";
-      textarea.style.maxWidth = naturalTextWidth + "px";
-      
-      // Remove word wrapping from textarea to match canvas behavior
-      textarea.style.whiteSpace = "nowrap";
-      textarea.style.overflow = "visible";
+      // Only apply width constraints for sticky notes, not regular text
+      if (isEditingStickyNote) {
+        const textPositionX = immediateTextPosition.x - canvasRect.left;
+        const availableWidthToEdge = canvasWidth - textPositionX - 10;
+        const naturalTextWidth = Math.max(200, availableWidthToEdge);
+        
+        textarea.style.width = naturalTextWidth + "px";
+        textarea.style.maxWidth = naturalTextWidth + "px";
+        textarea.style.whiteSpace = "pre-wrap";
+      } else {
+        // For regular text, keep the large width and nowrap behavior
+        textarea.style.whiteSpace = "nowrap";
+        textarea.style.overflow = "visible";
+      }
 
       // Measure text without width constraint to match canvas rendering
       const wrappedMetrics = measureText(
@@ -1463,7 +1467,7 @@ export const Canvas: React.FC = () => {
             <>
               <textarea
                 data-immediate-text="true"
-                className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
+                className="absolute border-none resize-none outline-none placeholder-opacity-70"
               style={
                 {
                   left: immediateTextPosition.x,
