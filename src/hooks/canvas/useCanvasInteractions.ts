@@ -57,7 +57,7 @@ export const useCanvasInteractions = () => {
   // Multi-object dragging state
   const initialDragPositionsRef = useRef<Record<string, { x: number; y: number }>>({});
   
-  // Refs for tracking drag optimization
+  // Refs for tracking drag optimization - simplified (removed live drag positions)
   const dragDeltasRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const liveDragPositionsRef = useRef<Record<string, { x: number; y: number }>>({});
 
@@ -201,7 +201,6 @@ export const useCanvasInteractions = () => {
     if (!isDraggingRef.current) {
       console.log('🧹 CLEARING DRAG STATE in cleanupBatching:', Date.now());
       initialDragPositionsRef.current = {};
-      liveDragPositionsRef.current = {};
       dragDeltasRef.current = { x: 0, y: 0 };
     } else {
       console.log('🧹 SKIPPING drag state cleanup - still dragging:', Date.now());
@@ -612,9 +611,8 @@ export const useCanvasInteractions = () => {
       console.log('🔄 DRAG OFF-SCREEN BATCH ENDED:', Date.now());
       
       // CRITICAL: Clear live drag positions FIRST before redraw
-      // This ensures the render uses store data, not stale live positions
-      console.log('🧹 CLEARING LIVE POSITIONS BEFORE REDRAW:', Date.now());
-      liveDragPositionsRef.current = {};
+      // Force redraw to ensure consistent state
+      console.log('🧹 CLEARING DRAG STATE BEFORE REDRAW:', Date.now());
       dragDeltasRef.current = { x: 0, y: 0 };
       
       // Use requestAnimationFrame to ensure store updates are processed before redraw
@@ -1628,15 +1626,7 @@ export const useCanvasInteractions = () => {
           }
         }
         
-        // CRITICAL: Always reset these flags at the end of select pointer up
-        console.log('🧹 SELECT TOOL - Resetting select tool state:', {
-          wasDragging: isDraggingRef.current,
-          wasDrawing: isDrawingRef.current,
-          selectedObjects: whiteboardStore.selectedObjectIds.length,
-          cleanupComplete: true,
-          timestamp: Date.now()
-        });
-        
+        // Reset flags
         isDraggingRef.current = false;
         isDrawingRef.current = false;
         dragStartRef.current = null;
@@ -2002,12 +1992,8 @@ export const useCanvasInteractions = () => {
       return dragDeltasRef.current;
     },
     getLiveDragPositions: () => {
-      console.log('🔄 getLiveDragPositions called:', {
-        liveDragCount: Object.keys(liveDragPositionsRef.current).length,
-        positions: liveDragPositionsRef.current,
-        isDragging: isDraggingRef.current
-      });
-      return liveDragPositionsRef.current;
+      // Simplified - no longer using live drag positions since we update store directly
+      return {};
     },
     setRedrawCanvas,
     setDoubleClickProtection,
