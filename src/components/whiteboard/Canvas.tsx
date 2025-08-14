@@ -359,24 +359,23 @@ export const Canvas: React.FC = () => {
       typeof obj.width === "number" &&
       typeof obj.height === "number"
     ) {
-      // For sticky notes, keep them square and recalculate font size
-      const size = Math.max(newBounds.width, newBounds.height); // Keep square
+      // For sticky notes, allow free resizing like other objects
       const newFontSize = calculateOptimalFontSize(
         obj.data.content || "",
-        size,
-        size,
+        newBounds.width,
+        newBounds.height,
         obj.data
       );
 
       const updates = {
         x: newBounds.x,
         y: newBounds.y,
-        width: size,
-        height: size,
+        width: newBounds.width,
+        height: newBounds.height,
         data: {
           ...obj.data,
           fontSize: newFontSize,
-          stickySize: size,
+          stickySize: Math.max(newBounds.width, newBounds.height), // Keep for compatibility
         },
       };
 
