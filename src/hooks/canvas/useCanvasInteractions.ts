@@ -1599,6 +1599,52 @@ export const useCanvasInteractions = () => {
         }
         break;
       }
+
+      case 'sticky-note': {
+        // Handle sticky note tool dragging completion (identical to select tool)
+        if (isDraggingRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+          console.log('🗒️ STICKY NOTE TOOL - Completing drag operation for objects:', whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)));
+          
+          // Apply final positions from live drag to actual objects
+          whiteboardStore.selectedObjectIds.forEach(objectId => {
+            const finalPos = liveDragPositionsRef.current[objectId];
+            if (finalPos) {
+              // Final constraint check before saving
+              const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
+              console.log('🗒️ STICKY NOTE TOOL - Final position for object:', objectId.slice(0, 8), constrainedFinalPos);
+              whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
+            }
+          });
+          
+          // End the optimized batch
+          whiteboardStore.endActionBatch();
+          
+          console.log('🗒️ STICKY NOTE TOOL - Cleaning up drag state');
+          
+          // Clean up drag state - CRITICAL: ensure all refs are properly reset
+          currentBatchIdRef.current = null;
+          draggedObjectIdRef.current = null;
+          initialDragPositionsRef.current = {};
+          liveDragPositionsRef.current = {};
+          dragDeltasRef.current = { x: 0, y: 0 };
+          
+          // Ensure dragging state is fully reset
+          isDraggingRef.current = false;
+          dragStartRef.current = null;
+        }
+        
+        // CRITICAL: Always reset these flags at the end of sticky note pointer up
+        console.log('🗒️ STICKY NOTE TOOL - Resetting state:', {
+          wasDragging: isDraggingRef.current,
+          wasDrawing: isDrawingRef.current,
+          selectedObjects: whiteboardStore.selectedObjectIds.length
+        });
+        
+        isDraggingRef.current = false;
+        isDrawingRef.current = false;
+        dragStartRef.current = null;
+        break;
+      }
     }
 
     console.log('🎨 POINTER UP CLEANUP:', {
