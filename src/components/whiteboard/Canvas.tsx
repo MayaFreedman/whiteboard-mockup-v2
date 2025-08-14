@@ -817,6 +817,13 @@ export const Canvas: React.FC = () => {
       // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
       const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
       const effectiveWidth = availableWidth - textPadding;
+      
+      // For regular text, don't constrain the textarea width - let it flow
+      if (!textarea.dataset.stickyNote) {
+        return;
+      }
+      
+      // Only constrain width for sticky notes
       textarea.style.width = effectiveWidth + "px";
       textarea.style.maxWidth = effectiveWidth + "px";
 
