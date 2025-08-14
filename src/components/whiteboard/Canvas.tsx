@@ -767,10 +767,23 @@ export const Canvas: React.FC = () => {
 
   // Handle immediate text input key events
   const handleImmediateTextKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      handleImmediateTextComplete();
-    } else if (event.key === 'Escape') {
+    // For sticky notes, allow Enter to create line breaks instead of completing
+    if (immediateTextObjectId && objects[immediateTextObjectId]?.type === 'sticky-note') {
+      if (event.key === 'Enter' && event.shiftKey) {
+        // Shift+Enter completes editing for sticky notes
+        event.preventDefault();
+        handleImmediateTextComplete();
+      }
+      // Regular Enter creates line breaks - don't prevent default
+    } else {
+      // For regular text, Enter completes editing
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        handleImmediateTextComplete();
+      }
+    }
+    
+    if (event.key === 'Escape') {
       // Cancel immediate text editing and clean up the canvas object
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
         deleteObject(immediateTextObjectId, userId);
@@ -1150,7 +1163,7 @@ export const Canvas: React.FC = () => {
               overflowWrap: 'break-word',
               wordBreak: 'break-word',
               wordWrap: 'break-word',
-              overflow: isEditingStickyNote ? 'hidden' : 'visible',
+              overflow: 'hidden',
               textRendering: 'optimizeLegibility',
               fontSmooth: 'antialiased',
               WebkitFontSmoothing: 'antialiased',

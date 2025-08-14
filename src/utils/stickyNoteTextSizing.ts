@@ -43,19 +43,47 @@ export const calculateOptimalFontSize = (
     const fontStyle = textData.italic ? 'italic' : 'normal';
     ctx.font = `${fontStyle} ${fontWeight} ${mid}px ${textData.fontFamily}`;
 
-    // Split text into lines and measure
-    const lines = content.split('\n');
+    // Handle word wrapping for each line
+    const paragraphs = content.split('\n');
     let totalHeight = 0;
-    let maxLineWidth = 0;
+    let fitsInBounds = true;
 
-    for (const line of lines) {
-      const lineWidth = ctx.measureText(line).width;
-      maxLineWidth = Math.max(maxLineWidth, lineWidth);
-      totalHeight += mid * 1.2; // Line height multiplier
+    for (const paragraph of paragraphs) {
+      if (paragraph.trim() === '') {
+        // Empty line
+        totalHeight += mid * 1.2;
+        continue;
+      }
+
+      // Wrap words for this paragraph
+      const words = paragraph.split(' ');
+      let currentLine = '';
+      let lineCount = 0;
+
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const lineWidth = ctx.measureText(testLine).width;
+
+        if (lineWidth <= maxWidth || currentLine === '') {
+          // Word fits on current line, or it's the first word
+          currentLine = testLine;
+        } else {
+          // Word doesn't fit, start new line
+          lineCount++;
+          currentLine = word;
+        }
+      }
+      
+      // Count the last line of this paragraph
+      if (currentLine) {
+        lineCount++;
+      }
+
+      totalHeight += lineCount * mid * 1.2; // Line height multiplier
     }
 
     // Check if text fits within bounds
-    if (maxLineWidth <= maxWidth && totalHeight <= maxHeight) {
+    if (totalHeight <= maxHeight) {
       bestFontSize = mid;
       low = mid + 1; // Try larger size
     } else {
