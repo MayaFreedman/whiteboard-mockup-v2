@@ -491,20 +491,19 @@ export const Canvas: React.FC = () => {
     console.log('🗒️ TEXTAREA POSITIONING DEBUG:', {
       stickyId: textObject.id?.slice(0, 8),
       canvasY: textObject.y,
-      calculatedTextareaY: Math.round(textObject.y + 8 + rect.top - 70),
+      calculatedTextareaY: Math.round(textObject.y + rect.top - 62), // Changed to match canvas exactly
       rectTop: rect.top,
       breakdown: {
         base: textObject.y,
-        padding: 8,
         rectTop: rect.top,
-        adjustment: -70,
-        final: textObject.y + 8 + rect.top - 70
+        adjustment: -62, // This should position textarea content at same Y as canvas text
+        final: textObject.y + rect.top - 62
       }
     });
 
     return {
       x: Math.round(textObject.x + 4 + rect.left), // Canvas position + padding + screen offset
-      y: Math.round(textObject.y + 8 + rect.top - 70), // Match canvas: obj.y + 8 (padding)
+      y: Math.round(textObject.y + rect.top - 62), // Canvas starts at obj.y+8, textarea has 8px padding, so obj.y + rect.top - 62 places textarea content at obj.y+8
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight,
