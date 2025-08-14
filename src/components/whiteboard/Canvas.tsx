@@ -320,14 +320,27 @@ export const Canvas: React.FC = () => {
       typeof obj.width === "number" &&
       typeof obj.height === "number"
     ) {
-      // For text objects, just update dimensions without auto-scaling font size
-      // This allows for more free-form resizing behavior
+      // For text objects, scale font size based on resize AND update dimensions
+      const currentWidth = obj.width;
+      const currentHeight = obj.height;
+
+      // Calculate scale factors
+      const scaleX = newBounds.width / currentWidth;
+      const scaleY = newBounds.height / currentHeight;
+
+      // Use average scale for proportional font scaling, with min/max limits
+      const scale = Math.max(0.1, Math.min(5, (scaleX + scaleY) / 2));
+
+      // Calculate new font size
+      const currentFontSize = obj.data.fontSize || 16;
+      const newFontSize = Math.max(8, Math.min(200, Math.round(currentFontSize * scale)));
+
+      // Update object with new font size AND new dimensions
       const updates = {
         ...newBounds, // Include new position and dimensions
         data: {
           ...(obj.data || {}),
-          // Keep existing font size - let user control it manually
-          // Mark as having fixed dimensions so text wraps properly
+          fontSize: newFontSize,
           fixedWidth: true,
           fixedHeight: true,
         },
