@@ -1542,17 +1542,23 @@ export const Canvas: React.FC = () => {
 
       {/* Resize Handles for Selected Objects */}
       {activeTool === "select" &&
-        selectedObjectIds.map((objectId) => (
-          <ResizeHandles
-            key={objectId}
-            objectId={objectId}
-            onResizeStart={() =>
-              startResizeBatch("UPDATE_OBJECT", objectId, userId)
-            }
-            onResize={(id, bounds) => handleResize(id, bounds)}
-            onResizeEnd={() => endResizeBatch()}
-          />
-        ))}
+        selectedObjectIds.map((objectId) => {
+          const liveDragPositions = getLiveDragPositions();
+          const liveDragPosition = liveDragPositions[objectId] || null;
+          
+          return (
+            <ResizeHandles
+              key={objectId}
+              objectId={objectId}
+              onResizeStart={() =>
+                startResizeBatch("UPDATE_OBJECT", objectId, userId)
+              }
+              onResize={(id, bounds) => handleResize(id, bounds)}
+              onResizeEnd={() => endResizeBatch()}
+              liveDragPosition={liveDragPosition}
+            />
+          );
+        })}
     </div>
   );
 };
