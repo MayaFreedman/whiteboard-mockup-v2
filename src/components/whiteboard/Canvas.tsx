@@ -159,6 +159,13 @@ export const Canvas: React.FC = () => {
           y: existingObject.y + whiteboardRect.top
         };
         
+        console.log('🗒️ Immediate sticky note positioning:', { 
+          objectType: existingObject.type, 
+          objectPosition: { x: existingObject.x, y: existingObject.y },
+          whiteboardRect: { left: whiteboardRect.left, top: whiteboardRect.top },
+          finalCoords: stickyScreenCoords 
+        });
+        
         setIsImmediateTextEditing(true);
         setImmediateTextPosition(stickyScreenCoords);
         setImmediateTextContent(existingObject.data?.content || '');
