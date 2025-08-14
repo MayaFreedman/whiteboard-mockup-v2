@@ -594,12 +594,12 @@ export const useCanvasRendering = (
               ctx.textAlign = 'left';
           }
           
-          // Calculate pixel-aligned text positions - use consistent 32px padding to match textarea
-          const textXBase = Math.round(obj.x + 32); // Add 32px left padding to match textarea
-          const textYBase = Math.round(obj.y + 32); // 32px padding from top to match textarea
+          // Calculate pixel-aligned text positions - use consistent 150px padding to match textarea
+          const textXBase = Math.round(obj.x + 150); // Add 150px left padding to match textarea
+          const textYBase = Math.round(obj.y + 150); // 150px padding from top to match textarea
           
           // Calculate available width for text wrapping (subtract padding) - must match text sizing algorithm
-          const availableWidth = Math.max(obj.width - 64, 50); // Subtract left and right padding (32px each), minimum 50px
+          const availableWidth = Math.max(obj.width - 300, 50); // Subtract left and right padding (150px each), minimum 50px
           
           // Use the same measureText function as the measurement system for consistent wrapping
           const textMetrics = measureText(
@@ -629,7 +629,7 @@ export const useCanvasRendering = (
             if (textData.textAlign === 'center') {
               textX = Math.round(obj.x + obj.width / 2);
             } else if (textData.textAlign === 'right') {
-              textX = Math.round(obj.x + obj.width - 32); // Subtract right padding (32px)
+              textX = Math.round(obj.x + obj.width - 150); // Subtract right padding (150px)
             }
             
             ctx.fillText(line, textX, lineY);
@@ -734,7 +734,7 @@ export const useCanvasRendering = (
             ctx.textAlign = stickyNoteData.textAlign || 'center';
             ctx.textBaseline = 'top'; // Changed from 'middle' to 'top'
 
-            const maxWidth = obj.width - 64;
+            const maxWidth = obj.width - 300;
             const textMetrics = measureText(
               contentToRender, 
               stickyNoteData.fontSize, 
@@ -745,8 +745,8 @@ export const useCanvasRendering = (
             );
             const lines = textMetrics.lines;
             const lineHeight = textMetrics.lineHeight;
-            // Simplified positioning: start from top + padding (32px) to match textarea
-            const startY = obj.y + 32;
+            // Simplified positioning: start from top + padding (150px) to match textarea
+            const startY = obj.y + 150;
 
             let startX = obj.x + obj.width / 2;
             
@@ -756,8 +756,8 @@ export const useCanvasRendering = (
             console.log('  - objectBounds:', { x: obj.x, y: obj.y, width: obj.width, height: obj.height });
             console.log('  - textMetrics:', { lines: lines.length, lineHeight });
             console.log('  - CANVAS TEXT WILL START AT Y:', startY, '(obj.y + 8 =', obj.y, '+ 8)');
-            if (stickyNoteData.textAlign === 'left') startX = obj.x + 32;
-            else if (stickyNoteData.textAlign === 'right') startX = obj.x + obj.width - 32;
+            if (stickyNoteData.textAlign === 'left') startX = obj.x + 150;
+            else if (stickyNoteData.textAlign === 'right') startX = obj.x + obj.width - 150;
 
             lines.forEach((line, index) => {
               ctx.fillText(line, startX, startY + (index * lineHeight));
