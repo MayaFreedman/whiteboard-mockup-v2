@@ -1170,6 +1170,59 @@ export const useCanvasInteractions = () => {
         break;
       }
 
+      case 'sticky-note': {
+        // Handle dragging for sticky note tool (identical to select tool)
+        if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+          // Multi-object dragging with absolute positioning to prevent drift
+          const deltaX = coords.x - dragStartRef.current.x;
+          const deltaY = coords.y - dragStartRef.current.y;
+          
+          console.log('🗒️ STICKY NOTE TOOL - Dragging movement:', {
+            selectedCount: whiteboardStore.selectedObjectIds.length,
+            delta: { x: deltaX, y: deltaY },
+            initialPositions: Object.keys(initialDragPositionsRef.current).length
+          });
+          
+          // Store current drag deltas for live rendering without creating actions
+          dragDeltasRef.current = { x: deltaX, y: deltaY };
+          
+          // Apply visual updates without persisting to store during drag (identical to select tool)
+          whiteboardStore.selectedObjectIds.forEach(objectId => {
+            const initialPos = initialDragPositionsRef.current[objectId];
+            if (initialPos) {
+              const unconstrained = {
+                x: initialPos.x + deltaX,
+                y: initialPos.y + deltaY
+              };
+              // Constrain position to screen bounds
+              const constrainedPos = constrainObjectToBounds(objectId, unconstrained.x, unconstrained.y);
+              
+              console.log('🗒️ STICKY NOTE TOOL - Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', constrainedPos);
+              console.log('🗒️ STICKY NOTE TOOL - STORING live position:', objectId.slice(0, 8), constrainedPos);
+              // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
+              liveDragPositionsRef.current[objectId] = constrainedPos;
+            } else {
+              console.warn('🗒️ STICKY NOTE TOOL - ❌ No initial position stored for object:', objectId.slice(0, 8));
+            }
+          });
+          
+          // CRITICAL: Force re-render of ResizeHandles to show updated bounding box (identical to select tool)
+          if (forceRerenderRef.current) {
+            forceRerenderRef.current();
+          }
+          
+          // Check if batch is getting too large
+          if (currentBatchIdRef.current) {
+            checkBatchSize();
+          }
+          
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
+        }
+        break;
+      }
+
       case 'text': {
         // Check for drag intent: if significant movement is detected, enter drag mode
         if (textClickStartPosRef.current && !isDrawingRef.current) {
