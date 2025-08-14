@@ -392,6 +392,8 @@ export const Canvas: React.FC = () => {
     const isSticky = textObject.type === 'sticky-note';
     const yOffset = isSticky ? 0 : -70; // Remove -70px adjustment for sticky notes
     
+    console.log('🔍 calculateTextPosition - textObject.type:', textObject.type, 'isSticky:', isSticky, 'yOffset:', yOffset);
+    
     return {
       x: Math.round(textObject.x + 4 + rect.left), // Canvas position + padding + screen offset
       y: Math.round(textObject.y + 4 + rect.top + yOffset), // Different offset for sticky vs text
