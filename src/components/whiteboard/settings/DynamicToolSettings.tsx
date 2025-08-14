@@ -115,11 +115,12 @@ export const DynamicToolSettings: React.FC = () => {
     if (activeTool !== 'stamp') return null;
     const q = debouncedQuery.trim();
     if (!q) return null;
+    // Always search across all icons regardless of selected category
     return searchIcons(q, {
-      category: resolvedCategory,
+      category: undefined, // Force search across all categories
       limit: 500
     });
-  }, [activeTool, debouncedQuery, resolvedCategory, refreshKey]);
+  }, [activeTool, debouncedQuery, refreshKey]);
   const displayedItems = useMemo(() => {
     if (searchResults) {
       const seen = new Set<string>();
