@@ -1104,14 +1104,17 @@ export const Canvas: React.FC = () => {
       
       console.log('🌍 Global mouseup captured:', {
         isDragging: isDragging,
-        target: event.target,
+        target: (event.target as HTMLElement)?.tagName,
+        canvasExists: !!canvas,
         timestamp: Date.now()
       });
       
       // Only handle if we're currently dragging
       if (isDragging) {
-        console.log('🌍 Processing global mouseup for active drag');
+        console.log('🌍 Processing global mouseup for active drag - calling handlePointerUp');
         handlePointerUp(event, canvas);
+      } else {
+        console.log('🌍 Global mouseup ignored - not currently dragging');
       }
     };
 
@@ -1277,10 +1280,12 @@ export const Canvas: React.FC = () => {
     console.log('🖱️ Canvas onMouseUp triggered:', {
       tool: activeTool,
       button: event.button,
+      isDragging: isDragging,
       timestamp: Date.now()
     });
 
     if (canvasRef.current) {
+      console.log('🖱️ Canvas onMouseUp calling handlePointerUp');
       handlePointerUp(event.nativeEvent, canvasRef.current);
     }
   };
