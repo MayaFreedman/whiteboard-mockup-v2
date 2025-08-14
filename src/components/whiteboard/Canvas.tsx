@@ -1397,30 +1397,18 @@ export const Canvas: React.FC = () => {
             <textarea
               data-immediate-text="true"
               className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
-              style={
+                style={
                 (() => {
                   let adjustedTop = immediateTextPosition.y;
                   let adjustedHeight = isEditingStickyNote 
                     ? editingObject.height
                     : toolStore.toolSettings.fontSize * 1.2 || 20;
                   
-                  // For sticky notes, match canvas vertical centering logic
-                  if (isEditingStickyNote && immediateTextContent) {
-                    const maxWidth = editingObject.width - 16; // Same as canvas padding
-                    const textMetrics = measureText(
-                      immediateTextContent,
-                      fontSize,
-                      editingObject.data?.fontFamily || "Inter",
-                      editingObject.data?.bold || false,
-                      editingObject.data?.italic || false,
-                      maxWidth
-                    );
-                    const totalHeight = textMetrics.lines.length * textMetrics.lineHeight;
-                    const centerOffset = (editingObject.height - totalHeight) / 2;
-                    
-                    // Adjust top position to center the text vertically (no padding since we remove it)
-                    adjustedTop = immediateTextPosition.y + centerOffset;
-                    adjustedHeight = totalHeight;
+                  // For sticky notes, position container at sticky note position
+                  // Use CSS flexbox to center content vertically like canvas textBaseline: 'middle'
+                  if (isEditingStickyNote) {
+                    adjustedTop = immediateTextPosition.y;
+                    adjustedHeight = editingObject.height;
                   }
                   
                   return {
@@ -1462,7 +1450,7 @@ export const Canvas: React.FC = () => {
                       : "transparent",
                     zIndex: 1001,
                     lineHeight: `${fontSize * 1.2}px`,
-                    padding: isEditingStickyNote ? "8px" : "0", // Keep padding for visual consistency
+                    padding: isEditingStickyNote ? "8px" : "0",
                     margin: "0",
                     border: "none",
                     borderRadius: isEditingStickyNote ? "8px" : "0",
@@ -1474,6 +1462,10 @@ export const Canvas: React.FC = () => {
                     wordBreak: "break-word",
                     wordWrap: "break-word",
                     overflow: "hidden",
+                    // Use flexbox to center content vertically like canvas textBaseline: 'middle'
+                    display: isEditingStickyNote ? "flex" : "block",
+                    alignItems: isEditingStickyNote ? "center" : "flex-start",
+                    justifyContent: isEditingStickyNote ? "center" : "flex-start",
                     textRendering: "optimizeLegibility",
                     fontSmooth: "antialiased",
                     WebkitFontSmoothing: "antialiased",
