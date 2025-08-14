@@ -149,6 +149,7 @@ export const Canvas: React.FC = () => {
     
     // If we have an existing object ID (sticky note), use that instead of creating a new text object
     if (existingObjectId) {
+      console.log('🎯 STARTING IMMEDIATE TEXT EDIT - existingObjectId:', existingObjectId);
       const existingObject = objects[existingObjectId];
       if (existingObject && existingObject.type === 'sticky-note') {
         console.log('🗒️ Setting up immediate editing for existing sticky note:', existingObjectId.slice(0, 8));
