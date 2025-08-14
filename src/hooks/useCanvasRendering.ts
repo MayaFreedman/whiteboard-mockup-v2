@@ -745,7 +745,7 @@ export const useCanvasRendering = (
             );
             const lines = textMetrics.lines;
             const lineHeight = textMetrics.lineHeight;
-            const startY = obj.y + 8 + lineHeight / 2;
+            const startY = obj.y + 24 + lineHeight / 2;
 
             let startX = obj.x + obj.width / 2;
             if (stickyNoteData.textAlign === 'left') startX = obj.x + 8;
