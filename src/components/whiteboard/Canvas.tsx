@@ -808,30 +808,32 @@ export const Canvas: React.FC = () => {
     const minWidth = 100;
     const textarea = e.target;
 
-    // Calculate available space from text position to canvas edge for single-click text
+    // Calculate available space from text position to canvas edge
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
       const canvasWidth = canvasRect.width;
       const textPositionX = immediateTextPosition.x - canvasRect.left;
-      const availableWidth = canvasWidth - textPositionX - 10; // 10px padding from canvas edge
+      const availableWidthToEdge = canvasWidth - textPositionX - 10; // 10px padding from canvas edge
 
-      // For single-click text, use a generous width to avoid premature wrapping
-      // Only constrain when very close to canvas edge
-      const minTextWidth = 200; // Minimum width before text starts wrapping
-      const effectiveWidth = Math.max(minTextWidth, availableWidth);
+      // For single-click text, don't constrain the textarea width artificially
+      // Let it expand naturally until it would go beyond canvas edge
+      const naturalTextWidth = Math.max(200, availableWidthToEdge); // At least 200px wide
       
-      textarea.style.width = effectiveWidth + "px";
-      textarea.style.maxWidth = effectiveWidth + "px";
+      textarea.style.width = naturalTextWidth + "px";
+      textarea.style.maxWidth = naturalTextWidth + "px";
+      
+      // Remove word wrapping from textarea to match canvas behavior
+      textarea.style.whiteSpace = "nowrap";
+      textarea.style.overflow = "visible";
 
-      // Measure text with no maxWidth constraint to allow natural flow
-      // Text will only wrap when it hits the actual canvas boundaries
+      // Measure text without width constraint to match canvas rendering
       const wrappedMetrics = measureText(
         newText || "",
         fontSize,
         fontFamily,
         bold,
         italic
-        // No maxWidth parameter - let text flow naturally
+        // No maxWidth - let text flow naturally like on canvas
       );
 
       // Update textarea height to match wrapped text height so cursor moves correctly
