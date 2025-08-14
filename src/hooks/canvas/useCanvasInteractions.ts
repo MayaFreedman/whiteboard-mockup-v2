@@ -566,7 +566,9 @@ export const useCanvasInteractions = () => {
           // Final constraint check before saving
           const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
           console.log('🎯 APPLYING FINAL POSITION:', objectId.slice(0, 8), constrainedFinalPos);
+          console.log('🎯 STORE STATE BEFORE UPDATE:', whiteboardStore.objects[objectId]?.x, whiteboardStore.objects[objectId]?.y);
           whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
+          console.log('🎯 STORE STATE AFTER UPDATE:', whiteboardStore.objects[objectId]?.x, whiteboardStore.objects[objectId]?.y);
         }
       });
       
@@ -574,24 +576,35 @@ export const useCanvasInteractions = () => {
       whiteboardStore.endActionBatch();
       console.log('🔄 DRAG OFF-SCREEN BATCH ENDED:', Date.now());
       
-      // Clean up ALL drag state immediately (not in timeout)
-      console.log('🧹 IMMEDIATE DRAG STATE CLEANUP:', Date.now());
-      currentBatchIdRef.current = null;
-      draggedObjectIdRef.current = null;
-      initialDragPositionsRef.current = {};
+      // CRITICAL: Clear live drag positions FIRST before redraw
+      // This ensures the render uses store data, not stale live positions
+      console.log('🧹 CLEARING LIVE POSITIONS BEFORE REDRAW:', Date.now());
       liveDragPositionsRef.current = {};
       dragDeltasRef.current = { x: 0, y: 0 };
-      isDraggingRef.current = false;
-      isDrawingRef.current = false;
-      dragStartRef.current = null;
       
-      // Trigger single final redraw
-      if (redrawCanvasRef.current) {
-        console.log('🎨 FINAL REDRAW for off-screen drag:', Date.now());
-        redrawCanvasRef.current();
-      }
+      // Use requestAnimationFrame to ensure store updates are processed before redraw
+      requestAnimationFrame(() => {
+        console.log('🎨 DEFERRED REDRAW in requestAnimationFrame:', Date.now());
+        console.log('🎯 FINAL STORE VERIFICATION:', whiteboardStore.selectedObjectIds.map(id => ({
+          id: id.slice(0, 8),
+          position: { x: whiteboardStore.objects[id]?.x, y: whiteboardStore.objects[id]?.y }
+        })));
+        
+        if (redrawCanvasRef.current) {
+          redrawCanvasRef.current();
+        }
+        
+        // Clean up remaining drag state after successful redraw
+        console.log('🧹 FINAL CLEANUP after verified redraw:', Date.now());
+        currentBatchIdRef.current = null;
+        draggedObjectIdRef.current = null;
+        initialDragPositionsRef.current = {};
+        isDraggingRef.current = false;
+        isDrawingRef.current = false;
+        dragStartRef.current = null;
+      });
       
-      console.log('🔄 OFF-SCREEN DRAG COMPLETE - RETURNING EARLY:', Date.now());
+      console.log('🔄 OFF-SCREEN DRAG SETUP COMPLETE - RETURNING EARLY:', Date.now());
       return; // CRITICAL: Return early to avoid general cleanup cascade
     }
     
