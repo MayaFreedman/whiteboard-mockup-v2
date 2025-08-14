@@ -423,16 +423,28 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       previousState: { object: existingObject },
     };
 
-    set((state) => ({
-      objects: {
-        ...state.objects,
-        [id]: {
-          ...state.objects[id],
-          ...updates,
-          updatedAt: Date.now(),
+    set((state) => {
+      const updatedObject = {
+        ...state.objects[id],
+        ...updates,
+        updatedAt: Date.now(),
+      };
+      
+      console.log('🔄 Store IMMEDIATE position update:', { 
+        id: id.slice(0, 8), 
+        before: { x: state.objects[id]?.x, y: state.objects[id]?.y },
+        updates: updates.x !== undefined ? { x: updates.x, y: updates.y } : 'no position change',
+        after: { x: updatedObject.x, y: updatedObject.y },
+        timestamp: Date.now()
+      });
+      
+      return {
+        objects: {
+          ...state.objects,
+          [id]: updatedObject,
         },
-      },
-    }));
+      };
+    });
 
     // If we're in an active batch, add to batch instead of recording immediately
     const currentBatch = get().currentBatch;
