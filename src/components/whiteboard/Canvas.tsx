@@ -635,11 +635,20 @@ export const Canvas: React.FC = () => {
       if (!isPlaceholderText) {
         setTimeout(() => {
           if (textareaRef.current) {
+            textareaRef.current.focus();
             const textLength = currentContent.length;
             textareaRef.current.setSelectionRange(textLength, textLength);
-            textareaRef.current.focus();
+            console.log("📝 Regular text object - positioned cursor at end, length:", textLength);
           }
-        }, 0);
+        }, 100); // Increased delay to ensure textarea is fully rendered
+      } else {
+        // For placeholder text, just focus
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+            console.log("📝 Regular text object - focused with placeholder text");
+          }
+        }, 100);
       }
     } else if (stickyNoteObject) {
       const [objectId, obj] = stickyNoteObject;
