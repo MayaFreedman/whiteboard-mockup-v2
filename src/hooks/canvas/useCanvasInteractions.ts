@@ -992,7 +992,16 @@ export const useCanvasInteractions = () => {
           return;
         }
 
-        // Create new sticky note
+        // Check if there's a current selection - if so, just deselect instead of creating a new sticky note
+        if (whiteboardStore.selectedObjectIds.length > 0) {
+          console.log('🗒️ STICKY NOTE TOOL - Clicked empty space with selection, deselecting:', 
+                      whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)));
+          whiteboardStore.clearSelection(userId);
+          return;
+        }
+
+        // Only create new sticky note if no selection exists
+        console.log('🗒️ STICKY NOTE TOOL - Clicked empty space with no selection, creating new sticky note');
         const stickySize = toolStore.toolSettings.stickyNoteSize || 180;
         const backgroundColor = toolStore.toolSettings.stickyNoteBackgroundColor || '#fef3c7';
         
