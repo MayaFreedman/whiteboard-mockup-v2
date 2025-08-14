@@ -823,7 +823,12 @@ export const Canvas: React.FC = () => {
       const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
       const effectiveWidth = availableWidth - textPadding;
       
-      // Apply width constraints to both regular text and sticky notes for consistent wrapping
+      // For regular text, don't constrain the textarea width - let it flow
+      if (!textarea.dataset.stickyNote) {
+        return;
+      }
+      
+      // Only constrain width for sticky notes
       textarea.style.width = effectiveWidth + "px";
       textarea.style.maxWidth = effectiveWidth + "px";
 
@@ -1470,19 +1475,7 @@ export const Canvas: React.FC = () => {
                   left: immediateTextPosition.x,
                   top: immediateTextPosition.y,
                    // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
-                   width: isEditingStickyNote 
-                     ? editingObject.width 
-                     : (() => {
-                         // Calculate dynamic width for regular text to prevent canvas push
-                         const canvasRect = canvasRef.current?.getBoundingClientRect();
-                         if (!canvasRect) return 800;
-                         
-                         const distanceToEdge = canvasRect.width - (immediateTextPosition.x - canvasRect.left);
-                         const oneCharWidth = fontSize * 0.6; // Approximate character width
-                         const minWidth = oneCharWidth * 10; // Minimum width for usability
-                         
-                         return Math.max(minWidth, distanceToEdge - 20); // 20px buffer from edge
-                       })(),
+                   width: isEditingStickyNote ? editingObject.width : 800,
                    height: isEditingStickyNote
                      ? editingObject.height
                      : toolStore.toolSettings.fontSize * 1.2 || 20,
