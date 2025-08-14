@@ -140,7 +140,7 @@ export const Canvas: React.FC = () => {
     
     const screenCoords = {
       x: coords.x + whiteboardRect.left,
-      y: coords.y + whiteboardRect.top  // Removed -60 offset for immediate text
+      y: coords.y + whiteboardRect.top - 60  // Moved down more to align with cursor
     };
     
     console.log('📝 Canvas coords:', coords);
@@ -158,13 +158,6 @@ export const Canvas: React.FC = () => {
           x: existingObject.x + whiteboardRect.left,
           y: existingObject.y + whiteboardRect.top
         };
-        
-        console.log('🗒️ Immediate sticky note positioning:', { 
-          objectType: existingObject.type, 
-          objectPosition: { x: existingObject.x, y: existingObject.y },
-          whiteboardRect: { left: whiteboardRect.left, top: whiteboardRect.top },
-          finalCoords: stickyScreenCoords 
-        });
         
         setIsImmediateTextEditing(true);
         setImmediateTextPosition(stickyScreenCoords);
@@ -395,15 +388,9 @@ export const Canvas: React.FC = () => {
     const whiteboardContainer = canvas.closest('.absolute.bg-background') as HTMLElement;
     const rect = whiteboardContainer ? whiteboardContainer.getBoundingClientRect() : canvas.getBoundingClientRect();
     
-    // Different positioning for sticky notes vs regular text boxes
-    const isSticky = textObject.type === 'sticky-note';
-    const yOffset = isSticky ? 0 : -70; // Remove -70px adjustment for sticky notes
-    
-    console.log('🔍 calculateTextPosition - textObject.type:', textObject.type, 'isSticky:', isSticky, 'yOffset:', yOffset);
-    
     return {
       x: Math.round(textObject.x + 4 + rect.left), // Canvas position + padding + screen offset
-      y: Math.round(textObject.y + 4 + rect.top + yOffset), // Different offset for sticky vs text
+      y: Math.round(textObject.y + 4 + rect.top - 70), // Canvas position + padding + screen offset - 70px adjustment
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight
