@@ -8,6 +8,7 @@ import { useUser } from '../../contexts/UserContext';
 import { useActionBatching } from '../../hooks/useActionBatching';
 import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { useScreenSizeSync } from '../../hooks/useScreenSizeSync';
+import { calculateOptimalFontSize } from '../../utils/stickyNoteTextSizing';
 import { useCanvasOffset } from '../../hooks/useCanvasOffset';
 import { CustomCursor } from './CustomCursor';
 import { ResizeHandles } from './ResizeHandles';
@@ -234,6 +235,29 @@ export const Canvas: React.FC = () => {
           fontSize: newFontSize,
           ...(changedWidth ? { fixedWidth: true } : {}),
           ...(changedHeight ? { fixedHeight: true } : {}),
+        },
+      };
+      
+      updateObject(objectId, updates, userId);
+    } else if (obj && obj.type === 'sticky-note' && typeof obj.width === 'number' && typeof obj.height === 'number') {
+      // For sticky notes, keep them square and recalculate font size
+      const size = Math.max(newBounds.width, newBounds.height); // Keep square
+      const newFontSize = calculateOptimalFontSize(
+        obj.data.content || '',
+        size,
+        size,
+        obj.data
+      );
+      
+      const updates = {
+        x: newBounds.x,
+        y: newBounds.y,
+        width: size,
+        height: size,
+        data: {
+          ...obj.data,
+          fontSize: newFontSize,
+          stickySize: size
         },
       };
       
@@ -607,22 +631,46 @@ export const Canvas: React.FC = () => {
       const bold = textObject.data?.bold || false;
       const italic = textObject.data?.italic || false;
       
-      // Measure text to get proper height
-      const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, textEditorPosition.width);
-      
-      // Update textarea height so it expands downward and cursor moves correctly
-      const newHeight = Math.max(wrappedMetrics.height, fontSize * 1.2);
-      textarea.style.height = newHeight + 'px';
-      
-      // Also update the canvas object bounds to match
-      const isFixedH = !!textObject.data?.fixedHeight;
-      updateObject(editingTextId, {
-        data: {
-          ...textObject.data,
-          content: newText
-        },
-        ...(isFixedH ? {} : { height: newHeight })
-      }, userId);
+      // For sticky notes, recalculate font size dynamically
+      if (textObject.type === 'sticky-note') {
+        const newFontSize = calculateOptimalFontSize(
+          newText,
+          textObject.width,
+          textObject.height,
+          textObject.data
+        );
+        
+        // Update font size in real-time
+        textarea.style.fontSize = newFontSize + 'px';
+        textarea.style.lineHeight = (newFontSize * 1.2) + 'px';
+        
+        // Update the object with new content and font size
+        updateObject(editingTextId, {
+          data: {
+            ...textObject.data,
+            content: newText,
+            fontSize: newFontSize
+          }
+        }, userId);
+      } else {
+        // Regular text handling
+        // Measure text to get proper height
+        const wrappedMetrics = measureText(newText || '', fontSize, fontFamily, bold, italic, textEditorPosition.width);
+        
+        // Update textarea height so it expands downward and cursor moves correctly
+        const newHeight = Math.max(wrappedMetrics.height, fontSize * 1.2);
+        textarea.style.height = newHeight + 'px';
+        
+        // Also update the canvas object bounds to match
+        const isFixedH = !!textObject.data?.fixedHeight;
+        updateObject(editingTextId, {
+          data: {
+            ...textObject.data,
+            content: newText
+          },
+          ...(isFixedH ? {} : { height: newHeight })
+        }, userId);
+      }
     }
     
     console.log('✏️ Text changed:', {
@@ -949,7 +997,7 @@ export const Canvas: React.FC = () => {
       {editingTextId && textEditorPosition && (
         <textarea
           ref={textareaRef}
-          className="absolute bg-transparent border-none resize-none outline-none overflow-hidden"
+          className="absolute border-none resize-none outline-none overflow-hidden"
           style={{
             left: textEditorPosition.x,
             top: textEditorPosition.y,
@@ -961,24 +1009,32 @@ export const Canvas: React.FC = () => {
             fontStyle: objects[editingTextId]?.data?.italic ? 'italic' : 'normal',
             textDecoration: objects[editingTextId]?.data?.underline ? 'underline' : 'none',
             textAlign: objects[editingTextId]?.data?.textAlign || 'left',
-            color: 'transparent', // Make the text invisible
-            caretColor: objects[editingTextId]?.stroke || '#000000', // Keep the cursor visible
+            // Sticky note styling
+            backgroundColor: objects[editingTextId]?.type === 'sticky-note' 
+              ? objects[editingTextId]?.data?.backgroundColor || '#fef3c7'
+              : 'transparent',
+            borderRadius: objects[editingTextId]?.type === 'sticky-note' ? '8px' : '0',
+            boxShadow: objects[editingTextId]?.type === 'sticky-note' 
+              ? '0px 2px 8px rgba(0,0,0,0.1)' 
+              : 'none',
+            padding: objects[editingTextId]?.type === 'sticky-note' ? '8px' : '0',
+            // Text visibility
+            color: objects[editingTextId]?.type === 'sticky-note' 
+              ? (objects[editingTextId]?.stroke || '#000000')
+              : 'transparent',
+            caretColor: objects[editingTextId]?.stroke || '#000000',
             zIndex: 1000,
-            lineHeight: textEditorPosition.lineHeight + 'px', // Use exact canvas line height
-            padding: '0', // Remove default textarea padding since we handle it with positioning
-            margin: '0', // Remove default margins
-            border: 'none', // Remove borders
-            wordWrap: 'break-word', // Enable word wrapping
-            whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
-            overflowWrap: 'break-word', // Break long words if necessary to match canvas behavior
-            // Font rendering optimizations to match canvas
+            lineHeight: textEditorPosition.lineHeight + 'px',
+            margin: '0',
+            border: 'none',
+            wordWrap: 'break-word',
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'break-word',
             textRendering: 'optimizeLegibility',
             fontSmooth: 'antialiased',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
-            // Disable browser text selection styling
             WebkitTextSizeAdjust: '100%',
-            // Ensure consistent box model
             boxSizing: 'border-box'
           }}
           value={editingText}
