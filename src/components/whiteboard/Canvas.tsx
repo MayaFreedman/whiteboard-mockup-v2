@@ -153,11 +153,26 @@ export const Canvas: React.FC = () => {
       if (existingObject && existingObject.type === 'sticky-note') {
         console.log('🗒️ Setting up immediate editing for existing sticky note:', existingObjectId.slice(0, 8));
         
-        // Position textarea at center of sticky note
+        // Calculate text position to match canvas rendering
+        // In canvas: text is centered vertically within the sticky note bounds
+        const fontSize = existingObject.data?.fontSize || 16;
+        const lineHeight = fontSize * 1.2;
+        
+        // Position textarea to match the canvas text rendering position
         const stickyScreenCoords = {
           x: existingObject.x + whiteboardRect.left,
-          y: existingObject.y + whiteboardRect.top
+          y: existingObject.y + whiteboardRect.top  // Canvas renders from obj.y with text centered inside
         };
+        
+        console.log('🗒️ STICKY TEXTAREA POSITIONING:', {
+          objectId: existingObjectId.slice(0, 8),
+          objectCoords: { x: existingObject.x, y: existingObject.y },
+          whiteboardRect: { left: whiteboardRect.left, top: whiteboardRect.top },
+          finalScreenCoords: stickyScreenCoords,
+          objectDimensions: { width: existingObject.width, height: existingObject.height },
+          fontSize,
+          lineHeight
+        });
         
         setIsImmediateTextEditing(true);
         setImmediateTextPosition(stickyScreenCoords);

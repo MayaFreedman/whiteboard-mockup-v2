@@ -701,13 +701,13 @@ export const useCanvasRendering = (
             size: { w: obj.width, h: obj.height }
           })));
           
-          console.log('🗒️ Rendering sticky note:', {
+          console.log('🗒️ STICKY CANVAS RENDERING:', {
             id: objectId?.slice(0, 8),
             fullId: objectId,
             content: contentToRender?.slice(0, 20),
             fontSize: stickyNoteData.fontSize,
             isBeingEdited,
-            position: { x: obj.x, y: obj.y }
+            canvasPosition: { x: obj.x, y: obj.y }
           });
           
           // Draw sticky note background with shadow and rounded corners
@@ -749,6 +749,13 @@ export const useCanvasRendering = (
             const startY = obj.y + (obj.height - totalHeight) / 2 + lineHeight / 2;
 
             let startX = obj.x + obj.width / 2;
+            
+            console.log('🗒️ STICKY TEXT COORDINATES:', {
+              id: objectId?.slice(0, 8),
+              canvasTextPosition: { x: startX, y: startY },
+              objectBounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+              textMetrics: { lines: lines.length, lineHeight, totalHeight }
+            });
             if (stickyNoteData.textAlign === 'left') startX = obj.x + 8;
             else if (stickyNoteData.textAlign === 'right') startX = obj.x + obj.width - 8;
 
