@@ -907,8 +907,77 @@ export const useCanvasInteractions = () => {
         const existingClickedObject = existingClickedObjectId ? whiteboardStore.objects[existingClickedObjectId] : null;
         const isClickingOnExistingText = existingClickedObject && existingClickedObject.type === 'text';
         
+        console.log('📝 TEXT TOOL - Click detection:', {
+          coords,
+          existingClickedObjectId: existingClickedObjectId?.slice(0, 8),
+          existingClickedObject: existingClickedObject ? {
+            type: existingClickedObject.type,
+            position: { x: existingClickedObject.x, y: existingClickedObject.y }
+          } : null,
+          isClickingOnExistingText,
+          currentSelection: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8))
+        });
+        
         if (isClickingOnExistingText) {
-          console.log('📝 Clicked on existing text object - preventing immediate text editing, waiting for potential double-click');
+          console.log('📝 TEXT TOOL - Clicked on existing text object:', existingClickedObjectId.slice(0, 8));
+          console.log('📝 TEXT TOOL - Preventing immediate text editing, waiting for potential double-click');
+          
+          // Handle selection logic for text tool (identical to select tool)
+          const isShiftPressed = 'shiftKey' in event ? event.shiftKey : false;
+          const currentSelection = [...whiteboardStore.selectedObjectIds];
+          const isAlreadySelected = currentSelection.includes(existingClickedObjectId);
+          
+          console.log('📝 TEXT TOOL - Selection logic:', {
+            isShiftPressed,
+            currentSelection: currentSelection.map(id => id.slice(0, 8)),
+            isAlreadySelected,
+            clickedObjectId: existingClickedObjectId.slice(0, 8)
+          });
+          
+          let newSelection: string[];
+          if (isShiftPressed) {
+            if (isAlreadySelected) {
+              // Remove from selection
+              newSelection = currentSelection.filter(id => id !== existingClickedObjectId);
+              console.log('📝 TEXT TOOL - Removing from selection via Shift+click');
+            } else {
+              // Add to selection
+              newSelection = [...currentSelection, existingClickedObjectId];
+              console.log('📝 TEXT TOOL - Adding to selection via Shift+click');
+            }
+          } else {
+            if (isAlreadySelected && currentSelection.length === 1) {
+              // Single selected object clicked again - keep it selected, prepare for potential drag
+              newSelection = currentSelection;
+              console.log('📝 TEXT TOOL - Already selected single object clicked - keeping selection');
+            } else {
+              // Replace selection with this object
+              newSelection = [existingClickedObjectId];
+              console.log('📝 TEXT TOOL - Replacing selection with clicked object');
+            }
+          }
+          
+          whiteboardStore.selectObjects(newSelection, userId);
+          console.log('📝 TEXT TOOL - Updated selection:', newSelection.map(id => id.slice(0, 8)));
+          
+          // Prepare for potential dragging (identical to select tool logic)
+          if (newSelection.length > 0) {
+            console.log('📝 TEXT TOOL - Preparing for potential drag of selected objects');
+            
+            // Store initial positions for all selected objects for potential dragging
+            initialDragPositionsRef.current = {};
+            newSelection.forEach(objectId => {
+              const obj = whiteboardStore.objects[objectId];
+              if (obj) {
+                initialDragPositionsRef.current[objectId] = { x: obj.x, y: obj.y };
+                console.log('📝 TEXT TOOL - Stored initial position for:', objectId.slice(0, 8), { x: obj.x, y: obj.y });
+              }
+            });
+            
+            dragStartRef.current = coords;
+            console.log('📝 TEXT TOOL - Drag start position set:', coords);
+          }
+          
           // Don't set up immediate text editing when clicking on existing text
           // This allows double-click editing to work properly
           return;
