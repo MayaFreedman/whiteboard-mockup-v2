@@ -165,13 +165,10 @@ export const Canvas: React.FC = () => {
           y: existingObject.y + whiteboardRect.top  // Canvas renders from obj.y with text centered inside
         };
         
-        console.log('🗒️ TEXTAREA COORDS - objectCoords:', { x: existingObject.x, y: existingObject.y });
-        console.log('🗒️ TEXTAREA COORDS - whiteboardRect:', { left: whiteboardRect.left, top: whiteboardRect.top });
-        console.log('🗒️ TEXTAREA COORDS - finalScreenCoords:', stickyScreenCoords);
-        console.log('🗒️ TEXTAREA COORDS - canvas renders text at:', { 
-          x: existingObject.x + existingObject.width / 2, 
-          y: existingObject.y + existingObject.height / 2 
-        });
+        console.log('🗒️ TEXTAREA COORDS - objectCoords x:', existingObject.x, 'y:', existingObject.y);
+        console.log('🗒️ TEXTAREA COORDS - whiteboardRect left:', whiteboardRect.left, 'top:', whiteboardRect.top);
+        console.log('🗒️ TEXTAREA COORDS - finalScreenCoords x:', stickyScreenCoords.x, 'y:', stickyScreenCoords.y);
+        console.log('🗒️ TEXTAREA COORDS - canvas text center would be x:', existingObject.x + existingObject.width / 2, 'y:', existingObject.y + existingObject.height / 2);
         
         setIsImmediateTextEditing(true);
         setImmediateTextPosition(stickyScreenCoords);
