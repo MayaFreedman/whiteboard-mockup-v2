@@ -809,11 +809,13 @@ export const useCanvasInteractions = () => {
         const isShiftPressed = 'shiftKey' in event ? event.shiftKey : false;
         const objectId = findObjectAt(coords.x, coords.y);
         
-        console.log('🎯 Select tool pointer down:', {
+        console.log('🎯 SELECT TOOL - Pointer down:', {
           coords,
           foundObject: objectId?.slice(0, 8) || 'none',
           isShiftPressed,
-          currentSelection: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8))
+          currentSelection: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)),
+          isDragging: isDraggingRef.current,
+          isDrawing: isDrawingRef.current
         });
         
         if (objectId) {
@@ -824,21 +826,21 @@ export const useCanvasInteractions = () => {
               // Remove from selection
               const newSelection = currentSelection.filter(id => id !== objectId);
               whiteboardStore.selectObjects(newSelection, userId);
-              console.log('🎯 Removed object from selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
+              console.log('🎯 SELECT TOOL - Removed object from selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
             } else {
               // Add to selection
               const newSelection = [...currentSelection, objectId];
               whiteboardStore.selectObjects(newSelection, userId);
-              console.log('🎯 Added object to selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
+              console.log('🎯 SELECT TOOL - Added object to selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
             }
           } else {
             // Normal click - only change selection if clicking on unselected object
             if (!whiteboardStore.selectedObjectIds.includes(objectId)) {
               // Single selection - clear existing and select only this object
               whiteboardStore.selectObjects([objectId], userId);
-              console.log('🎯 Selected single object:', objectId.slice(0, 8));
+              console.log('🎯 SELECT TOOL - Selected single object:', objectId.slice(0, 8));
             } else {
-              console.log('🎯 Clicked on already selected object - maintaining selection for drag');
+              console.log('🎯 SELECT TOOL - Clicked on already selected object - maintaining selection for drag');
             }
           }
           
@@ -854,13 +856,22 @@ export const useCanvasInteractions = () => {
             });
             initialDragPositionsRef.current = initialPositions;
             
+            console.log('🎯 SELECT TOOL - Setting up drag state:', {
+              selectedCount: whiteboardStore.selectedObjectIds.length,
+              initialPositions: Object.keys(initialPositions).map(id => ({
+                id: id.slice(0, 8),
+                pos: initialPositions[id]
+              })),
+              dragStart: coords
+            });
+            
             // START BATCH for object dragging - use appropriate action type based on selection count
             const actionType = whiteboardStore.selectedObjectIds.length > 1 ? 'MULTI_OBJECT_DRAG' : 'UPDATE_OBJECT';
             currentBatchIdRef.current = startBatch(actionType, objectId, userId);
             draggedObjectIdRef.current = objectId;
             isDraggingRef.current = true;
             dragStartRef.current = coords;
-            console.log('🎯 Started dragging', whiteboardStore.selectedObjectIds.length, 'object(s):', objectId.slice(0, 8));
+            console.log('🎯 SELECT TOOL - Started dragging', whiteboardStore.selectedObjectIds.length, 'object(s):', objectId.slice(0, 8));
           }
         } else {
           // Clicked on empty area
@@ -939,15 +950,32 @@ export const useCanvasInteractions = () => {
         const isClickingOnStickyNote = clickedObject && clickedObject.type === 'sticky-note';
         
         if (isClickingOnStickyNote) {
-          console.log('🗒️ Clicked on existing sticky note - activating selection tool behavior:', clickedObjectId.slice(0, 8));
+          console.log('🗒️ STICKY NOTE TOOL - Clicked on existing sticky note:', {
+            objectId: clickedObjectId.slice(0, 8),
+            objectPos: { x: clickedObject.x, y: clickedObject.y },
+            coords,
+            currentSelection: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)),
+            isDragging: isDraggingRef.current,
+            isDrawing: isDrawingRef.current
+          });
           
           // Select the sticky note (exactly like select tool)
           whiteboardStore.selectObjects([clickedObjectId], userId);
+          console.log('🗒️ STICKY NOTE TOOL - Selected object:', clickedObjectId.slice(0, 8));
           
           // Store initial position for dragging (exactly like select tool)
           const initialPositions: Record<string, { x: number; y: number }> = {};
           initialPositions[clickedObjectId] = { x: clickedObject.x, y: clickedObject.y };
           initialDragPositionsRef.current = initialPositions;
+          
+          console.log('🗒️ STICKY NOTE TOOL - Setting up drag state:', {
+            selectedCount: 1,
+            initialPositions: Object.keys(initialPositions).map(id => ({
+              id: id.slice(0, 8),
+              pos: initialPositions[id]
+            })),
+            dragStart: coords
+          });
           
           // START BATCH for object dragging (exactly like select tool)
           currentBatchIdRef.current = startBatch('UPDATE_OBJECT', clickedObjectId, userId);
@@ -955,7 +983,12 @@ export const useCanvasInteractions = () => {
           isDraggingRef.current = true;
           dragStartRef.current = coords;
           
-          console.log('🗒️ Started sticky note selection/drag (identical to select tool):', clickedObjectId.slice(0, 8));
+          console.log('🗒️ STICKY NOTE TOOL - Started sticky note selection/drag (identical to select tool):', {
+            objectId: clickedObjectId.slice(0, 8),
+            batchId: currentBatchIdRef.current?.slice(0, 8),
+            isDragging: isDraggingRef.current,
+            dragStart: dragStartRef.current
+          });
           return;
         }
 
