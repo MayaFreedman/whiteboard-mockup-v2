@@ -750,12 +750,11 @@ export const useCanvasRendering = (
 
             let startX = obj.x + obj.width / 2;
             
-            console.log('🗒️ STICKY TEXT COORDINATES:', {
-              id: objectId?.slice(0, 8),
-              canvasTextPosition: { x: startX, y: startY },
-              objectBounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
-              textMetrics: { lines: lines.length, lineHeight, totalHeight }
-            });
+            console.log('🗒️ STICKY TEXT COORDINATES:');
+            console.log('  - id:', objectId?.slice(0, 8));
+            console.log('  - canvasTextPosition:', { x: startX, y: startY });
+            console.log('  - objectBounds:', { x: obj.x, y: obj.y, width: obj.width, height: obj.height });
+            console.log('  - textMetrics:', { lines: lines.length, lineHeight, totalHeight });
             if (stickyNoteData.textAlign === 'left') startX = obj.x + 8;
             else if (stickyNoteData.textAlign === 'right') startX = obj.x + obj.width - 8;
 

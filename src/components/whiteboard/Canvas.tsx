@@ -165,15 +165,14 @@ export const Canvas: React.FC = () => {
           y: existingObject.y + whiteboardRect.top  // Canvas renders from obj.y with text centered inside
         };
         
-        console.log('🗒️ STICKY TEXTAREA POSITIONING:', {
-          objectId: existingObjectId.slice(0, 8),
-          objectCoords: { x: existingObject.x, y: existingObject.y },
-          whiteboardRect: { left: whiteboardRect.left, top: whiteboardRect.top },
-          finalScreenCoords: stickyScreenCoords,
-          objectDimensions: { width: existingObject.width, height: existingObject.height },
-          fontSize,
-          lineHeight
-        });
+        console.log('🗒️ STICKY TEXTAREA POSITIONING:');
+        console.log('  - objectId:', existingObjectId.slice(0, 8));
+        console.log('  - objectCoords:', { x: existingObject.x, y: existingObject.y });
+        console.log('  - whiteboardRect:', { left: whiteboardRect.left, top: whiteboardRect.top });
+        console.log('  - finalScreenCoords:', stickyScreenCoords);
+        console.log('  - objectDimensions:', { width: existingObject.width, height: existingObject.height });
+        console.log('  - fontSize:', fontSize);
+        console.log('  - lineHeight:', lineHeight);
         
         setIsImmediateTextEditing(true);
         setImmediateTextPosition(stickyScreenCoords);
