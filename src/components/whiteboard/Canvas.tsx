@@ -811,24 +811,12 @@ export const Canvas: React.FC = () => {
     // Calculate available space from text position to screen edge
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
-      // Calculate available width for text wrapping - use canvas width and check distance to edge
-      const oneCharWidth = (toolStore.toolSettings.fontSize || 16) * 0.6; // Approximate character width
-      const distanceToEdge = canvasRect.width - (immediateTextPosition.x - canvasRect.left);
-      const shouldAutoWrap = distanceToEdge < oneCharWidth;
-      const availableWidth = shouldAutoWrap ? 
-        Math.max(canvasRect.width - (immediateTextPosition.x - canvasRect.left) - oneCharWidth, 50) : // Wrap near edge with one char buffer
-        Math.max(canvasRect.width - (immediateTextPosition.x - canvasRect.left), 50); // Use full canvas width otherwise
+      const availableWidth =
+        canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
 
       // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
       const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
       const effectiveWidth = availableWidth - textPadding;
-      
-      // For regular text, don't constrain the textarea width - let it flow
-      if (!textarea.dataset.stickyNote) {
-        return;
-      }
-      
-      // Only constrain width for sticky notes
       textarea.style.width = effectiveWidth + "px";
       textarea.style.maxWidth = effectiveWidth + "px";
 
@@ -1475,7 +1463,7 @@ export const Canvas: React.FC = () => {
                   left: immediateTextPosition.x,
                   top: immediateTextPosition.y,
                    // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
-                   width: isEditingStickyNote ? editingObject.width : 800,
+                   width: isEditingStickyNote ? editingObject.width : 200,
                    height: isEditingStickyNote
                      ? editingObject.height
                      : toolStore.toolSettings.fontSize * 1.2 || 20,
@@ -1507,9 +1495,9 @@ export const Canvas: React.FC = () => {
                     : "none",
                   textAlign: isEditingStickyNote ? "center" : "left",
                   verticalAlign: isEditingStickyNote ? "top" : "top", // Changed from 'middle' to 'top' for better cursor alignment
-                   color: isEditingStickyNote
-                     ? editingObject.stroke || "#000000"
-                     : toolStore.toolSettings.strokeColor || "#000000", // Make regular text visible too
+                  color: isEditingStickyNote
+                    ? editingObject.stroke || "#000000"
+                    : "transparent", // Make sticky note text visible
                   backgroundColor: isEditingStickyNote
                     ? editingObject.data?.backgroundColor || "#fff3cd"
                     : "transparent", // Match sticky note background
@@ -1521,11 +1509,11 @@ export const Canvas: React.FC = () => {
                   boxShadow: isEditingStickyNote
                     ? "0px 2px 8px rgba(0,0,0,0.1)"
                     : "none", // Match sticky note shadow
-                   whiteSpace: "pre-wrap",
-                   overflowWrap: "break-word",
-                   wordBreak: "break-word",
-                   wordWrap: "break-word",
-                   overflow: "hidden",
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "break-word",
+                  wordBreak: "break-word",
+                  wordWrap: "break-word",
+                  overflow: "hidden",
                   textRendering: "optimizeLegibility",
                   fontSmooth: "antialiased",
                   WebkitFontSmoothing: "antialiased",
