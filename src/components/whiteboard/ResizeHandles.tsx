@@ -82,7 +82,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
           break;
       }
       
-      // Minimum size constraints
+      // Size constraints
       if (newBounds.width < 10) {
         if (handleId.includes('w')) {
           newBounds.x = startBounds.x + startBounds.width - 10;
@@ -94,6 +94,14 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
           newBounds.y = startBounds.y + startBounds.height - 10;
         }
         newBounds.height = 10;
+      }
+      
+      // Maximum width constraint for text objects (200px limit)
+      if (obj.type === 'text' && newBounds.width > 200) {
+        if (handleId.includes('w')) {
+          newBounds.x = startBounds.x + startBounds.width - 200;
+        }
+        newBounds.width = 200;
       }
       
       console.log('🔄 Manual resize:', { objectId, handleId, newBounds, oldBounds: startBounds });
