@@ -574,22 +574,25 @@ export const useCanvasInteractions = () => {
       whiteboardStore.endActionBatch();
       console.log('🔄 DRAG OFF-SCREEN BATCH ENDED:', Date.now());
       
-      // Trigger immediate redraw with final positions BEFORE clearing drag state
+      // Clean up ALL drag state immediately (not in timeout)
+      console.log('🧹 IMMEDIATE DRAG STATE CLEANUP:', Date.now());
+      currentBatchIdRef.current = null;
+      draggedObjectIdRef.current = null;
+      initialDragPositionsRef.current = {};
+      liveDragPositionsRef.current = {};
+      dragDeltasRef.current = { x: 0, y: 0 };
+      isDraggingRef.current = false;
+      isDrawingRef.current = false;
+      dragStartRef.current = null;
+      
+      // Trigger single final redraw
       if (redrawCanvasRef.current) {
-        console.log('🎨 TRIGGERING IMMEDIATE REDRAW:', Date.now());
+        console.log('🎨 FINAL REDRAW for off-screen drag:', Date.now());
         redrawCanvasRef.current();
-        console.log('🎨 REDRAW TRIGGERED:', Date.now());
       }
       
-      // Small delay to ensure render completes before clearing state
-      setTimeout(() => {
-        console.log('🧹 TIMEOUT CLEARING DRAG STATE:', Date.now());
-        // Clear drag state after render
-        initialDragPositionsRef.current = {};
-        liveDragPositionsRef.current = {};
-        dragDeltasRef.current = { x: 0, y: 0 };
-        console.log('🧹 DRAG STATE CLEARED:', Date.now());
-      }, 0);
+      console.log('🔄 OFF-SCREEN DRAG COMPLETE - RETURNING EARLY:', Date.now());
+      return; // CRITICAL: Return early to avoid general cleanup cascade
     }
     
     if ((activeTool === 'pencil' || activeTool === 'brush') && 
