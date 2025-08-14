@@ -110,6 +110,12 @@ export const useUndoRedo = (): UndoRedoManager => {
         stateChange.objects = finalStateChange.objects;
       }
       if (finalStateChange.selectedObjectIds !== currentState.selectedObjectIds) {
+        console.log('🚨 UNDO/REDO CHANGING SELECTION:', {
+          from: currentState.selectedObjectIds,
+          to: finalStateChange.selectedObjectIds,
+          context: 'undo/redo state restoration',
+          timestamp: Date.now()
+        });
         stateChange.selectedObjectIds = finalStateChange.selectedObjectIds;
       }
       if (finalStateChange.viewport !== currentState.viewport) {
@@ -298,6 +304,12 @@ export const useUndoRedo = (): UndoRedoManager => {
         stateChange.objects = finalStateChange.objects;
       }
       if (finalStateChange.selectedObjectIds !== currentState.selectedObjectIds) {
+        console.log('🚨 UNDO/REDO CHANGING SELECTION (redo):', {
+          from: currentState.selectedObjectIds,
+          to: finalStateChange.selectedObjectIds,
+          context: 'redo state restoration',
+          timestamp: Date.now()
+        });
         stateChange.selectedObjectIds = finalStateChange.selectedObjectIds;
       }
       if (finalStateChange.viewport !== currentState.viewport) {
