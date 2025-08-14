@@ -84,6 +84,38 @@ export const useCanvasInteractions = () => {
       return { x: newX, y: newY };
     }
 
+    // Handle path objects (drawings/pencil strokes) which don't have width/height
+    if (obj.type === 'path') {
+      // For path objects, we don't constrain them as they can extend beyond their origin point
+      // The path data contains the actual bounds, but calculating it would be expensive
+      // Instead, we just ensure the origin point stays within reasonable bounds
+      const buffer = 50; // Give more leeway for path objects
+      const constrainedX = Math.max(buffer, Math.min(activeWhiteboardSize.width - buffer, newX));
+      const constrainedY = Math.max(buffer, Math.min(activeWhiteboardSize.height - buffer, newY));
+      
+      console.log('🚧 Path object bounds check:', {
+        objectId: objectId.slice(0, 8),
+        type: obj.type,
+        requested: { x: newX, y: newY },
+        constrained: { x: constrainedX, y: constrainedY },
+        screenSize: { width: activeWhiteboardSize.width, height: activeWhiteboardSize.height }
+      });
+      
+      return { x: constrainedX, y: constrainedY };
+    }
+
+    // Handle regular objects with width and height
+    if (obj.width === undefined || obj.height === undefined) {
+      console.warn('⚠️ Object missing width/height:', {
+        objectId: objectId.slice(0, 8),
+        type: obj.type,
+        width: obj.width,
+        height: obj.height
+      });
+      // Fallback: don't constrain if we don't have dimensions
+      return { x: newX, y: newY };
+    }
+
     const buffer = 1;
     const minX = buffer;
     const minY = buffer;
@@ -97,6 +129,7 @@ export const useCanvasInteractions = () => {
     if (wasConstrained) {
       console.log('🚧 Object constrained to bounds:', {
         objectId: objectId.slice(0, 8),
+        type: obj.type,
         requested: { x: newX, y: newY },
         constrained: { x: constrainedX, y: constrainedY },
         bounds: { minX, minY, maxX, maxY },
