@@ -521,7 +521,7 @@ export const Canvas: React.FC = () => {
 
     console.log("🖱️ Double-click coordinates:", { x, y });
 
-    // Find text object at click position using improved hit detection
+    // Find text object OR sticky note at click position using improved hit detection
     const textObject = Object.entries(objects).find(([id, obj]) => {
       if (obj.type !== "text" || !obj.width || !obj.height || !obj.data)
         return false;
@@ -589,6 +589,29 @@ export const Canvas: React.FC = () => {
       return isInBounds;
     });
 
+    // Check for sticky notes if no text object was found
+    const stickyNoteObject = !textObject ? Object.entries(objects).find(([id, obj]) => {
+      if (obj.type !== "sticky-note" || !obj.width || !obj.height) return false;
+
+      // For sticky notes, check if click is within the rectangle bounds
+      const tolerance = 5;
+      const isInBounds =
+        x >= obj.x - tolerance &&
+        x <= obj.x + obj.width + tolerance &&
+        y >= obj.y - tolerance &&
+        y <= obj.y + obj.height + tolerance;
+
+      console.log("🗒️ Checking sticky note bounds:", {
+        id: id.slice(0, 8),
+        bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+        clickPos: { x, y },
+        tolerance,
+        isInBounds,
+      });
+
+      return isInBounds;
+    }) : null;
+
     if (textObject) {
       const [objectId, obj] = textObject;
       console.log("🖱️ Found text object to edit:", objectId.slice(0, 8));
@@ -618,8 +641,57 @@ export const Canvas: React.FC = () => {
           }
         }, 0);
       }
+    } else if (stickyNoteObject) {
+      const [objectId, obj] = stickyNoteObject;
+      console.log("🗒️ Found sticky note to edit:", objectId.slice(0, 8));
+
+      // For sticky notes, trigger immediate text editing using the existing system
+      const coords = { x: x, y: y };
+      
+      console.log("🗒️ Double-click triggering sticky note immediate editing:", {
+        objectId: objectId.slice(0, 8),
+        canvasCoords: coords
+      });
+
+      // Trigger immediate sticky note editing - the setImmediateTextTrigger callback will handle coordinate conversion
+      setTimeout(() => {
+        // Use the same immediate text trigger system that's already set up
+        const containerElement = containerRef.current;
+        if (containerElement) {
+          const whiteboardDiv = containerElement.querySelector(".absolute.bg-background") as HTMLElement;
+          const whiteboardRect = whiteboardDiv?.getBoundingClientRect();
+          
+          if (whiteboardRect) {
+            // Convert canvas coordinates to match what the trigger expects
+            const triggerCoords = { x: x, y: y };
+            
+            // The setImmediateTextTrigger callback is already configured above, just call it
+            // Find and call the trigger function manually since we're in a double-click context
+            const stickyScreenCoords = {
+              x: obj.x + whiteboardRect.left,
+              y: obj.y + whiteboardRect.top - 65,
+            };
+
+            setIsImmediateTextEditing(true);
+            setImmediateTextPosition(stickyScreenCoords);
+            setImmediateTextContent(obj.data?.content || "");
+            setImmediateTextObjectId(objectId);
+
+            redrawCanvas();
+
+            // Focus the textarea after a short delay
+            setTimeout(() => {
+              const textarea = document.querySelector("[data-immediate-text]") as HTMLTextAreaElement;
+              if (textarea) {
+                textarea.focus();
+                console.log("🗒️ Focused sticky note immediate text textarea (double-click)");
+              }
+            }, 50);
+          }
+        }
+      }, 10);
     } else {
-      console.log("🖱️ No text object found at double-click position");
+      console.log("🖱️ No text object or sticky note found at double-click position");
     }
 
     // Reset protection flag after a shorter delay - reduced to 200ms
