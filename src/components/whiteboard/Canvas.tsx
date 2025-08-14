@@ -1098,6 +1098,8 @@ export const Canvas: React.FC = () => {
 
   // Add global mouse event listeners to catch mouse releases outside canvas
   useEffect(() => {
+    console.log('🔧 Setting up global mouseup listener');
+    
     const handleGlobalMouseUp = (event: MouseEvent) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -1126,9 +1128,11 @@ export const Canvas: React.FC = () => {
 
     // Add global mouse up listener
     document.addEventListener('mouseup', handleGlobalMouseUp);
+    console.log('🔧 Global mouseup listener attached');
 
     return () => {
       document.removeEventListener('mouseup', handleGlobalMouseUp);
+      console.log('🔧 Global mouseup listener removed');
     };
   }, [handlePointerUp, isDragging, getCurrentDragDeltas]);
 
@@ -1293,6 +1297,8 @@ export const Canvas: React.FC = () => {
     if (canvasRef.current) {
       console.log('🖱️ Canvas onMouseUp calling handlePointerUp');
       handlePointerUp(event.nativeEvent, canvasRef.current);
+    } else {
+      console.warn('🖱️ Canvas onMouseUp - canvasRef.current is null!');
     }
   };
 
