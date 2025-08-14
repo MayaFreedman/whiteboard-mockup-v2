@@ -1302,6 +1302,38 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
+        console.log('📝 TEXT TOOL - Pointer move:', {
+          isDragging: isDraggingRef.current,
+          hasDragStart: !!dragStartRef.current,
+          selectedCount: whiteboardStore.selectedObjectIds.length,
+          coords,
+          textClickStartPos: textClickStartPosRef.current
+        });
+        
+        // Check for drag detection on selected objects (initiate dragging)
+        if (!isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+          const deltaX = Math.abs(coords.x - dragStartRef.current.x);
+          const deltaY = Math.abs(coords.y - dragStartRef.current.y);
+          const dragThreshold = 3;
+          
+          if (deltaX > dragThreshold || deltaY > dragThreshold) {
+            console.log('📝 TEXT TOOL - Drag threshold exceeded, starting drag operation');
+            
+            // Start the optimized batch for dragging
+            const firstObjectId = whiteboardStore.selectedObjectIds[0];
+            const actionType = whiteboardStore.selectedObjectIds.length > 1 ? 'MULTI_OBJECT_DRAG' : 'UPDATE_OBJECT';
+            currentBatchIdRef.current = startBatch(actionType, firstObjectId, userId);
+            draggedObjectIdRef.current = firstObjectId;
+            isDraggingRef.current = true;
+            
+            console.log('📝 TEXT TOOL - Started dragging', whiteboardStore.selectedObjectIds.length, 'object(s):', {
+              firstObjectId: firstObjectId.slice(0, 8),
+              batchId: currentBatchIdRef.current?.slice(0, 8),
+              selectedObjects: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8))
+            });
+          }
+        }
+        
         // Handle dragging existing selected text objects (like select tool)
         if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
           // Multi-object dragging with absolute positioning to prevent drift
