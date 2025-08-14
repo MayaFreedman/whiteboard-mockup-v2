@@ -803,6 +803,32 @@ export const useCanvasInteractions = () => {
           return;
         }
 
+        // Check if we're clicking on an existing sticky note for dragging
+        const clickedObjectId = findObjectAt(coords.x, coords.y);
+        const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
+        const isClickingOnStickyNote = clickedObject && clickedObject.type === 'sticky-note';
+        
+        if (isClickingOnStickyNote) {
+          console.log('🗒️ Clicked on existing sticky note for dragging:', clickedObjectId.slice(0, 8));
+          
+          // Select the sticky note and start dragging
+          whiteboardStore.selectObjects([clickedObjectId], userId);
+          
+          // Store initial position for dragging
+          const initialPositions: Record<string, { x: number; y: number }> = {};
+          initialPositions[clickedObjectId] = { x: clickedObject.x, y: clickedObject.y };
+          initialDragPositionsRef.current = initialPositions;
+          
+          // START BATCH for object dragging
+          currentBatchIdRef.current = startBatch('UPDATE_OBJECT', clickedObjectId, userId);
+          draggedObjectIdRef.current = clickedObjectId;
+          isDraggingRef.current = true;
+          dragStartRef.current = coords;
+          console.log('🗒️ Started dragging sticky note:', clickedObjectId.slice(0, 8));
+          return;
+        }
+
+        // Create new sticky note
         const stickySize = toolStore.toolSettings.stickyNoteSize || 180;
         const backgroundColor = toolStore.toolSettings.stickyNoteBackgroundColor || '#fef3c7';
         
