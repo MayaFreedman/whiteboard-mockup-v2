@@ -1529,27 +1529,30 @@ export const useCanvasInteractions = () => {
         if (isDraggingRef.current) {
           console.log('🔄 SELECT TOOL - Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
           
-          // Create optimized drag completion batch with only final positions
-          const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE', 'multi-object', userId);
+          // CRITICAL: End the existing batch first to prevent conflicts
+          if (currentBatchIdRef.current) {
+            console.log('🧹 Ending existing drag batch before final update:', currentBatchIdRef.current.slice(0, 8));
+            endBatch();
+            currentBatchIdRef.current = null;
+          }
           
-          // Apply final positions for all dragged objects in a single batch
+          // Apply final positions for all dragged objects WITHOUT creating a new batch
+          // Individual updates will be separate actions that can be undone together
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const finalPos = liveDragPositionsRef.current[objectId];
             if (finalPos) {
               // Final constraint check before saving
               const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
-              console.log('🎯 Final position for object:', objectId.slice(0, 8), constrainedFinalPos);
+              console.log('🎯 Applying final position for object:', objectId.slice(0, 8), 'from live:', finalPos, 'to constrained:', constrainedFinalPos);
               whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
+            } else {
+              console.warn('⚠️ No live drag position found for object:', objectId.slice(0, 8));
             }
           });
           
-          // End the optimized batch
-          whiteboardStore.endActionBatch();
-          
-          console.log('🧹 Cleaning up drag state after boundary-constrained drag');
+          console.log('🧹 Cleaning up drag state after applying final positions');
           
           // Clean up drag state - CRITICAL: ensure all refs are properly reset
-          currentBatchIdRef.current = null;
           draggedObjectIdRef.current = null;
           initialDragPositionsRef.current = {};
           liveDragPositionsRef.current = {};
@@ -1558,6 +1561,8 @@ export const useCanvasInteractions = () => {
           // Ensure dragging state is fully reset
           isDraggingRef.current = false;
           dragStartRef.current = null;
+          
+          console.log('✅ Drag completion and cleanup finished successfully');
         } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
           // Complete selection box
           const objectIds = findObjectsInSelectionBox(selectionBoxRef.current);
