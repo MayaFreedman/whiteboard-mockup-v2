@@ -1469,7 +1469,8 @@ export const Canvas: React.FC = () => {
                   left: immediateTextPosition.x,
                   top: immediateTextPosition.y,
                    // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
-                   width: isEditingStickyNote ? editingObject.width : 200,
+                   // For regular text, use large width to prevent premature wrapping
+                   width: isEditingStickyNote ? editingObject.width : 2000,
                    height: isEditingStickyNote
                      ? editingObject.height
                      : toolStore.toolSettings.fontSize * 1.2 || 20,
@@ -1515,10 +1516,11 @@ export const Canvas: React.FC = () => {
                   boxShadow: isEditingStickyNote
                     ? "0px 2px 8px rgba(0,0,0,0.1)"
                     : "none", // Match sticky note shadow
-                  whiteSpace: "pre-wrap",
-                  overflowWrap: "break-word",
-                  wordBreak: "break-word",
-                  wordWrap: "break-word",
+                   // Different wrapping behavior for sticky notes vs regular text
+                   whiteSpace: isEditingStickyNote ? "pre-wrap" : "nowrap",
+                   overflowWrap: isEditingStickyNote ? "break-word" : "normal",
+                   wordBreak: isEditingStickyNote ? "break-word" : "normal",
+                   wordWrap: isEditingStickyNote ? "break-word" : "normal",
                   overflow: "hidden",
                   textRendering: "optimizeLegibility",
                   fontSmooth: "antialiased",
