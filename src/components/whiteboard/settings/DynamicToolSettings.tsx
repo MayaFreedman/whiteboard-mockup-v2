@@ -264,7 +264,7 @@ export const DynamicToolSettings: React.FC = () => {
                   <>Found {totalResults} result{totalResults === 1 ? '' : 's'}</>
                 ) : selectedCategory !== 'all' ? (
                   <>
-                    No results for "{debouncedQuery}" in {getCategoryDisplayName(selectedCategory)}.{" "}
+                    No results for "{debouncedQuery}".{" "}
                     <button
                       type="button"
                       className="underline underline-offset-2 text-primary hover:text-primary/80 font-medium"
