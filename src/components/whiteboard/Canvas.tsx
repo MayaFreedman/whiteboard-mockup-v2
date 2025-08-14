@@ -1238,13 +1238,6 @@ export const Canvas: React.FC = () => {
    */
   const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
-      // Only log for select tool to avoid spam
-      if (activeTool === 'select') {
-        console.log('🖱️ Canvas onMouseMove (select tool):', { 
-          tool: activeTool,
-          timestamp: Date.now()
-        });
-      }
       handlePointerMove(event.nativeEvent, canvasRef.current);
     }
   };
