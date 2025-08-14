@@ -1102,19 +1102,25 @@ export const Canvas: React.FC = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       
+      // Get current drag deltas to check if we're actually mid-drag
+      const currentDragDeltas = getCurrentDragDeltas();
+      const hasActiveDrag = isDragging || Object.keys(currentDragDeltas || {}).length > 0;
+      
       console.log('🌍 Global mouseup captured:', {
         isDragging: isDragging,
+        hasActiveDrag: hasActiveDrag,
+        dragDeltas: currentDragDeltas,
         target: (event.target as HTMLElement)?.tagName,
         canvasExists: !!canvas,
         timestamp: Date.now()
       });
       
-      // Only handle if we're currently dragging
-      if (isDragging) {
+      // Handle if we're currently dragging OR have active drag deltas
+      if (hasActiveDrag) {
         console.log('🌍 Processing global mouseup for active drag - calling handlePointerUp');
         handlePointerUp(event, canvas);
       } else {
-        console.log('🌍 Global mouseup ignored - not currently dragging');
+        console.log('🌍 Global mouseup ignored - no active drag detected');
       }
     };
 
@@ -1124,7 +1130,7 @@ export const Canvas: React.FC = () => {
     return () => {
       document.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [handlePointerUp, isDragging]);
+  }, [handlePointerUp, isDragging, getCurrentDragDeltas]);
 
   // Handle keyboard events for object deletion
   useEffect(() => {
