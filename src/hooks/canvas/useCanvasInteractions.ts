@@ -1526,7 +1526,16 @@ export const useCanvasInteractions = () => {
   const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const activeTool = toolStore.activeTool;
 
-    console.log('🖱️ Pointer up:', { tool: activeTool, drawing: isDrawingRef.current });
+    console.log('🟥 MOUSEUP LISTENER TRIGGERED:', {
+      isDragging: isDraggingRef.current,
+      isDrawing: isDrawingRef.current,
+      activeTool,
+      selectedObjectIds: whiteboardStore.selectedObjectIds,
+      liveDragPositions: Object.keys(liveDragPositionsRef.current),
+      draggedObjectId: draggedObjectIdRef.current,
+      timestamp: Date.now(),
+      eventType: event.type
+    });
 
     switch (activeTool) {
       case 'select': {
@@ -1569,9 +1578,17 @@ export const useCanvasInteractions = () => {
               console.log('🎯 DRAG END - Applying final position for object:', objectId.slice(0, 8), 'from live:', finalPos, 'to constrained:', constrainedFinalPos);
               whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
               
+              console.log('📍 DRAG END - Store update completed for object:', objectId.slice(0, 8), {
+                appliedPosition: constrainedFinalPos,
+                storeUpdateTime: Date.now()
+              });
+              
               // Force canvas re-render immediately after updating store
               if (redrawCanvasRef.current) {
+                console.log('🔄 DRAG END - Forcing canvas redraw after store update');
                 redrawCanvasRef.current();
+              } else {
+                console.warn('⚠️ DRAG END - redrawCanvasRef.current is null, cannot force redraw');
               }
               
               // Verify the update took
@@ -1589,7 +1606,7 @@ export const useCanvasInteractions = () => {
             }
           });
           
-          console.log('🧹 Cleaning up drag state after applying final positions');
+          console.log('🧹 DRAG END - Cleaning up drag state after applying final positions');
           
           // Clean up drag state - CRITICAL: ensure all refs are properly reset
           draggedObjectIdRef.current = null;
@@ -1600,15 +1617,18 @@ export const useCanvasInteractions = () => {
           isDraggingRef.current = false;
           dragStartRef.current = null;
           
+          console.log('🧹 DRAG END - Drag state cleaned up, scheduling live position cleanup');
+          
           // Clear live positions AFTER a redraw to ensure the final store positions are rendered
           setTimeout(() => {
+            console.log('🧹 DRAG END - Clearing live positions and forcing final redraw');
             liveDragPositionsRef.current = {};
             if (redrawCanvasRef.current) {
               redrawCanvasRef.current();
             }
           }, 0);
           
-          console.log('✅ Drag completion and cleanup finished successfully');
+          console.log('✅ DRAG END - Drag completion and cleanup finished successfully');
         } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
           // Complete selection box
           const objectIds = findObjectsInSelectionBox(selectionBoxRef.current);
