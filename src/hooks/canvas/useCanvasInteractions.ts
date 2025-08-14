@@ -1251,21 +1251,11 @@ export const useCanvasInteractions = () => {
 
     switch (activeTool) {
       case 'select': {
+        // ONLY do work if we're actually dragging something
         if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
           // Multi-object dragging with absolute positioning to prevent drift
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
-          
-          console.log('🔄 SELECT TOOL - Dragging movement:', {
-            selectedCount: whiteboardStore.selectedObjectIds.length,
-            delta: { x: deltaX, y: deltaY },
-            dragStart: dragStartRef.current,
-            currentCoords: coords,
-            initialPositions: Object.keys(initialDragPositionsRef.current).length,
-            liveDragPositions: Object.keys(liveDragPositionsRef.current).length,
-            timestamp: Date.now()
-          });
-          
           // Store current drag deltas for live rendering without creating actions
           dragDeltasRef.current = { x: deltaX, y: deltaY };
           
