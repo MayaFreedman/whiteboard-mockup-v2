@@ -1153,6 +1153,7 @@ export const Canvas: React.FC = () => {
             style={{
               left: immediateTextPosition.x,
               top: immediateTextPosition.y,
+              // For sticky notes, use the EXACT sticky note dimensions 
               width: isEditingStickyNote ? editingObject.width : 200,
               height: isEditingStickyNote ? editingObject.height : (toolStore.toolSettings.fontSize * 1.2 || 20),
               fontSize: fontSize,
@@ -1161,13 +1162,16 @@ export const Canvas: React.FC = () => {
               fontStyle: isEditingStickyNote ? (editingObject.data?.italic ? 'italic' : 'normal') : (toolStore.toolSettings.textItalic ? 'italic' : 'normal'),
               textDecoration: isEditingStickyNote ? (editingObject.data?.underline ? 'underline' : 'none') : (toolStore.toolSettings.textUnderline ? 'underline' : 'none'),
               textAlign: isEditingStickyNote ? 'center' : 'left',
-              verticalAlign: isEditingStickyNote ? 'middle' : 'top',
-              color: 'transparent',
+              verticalAlign: isEditingStickyNote ? 'top' : 'top', // Changed from 'middle' to 'top' for better cursor alignment
+              color: isEditingStickyNote ? (editingObject.stroke || '#000000') : 'transparent', // Make sticky note text visible
+              backgroundColor: isEditingStickyNote ? (editingObject.data?.backgroundColor || '#fff3cd') : 'transparent', // Match sticky note background
               zIndex: 1001,
-              lineHeight: `${fontSize * 1.2}px`,
-              padding: isEditingStickyNote ? '8px' : '0',
+              lineHeight: `${fontSize * 1.2}px`, // Must match the text rendering lineHeight
+              padding: isEditingStickyNote ? '8px' : '0', // Must match sticky note padding exactly
               margin: '0',
               border: 'none',
+              borderRadius: isEditingStickyNote ? '8px' : '0', // Match sticky note styling
+              boxShadow: isEditingStickyNote ? '0px 2px 8px rgba(0,0,0,0.1)' : 'none', // Match sticky note shadow
               whiteSpace: 'pre-wrap',
               overflowWrap: 'break-word',
               wordBreak: 'break-word',
@@ -1177,12 +1181,9 @@ export const Canvas: React.FC = () => {
               fontSmooth: 'antialiased',
               WebkitFontSmoothing: 'antialiased',
               MozOsxFontSmoothing: 'grayscale',
-              caretColor: toolStore.toolSettings.strokeColor || '#000000',
+              caretColor: isEditingStickyNote ? (editingObject.stroke || '#000000') : (toolStore.toolSettings.strokeColor || '#000000'),
               WebkitTextSizeAdjust: '100%',
               boxSizing: 'border-box',
-              backgroundColor: 'transparent',
-              borderRadius: '0px',
-              boxShadow: 'none',
               minHeight: fontSize * 1.2 + 'px',
               '--placeholder-color': `${toolStore.toolSettings.strokeColor || '#000000'}B3`
             } as React.CSSProperties & { '--placeholder-color': string }}

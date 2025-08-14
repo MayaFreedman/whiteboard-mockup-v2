@@ -16,9 +16,9 @@ export const calculateOptimalFontSize = (
     return Math.min(width / 3, height / 3, 48);
   }
 
-  // Account for padding (16px total - 8px on each side)
-  const maxWidth = width - 16;
-  const maxHeight = height - 16;
+  // Account for padding (16px total - 8px on each side) - this MUST match Canvas.tsx padding
+  const maxWidth = width - 16;  // Available width within the sticky note bounds
+  const maxHeight = height - 16; // Available height within the sticky note bounds
 
   if (maxWidth <= 0 || maxHeight <= 0) return 8; // Minimum readable size
 
