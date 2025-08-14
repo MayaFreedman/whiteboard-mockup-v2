@@ -663,7 +663,9 @@ export const useCanvasRendering = (
             content: contentToRender.slice(0, 50) + (contentToRender.length > 50 ? '...' : ''),
             availableWidth,
             measuredLines: textMetrics.lines.length,
-            lines: textMetrics.lines
+            lines: textMetrics.lines,
+            stickyNotePosition: { x: obj.x, y: obj.y },
+            stickyNoteDimensions: { width: obj.width, height: obj.height }
           });
           
           // Render each line with proper alignment
@@ -735,12 +737,25 @@ export const useCanvasRendering = (
           const stickyNoteData = obj.data;
           const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
           let contentToRender = isBeingEdited && editingText !== undefined ? editingText : stickyNoteData.content;
+          const objectId = Object.keys(objects).find(id => objects[id] === obj);
+          
+          // Debug: Show all sticky notes in store to detect duplicates
+          const allStickyNotes = Object.entries(objects).filter(([id, obj]) => obj.type === 'sticky-note');
+          console.log('🗒️ ALL STICKY NOTES IN STORE:', allStickyNotes.map(([id, obj]) => ({
+            id: id.slice(0, 8),
+            fullId: id,
+            content: obj.data?.content?.slice(0, 10),
+            position: { x: obj.x, y: obj.y },
+            size: { w: obj.width, h: obj.height }
+          })));
           
           console.log('🗒️ Rendering sticky note:', {
-            id: Object.keys(objects).find(id => objects[id] === obj)?.slice(0, 8),
+            id: objectId?.slice(0, 8),
+            fullId: objectId,
             content: contentToRender?.slice(0, 20),
             fontSize: stickyNoteData.fontSize,
-            isBeingEdited
+            isBeingEdited,
+            position: { x: obj.x, y: obj.y }
           });
           
           // Draw sticky note background with shadow and rounded corners
