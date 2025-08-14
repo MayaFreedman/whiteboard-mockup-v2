@@ -77,7 +77,10 @@ export const useCanvasInteractions = () => {
     newY: number
   ): { x: number; y: number } => {
     const obj = whiteboardStore.objects[objectId];
-    if (!obj) return { x: newX, y: newY };
+    if (!obj) {
+      console.warn('⚠️ constrainObjectToBounds: Object not found:', objectId);
+      return { x: newX, y: newY };
+    }
 
     const buffer = 1;
     const minX = buffer;
@@ -85,9 +88,23 @@ export const useCanvasInteractions = () => {
     const maxX = activeWhiteboardSize.width - obj.width - buffer;
     const maxY = activeWhiteboardSize.height - obj.height - buffer;
 
+    const constrainedX = Math.max(minX, Math.min(maxX, newX));
+    const constrainedY = Math.max(minY, Math.min(maxY, newY));
+
+    const wasConstrained = constrainedX !== newX || constrainedY !== newY;
+    if (wasConstrained) {
+      console.log('🚧 Object constrained to bounds:', {
+        objectId: objectId.slice(0, 8),
+        requested: { x: newX, y: newY },
+        constrained: { x: constrainedX, y: constrainedY },
+        bounds: { minX, minY, maxX, maxY },
+        objSize: { width: obj.width, height: obj.height }
+      });
+    }
+
     return {
-      x: Math.max(minX, Math.min(maxX, newX)),
-      y: Math.max(minY, Math.min(maxY, newY))
+      x: constrainedX,
+      y: constrainedY
     };
   }, [activeWhiteboardSize, whiteboardStore.objects]);
   
@@ -137,6 +154,13 @@ export const useCanvasInteractions = () => {
     }
     draggedObjectIdRef.current = null;
     drawingObjectIdRef.current = null;
+    
+    // CRITICAL: Also clear drag-specific state that was added for boundary constraints
+    initialDragPositionsRef.current = {};
+    liveDragPositionsRef.current = {};
+    dragDeltasRef.current = { x: 0, y: 0 };
+    
+    console.log('🧹 Cleaned up batching and drag state');
   }, [endBatch]);
 
   /**
@@ -709,6 +733,13 @@ export const useCanvasInteractions = () => {
         const isShiftPressed = 'shiftKey' in event ? event.shiftKey : false;
         const objectId = findObjectAt(coords.x, coords.y);
         
+        console.log('🎯 Select tool pointer down:', {
+          coords,
+          foundObject: objectId?.slice(0, 8) || 'none',
+          isShiftPressed,
+          currentSelection: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8))
+        });
+        
         if (objectId) {
           // Handle Shift+click for multi-select
           if (isShiftPressed) {
@@ -1150,12 +1181,18 @@ export const useCanvasInteractions = () => {
           // End the optimized batch
           whiteboardStore.endActionBatch();
           
-          // Clean up drag state
+          console.log('🧹 Cleaning up drag state after boundary-constrained drag');
+          
+          // Clean up drag state - CRITICAL: ensure all refs are properly reset
           currentBatchIdRef.current = null;
           draggedObjectIdRef.current = null;
           initialDragPositionsRef.current = {};
           liveDragPositionsRef.current = {};
           dragDeltasRef.current = { x: 0, y: 0 };
+          
+          // Ensure dragging state is fully reset
+          isDraggingRef.current = false;
+          dragStartRef.current = null;
         } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
           // Complete selection box
           const objectIds = findObjectsInSelectionBox(selectionBoxRef.current);
@@ -1185,7 +1222,15 @@ export const useCanvasInteractions = () => {
           }
         }
         
+        // CRITICAL: Always reset these flags at the end of select pointer up
+        console.log('🧹 Resetting select tool state:', {
+          wasDragging: isDraggingRef.current,
+          wasDrawing: isDrawingRef.current,
+          selectedObjects: whiteboardStore.selectedObjectIds.length
+        });
+        
         isDraggingRef.current = false;
+        isDrawingRef.current = false;
         dragStartRef.current = null;
         break;
       }
