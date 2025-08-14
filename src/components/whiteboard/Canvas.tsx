@@ -645,7 +645,8 @@ export const Canvas: React.FC = () => {
       }
     }
     
-    redrawCanvas();
+    // Don't redraw immediately during active typing to prevent multiple renders
+    // redrawCanvas();
   };
 
   // Handle immediate text editing completion
