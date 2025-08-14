@@ -732,7 +732,7 @@ export const useCanvasRendering = (
             ctx.font = `${fontStyle} ${fontWeight} ${stickyNoteData.fontSize}px ${stickyNoteData.fontFamily}`;
             ctx.fillStyle = obj.stroke || '#000000';
             ctx.textAlign = stickyNoteData.textAlign || 'center';
-            ctx.textBaseline = 'middle';
+            ctx.textBaseline = 'top'; // Changed from 'middle' to 'top'
 
             const maxWidth = obj.width - 16;
             const textMetrics = measureText(
@@ -745,16 +745,16 @@ export const useCanvasRendering = (
             );
             const lines = textMetrics.lines;
             const lineHeight = textMetrics.lineHeight;
-            const totalHeight = lines.length * lineHeight;
-            const startY = obj.y + (obj.height - totalHeight) / 2 + lineHeight / 2;
+            // Simplified positioning: start from top + padding (8px) to match textarea
+            const startY = obj.y + 8;
 
             let startX = obj.x + obj.width / 2;
             
-            console.log('🗒️ STICKY TEXT COORDINATES:');
+            console.log('🗒️ STICKY TEXT COORDINATES (SIMPLIFIED):');
             console.log('  - id:', objectId?.slice(0, 8));
             console.log('  - canvasTextPosition:', { x: startX, y: startY });
             console.log('  - objectBounds:', { x: obj.x, y: obj.y, width: obj.width, height: obj.height });
-            console.log('  - textMetrics:', { lines: lines.length, lineHeight, totalHeight });
+            console.log('  - textMetrics:', { lines: lines.length, lineHeight });
             if (stickyNoteData.textAlign === 'left') startX = obj.x + 8;
             else if (stickyNoteData.textAlign === 'right') startX = obj.x + obj.width - 8;
 
