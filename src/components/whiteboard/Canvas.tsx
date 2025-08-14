@@ -563,7 +563,7 @@ export const Canvas: React.FC = () => {
         textAlign: obj.data.textAlign || 'center'
       };
       
-      const optimalFontSize = calculateOptimalFontSize(newText, width - 16, height - 16, textData);
+      const optimalFontSize = calculateOptimalFontSize(newText, width, height, textData);
       
       console.log('🗒️ Sticky note dynamic font size:', { 
         text: newText.slice(0, 20), 
@@ -1140,6 +1140,7 @@ export const Canvas: React.FC = () => {
               fontStyle: isEditingStickyNote ? (editingObject.data?.italic ? 'italic' : 'normal') : (toolStore.toolSettings.textItalic ? 'italic' : 'normal'),
               textDecoration: isEditingStickyNote ? (editingObject.data?.underline ? 'underline' : 'none') : (toolStore.toolSettings.textUnderline ? 'underline' : 'none'),
               textAlign: isEditingStickyNote ? 'center' : 'left',
+              verticalAlign: isEditingStickyNote ? 'middle' : 'top',
               color: 'transparent',
               zIndex: 1001,
               lineHeight: `${fontSize * 1.2}px`,
