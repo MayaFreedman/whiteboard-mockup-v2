@@ -190,15 +190,35 @@ export const Canvas: React.FC = () => {
           existingObjectId.slice(0, 8)
         );
 
-        // Calculate text position to match canvas rendering
+        // Calculate text position to match canvas rendering exactly
         // In canvas: text is centered vertically within the sticky note bounds
         const fontSize = existingObject.data?.fontSize || 16;
         const lineHeight = fontSize * 1.2;
+        const currentContent = existingObject.data?.content || "";
+        
+        // Calculate initial vertical center position like canvas does
+        let verticalOffset = 0;
+        if (currentContent) {
+          const maxWidth = existingObject.width - 16; // Same as canvas padding
+          const textMetrics = measureText(
+            currentContent,
+            fontSize,
+            existingObject.data?.fontFamily || "Inter",
+            existingObject.data?.bold || false,
+            existingObject.data?.italic || false,
+            maxWidth
+          );
+          const totalHeight = textMetrics.lines.length * textMetrics.lineHeight;
+          verticalOffset = (existingObject.height - totalHeight) / 2;
+        } else {
+          // For empty content, center a single line
+          verticalOffset = (existingObject.height - lineHeight) / 2;
+        }
 
         // Position textarea to match the canvas text rendering position
         const stickyScreenCoords = {
           x: existingObject.x + whiteboardRect.left,
-          y: existingObject.y + whiteboardRect.top - 65, // Canvas renders from obj.y with text centered inside
+          y: existingObject.y + whiteboardRect.top + verticalOffset - 65, // Apply vertical centering
         };
 
         console.log(
@@ -702,14 +722,14 @@ export const Canvas: React.FC = () => {
         currentFontSize: obj.data.fontSize,
       });
 
-      // Update textarea styling to match the dynamic font size and positioning
+      // Update textarea styling to match the dynamic font size
       const textarea = e.target;
       textarea.style.fontSize = optimalFontSize + "px";
       textarea.style.lineHeight = optimalFontSize * 1.2 + "px";
 
-      // Recalculate vertical positioning to match canvas centering logic
+      // Recalculate positioning for the new font size
       if (immediateTextPosition && newText) {
-        const maxWidth = width - 16; // Same as canvas padding
+        const maxWidth = width - 16;
         const textMetrics = measureText(
           newText,
           optimalFontSize,
@@ -719,12 +739,16 @@ export const Canvas: React.FC = () => {
           maxWidth
         );
         const totalHeight = textMetrics.lines.length * textMetrics.lineHeight;
-        const centerOffset = (height - totalHeight) / 2;
         
-        // Update textarea position to center the text vertically
-        const adjustedTop = immediateTextPosition.y + centerOffset;
-        textarea.style.top = adjustedTop + "px";
-        textarea.style.height = totalHeight + "px";
+        // Recalculate the centered position with new metrics
+        const whiteboardContainer = canvasRef.current?.closest(".absolute.bg-background") as HTMLElement;
+        const whiteboardRect = whiteboardContainer?.getBoundingClientRect() || canvasRef.current?.getBoundingClientRect();
+        if (whiteboardRect) {
+          const verticalOffset = (height - totalHeight) / 2;
+          const newTop = obj.y + whiteboardRect.top + verticalOffset - 65;
+          textarea.style.top = newTop + "px";
+          textarea.style.height = totalHeight + "px";
+        }
       }
 
       console.log("🗒️ Updated textarea font size to:", optimalFontSize + "px");
@@ -1404,9 +1428,10 @@ export const Canvas: React.FC = () => {
                     ? editingObject.height
                     : toolStore.toolSettings.fontSize * 1.2 || 20;
                   
-                  // For sticky notes, match canvas vertical centering logic
+                  // For sticky notes, the position is already centered from initial calculation
+                  // Only adjust if we're dynamically changing content and have existing content
                   if (isEditingStickyNote && immediateTextContent) {
-                    const maxWidth = editingObject.width - 16; // Same as canvas padding
+                    const maxWidth = editingObject.width - 16;
                     const textMetrics = measureText(
                       immediateTextContent,
                       fontSize,
@@ -1415,12 +1440,7 @@ export const Canvas: React.FC = () => {
                       editingObject.data?.italic || false,
                       maxWidth
                     );
-                    const totalHeight = textMetrics.lines.length * textMetrics.lineHeight;
-                    const centerOffset = (editingObject.height - totalHeight) / 2;
-                    
-                    // Adjust top position to center the text vertically (no padding since we remove it)
-                    adjustedTop = immediateTextPosition.y + centerOffset;
-                    adjustedHeight = totalHeight;
+                    adjustedHeight = textMetrics.lines.length * textMetrics.lineHeight;
                   }
                   
                   return {
