@@ -515,6 +515,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
 
   clearSelection: (userId = 'local') => {
+    console.log('🚨 CLEAR SELECTION CALLED:', {
+      previousSelection: get().selectedObjectIds,
+      userId,
+      timestamp: Date.now(),
+      stackTrace: new Error().stack?.split('\n').slice(1, 5).join('\n')
+    });
     set({ selectedObjectIds: [] });
     // Note: Selection actions are not recorded in undo/redo history
     // They are ephemeral UI state that doesn't need to be undone
