@@ -148,6 +148,12 @@ export const useCanvasInteractions = () => {
    * Ends any active batch and cleans up batching state
    */
   const cleanupBatching = useCallback(() => {
+    console.log('🧹 CLEANUP BATCHING CALLED:', {
+      hasBatch: !!currentBatchIdRef.current,
+      isDragging: isDraggingRef.current,
+      timestamp: Date.now()
+    });
+    
     if (currentBatchIdRef.current) {
       endBatch();
       currentBatchIdRef.current = null;
@@ -158,12 +164,15 @@ export const useCanvasInteractions = () => {
     // Only clear drag-specific state if not handling off-screen drag completion
     // (off-screen drag will handle this cleanup with proper timing)
     if (!isDraggingRef.current) {
+      console.log('🧹 CLEARING DRAG STATE in cleanupBatching:', Date.now());
       initialDragPositionsRef.current = {};
       liveDragPositionsRef.current = {};
       dragDeltasRef.current = { x: 0, y: 0 };
+    } else {
+      console.log('🧹 SKIPPING drag state cleanup - still dragging:', Date.now());
     }
     
-    console.log('🧹 Cleaned up batching state');
+    console.log('🧹 CLEANUP BATCHING COMPLETED:', Date.now());
   }, [endBatch]);
 
   /**
@@ -541,7 +550,11 @@ export const useCanvasInteractions = () => {
     
     // Handle select tool dragging when mouse leaves screen
     if (activeTool === 'select' && isDraggingRef.current && whiteboardStore.selectedObjectIds.length > 0) {
-      console.log('🔄 Mouse left screen during drag - saving final positions for', whiteboardStore.selectedObjectIds.length, 'object(s)');
+      console.log('🔄 DRAG OFF-SCREEN START: Mouse left screen during drag', {
+        selectedCount: whiteboardStore.selectedObjectIds.length,
+        liveDragPositions: Object.keys(liveDragPositionsRef.current).length,
+        timestamp: Date.now()
+      });
       
       // Create batch for final drag completion
       const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE', 'multi-object', userId);
@@ -552,26 +565,30 @@ export const useCanvasInteractions = () => {
         if (finalPos) {
           // Final constraint check before saving
           const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
-          console.log('🎯 Final off-screen position for object:', objectId.slice(0, 8), constrainedFinalPos);
+          console.log('🎯 APPLYING FINAL POSITION:', objectId.slice(0, 8), constrainedFinalPos);
           whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
         }
       });
       
       // End the batch
       whiteboardStore.endActionBatch();
+      console.log('🔄 DRAG OFF-SCREEN BATCH ENDED:', Date.now());
       
       // Trigger immediate redraw with final positions BEFORE clearing drag state
       if (redrawCanvasRef.current) {
+        console.log('🎨 TRIGGERING IMMEDIATE REDRAW:', Date.now());
         redrawCanvasRef.current();
+        console.log('🎨 REDRAW TRIGGERED:', Date.now());
       }
       
       // Small delay to ensure render completes before clearing state
       setTimeout(() => {
-        console.log('🧹 Completed off-screen drag, cleaning up state after render');
+        console.log('🧹 TIMEOUT CLEARING DRAG STATE:', Date.now());
         // Clear drag state after render
         initialDragPositionsRef.current = {};
         liveDragPositionsRef.current = {};
         dragDeltasRef.current = { x: 0, y: 0 };
+        console.log('🧹 DRAG STATE CLEARED:', Date.now());
       }, 0);
     }
     
@@ -658,6 +675,8 @@ export const useCanvasInteractions = () => {
         console.log('📝 Auto-saved text on mouse leave:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
       }
     }
+    
+    console.log('🧹 END CURRENT DRAWING: General cleanup starting', Date.now());
     
     // Clean up batching and reset all drawing state
     cleanupBatching();
