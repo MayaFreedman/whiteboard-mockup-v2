@@ -1551,9 +1551,12 @@ export const useCanvasInteractions = () => {
           console.log('🔄 SELECT TOOL - Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
           
           // CRITICAL: End the existing batch first to prevent conflicts
-          // DON'T end the batch here - let the final position update be part of the same batch
-          // This ensures all drag movements and the final position are treated as one atomic operation
-          console.log('🎯 Keeping drag batch active for final update:', currentBatchIdRef.current?.slice(0, 8));
+          // CRITICAL: End the batch to finalize all intermediate drag movements FIRST
+          if (currentBatchIdRef.current) {
+            console.log('🧹 Ending drag batch before final update:', currentBatchIdRef.current.slice(0, 8));
+            endBatch();
+            currentBatchIdRef.current = null;
+          }
           
           // Apply final positions for all dragged objects WITHOUT creating a new batch
           // Individual updates will be separate actions that can be undone together
