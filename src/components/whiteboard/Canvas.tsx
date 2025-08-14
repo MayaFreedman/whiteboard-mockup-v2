@@ -190,11 +190,11 @@ export const Canvas: React.FC = () => {
           existingObjectId.slice(0, 8)
         );
 
-        // Position textarea to align with canvas text position (centered)
-        // Canvas renders text at center, so position textarea at center minus half its size
+        // Position textarea to align with canvas text position
+        // Canvas renders text centered, so subtract offset to match that position
         const stickyScreenCoords = {
-          x: existingObject.x + whiteboardRect.left + (existingObject.width / 2) - 90, // Center horizontally (textarea ~180px wide)
-          y: existingObject.y + whiteboardRect.top + (existingObject.height / 2) - 10, // Center vertically 
+          x: existingObject.x + whiteboardRect.left,
+          y: existingObject.y + whiteboardRect.top - 65, // Move up instead of down
         };
 
         console.log(
