@@ -1409,11 +1409,11 @@ export const Canvas: React.FC = () => {
                 {
                   left: immediateTextPosition.x - 8,
                   top: immediateTextPosition.y - 8,
-                  // For sticky notes, use the EXACT sticky note dimensions plus padding
-                  width: (isEditingStickyNote ? editingObject.width : 200) + 16,
-                  height: (isEditingStickyNote
-                    ? editingObject.height
-                    : toolStore.toolSettings.fontSize * 1.2 || 20) + 16,
+                   // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
+                   width: isEditingStickyNote ? editingObject.width : 200,
+                   height: isEditingStickyNote
+                     ? editingObject.height
+                     : toolStore.toolSettings.fontSize * 1.2 || 20,
                   padding: "8px",
                   fontSize: fontSize,
                   fontFamily: isEditingStickyNote
