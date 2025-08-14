@@ -155,10 +155,10 @@ export const Canvas: React.FC = () => {
         console.log('🗒️ Setting up immediate editing for existing sticky note:', existingObjectId.slice(0, 8));
         
         // Position textarea to align with canvas text position
-        // Canvas renders text centered, so add offset to match that position
+        // Canvas renders text centered, so subtract offset to match that position
         const stickyScreenCoords = {
           x: existingObject.x + whiteboardRect.left,
-          y: existingObject.y + whiteboardRect.top + (existingObject.height / 2) - 8  // Center Y + adjustment for text baseline
+          y: existingObject.y + whiteboardRect.top - (existingObject.height / 2) + 8  // Move up instead of down
         };
         
         console.log('🗒️ TEXTAREA COORDS - objectCoords x:', existingObject.x, 'y:', existingObject.y);
