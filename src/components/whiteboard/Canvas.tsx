@@ -168,12 +168,9 @@ export const Canvas: React.FC = () => {
       return;
     }
 
-    // Get font size for proper positioning offset
-    const currentFontSize = toolStore.toolSettings.fontSize || 16;
-    
     const screenCoords = {
       x: coords.x + whiteboardRect.left,
-      y: coords.y + whiteboardRect.top - (currentFontSize * 0.8), // Font-size-based offset for baseline-to-top conversion
+      y: coords.y + whiteboardRect.top - 60, // Moved down more to align with cursor
     };
 
     console.log("📝 Canvas coords:", coords);
@@ -493,7 +490,7 @@ export const Canvas: React.FC = () => {
 
     return {
       x: Math.round(textObject.x + 4 + rect.left), // Canvas position + padding + screen offset
-      y: Math.round(textObject.y + rect.top - (textData.fontSize * 0.8)), // Convert from canvas baseline to textarea top-left
+      y: Math.round(textObject.y + rect.top), // Match canvas text rendering position
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight,
