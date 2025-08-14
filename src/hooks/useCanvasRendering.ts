@@ -3,6 +3,7 @@ import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { useToolStore } from '../stores/toolStore';
 import { useScreenSizeStore } from '../stores/screenSizeStore';
 import { WhiteboardObject, TextData, ImageData } from '../types/whiteboard';
+import { measureText } from '@/utils/textMeasurement';
 import { getCachedImage, setCachedImage, setImageLoading, setImageFailed, getCacheStats } from '../utils/sharedImageCache';
 // Import optimized brush effects
 import { 
@@ -19,57 +20,8 @@ import {
   renderStar, 
   renderHeart 
 } from '../utils/shapeRendering';
-import { measureText } from '../utils/textMeasurement';
-import { pathPointsCache } from '../utils/pathPointsCache';
 
-/**
- * Wraps text to fit within the specified width
- * @param ctx - Canvas rendering context
- * @param text - Text to wrap
- * @param maxWidth - Maximum width for each line
- * @returns Array of wrapped lines
- */
-const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] => {
-  if (!text || maxWidth <= 0) return [''];
-  
-  // Handle manual line breaks first
-  const paragraphs = text.split('\n');
-  const wrappedLines: string[] = [];
-  
-  paragraphs.forEach((paragraph, paragraphIndex) => {
-    if (paragraph.trim() === '') {
-      // Preserve empty lines
-      wrappedLines.push('');
-      return;
-    }
-    
-    const words = paragraph.split(' ');
-    let currentLine = '';
-    
-    words.forEach((word, wordIndex) => {
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      const testWidth = ctx.measureText(testLine).width;
-      
-      if (testWidth <= maxWidth || currentLine === '') {
-        // Word fits on current line, or it's the first word (even if too long)
-        currentLine = testLine;
-      } else {
-        // Word doesn't fit, start new line
-        if (currentLine) {
-          wrappedLines.push(currentLine);
-        }
-        currentLine = word;
-      }
-    });
-    
-    // Add the last line of this paragraph
-    if (currentLine) {
-      wrappedLines.push(currentLine);
-    }
-  });
-  
-  return wrappedLines.length > 0 ? wrappedLines : [''];
-};
+import { pathPointsCache } from '../utils/pathPointsCache';
 
 /**
  * Custom hook for handling canvas rendering operations
@@ -783,8 +735,16 @@ export const useCanvasRendering = (
             ctx.textBaseline = 'middle';
 
             const maxWidth = obj.width - 16;
-            const lines = wrapText(ctx, contentToRender, maxWidth);
-            const lineHeight = stickyNoteData.fontSize * 1.2;
+            const textMetrics = measureText(
+              contentToRender, 
+              stickyNoteData.fontSize, 
+              stickyNoteData.fontFamily, 
+              stickyNoteData.bold, 
+              stickyNoteData.italic, 
+              maxWidth
+            );
+            const lines = textMetrics.lines;
+            const lineHeight = textMetrics.lineHeight;
             const totalHeight = lines.length * lineHeight;
             const startY = obj.y + (obj.height - totalHeight) / 2 + lineHeight / 2;
 
