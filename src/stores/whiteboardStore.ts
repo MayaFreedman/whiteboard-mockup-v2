@@ -406,11 +406,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     if (!existingObject) return;
 
     console.log('🔄 Store updateObject called:', { 
-      id, 
+      id: id.slice(0, 8), 
       updates, 
       objectType: existingObject?.type,
-      currentDimensions: existingObject ? { width: existingObject.width, height: existingObject.height } : null,
-      newDimensions: updates.width || updates.height ? { width: updates.width, height: updates.height } : null
+      currentPosition: existingObject ? { x: existingObject.x, y: existingObject.y } : null,
+      newDimensions: updates.width || updates.height ? { width: updates.width, height: updates.height } : null,
+      timestamp: Date.now()
     });
 
     const action: WhiteboardAction = {
