@@ -1296,20 +1296,6 @@ export const Canvas: React.FC = () => {
       {/* Text Editor Overlay - Positioned to match canvas text exactly */}
       {editingTextId && textEditorPosition && (
         <>
-          {/* Debug overlay for text editor bounds */}
-          <div
-            className="absolute border-2 border-red-500 bg-red-500/10 pointer-events-none z-[999]"
-            style={{
-              left: textEditorPosition.x,
-              top: textEditorPosition.y,
-              width: textEditorPosition.width,
-              height: textEditorPosition.height,
-            }}
-          >
-            <div className="absolute -top-6 left-0 text-xs bg-red-500 text-white px-1 rounded">
-              TEXT EDITOR BOUNDS
-            </div>
-          </div>
           <textarea
             ref={textareaRef}
             className="absolute border-none resize-none outline-none overflow-hidden"
@@ -1386,22 +1372,6 @@ export const Canvas: React.FC = () => {
 
           return (
             <>
-              {/* Debug overlay for immediate text editor bounds */}
-              <div
-                className="absolute border-2 border-blue-500 bg-blue-500/10 pointer-events-none z-[999]"
-                style={{
-                  left: immediateTextPosition.x,
-                  top: immediateTextPosition.y,
-                  width: isEditingStickyNote ? editingObject.width : 200,
-                  height: isEditingStickyNote
-                    ? editingObject.height
-                    : toolStore.toolSettings.fontSize * 1.2 || 20,
-                }}
-              >
-                <div className="absolute -top-6 left-0 text-xs bg-blue-500 text-white px-1 rounded">
-                  IMMEDIATE EDITOR BOUNDS
-                </div>
-              </div>
               <textarea
                 data-immediate-text="true"
                 className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
