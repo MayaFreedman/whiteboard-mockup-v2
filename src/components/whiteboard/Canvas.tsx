@@ -1334,10 +1334,7 @@ export const Canvas: React.FC = () => {
                 : "transparent",
             borderRadius:
               objects[editingTextId]?.type === "sticky-note" ? "8px" : "0",
-            boxShadow:
-              objects[editingTextId]?.type === "sticky-note"
-                ? "0px 2px 8px rgba(0,0,0,0.1)"
-                : "none",
+            boxShadow: "none",
             padding: "8px",
             // Text visibility and alignment
             color:
@@ -1453,9 +1450,7 @@ export const Canvas: React.FC = () => {
                   margin: "0",
                   border: "none",
                   borderRadius: isEditingStickyNote ? "8px" : "0", // Match sticky note styling
-                  boxShadow: isEditingStickyNote
-                    ? "0px 2px 8px rgba(0,0,0,0.1)"
-                    : "none", // Match sticky note shadow
+                  boxShadow: "none", // Remove shadow from preview
                   whiteSpace: "pre-wrap",
                   overflowWrap: "break-word",
                   wordBreak: "break-word",
