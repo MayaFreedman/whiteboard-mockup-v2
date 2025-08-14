@@ -679,12 +679,21 @@ export const Canvas: React.FC = () => {
 
             redrawCanvas();
 
-            // Focus the textarea after a short delay
+            // Focus the textarea after a short delay and position cursor at end
             setTimeout(() => {
               const textarea = document.querySelector("[data-immediate-text]") as HTMLTextAreaElement;
               if (textarea) {
                 textarea.focus();
-                console.log("🗒️ Focused sticky note immediate text textarea (double-click)");
+                
+                // Position cursor at the end of the text, just like regular text objects
+                const currentContent = obj.data?.content || "";
+                if (currentContent) {
+                  const textLength = currentContent.length;
+                  textarea.setSelectionRange(textLength, textLength);
+                  console.log("🗒️ Positioned cursor at end of sticky note text (double-click), length:", textLength);
+                } else {
+                  console.log("🗒️ Focused sticky note textarea with empty content (double-click)");
+                }
               }
             }, 50);
           }
