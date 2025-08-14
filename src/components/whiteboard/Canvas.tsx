@@ -1381,8 +1381,8 @@ export const Canvas: React.FC = () => {
             ref={textareaRef}
             className="absolute border-none resize-none outline-none overflow-hidden"
           style={{
-            left: textEditorPosition.x,
-            top: textEditorPosition.y,
+            left: textEditorPosition.x + 2,
+            top: textEditorPosition.y + 7,
             width: textEditorPosition.width + 16,
             height: textEditorPosition.height + 16,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
