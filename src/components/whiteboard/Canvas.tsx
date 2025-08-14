@@ -1096,6 +1096,33 @@ export const Canvas: React.FC = () => {
     };
   }, [handlePointerDown, handlePointerMove, handlePointerUp]);
 
+  // Add global mouse event listeners to catch mouse releases outside canvas
+  useEffect(() => {
+    const handleGlobalMouseUp = (event: MouseEvent) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      console.log('🌍 Global mouseup captured:', {
+        isDragging: isDragging,
+        target: event.target,
+        timestamp: Date.now()
+      });
+      
+      // Only handle if we're currently dragging
+      if (isDragging) {
+        console.log('🌍 Processing global mouseup for active drag');
+        handlePointerUp(event, canvas);
+      }
+    };
+
+    // Add global mouse up listener
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [handlePointerUp, isDragging]);
+
   // Handle keyboard events for object deletion
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
