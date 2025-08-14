@@ -811,8 +811,13 @@ export const Canvas: React.FC = () => {
     // Calculate available space from text position to screen edge
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
-      const availableWidth =
-        canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
+      // Calculate available width for text wrapping - use canvas width and check distance to edge
+      const oneCharWidth = (toolStore.toolSettings.fontSize || 16) * 0.6; // Approximate character width
+      const distanceToEdge = canvasRect.width - (immediateTextPosition.x - canvasRect.left);
+      const shouldAutoWrap = distanceToEdge < oneCharWidth;
+      const availableWidth = shouldAutoWrap ? 
+        Math.max(canvasRect.width - (immediateTextPosition.x - canvasRect.left) - oneCharWidth, 50) : // Wrap near edge with one char buffer
+        Math.max(canvasRect.width - (immediateTextPosition.x - canvasRect.left), 50); // Use full canvas width otherwise
 
       // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
       const textPadding = 8; // Same as canvas rendering (4px left + 4px right)

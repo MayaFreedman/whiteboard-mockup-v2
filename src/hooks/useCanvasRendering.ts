@@ -598,8 +598,13 @@ export const useCanvasRendering = (
           const textXBase = Math.round(obj.x + 8); // Add 8px left padding to match textarea
           const textYBase = Math.round(obj.y + 8); // 8px padding from top to match textarea
           
-          // Calculate available width for text wrapping (subtract padding) - must match text sizing algorithm
-          const availableWidth = Math.max(obj.width - 16, 50); // Subtract left and right padding (8px each), minimum 50px
+          // Calculate available width for text wrapping - use canvas width and check distance to edge
+          const oneCharWidth = textData.fontSize * 0.6; // Approximate character width
+          const distanceToEdge = activeWhiteboardSize.width - (obj.x + obj.width);
+          const shouldAutoWrap = distanceToEdge < oneCharWidth;
+          const availableWidth = shouldAutoWrap ? 
+            Math.max(activeWhiteboardSize.width - obj.x - oneCharWidth, 50) : // Wrap near edge with one char buffer
+            Math.max(activeWhiteboardSize.width - obj.x, 50); // Use full canvas width otherwise
           
           // Use the same measureText function as the measurement system for consistent wrapping
           const textMetrics = measureText(
