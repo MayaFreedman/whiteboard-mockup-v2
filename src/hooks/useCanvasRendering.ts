@@ -729,6 +729,63 @@ export const useCanvasRendering = (
         }
         break;
       }
+
+      case 'sticky-note': {
+        if (obj.width && obj.height) {
+          const stickyNoteData = obj.data;
+          const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
+          let contentToRender = isBeingEdited && editingText !== undefined ? editingText : stickyNoteData.content;
+          
+          // Draw sticky note background with shadow and rounded corners
+          ctx.save();
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetY = 2;
+          
+          ctx.fillStyle = stickyNoteData.backgroundColor || '#fef3c7';
+          ctx.beginPath();
+          ctx.roundRect(obj.x, obj.y, obj.width, obj.height, 8);
+          ctx.fill();
+          
+          ctx.shadowColor = 'transparent';
+          ctx.restore();
+
+          // Render text if present
+          if (contentToRender && contentToRender.trim()) {
+            const fontWeight = stickyNoteData.bold ? 'bold' : 'normal';
+            const fontStyle = stickyNoteData.italic ? 'italic' : 'normal';
+            
+            ctx.font = `${fontStyle} ${fontWeight} ${stickyNoteData.fontSize}px ${stickyNoteData.fontFamily}`;
+            ctx.fillStyle = obj.stroke || '#000000';
+            ctx.textAlign = stickyNoteData.textAlign || 'center';
+            ctx.textBaseline = 'middle';
+
+            const maxWidth = obj.width - 16;
+            const lines = wrapText(ctx, contentToRender, maxWidth);
+            const lineHeight = stickyNoteData.fontSize * 1.2;
+            const totalHeight = lines.length * lineHeight;
+            const startY = obj.y + (obj.height - totalHeight) / 2 + lineHeight / 2;
+
+            let startX = obj.x + obj.width / 2;
+            if (stickyNoteData.textAlign === 'left') startX = obj.x + 8;
+            else if (stickyNoteData.textAlign === 'right') startX = obj.x + obj.width - 8;
+
+            lines.forEach((line, index) => {
+              ctx.fillText(line, startX, startY + (index * lineHeight));
+            });
+          }
+
+          // Selection border
+          if (isSelected) {
+            ctx.save();
+            ctx.strokeStyle = '#007AFF';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(obj.x - 2, obj.y - 2, obj.width + 4, obj.height + 4);
+            ctx.restore();
+          }
+        }
+        break;
+      }
       
       default: {
         // Handle unknown object types gracefully

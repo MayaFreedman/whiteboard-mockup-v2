@@ -35,7 +35,8 @@ import {
   Stamp,
   ImageIcon,
   Camera,
-  Trash2
+  Trash2,
+  StickyNote
 } from 'lucide-react';
 
 interface ToolItem {
@@ -53,6 +54,7 @@ const BASIC_TOOLS: ToolItem[] = [
   { id: 'brush', icon: Brush, label: 'Brush' },
   { id: 'eraser', icon: Eraser, label: 'Eraser' },
   { id: 'text', icon: Type, label: 'Text' },
+  { id: 'sticky-note', icon: StickyNote, label: 'Sticky Note' },
   { id: 'stamp', icon: Stamp, label: 'Stamp' },
   { id: 'background', icon: ImageIcon, label: 'Background' },
   { id: 'fill', icon: PaintBucket, label: 'Fill' },

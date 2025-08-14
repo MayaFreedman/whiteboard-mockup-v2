@@ -23,6 +23,7 @@ const getCursorStyle = (activeTool: string): string => {
     case 'select':
       return 'default';
     case 'text':
+    case 'sticky-note':
       return 'text';
     case 'hand':
       return 'grab';

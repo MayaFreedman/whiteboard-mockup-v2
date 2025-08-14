@@ -126,6 +126,33 @@ export const toolsConfig: Record<string, ToolConfig> = {
       }
     ]
   },
+  'sticky-note': {
+    name: 'sticky-note',
+    displayName: 'Sticky Note',
+    settings: [
+      {
+        type: 'slider',
+        label: 'Size',
+        key: 'stickyNoteSize',
+        min: 120,
+        max: 300,
+        step: 10,
+        showValue: true,
+        valueFormatter: (value) => `${value}px`
+      },
+      {
+        type: 'badges',
+        label: 'Background Color',
+        key: 'stickyNoteBackgroundColor',
+        items: [
+          { value: '#fef3c7', label: 'Yellow' },
+          { value: '#fce7f3', label: 'Pink' },
+          { value: '#dbeafe', label: 'Blue' },
+          { value: '#d1fae5', label: 'Green' }
+        ]
+      }
+    ]
+  },
   stamp: {
     name: 'stamp',
     displayName: 'Stamp',

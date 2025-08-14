@@ -12,6 +12,7 @@ import { EraserSettings } from '../EraserSettings';
 import { ShapePropertiesPanel } from '../ShapePropertiesPanel';
 import { TextPropertiesPanel } from '../TextPropertiesPanel';
 import { StampPropertiesPanel } from '../StampPropertiesPanel';
+import { StickyNotePropertiesPanel } from '../StickyNotePropertiesPanel';
 import { getAllCategories, getIconsByCategoryWithCustom, getCategoryDisplayName, getAllIcons } from '../../../utils/iconRegistry';
 import { CustomStampUpload, type CustomStampUploadHandle } from './CustomStampUpload';
 import { SkinTonePicker } from './SkinTonePicker';
@@ -189,6 +190,10 @@ export const DynamicToolSettings: React.FC = () => {
       return <ToolSettingCard title="Text Properties">
           <TextPropertiesPanel selectedObjectId={selectedObjectIds[0]} />
         </ToolSettingCard>;
+    } else if (obj?.type === 'sticky-note') {
+      return <ToolSettingCard title="Sticky Note Properties">
+          <StickyNotePropertiesPanel selectedObjectId={selectedObjectIds[0]} />
+        </ToolSettingCard>;
     } else if (obj?.type === 'image') {
       return <ToolSettingCard title="Stamp Properties">
           <StampPropertiesPanel selectedObjectId={selectedObjectIds[0]} />
@@ -291,6 +296,35 @@ export const DynamicToolSettings: React.FC = () => {
           <div ref={uploaderRef}>
             <CustomStampUpload ref={uploaderCtrlRef} onStampAdded={handleCustomStampAdded} />
           </div>
+        </div>
+      </ToolSettingCard>;
+  }
+
+  // Handle sticky note tool with properties panel
+  if (activeTool === 'sticky-note') {
+    return <ToolSettingCard title="Sticky Note Settings">
+        <div className="space-y-3">
+          <SliderSetting
+            label="Size"
+            value={toolSettings.stickyNoteSize || 180}
+            min={120}
+            max={300}
+            step={10}
+            onChange={(value) => updateToolSettings({ stickyNoteSize: value })}
+            valueFormatter={(value) => `${value}px`}
+            showValue={true}
+          />
+          <BadgeSelector
+            label="Background Color"
+            items={[
+              { value: '#fef3c7', label: 'Yellow' },
+              { value: '#fce7f3', label: 'Pink' },
+              { value: '#dbeafe', label: 'Blue' },
+              { value: '#d1fae5', label: 'Green' }
+            ]}
+            selectedValue={toolSettings.stickyNoteBackgroundColor || '#fef3c7'}
+            onChange={(value) => updateToolSettings({ stickyNoteBackgroundColor: value })}
+          />
         </div>
       </ToolSettingCard>;
   }

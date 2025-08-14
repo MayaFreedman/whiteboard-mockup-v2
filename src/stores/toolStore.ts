@@ -12,6 +12,7 @@ export type Tool =
   | 'line'
   | 'triangle'
   | 'text'
+  | 'sticky-note'
   | 'stamp'
   | 'background'
   | 'fill'
@@ -56,6 +57,10 @@ export interface ToolSettings {
   
   // Stamp settings
   selectedSticker?: string;
+  
+  // Sticky note settings
+  stickyNoteSize: number;
+  stickyNoteBackgroundColor: string;
   
   // Shape properties panel settings
   shapeColorMode: 'fill' | 'stroke';
@@ -133,6 +138,8 @@ const defaultToolSettings: ToolSettings = {
   textUnderline: false,
   textAlign: 'left',
   selectedSticker: '⭐', // Default to star emoji since it works
+  stickyNoteSize: 180,
+  stickyNoteBackgroundColor: '#fef3c7',
   shapeColorMode: 'fill'
 };
 

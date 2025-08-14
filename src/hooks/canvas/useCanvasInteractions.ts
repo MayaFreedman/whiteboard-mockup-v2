@@ -2,7 +2,8 @@ import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
-import { WhiteboardObject, TextData, ImageData } from '../../types/whiteboard';
+import { WhiteboardObject, TextData, ImageData, StickyNoteData } from '../../types/whiteboard';
+import { calculateOptimalFontSize } from '../../utils/stickyNoteTextSizing';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
@@ -261,6 +262,50 @@ export const useCanvasInteractions = () => {
       strokeWidth: 0,
       opacity: 1,
       data: stampData
+    };
+  }, [toolStore.toolSettings]);
+
+  /**
+   * Creates sticky note objects with proper data structure
+   */
+  const createStickyNoteObject = useCallback((
+    x: number,
+    y: number,
+    size: number,
+    backgroundColor: string
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
+    const stickyNoteData: StickyNoteData = {
+      content: '', // Start with empty content - no placeholder
+      fontSize: calculateOptimalFontSize('', size, size, {
+        content: '',
+        fontSize: 24,
+        fontFamily: toolStore.toolSettings.fontFamily,
+        bold: toolStore.toolSettings.textBold,
+        italic: toolStore.toolSettings.textItalic,
+        underline: toolStore.toolSettings.textUnderline,
+        textAlign: toolStore.toolSettings.textAlign
+      }),
+      fontFamily: toolStore.toolSettings.fontFamily,
+      bold: toolStore.toolSettings.textBold,
+      italic: toolStore.toolSettings.textItalic,
+      underline: toolStore.toolSettings.textUnderline,
+      textAlign: toolStore.toolSettings.textAlign,
+      backgroundColor,
+      stickySize: size,
+      autoTextResize: true
+    };
+
+    return {
+      type: 'sticky-note',
+      x: x - size / 2, // Center the sticky note on click position
+      y: y - size / 2,
+      width: size,
+      height: size,
+      stroke: toolStore.toolSettings.strokeColor,
+      fill: backgroundColor,
+      strokeWidth: 1,
+      opacity: 1,
+      data: stickyNoteData
     };
   }, [toolStore.toolSettings]);
 
@@ -748,6 +793,40 @@ export const useCanvasInteractions = () => {
         };
         
         console.log('📝 Started text interaction on empty space (waiting for click/drag decision):', coords, 'for user:', userId.slice(0, 8));
+        break;
+      }
+
+      case 'sticky-note': {
+        // Block if currently editing text to avoid conflicts
+        if (isEditingTextRef.current) {
+          console.log('🗒️ Sticky note creation blocked - currently editing text');
+          return;
+        }
+
+        const stickySize = toolStore.toolSettings.stickyNoteSize || 180;
+        const backgroundColor = toolStore.toolSettings.stickyNoteBackgroundColor || '#fef3c7';
+        
+        const stickyNoteObject = createStickyNoteObject(coords.x, coords.y, stickySize, backgroundColor);
+        
+        const objectId = whiteboardStore.addObject(stickyNoteObject, userId);
+        console.log('🗒️ Created sticky note:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
+        
+        // Immediately trigger text editing for the newly created sticky note
+        const editCoords = {
+          x: coords.x - stickySize / 2,
+          y: coords.y - stickySize / 2
+        };
+        
+        // Trigger immediate text editing
+        setTimeout(() => {
+          if (onImmediateTextTriggerRef.current) {
+            onImmediateTextTriggerRef.current(editCoords);
+          }
+        }, 10); // Small delay to ensure object is in store
+        
+        if (redrawCanvasRef.current) {
+          redrawCanvasRef.current();
+        }
         break;
       }
 
