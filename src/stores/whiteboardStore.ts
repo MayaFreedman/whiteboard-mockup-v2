@@ -267,7 +267,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           return a.payload.object?.id || 'no-id';
         }
         return 'no-id';
-      })
+      }),
+      objectPositions: batch.actions.map(a => {
+        if (a.type === 'UPDATE_OBJECT' && a.payload.updates) {
+          return { id: a.payload.id, updates: a.payload.updates };
+        }
+        return null;
+      }).filter(Boolean)
     });
     
     // Create a batch action that contains all the individual actions
@@ -438,12 +444,21 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         timestamp: Date.now()
       });
       
-      return {
+      const newState = {
         objects: {
           ...state.objects,
           [id]: updatedObject,
         },
       };
+      
+      // Verify the position was actually set
+      console.log('🔄 Store position SET verification:', {
+        id: id.slice(0, 8),
+        finalPosition: { x: newState.objects[id].x, y: newState.objects[id].y },
+        timestamp: Date.now()
+      });
+      
+      return newState;
     });
 
     // If we're in an active batch, add to batch instead of recording immediately
