@@ -939,22 +939,23 @@ export const useCanvasInteractions = () => {
         const isClickingOnStickyNote = clickedObject && clickedObject.type === 'sticky-note';
         
         if (isClickingOnStickyNote) {
-          console.log('🗒️ Clicked on existing sticky note for dragging:', clickedObjectId.slice(0, 8));
+          console.log('🗒️ Clicked on existing sticky note - activating selection tool behavior:', clickedObjectId.slice(0, 8));
           
-          // Select the sticky note and start dragging
+          // Select the sticky note (exactly like select tool)
           whiteboardStore.selectObjects([clickedObjectId], userId);
           
-          // Store initial position for dragging
+          // Store initial position for dragging (exactly like select tool)
           const initialPositions: Record<string, { x: number; y: number }> = {};
           initialPositions[clickedObjectId] = { x: clickedObject.x, y: clickedObject.y };
           initialDragPositionsRef.current = initialPositions;
           
-          // START BATCH for object dragging
+          // START BATCH for object dragging (exactly like select tool)
           currentBatchIdRef.current = startBatch('UPDATE_OBJECT', clickedObjectId, userId);
           draggedObjectIdRef.current = clickedObjectId;
           isDraggingRef.current = true;
           dragStartRef.current = coords;
-          console.log('🗒️ Started dragging sticky note:', clickedObjectId.slice(0, 8));
+          
+          console.log('🗒️ Started sticky note selection/drag (identical to select tool):', clickedObjectId.slice(0, 8));
           return;
         }
 
