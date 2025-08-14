@@ -903,9 +903,9 @@ export const useCanvasInteractions = () => {
         }
 
         // Check if we're clicking on an existing text object
-        const clickedObjectId = findObjectAt(coords.x, coords.y);
-        const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
-        const isClickingOnExistingText = clickedObject && clickedObject.type === 'text';
+        const existingClickedObjectId = findObjectAt(coords.x, coords.y);
+        const existingClickedObject = existingClickedObjectId ? whiteboardStore.objects[existingClickedObjectId] : null;
+        const isClickingOnExistingText = existingClickedObject && existingClickedObject.type === 'text';
         
         if (isClickingOnExistingText) {
           console.log('📝 Clicked on existing text object - preventing immediate text editing, waiting for potential double-click');
@@ -1225,6 +1225,50 @@ export const useCanvasInteractions = () => {
             checkBatchSize();
           }
           
+          if (redrawCanvasRef.current) {
+            redrawCanvasRef.current();
+          }
+        }
+        break;
+      }
+
+      case 'text': {
+        // Handle dragging for text tool (identical to select tool)
+        if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+          // Multi-object dragging with absolute positioning to prevent drift
+          const deltaX = coords.x - dragStartRef.current.x;
+          const deltaY = coords.y - dragStartRef.current.y;
+          
+          console.log('📝 TEXT TOOL - Dragging movement:', {
+            selectedCount: whiteboardStore.selectedObjectIds.length,
+            delta: { x: deltaX, y: deltaY },
+            initialPositions: Object.keys(initialDragPositionsRef.current).length
+          });
+          
+          // Store current drag deltas for live rendering without creating actions
+          dragDeltasRef.current = { x: deltaX, y: deltaY };
+          
+          // Update live positions for each selected object
+          whiteboardStore.selectedObjectIds.forEach(objectId => {
+            const initialPos = initialDragPositionsRef.current[objectId];
+            if (initialPos) {
+              const unconstrained = {
+                x: initialPos.x + deltaX,
+                y: initialPos.y + deltaY
+              };
+              // Constrain position to screen bounds
+              const constrainedPos = constrainObjectToBounds(objectId, unconstrained.x, unconstrained.y);
+              
+              console.log('📝 TEXT TOOL - Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', constrainedPos);
+              console.log('📝 TEXT TOOL - STORING live position:', objectId.slice(0, 8), constrainedPos);
+              // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
+              liveDragPositionsRef.current[objectId] = constrainedPos;
+            } else {
+              console.warn('📝 TEXT TOOL - ❌ No initial position stored for object:', objectId.slice(0, 8));
+            }
+          });
+          
+          // Trigger redraw to show live drag positions
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
@@ -1645,6 +1689,7 @@ export const useCanvasInteractions = () => {
         dragStartRef.current = null;
         break;
       }
+
     }
 
     console.log('🎨 POINTER UP CLEANUP:', {

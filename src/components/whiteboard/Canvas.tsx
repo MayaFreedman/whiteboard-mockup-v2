@@ -618,6 +618,9 @@ export const Canvas: React.FC = () => {
       const [objectId, obj] = textObject;
       console.log("🖱️ Found text object to edit:", objectId.slice(0, 8));
 
+      // Clear selection when entering edit mode
+      whiteboardStore.clearSelection(userId);
+
       setEditingTextId(objectId);
 
       // Calculate exact text position using canvas metrics
@@ -1551,7 +1554,7 @@ export const Canvas: React.FC = () => {
       <CustomCursor canvas={canvasRef.current} />
 
       {/* Resize Handles for Selected Objects */}
-      {(activeTool === "select" || activeTool === "sticky-note") &&
+      {(activeTool === "select" || activeTool === "sticky-note" || activeTool === "text") &&
         selectedObjectIds.map((objectId) => {
           const liveDragPositions = getLiveDragPositions();
           const liveDragPosition = liveDragPositions[objectId] || null;
