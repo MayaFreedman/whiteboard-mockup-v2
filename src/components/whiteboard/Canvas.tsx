@@ -573,13 +573,16 @@ export const Canvas: React.FC = () => {
       console.log('🗒️ Sticky note dynamic font size:', { 
         text: newText.slice(0, 20), 
         optimalFontSize,
-        dimensions: { width, height } 
+        dimensions: { width, height },
+        currentFontSize: obj.data.fontSize 
       });
       
       // Update textarea styling to match the dynamic font size
       const textarea = e.target;
       textarea.style.fontSize = optimalFontSize + 'px';
       textarea.style.lineHeight = (optimalFontSize * 1.2) + 'px';
+      
+      console.log('🗒️ Updated textarea font size to:', optimalFontSize + 'px');
       
       updateObject(immediateTextObjectId, { 
         data: {
@@ -1137,17 +1140,17 @@ export const Canvas: React.FC = () => {
               fontStyle: isEditingStickyNote ? (editingObject.data?.italic ? 'italic' : 'normal') : (toolStore.toolSettings.textItalic ? 'italic' : 'normal'),
               textDecoration: isEditingStickyNote ? (editingObject.data?.underline ? 'underline' : 'none') : (toolStore.toolSettings.textUnderline ? 'underline' : 'none'),
               textAlign: isEditingStickyNote ? 'center' : 'left',
-              color: 'transparent',
+              color: isEditingStickyNote ? (editingObject.stroke || '#000000') : (toolStore.toolSettings.strokeColor || '#000000'),
               zIndex: 1001,
               lineHeight: `${fontSize * 1.2}px`,
               padding: isEditingStickyNote ? '8px' : '0',
               margin: '0',
               border: 'none',
-              whiteSpace: 'pre-wrap',
+              whiteSpace: isEditingStickyNote ? 'pre-wrap' : 'pre-wrap',
               overflowWrap: 'break-word',
               wordBreak: 'break-word',
               wordWrap: 'break-word',
-              overflow: 'visible',
+              overflow: isEditingStickyNote ? 'hidden' : 'visible',
               textRendering: 'optimizeLegibility',
               fontSmooth: 'antialiased',
               WebkitFontSmoothing: 'antialiased',
@@ -1155,9 +1158,9 @@ export const Canvas: React.FC = () => {
               caretColor: toolStore.toolSettings.strokeColor || '#000000',
               WebkitTextSizeAdjust: '100%',
               boxSizing: 'border-box',
-              backgroundColor: isEditingStickyNote ? editingObject.data?.backgroundColor || '#fff3cd' : 'transparent',
-              borderRadius: isEditingStickyNote ? '8px' : '0px',
-              boxShadow: isEditingStickyNote ? '0px 2px 8px rgba(0,0,0,0.1)' : 'none',
+              backgroundColor: isEditingStickyNote ? (editingObject.data?.backgroundColor || '#fff3cd') : 'rgba(255,255,255,0.9)',
+              borderRadius: isEditingStickyNote ? '8px' : '4px',
+              boxShadow: isEditingStickyNote ? '0px 2px 8px rgba(0,0,0,0.1)' : '0px 1px 4px rgba(0,0,0,0.1)',
               minHeight: fontSize * 1.2 + 'px',
               '--placeholder-color': `${toolStore.toolSettings.strokeColor || '#000000'}B3`
             } as React.CSSProperties & { '--placeholder-color': string }}

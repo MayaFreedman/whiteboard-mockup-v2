@@ -736,6 +736,13 @@ export const useCanvasRendering = (
           const isBeingEdited = editingTextId === Object.keys(objects).find(id => objects[id] === obj);
           let contentToRender = isBeingEdited && editingText !== undefined ? editingText : stickyNoteData.content;
           
+          console.log('🗒️ Rendering sticky note:', {
+            id: Object.keys(objects).find(id => objects[id] === obj)?.slice(0, 8),
+            content: contentToRender?.slice(0, 20),
+            fontSize: stickyNoteData.fontSize,
+            isBeingEdited
+          });
+          
           // Draw sticky note background with shadow and rounded corners
           ctx.save();
           ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
