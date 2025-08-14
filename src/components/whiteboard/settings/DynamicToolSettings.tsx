@@ -262,18 +262,6 @@ export const DynamicToolSettings: React.FC = () => {
               <div className="text-xs text-muted-foreground">
                 {totalResults > 0 ? (
                   <>Found {totalResults} result{totalResults === 1 ? '' : 's'}</>
-                ) : selectedCategory !== 'all' ? (
-                  <>
-                    No results for "{debouncedQuery}".{" "}
-                    <button
-                      type="button"
-                      className="underline underline-offset-2 text-primary hover:text-primary/80 font-medium"
-                      onClick={() => handleCategoryChange('all')}
-                    >
-                      Try searching all icons
-                    </button>
-                    .
-                  </>
                 ) : (
                   <>
                     No results for "{debouncedQuery}" across all icons. Can't find what you're looking for?{" "}
