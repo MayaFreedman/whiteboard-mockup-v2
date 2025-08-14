@@ -175,12 +175,12 @@ export const useCanvasInteractions = () => {
   /**
    * Callback for when immediate text editing is triggered
    */
-  const onImmediateTextTriggerRef = useRef<((coords: { x: number; y: number }) => void) | null>(null);
+  const onImmediateTextTriggerRef = useRef<((coords: { x: number; y: number }, existingObjectId?: string) => void) | null>(null);
 
   /**
    * Sets the callback for immediate text editing trigger
    */
-  const setImmediateTextTrigger = useCallback((callback: (coords: { x: number; y: number }) => void) => {
+  const setImmediateTextTrigger = useCallback((callback: (coords: { x: number; y: number }, existingObjectId?: string) => void) => {
     onImmediateTextTriggerRef.current = callback;
   }, []);
 
@@ -811,16 +811,10 @@ export const useCanvasInteractions = () => {
         const objectId = whiteboardStore.addObject(stickyNoteObject, userId);
         console.log('🗒️ Created sticky note:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
         
-        // Immediately trigger text editing for the newly created sticky note
-        const editCoords = {
-          x: coords.x - stickySize / 2,
-          y: coords.y - stickySize / 2
-        };
-        
-        // Trigger immediate text editing
+        // Trigger immediate sticky note editing (pass the sticky note object ID)
         setTimeout(() => {
           if (onImmediateTextTriggerRef.current) {
-            onImmediateTextTriggerRef.current(editCoords);
+            onImmediateTextTriggerRef.current(coords, objectId);
           }
         }, 10); // Small delay to ensure object is in store
         

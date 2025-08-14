@@ -119,8 +119,8 @@ export const Canvas: React.FC = () => {
   setEditingState(editingTextId !== null || isImmediateTextEditing);
   
   // Set callback for immediate text editing
-  setImmediateTextTrigger((coords) => {
-    console.log('📝 Immediate text editing triggered at canvas coords:', coords);
+  setImmediateTextTrigger((coords, existingObjectId?) => {
+    console.log('📝 Immediate text editing triggered at canvas coords:', coords, 'existingObjectId:', existingObjectId);
     
     // Convert canvas-relative coordinates to screen coordinates
     // for textarea positioning
@@ -147,7 +147,39 @@ export const Canvas: React.FC = () => {
     console.log('📝 Whiteboard rect:', whiteboardRect);
     console.log('📝 Final screen coords:', screenCoords);
     
-    // Create canvas text object immediately with empty content
+    // If we have an existing object ID (sticky note), use that instead of creating a new text object
+    if (existingObjectId) {
+      const existingObject = objects[existingObjectId];
+      if (existingObject && existingObject.type === 'sticky-note') {
+        console.log('🗒️ Setting up immediate editing for existing sticky note:', existingObjectId.slice(0, 8));
+        
+        // Position textarea at center of sticky note
+        const stickyScreenCoords = {
+          x: existingObject.x + whiteboardRect.left,
+          y: existingObject.y + whiteboardRect.top
+        };
+        
+        setIsImmediateTextEditing(true);
+        setImmediateTextPosition(stickyScreenCoords);
+        setImmediateTextContent(existingObject.data?.content || '');
+        setImmediateTextObjectId(existingObjectId);
+        
+        redrawCanvas();
+        
+        // Focus the textarea after a short delay
+        setTimeout(() => {
+          const textarea = document.querySelector('[data-immediate-text]') as HTMLTextAreaElement;
+          if (textarea) {
+            textarea.focus();
+            console.log('🗒️ Focused sticky note immediate text textarea');
+          }
+        }, 50);
+        
+        return;
+      }
+    }
+    
+    // Create canvas text object immediately with empty content (for regular text tool)
     const fontSize = toolStore.toolSettings.fontSize || 16;
     const fontFamily = toolStore.toolSettings.fontFamily || 'Arial';
     const bold = toolStore.toolSettings.textBold || false;
@@ -537,6 +569,17 @@ export const Canvas: React.FC = () => {
       };
       
       const optimalFontSize = calculateOptimalFontSize(newText, width - 16, height - 16, textData);
+      
+      console.log('🗒️ Sticky note dynamic font size:', { 
+        text: newText.slice(0, 20), 
+        optimalFontSize,
+        dimensions: { width, height } 
+      });
+      
+      // Update textarea styling to match the dynamic font size
+      const textarea = e.target;
+      textarea.style.fontSize = optimalFontSize + 'px';
+      textarea.style.lineHeight = (optimalFontSize * 1.2) + 'px';
       
       updateObject(immediateTextObjectId, { 
         data: {
