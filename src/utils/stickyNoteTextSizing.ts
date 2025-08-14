@@ -2,7 +2,7 @@ import { TextData } from '../types/whiteboard';
 
 /**
  * Calculates the optimal font size for text content within sticky note bounds
- * Uses binary search to find the largest font size that fits all text with proper word wrapping
+ * Prioritizes line wrapping over shrinking - only shrinks when content won't fit on available lines
  */
 export const calculateOptimalFontSize = (
   content: string,
@@ -29,10 +29,8 @@ export const calculateOptimalFontSize = (
   const minFontSize = 8;
   const maxFontSize = Math.min(width / 2, height / 2, 72);
 
-  let bestFontSize = minFontSize;
-
-  // Helper function to wrap text and calculate total height
-  const calculateWrappedTextDimensions = (text: string, fontSize: number) => {
+  // Helper function to check if text fits at a given font size
+  const doesTextFitAtSize = (text: string, fontSize: number): boolean => {
     const fontWeight = textData.bold ? 'bold' : 'normal';
     const fontStyle = textData.italic ? 'italic' : 'normal';
     ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${textData.fontFamily}`;
@@ -40,7 +38,6 @@ export const calculateOptimalFontSize = (
     const lineHeight = fontSize * 1.2;
     const paragraphs = text.split('\n');
     let totalHeight = 0;
-    let maxLineWidth = 0;
     
     for (const paragraph of paragraphs) {
       if (paragraph.trim() === '') {
@@ -61,13 +58,11 @@ export const calculateOptimalFontSize = (
         if (testWidth <= maxWidth) {
           currentLine = testLine;
         } else {
-          // If single word is too long, it still needs to go on its own line
+          // Word doesn't fit, start new line
           if (currentLine === '') {
-            currentLine = word;
+            // Single word is too wide - this font size won't work
+            return false;
           } else {
-            // Line is complete, measure it
-            const lineWidth = ctx.measureText(currentLine).width;
-            maxLineWidth = Math.max(maxLineWidth, lineWidth);
             lineCount++;
             currentLine = word;
           }
@@ -76,35 +71,29 @@ export const calculateOptimalFontSize = (
       
       // Don't forget the last line of the paragraph
       if (currentLine !== '') {
-        const lineWidth = ctx.measureText(currentLine).width;
-        maxLineWidth = Math.max(maxLineWidth, lineWidth);
         lineCount++;
       }
       
       totalHeight += lineCount * lineHeight;
+      
+      // Early exit if already too tall
+      if (totalHeight > maxHeight) {
+        return false;
+      }
     }
     
-    return { totalHeight, maxLineWidth };
+    return totalHeight <= maxHeight;
   };
 
-  // Binary search for optimal font size
-  let low = minFontSize;
-  let high = maxFontSize;
-
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    const { totalHeight, maxLineWidth } = calculateWrappedTextDimensions(content, mid);
-
-    // Check if text fits within bounds
-    if (totalHeight <= maxHeight && maxLineWidth <= maxWidth) {
-      bestFontSize = mid;
-      low = mid + 1; // Try larger size
-    } else {
-      high = mid - 1; // Try smaller size
+  // Start from the maximum size and work down until text fits
+  // This ensures we prioritize wrapping over shrinking
+  for (let fontSize = maxFontSize; fontSize >= minFontSize; fontSize--) {
+    if (doesTextFitAtSize(content, fontSize)) {
+      return fontSize;
     }
   }
 
-  return Math.max(bestFontSize, minFontSize);
+  return minFontSize;
 };
 
 /**
