@@ -388,9 +388,13 @@ export const Canvas: React.FC = () => {
     const whiteboardContainer = canvas.closest('.absolute.bg-background') as HTMLElement;
     const rect = whiteboardContainer ? whiteboardContainer.getBoundingClientRect() : canvas.getBoundingClientRect();
     
+    // Different positioning for sticky notes vs regular text boxes
+    const isSticky = textObject.type === 'sticky-note';
+    const yOffset = isSticky ? 0 : -70; // Remove -70px adjustment for sticky notes
+    
     return {
       x: Math.round(textObject.x + 4 + rect.left), // Canvas position + padding + screen offset
-      y: Math.round(textObject.y + 4 + rect.top - 70), // Canvas position + padding + screen offset - 70px adjustment
+      y: Math.round(textObject.y + 4 + rect.top + yOffset), // Different offset for sticky vs text
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight
