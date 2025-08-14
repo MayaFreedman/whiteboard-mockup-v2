@@ -153,10 +153,10 @@ export const Canvas: React.FC = () => {
       if (existingObject && existingObject.type === 'sticky-note') {
         console.log('🗒️ Setting up immediate editing for existing sticky note:', existingObjectId.slice(0, 8));
         
-        // Position textarea to match canvas text rendering (with 8px offset)
+        // Position textarea at center of sticky note
         const stickyScreenCoords = {
-          x: existingObject.x + whiteboardRect.left + 8, // Add canvas padding offset
-          y: existingObject.y + whiteboardRect.top + 8   // Add canvas padding offset
+          x: existingObject.x + whiteboardRect.left,
+          y: existingObject.y + whiteboardRect.top
         };
         
         console.log('🗒️ Immediate sticky note positioning:', { 
@@ -1181,7 +1181,7 @@ export const Canvas: React.FC = () => {
               backgroundColor: isEditingStickyNote ? (editingObject.data?.backgroundColor || '#fff3cd') : 'transparent', // Match sticky note background
               zIndex: 1001,
               lineHeight: `${fontSize * 1.2}px`, // Must match the text rendering lineHeight
-              padding: isEditingStickyNote ? '0' : '0', // No CSS padding - positioning handles it
+              padding: isEditingStickyNote ? '8px' : '0', // Must match sticky note padding exactly
               margin: '0',
               border: 'none',
               borderRadius: isEditingStickyNote ? '8px' : '0', // Match sticky note styling
