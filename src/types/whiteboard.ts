@@ -2,7 +2,7 @@ import { Point } from '../utils/path/pathConversion';
 
 export interface WhiteboardObject {
   id: string;
-  type: 'path' | 'rectangle' | 'circle' | 'text' | 'triangle' | 'diamond' | 'pentagon' | 'hexagon' | 'star' | 'heart' | 'image' | 'sticky-note';
+  type: 'path' | 'rectangle' | 'circle' | 'text' | 'triangle' | 'diamond' | 'pentagon' | 'hexagon' | 'star' | 'heart' | 'image';
   x: number;
   y: number;
   width?: number;
@@ -252,18 +252,4 @@ export interface ImageObject extends WhiteboardObject {
   width: number;
   height: number;
   data: ImageData;
-}
-
-// Sticky note-specific interfaces
-export interface StickyNoteData extends TextData {
-  backgroundColor: string;
-  stickyNoteStyle: 'yellow' | 'pink' | 'blue' | 'green';
-  hasShadow: boolean;
-}
-
-export interface StickyNoteObject extends WhiteboardObject {
-  type: 'sticky-note';
-  width: number;
-  height: number;
-  data: StickyNoteData;
 }

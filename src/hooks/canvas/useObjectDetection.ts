@@ -105,34 +105,22 @@ export const useObjectDetection = () => {
    * Checks if a point is near text with improved hit area using accurate measurement
    */
   const isPointInText = useCallback((obj: WhiteboardObject, x: number, y: number): boolean => {
-    const isSticky = obj.type === 'sticky-note';
+    if (!obj.data?.content && obj.data?.content !== '') return false;
     
-    // For sticky notes, always check hit detection (even when empty)
-    // For text objects, skip if no content 
-    if (!isSticky && (!obj.data?.content && obj.data?.content !== '')) return false;
+    const textData = obj.data;
+    const content = textData.content || 'Double-click to edit';
     
-    const textData = obj.data || {};
-    const content = textData.content || (isSticky ? '' : 'Double-click to edit');
-    const padding = isSticky ? 16 : 4; // 16px for sticky notes, 4px for text
-    
-    // For empty sticky notes, use simple bounds checking since there's no text to measure
-    if (isSticky && (!content || content.trim() === '')) {
-      return x >= obj.x && x <= obj.x + (obj.width || 0) && 
-             y >= obj.y && y <= obj.y + (obj.height || 0);
-    }
-    
-    // For sticky notes with content or text objects, use precise text bounds
     return isPointInTextBounds(
       x, y,
-      obj.x + padding, // Account for canvas padding
-      obj.y + padding, // Account for canvas padding
+      obj.x + 4, // Account for canvas padding
+      obj.y + 4, // Account for canvas padding
       content,
       textData.fontSize || 16,
       textData.fontFamily || 'Arial',
       textData.bold || false,
       textData.italic || false,
       textData.textAlign || 'left',
-      obj.width ? obj.width - (padding * 2) : undefined, // Available width minus padding
+      obj.width ? obj.width - 8 : undefined, // Available width minus padding
       8 // Padding for easier selection
     );
   }, []);
@@ -255,12 +243,10 @@ export const useObjectDetection = () => {
           break;
         }
         
-        case 'text':
-        case 'sticky-note': {
+        case 'text': {
           isHit = isPointInText(obj, x, y);
-          console.log('📝 Text/Sticky note hit test (improved):', {
+          console.log('📝 Text hit test (improved):', {
             id: id.slice(0, 8),
-            type: obj.type,
             position: { x: obj.x, y: obj.y },
             content: obj.data?.content,
             isHit
