@@ -906,8 +906,10 @@ export const Canvas: React.FC = () => {
           }, 0);
         }
       } else {
-        // Delete the object if no text was entered
-        deleteObject(immediateTextObjectId, userId);
+        // Delete the object if no text was entered, BUT allow empty sticky notes
+        if (currentObject.type !== "sticky-note") {
+          deleteObject(immediateTextObjectId, userId);
+        }
       }
 
       redrawCanvas();
