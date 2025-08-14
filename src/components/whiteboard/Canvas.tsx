@@ -1552,7 +1552,7 @@ export const Canvas: React.FC = () => {
       <CustomCursor canvas={canvasRef.current} />
 
       {/* Resize Handles for Selected Objects */}
-      {activeTool === "select" &&
+      {(activeTool === "select" || activeTool === "sticky-note") &&
         selectedObjectIds.map((objectId) => {
           const liveDragPositions = getLiveDragPositions();
           const liveDragPosition = liveDragPositions[objectId] || null;
