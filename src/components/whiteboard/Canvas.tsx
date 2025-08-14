@@ -1461,11 +1461,9 @@ export const Canvas: React.FC = () => {
                     overflowWrap: "break-word",
                     wordBreak: "break-word",
                     wordWrap: "break-word",
-                    overflow: "hidden",
-                    // Use flexbox to center content vertically like canvas textBaseline: 'middle'
-                    display: isEditingStickyNote ? "flex" : "block",
-                    alignItems: isEditingStickyNote ? "center" : "flex-start",
-                    justifyContent: isEditingStickyNote ? "center" : "flex-start",
+                     overflow: "hidden",
+                     // Keep textarea as block element, fix size to sticky note dimensions
+                     display: "block",
                     textRendering: "optimizeLegibility",
                     fontSmooth: "antialiased",
                     WebkitFontSmoothing: "antialiased",
