@@ -96,26 +96,6 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
         newBounds.height = 10;
       }
       
-      // Maximum size constraints for text objects (200px limit)
-      if (obj.type === 'text') {
-        if (newBounds.width > 200) {
-          if (handleId.includes('e')) {
-            newBounds.width = 200;
-          } else if (handleId.includes('w')) {
-            newBounds.x = startBounds.x + startBounds.width - 200;
-            newBounds.width = 200;
-          }
-        }
-        if (newBounds.height > 200) {
-          if (handleId.includes('s')) {
-            newBounds.height = 200;
-          } else if (handleId.includes('n')) {
-            newBounds.y = startBounds.y + startBounds.height - 200;
-            newBounds.height = 200;
-          }
-        }
-      }
-      
       console.log('🔄 Manual resize:', { objectId, handleId, newBounds, oldBounds: startBounds });
       onResize(objectId, newBounds);
     };
