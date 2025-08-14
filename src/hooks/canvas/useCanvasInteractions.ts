@@ -2,8 +2,7 @@ import { useRef, useCallback, useEffect } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
-import { WhiteboardObject, TextData, ImageData, StickyNoteData } from '../../types/whiteboard';
-import { calculateOptimalFontSize } from '../../utils/stickyNoteTextSizing';
+import { WhiteboardObject, TextData, ImageData } from '../../types/whiteboard';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
@@ -11,6 +10,7 @@ import { useActionBatching } from '../useActionBatching';
 import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 import { useMultiplayer } from '../useMultiplayer';
+import { calculateOptimalFontSize } from '../../utils/stickyNoteUtils';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -175,12 +175,12 @@ export const useCanvasInteractions = () => {
   /**
    * Callback for when immediate text editing is triggered
    */
-  const onImmediateTextTriggerRef = useRef<((coords: { x: number; y: number }, existingObjectId?: string) => void) | null>(null);
+  const onImmediateTextTriggerRef = useRef<((coords: { x: number; y: number }) => void) | null>(null);
 
   /**
    * Sets the callback for immediate text editing trigger
    */
-  const setImmediateTextTrigger = useCallback((callback: (coords: { x: number; y: number }, existingObjectId?: string) => void) => {
+  const setImmediateTextTrigger = useCallback((callback: (coords: { x: number; y: number }) => void) => {
     onImmediateTextTriggerRef.current = callback;
   }, []);
 
@@ -201,6 +201,70 @@ export const useCanvasInteractions = () => {
       onImmediateTextTriggerRef.current(coords);
     }
   }, []);
+
+  /**
+   * Creates sticky note objects with proper data structure
+   */
+  const createStickyNoteObject = useCallback((
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    initialContent: string = ''
+  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
+    const stickyNoteColors = {
+      yellow: '#FEF08A',
+      pink: '#FBCFE8', 
+      blue: '#BFDBFE',
+      green: '#BBF7D0'
+    };
+
+    // Calculate initial font size to fit a single letter (largest possible)
+    // Use padding of 32px (16px on each side) for available space
+    const padding = 32;
+    const availableWidth = width - padding;
+    const availableHeight = height - padding;
+    
+    // Calculate font size for a single letter 'A' (typically the widest character)
+    const singleLetterFontSize = calculateOptimalFontSize(
+      'A', // Single letter to fit at maximum size
+      availableWidth,
+      availableHeight,
+      toolStore.toolSettings.fontFamily,
+      toolStore.toolSettings.textBold,
+      toolStore.toolSettings.textItalic,
+      8, // min font size
+      64 // higher max for single letter
+    );
+
+    const stickyNoteData = {
+      content: initialContent,
+      fontSize: singleLetterFontSize,
+      fontFamily: toolStore.toolSettings.fontFamily,
+      bold: toolStore.toolSettings.textBold,
+      italic: toolStore.toolSettings.textItalic,
+      underline: toolStore.toolSettings.textUnderline,
+      textAlign: 'center' as const, // Default to center for sticky notes
+      backgroundColor: stickyNoteColors[toolStore.toolSettings.stickyNoteStyle] || stickyNoteColors.yellow,
+      stickyNoteStyle: toolStore.toolSettings.stickyNoteStyle,
+      hasShadow: true,
+      // Mark as sticky note to prevent auto-resizing
+      isFixedSize: true
+    };
+
+    return {
+      type: 'sticky-note',
+      x,
+      y,
+      width: Math.max(width, 150),
+      height: Math.max(height, 150),
+      stroke: '#333333',
+      fill: 'transparent',
+      strokeWidth: 1,
+      opacity: 1,
+      data: stickyNoteData
+    };
+  }, [toolStore.toolSettings]);
 
   /**
    * Creates icon stamp objects
@@ -262,50 +326,6 @@ export const useCanvasInteractions = () => {
       strokeWidth: 0,
       opacity: 1,
       data: stampData
-    };
-  }, [toolStore.toolSettings]);
-
-  /**
-   * Creates sticky note objects with proper data structure
-   */
-  const createStickyNoteObject = useCallback((
-    x: number,
-    y: number,
-    size: number,
-    backgroundColor: string
-  ): Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> => {
-    const stickyNoteData: StickyNoteData = {
-      content: '', // Start with empty content - no placeholder
-      fontSize: calculateOptimalFontSize('', size, size, {
-        content: '',
-        fontSize: 24,
-        fontFamily: toolStore.toolSettings.fontFamily,
-        bold: toolStore.toolSettings.textBold,
-        italic: toolStore.toolSettings.textItalic,
-        underline: toolStore.toolSettings.textUnderline,
-        textAlign: 'center' // Force center alignment for sticky notes
-      }),
-      fontFamily: toolStore.toolSettings.fontFamily,
-      bold: toolStore.toolSettings.textBold,
-      italic: toolStore.toolSettings.textItalic,
-      underline: toolStore.toolSettings.textUnderline,
-      textAlign: 'center', // Force center alignment for sticky notes
-      backgroundColor,
-      stickySize: size,
-      autoTextResize: true
-    };
-
-    return {
-      type: 'sticky-note',
-      x: x - size / 2, // Center the sticky note on click position
-      y: y - size / 2,
-      width: size,
-      height: size,
-      stroke: toolStore.toolSettings.strokeColor,
-      fill: backgroundColor,
-      strokeWidth: 1,
-      opacity: 1,
-      data: stickyNoteData
     };
   }, [toolStore.toolSettings]);
 
@@ -754,6 +774,58 @@ export const useCanvasInteractions = () => {
         break;
       }
 
+      case 'sticky-note': {
+        // Check if we're clicking on an existing sticky note object
+        const clickedObjectId = findObjectAt(coords.x, coords.y);
+        const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
+        const isClickingOnExistingStickyNote = clickedObject && clickedObject.type === 'sticky-note';
+        
+        if (isClickingOnExistingStickyNote) {
+          console.log('📝 Clicked on existing sticky note - preventing creation, waiting for potential double-click');
+          return;
+        }
+
+        // Create sticky note immediately on click with default size
+        const defaultSize = 150;
+        const stickyNoteObject = createStickyNoteObject(
+          coords.x - defaultSize / 2,
+          coords.y - defaultSize / 2,
+          defaultSize,
+          defaultSize,
+          '' // Start with empty content for immediate editing
+        );
+        
+        const objectId = whiteboardStore.addObject(stickyNoteObject, userId);
+        console.log('📝 Created sticky note:', objectId.slice(0, 8), 'with initial font size:', stickyNoteObject.data.fontSize);
+        console.log('📝 Sticky note object:', stickyNoteObject);
+        console.log('📝 Sticky note position:', { x: stickyNoteObject.x, y: stickyNoteObject.y, width: stickyNoteObject.width, height: stickyNoteObject.height });
+        
+        // Immediately start editing the sticky note with the object ID
+        console.log('📝 Starting immediate text editing for sticky note:', objectId.slice(0, 8));
+        triggerImmediateTextEditing({
+          x: coords.x, // Center position
+          y: coords.y
+        });
+        
+        // Set the sticky note as the immediate text object
+        isImmediateTextEditingRef.current = true;
+        
+        // Store the object ID for immediate text editing - will be handled by Canvas component
+        console.log('📝 Triggering immediate text editing with coords:', coords);
+        
+        if (redrawCanvasRef.current) {
+          console.log('📝 Calling redrawCanvas for sticky note');
+          redrawCanvasRef.current();
+        } else {
+          console.warn('📝 No redrawCanvas function available');
+        }
+        
+        if (redrawCanvasRef.current) {
+          redrawCanvasRef.current();
+        }
+        break;
+      }
+
       case 'text': {
         // Additional check to prevent text creation while editing
         if (isEditingTextRef.current) {
@@ -793,34 +865,6 @@ export const useCanvasInteractions = () => {
         };
         
         console.log('📝 Started text interaction on empty space (waiting for click/drag decision):', coords, 'for user:', userId.slice(0, 8));
-        break;
-      }
-
-      case 'sticky-note': {
-        // Block if currently editing text to avoid conflicts
-        if (isEditingTextRef.current) {
-          console.log('🗒️ Sticky note creation blocked - currently editing text');
-          return;
-        }
-
-        const stickySize = toolStore.toolSettings.stickyNoteSize || 180;
-        const backgroundColor = toolStore.toolSettings.stickyNoteBackgroundColor || '#fef3c7';
-        
-        const stickyNoteObject = createStickyNoteObject(coords.x, coords.y, stickySize, backgroundColor);
-        
-        const objectId = whiteboardStore.addObject(stickyNoteObject, userId);
-        console.log('🗒️ Created sticky note:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
-        
-        // Trigger immediate sticky note editing (pass the sticky note object ID)
-        setTimeout(() => {
-          if (onImmediateTextTriggerRef.current) {
-            onImmediateTextTriggerRef.current(coords, objectId);
-          }
-        }, 10); // Small delay to ensure object is in store
-        
-        if (redrawCanvasRef.current) {
-          redrawCanvasRef.current();
-        }
         break;
       }
 
@@ -903,7 +947,7 @@ export const useCanvasInteractions = () => {
       default:
         console.log('🔧 Tool not implemented yet:', activeTool);
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, createStampObject, userId, startBatch]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, createStickyNoteObject, createStampObject, userId, startBatch]);
 
   /**
    * Handles pointer movement during interaction
@@ -1333,7 +1377,7 @@ export const useCanvasInteractions = () => {
     lastPointRef.current = null;
     pathStartRef.current = null;
     pathBuilderRef.current = null;
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId, endBatch]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, createStickyNoteObject, userId, endBatch]);
 
   /**
    * Gets the current drawing preview for rendering

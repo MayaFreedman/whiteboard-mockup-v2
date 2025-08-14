@@ -257,8 +257,8 @@ export interface ImageObject extends WhiteboardObject {
 // Sticky note-specific interfaces
 export interface StickyNoteData extends TextData {
   backgroundColor: string;
-  stickySize: number;
-  autoTextResize: boolean;
+  stickyNoteStyle: 'yellow' | 'pink' | 'blue' | 'green';
+  hasShadow: boolean;
 }
 
 export interface StickyNoteObject extends WhiteboardObject {

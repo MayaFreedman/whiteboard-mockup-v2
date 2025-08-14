@@ -33,10 +33,10 @@ import {
   Diamond,
   ChevronDown,
   Stamp,
+  StickyNote,
   ImageIcon,
   Camera,
-  Trash2,
-  StickyNote
+  Trash2
 } from 'lucide-react';
 
 interface ToolItem {

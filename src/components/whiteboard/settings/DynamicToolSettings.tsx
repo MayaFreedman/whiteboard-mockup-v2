@@ -300,35 +300,6 @@ export const DynamicToolSettings: React.FC = () => {
       </ToolSettingCard>;
   }
 
-  // Handle sticky note tool with properties panel
-  if (activeTool === 'sticky-note') {
-    return <ToolSettingCard title="Sticky Note Settings">
-        <div className="space-y-3">
-          <SliderSetting
-            label="Size"
-            value={toolSettings.stickyNoteSize || 180}
-            min={120}
-            max={300}
-            step={10}
-            onChange={(value) => updateToolSettings({ stickyNoteSize: value })}
-            valueFormatter={(value) => `${value}px`}
-            showValue={true}
-          />
-          <BadgeSelector
-            label="Background Color"
-            items={[
-              { value: '#fef3c7', label: 'Yellow' },
-              { value: '#fce7f3', label: 'Pink' },
-              { value: '#dbeafe', label: 'Blue' },
-              { value: '#d1fae5', label: 'Green' }
-            ]}
-            selectedValue={toolSettings.stickyNoteBackgroundColor || '#fef3c7'}
-            onChange={(value) => updateToolSettings({ stickyNoteBackgroundColor: value })}
-          />
-        </div>
-      </ToolSettingCard>;
-  }
-
   // Handle configured tools
   const toolConfig = toolsConfig[activeTool];
   if (toolConfig) {

@@ -4,126 +4,148 @@ import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
 import { StickyNoteObject } from '../../types/whiteboard';
 import { SliderSetting } from './settings/SliderSetting';
-import { BadgeSelector } from './settings/BadgeSelector';
 import { SelectSetting } from './settings/SelectSetting';
 import { ToggleButtonGroup } from './settings/ToggleButtonGroup';
-import { calculateOptimalFontSize } from '../../utils/stickyNoteTextSizing';
+import { Badge } from '../ui/badge';
+import { measureText } from '../../utils/textMeasurement';
 
 interface StickyNotePropertiesPanelProps {
   selectedObjectId: string;
 }
 
-export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps> = ({ 
-  selectedObjectId 
+const stickyNoteColors = [
+  { value: 'yellow', label: 'Yellow', color: '#FEF08A' },
+  { value: 'pink', label: 'Pink', color: '#FBCFE8' },
+  { value: 'blue', label: 'Blue', color: '#BFDBFE' },
+  { value: 'green', label: 'Green', color: '#BBF7D0' }
+];
+
+export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps> = ({
+  selectedObjectId
 }) => {
   const { objects, updateObject } = useWhiteboardStore();
   const { updateToolSettings } = useToolStore();
   const { userId } = useUser();
 
-  const stickyNote = objects[selectedObjectId] as StickyNoteObject;
-  
+  const stickyNote = objects[selectedObjectId] as StickyNoteObject | undefined;
+
   if (!stickyNote || stickyNote.type !== 'sticky-note') {
     return null;
   }
 
   const stickyNoteData = stickyNote.data;
 
-  const updateStickyNoteProperty = (property: string, value: any) => {
-    const newData = { ...stickyNoteData, [property]: value };
+  /**
+   * Updates text bounds when content or styling changes
+   */
+  const updateTextBounds = (obj: StickyNoteObject, content: string) => {
+    const { fontSize, fontFamily, bold, italic, textAlign, fixedWidth, fixedHeight } = obj.data;
+    const padding = 16; // 16px padding on all sides
+    const availableWidth = fixedWidth ? obj.width - (padding * 2) : undefined;
     
-    // Recalculate font size if content-affecting properties changed
-    if (['fontFamily', 'bold', 'italic'].includes(property)) {
-      newData.fontSize = calculateOptimalFontSize(
-        newData.content,
-        stickyNote.width,
-        stickyNote.height,
-        newData
-      );
+    const metrics = measureText(
+      content,
+      fontSize,
+      fontFamily,
+      bold,
+      italic,
+      availableWidth
+    );
+
+    let newWidth = obj.width;
+    let newHeight = obj.height;
+
+    if (!fixedWidth) {
+      newWidth = Math.max(150, metrics.width + (padding * 2)); // Minimum width 150px
     }
     
+    if (!fixedHeight) {
+      newHeight = Math.max(100, metrics.height + (padding * 2)); // Minimum height 100px
+    }
+
+    if (newWidth !== obj.width || newHeight !== obj.height) {
+      updateObject(selectedObjectId, {
+        width: newWidth,
+        height: newHeight
+      }, userId);
+    }
+  };
+
+  /**
+   * Handles changes to sticky note properties
+   */
+  const handleStickyNotePropertyChange = (updates: Partial<typeof stickyNoteData>) => {
+    const newData = { ...stickyNoteData, ...updates };
+    
     updateObject(selectedObjectId, {
-      data: newData,
-      updatedAt: Date.now()
+      data: newData
     }, userId);
 
     // Update global tool settings for future sticky notes
-    updateToolSettings({
-      fontFamily: newData.fontFamily,
-      textBold: newData.bold,
-      textItalic: newData.italic,
-      textUnderline: newData.underline,
-      textAlign: newData.textAlign,
-    });
+    if (updates.fontSize !== undefined) {
+      updateToolSettings({ fontSize: updates.fontSize });
+    }
+    if (updates.fontFamily !== undefined) {
+      updateToolSettings({ fontFamily: updates.fontFamily });
+    }
+    if (updates.stickyNoteStyle !== undefined) {
+      updateToolSettings({ stickyNoteStyle: updates.stickyNoteStyle });
+    }
+
+    // For sticky notes, don't update bounds - just adjust font size for the content to fit
+    // The sticky note maintains its size and the text adapts
   };
 
-  const updateStickyNoteSize = (newSize: number) => {
-    // Update dimensions
-    updateObject(selectedObjectId, {
-      width: newSize,
-      height: newSize,
-      updatedAt: Date.now()
-    }, userId);
-
-    // Recalculate font size for new dimensions
-    const newFontSize = calculateOptimalFontSize(
-      stickyNoteData.content,
-      newSize,
-      newSize,
-      stickyNoteData
-    );
-
-    updateObject(selectedObjectId, {
-      data: {
-        ...stickyNoteData,
-        fontSize: newFontSize,
-        stickySize: newSize
-      },
-      updatedAt: Date.now()
-    }, userId);
-
-    // Update global tool settings
-    updateToolSettings({ stickyNoteSize: newSize });
-  };
-
-  const updateStickyNoteBackgroundColor = (newColor: string) => {
-    updateObject(selectedObjectId, {
-      data: {
-        ...stickyNoteData,
-        backgroundColor: newColor
-      },
-      updatedAt: Date.now()
-    }, userId);
-
-    // Update global tool settings
-    updateToolSettings({ stickyNoteBackgroundColor: newColor });
+  /**
+   * Handles color changes for the sticky note background
+   */
+  const handleColorChange = (style: string) => {
+    const colorConfig = stickyNoteColors.find(c => c.value === style);
+    if (colorConfig) {
+      handleStickyNotePropertyChange({
+        stickyNoteStyle: style as any,
+        backgroundColor: colorConfig.color
+      });
+    }
   };
 
   return (
     <div className="space-y-4">
-      {/* Size Control */}
+      {/* Sticky Note Color */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Note Color</label>
+        <div className="flex gap-2">
+          {stickyNoteColors.map((colorOption) => (
+            <button
+              key={colorOption.value}
+              className={`w-8 h-8 rounded border-2 transition-all ${
+                stickyNoteData.stickyNoteStyle === colorOption.value
+                  ? 'border-primary scale-110'
+                  : 'border-muted hover:border-muted-foreground'
+              }`}
+              style={{ backgroundColor: colorOption.color }}
+              onClick={() => handleColorChange(colorOption.value)}
+              title={colorOption.label}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Font Size - Show current calculated size but allow manual adjustment */}
       <SliderSetting
-        label="Size"
-        value={stickyNoteData.stickySize || stickyNote.width}
-        min={120}
-        max={300}
-        step={10}
-        onChange={updateStickyNoteSize}
+        label="Font Size"
+        value={stickyNoteData.fontSize}
+        min={8}
+        max={32}
+        step={1}
+        onChange={(value) => handleStickyNotePropertyChange({ fontSize: value })}
         valueFormatter={(value) => `${value}px`}
         showValue={true}
       />
-
-      {/* Background Color */}
-      <BadgeSelector
-        label="Background Color"
-        items={[
-          { value: '#fef3c7', label: 'Yellow' },
-          { value: '#fce7f3', label: 'Pink' },
-          { value: '#dbeafe', label: 'Blue' },
-          { value: '#d1fae5', label: 'Green' }
-        ]}
-        selectedValue={stickyNoteData.backgroundColor}
-        onChange={updateStickyNoteBackgroundColor}
-      />
+      
+      <div className="text-xs text-muted-foreground">
+        Note: Font size automatically adjusts when typing to fit the sticky note
+      </div>
 
       {/* Font Family */}
       <SelectSetting
@@ -137,37 +159,43 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
           { value: 'Georgia', label: 'Georgia' },
           { value: 'Verdana', label: 'Verdana' }
         ]}
-        onChange={(value) => updateStickyNoteProperty('fontFamily', value)}
+        onChange={(value) => handleStickyNotePropertyChange({ fontFamily: value })}
       />
 
       {/* Text Formatting */}
       <ToggleButtonGroup
         label="Text Formatting"
         items={[
-          { value: 'textBold', label: 'Bold', icon: 'Bold' },
-          { value: 'textItalic', label: 'Italic', icon: 'Italic' },
-          { value: 'textUnderline', label: 'Underline', icon: 'Underline' }
+          { value: 'bold', label: 'Bold', icon: 'Bold' },
+          { value: 'italic', label: 'Italic', icon: 'Italic' },
+          { value: 'underline', label: 'Underline', icon: 'Underline' }
         ]}
         values={{
-          textBold: stickyNoteData.bold,
-          textItalic: stickyNoteData.italic,
-          textUnderline: stickyNoteData.underline
+          bold: stickyNoteData.bold,
+          italic: stickyNoteData.italic,
+          underline: stickyNoteData.underline
         }}
-        onChange={(key, value) => {
-          const property = key.replace('text', '').toLowerCase();
-          updateStickyNoteProperty(property, value);
-        }}
+        onChange={(key, value) => handleStickyNotePropertyChange({ [key]: value })}
       />
 
-
-      {/* Font Size (Read-only display) */}
-      <div>
-        <label className="text-sm font-medium mb-2 block">
-          Font Size: {Math.round(stickyNoteData.fontSize)}px (Auto-calculated)
-        </label>
-        <p className="text-xs text-muted-foreground">
-          Font size automatically adjusts based on content and sticky note size.
-        </p>
+      {/* Text Alignment */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Text Alignment</label>
+        <div className="flex gap-2">
+          {(['left', 'center', 'right'] as const).map((align) => (
+            <button
+              key={align}
+              className={`px-3 py-2 text-sm rounded border transition-colors ${
+                stickyNoteData.textAlign === align
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background text-foreground border-border hover:bg-muted'
+              }`}
+              onClick={() => handleStickyNotePropertyChange({ textAlign: align })}
+            >
+              {align.charAt(0).toUpperCase() + align.slice(1)}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
