@@ -67,6 +67,29 @@ export const useCanvasInteractions = () => {
            x <= activeWhiteboardSize.width && 
            y <= activeWhiteboardSize.height;
   }, [activeWhiteboardSize]);
+
+  /**
+   * Constrains object position to stay within screen bounds with 1px buffer
+   */
+  const constrainObjectToBounds = useCallback((
+    objectId: string,
+    newX: number,
+    newY: number
+  ): { x: number; y: number } => {
+    const obj = whiteboardStore.objects[objectId];
+    if (!obj) return { x: newX, y: newY };
+
+    const buffer = 1;
+    const minX = buffer;
+    const minY = buffer;
+    const maxX = activeWhiteboardSize.width - obj.width - buffer;
+    const maxY = activeWhiteboardSize.height - obj.height - buffer;
+
+    return {
+      x: Math.max(minX, Math.min(maxX, newX)),
+      y: Math.max(minY, Math.min(maxY, newY))
+    };
+  }, [activeWhiteboardSize, whiteboardStore.objects]);
   
   // Simple path builder for smooth drawing
   const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
@@ -965,13 +988,16 @@ export const useCanvasInteractions = () => {
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const initialPos = initialDragPositionsRef.current[objectId];
             if (initialPos) {
-              const newPos = {
+              const unconstrained = {
                 x: initialPos.x + deltaX,
                 y: initialPos.y + deltaY
               };
-              console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
+              // Constrain position to screen bounds
+              const constrainedPos = constrainObjectToBounds(objectId, unconstrained.x, unconstrained.y);
+              
+              console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', constrainedPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
-              liveDragPositionsRef.current[objectId] = newPos;
+              liveDragPositionsRef.current[objectId] = constrainedPos;
             } else {
               console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
             }
@@ -1114,8 +1140,10 @@ export const useCanvasInteractions = () => {
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const finalPos = liveDragPositionsRef.current[objectId];
             if (finalPos) {
-              console.log('🎯 Final position for object:', objectId.slice(0, 8), finalPos);
-              whiteboardStore.updateObject(objectId, finalPos, userId);
+              // Final constraint check before saving
+              const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
+              console.log('🎯 Final position for object:', objectId.slice(0, 8), constrainedFinalPos);
+              whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
             }
           });
           
