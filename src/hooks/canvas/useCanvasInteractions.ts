@@ -1101,6 +1101,7 @@ export const useCanvasInteractions = () => {
               const constrainedPos = constrainObjectToBounds(objectId, unconstrained.x, unconstrained.y);
               
               console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', constrainedPos);
+              console.log('🔄 STORING live position:', objectId.slice(0, 8), constrainedPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = constrainedPos;
             } else {
@@ -1569,8 +1570,18 @@ export const useCanvasInteractions = () => {
     getCurrentDrawingPreview,
     getCurrentShapePreview,
     getCurrentSelectionBox,
-    getCurrentDragDeltas: () => dragDeltasRef.current,
-    getLiveDragPositions: () => liveDragPositionsRef.current,
+    getCurrentDragDeltas: () => {
+      console.log('🔄 getCurrentDragDeltas called:', dragDeltasRef.current);
+      return dragDeltasRef.current;
+    },
+    getLiveDragPositions: () => {
+      console.log('🔄 getLiveDragPositions called:', {
+        liveDragCount: Object.keys(liveDragPositionsRef.current).length,
+        positions: liveDragPositionsRef.current,
+        isDragging: isDraggingRef.current
+      });
+      return liveDragPositionsRef.current;
+    },
     setRedrawCanvas,
     setDoubleClickProtection,
     setEditingState,

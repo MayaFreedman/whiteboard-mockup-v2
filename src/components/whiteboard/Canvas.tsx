@@ -1546,6 +1546,14 @@ export const Canvas: React.FC = () => {
           const liveDragPositions = getLiveDragPositions();
           const liveDragPosition = liveDragPositions[objectId] || null;
           
+          console.log('🎯 Canvas ResizeHandles render:', {
+            objectId: objectId.slice(0, 8),
+            isDragging,
+            allLiveDragPositions: Object.keys(liveDragPositions).length,
+            thisObjectLivePos: liveDragPosition,
+            storePos: objects[objectId] ? { x: objects[objectId].x, y: objects[objectId].y } : 'not found'
+          });
+          
           return (
             <ResizeHandles
               key={objectId}
