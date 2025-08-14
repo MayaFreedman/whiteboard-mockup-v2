@@ -1314,10 +1314,10 @@ export const Canvas: React.FC = () => {
             ref={textareaRef}
             className="absolute border-none resize-none outline-none overflow-hidden"
           style={{
-            left: textEditorPosition.x,
-            top: textEditorPosition.y,
-            width: textEditorPosition.width,
-            height: textEditorPosition.height,
+            left: textEditorPosition.x - 8,
+            top: textEditorPosition.y - 8,
+            width: textEditorPosition.width + 16,
+            height: textEditorPosition.height + 16,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
             fontFamily: objects[editingTextId]?.data?.fontFamily || "Arial",
             fontWeight: objects[editingTextId]?.data?.bold ? "bold" : "normal",
@@ -1338,8 +1338,7 @@ export const Canvas: React.FC = () => {
               objects[editingTextId]?.type === "sticky-note"
                 ? "0px 2px 8px rgba(0,0,0,0.1)"
                 : "none",
-            padding:
-              objects[editingTextId]?.type === "sticky-note" ? "8px" : "0",
+            padding: "8px",
             // Text visibility and alignment
             color:
               objects[editingTextId]?.type === "sticky-note"
@@ -1408,13 +1407,14 @@ export const Canvas: React.FC = () => {
                 className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
               style={
                 {
-                  left: immediateTextPosition.x,
-                  top: immediateTextPosition.y,
-                  // For sticky notes, use the EXACT sticky note dimensions
-                  width: isEditingStickyNote ? editingObject.width : 200,
-                  height: isEditingStickyNote
+                  left: immediateTextPosition.x - 8,
+                  top: immediateTextPosition.y - 8,
+                  // For sticky notes, use the EXACT sticky note dimensions plus padding
+                  width: (isEditingStickyNote ? editingObject.width : 200) + 16,
+                  height: (isEditingStickyNote
                     ? editingObject.height
-                    : toolStore.toolSettings.fontSize * 1.2 || 20,
+                    : toolStore.toolSettings.fontSize * 1.2 || 20) + 16,
+                  padding: "8px",
                   fontSize: fontSize,
                   fontFamily: isEditingStickyNote
                     ? editingObject.data?.fontFamily || "Inter"
@@ -1450,7 +1450,6 @@ export const Canvas: React.FC = () => {
                     : "transparent", // Match sticky note background
                   zIndex: 1001,
                   lineHeight: `${fontSize * 1.2}px`, // Must match the text rendering lineHeight
-                  padding: isEditingStickyNote ? "8px" : "0", // Must match sticky note padding exactly
                   margin: "0",
                   border: "none",
                   borderRadius: isEditingStickyNote ? "8px" : "0", // Match sticky note styling
