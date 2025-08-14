@@ -51,6 +51,7 @@ export const useCanvasInteractions = () => {
   
   // Batching state refs
   const currentBatchIdRef = useRef<string | null>(null);
+  const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const draggedObjectIdRef = useRef<string | null>(null);
   const drawingObjectIdRef = useRef<string | null>(null);
   
@@ -1407,7 +1408,23 @@ export const useCanvasInteractions = () => {
               console.log('📝 TEXT TOOL - Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', constrainedPos);
               console.log('📝 TEXT TOOL - STORING live position:', objectId.slice(0, 8), constrainedPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
-              liveDragPositionsRef.current[objectId] = constrainedPos;
+          liveDragPositionsRef.current[objectId] = constrainedPos;
+          
+          // Set/reset drag timeout to auto-complete if mouseup is missed
+          if (dragTimeoutRef.current) {
+            clearTimeout(dragTimeoutRef.current);
+          }
+          dragTimeoutRef.current = setTimeout(() => {
+            console.log('⏰ DRAG TIMEOUT - Auto-completing drag operation for:', objectId.slice(0, 8));
+            if (isDraggingRef.current && liveDragPositionsRef.current[objectId]) {
+              // Get canvas element for the simulated event
+              const canvas = document.getElementById('whiteboard-canvas') as HTMLCanvasElement;
+              const fakeEvent = new MouseEvent('mouseup', { bubbles: true });
+              if (canvas) {
+                handlePointerUp(fakeEvent, canvas);
+              }
+            }
+          }, 1000); // 1 second timeout
             } else {
               console.warn('📝 TEXT TOOL - ❌ No initial position stored for object:', objectId.slice(0, 8));
             }
