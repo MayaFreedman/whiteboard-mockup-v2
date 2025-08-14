@@ -488,6 +488,20 @@ export const Canvas: React.FC = () => {
       ? whiteboardContainer.getBoundingClientRect()
       : canvas.getBoundingClientRect();
 
+    console.log('🗒️ TEXTAREA POSITIONING DEBUG:', {
+      stickyId: textObject.id?.slice(0, 8),
+      canvasY: textObject.y,
+      calculatedTextareaY: Math.round(textObject.y + 8 + rect.top - 70),
+      rectTop: rect.top,
+      breakdown: {
+        base: textObject.y,
+        padding: 8,
+        rectTop: rect.top,
+        adjustment: -70,
+        final: textObject.y + 8 + rect.top - 70
+      }
+    });
+
     return {
       x: Math.round(textObject.x + 4 + rect.left), // Canvas position + padding + screen offset
       y: Math.round(textObject.y + 8 + rect.top - 70), // Match canvas: obj.y + 8 (padding)

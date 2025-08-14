@@ -755,6 +755,7 @@ export const useCanvasRendering = (
             console.log('  - canvasTextPosition:', { x: startX, y: startY });
             console.log('  - objectBounds:', { x: obj.x, y: obj.y, width: obj.width, height: obj.height });
             console.log('  - textMetrics:', { lines: lines.length, lineHeight });
+            console.log('  - CANVAS TEXT WILL START AT Y:', startY, '(obj.y + 8 =', obj.y, '+ 8)');
             if (stickyNoteData.textAlign === 'left') startX = obj.x + 8;
             else if (stickyNoteData.textAlign === 'right') startX = obj.x + obj.width - 8;
 
