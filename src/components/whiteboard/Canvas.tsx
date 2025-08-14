@@ -1126,12 +1126,19 @@ export const Canvas: React.FC = () => {
       }
     };
 
-    // Add global mouse up listener
+    // Simple test mouseup that always logs
+    const testMouseUp = (event: MouseEvent) => {
+      console.log('🔥 BASIC mouseup detected:', event.type, event.target);
+    };
+
+    // Add both listeners
     document.addEventListener('mouseup', handleGlobalMouseUp);
+    document.addEventListener('mouseup', testMouseUp);
     console.log('🔧 Global mouseup listener attached');
 
     return () => {
       document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('mouseup', testMouseUp);
       console.log('🔧 Global mouseup listener removed');
     };
   }, [handlePointerUp]); // Remove unstable dependencies
