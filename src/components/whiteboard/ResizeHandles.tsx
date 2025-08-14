@@ -111,21 +111,19 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
   };
   return (
     <>
-      {/* Selection outline - hide for image objects (emojis/stamps) */}
-      {obj.type !== 'image' && (
-        <div
-          style={{
-            position: 'absolute',
-            left: obj.x + canvasOffset.x - 2,
-            top: obj.y + canvasOffset.y - 2,
-            width: obj.width + 4,
-            height: obj.height + 4,
-            border: '2px dashed #007acc',
-            pointerEvents: 'none',
-            zIndex: 1000
-          }}
-        />
-      )}
+      {/* Selection outline */}
+      <div
+        style={{
+          position: 'absolute',
+          left: obj.x + canvasOffset.x - 2,
+          top: obj.y + canvasOffset.y - 2,
+          width: obj.width + 4,
+          height: obj.height + 4,
+          border: '2px dashed #007acc',
+          pointerEvents: 'none',
+          zIndex: 1000
+        }}
+      />
       
       {/* Resize handles */}
       {handles.map(handle => (
