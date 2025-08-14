@@ -1405,7 +1405,7 @@ export const Canvas: React.FC = () => {
               objects[editingTextId]?.type === "sticky-note"
                 ? "0px 2px 8px rgba(0,0,0,0.1)"
                 : "none",
-            padding: "8px",
+            padding: "0",
             // Text visibility and alignment
             color:
               objects[editingTextId]?.type === "sticky-note"
