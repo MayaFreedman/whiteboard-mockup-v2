@@ -533,13 +533,8 @@ export const Canvas: React.FC = () => {
         }
       });
       
-      // Auto-resize text bounds to fit content
-      setTimeout(() => {
-        const updatedObject = objects[editingTextId];
-        if (updatedObject) {
-          updateTextBounds(updatedObject, contentToSave);
-        }
-      }, 0);
+      // DO NOT auto-resize for double-click editing - preserve original dimensions
+      console.log('📝 Text editing completed without auto-resize for:', editingTextId.slice(0, 8));
       
       redrawCanvas();
     }
@@ -658,22 +653,27 @@ export const Canvas: React.FC = () => {
     const finalText = immediateTextContent?.trim() || '';
     
     if (immediateTextObjectId && objects[immediateTextObjectId]) {
+      const currentObject = objects[immediateTextObjectId];
+      
       if (finalText) {
         // Keep the existing object with final content
         updateObject(immediateTextObjectId, {
           data: {
-            ...objects[immediateTextObjectId].data,
+            ...currentObject.data,
             content: finalText
           }
         });
         
-        // Final resize to fit content
-        setTimeout(() => {
-          const updatedObject = objects[immediateTextObjectId];
-          if (updatedObject) {
-            updateTextBounds(updatedObject, finalText);
-          }
-        }, 0);
+        // Only auto-resize for regular text objects created via immediate editing
+        // DO NOT auto-resize sticky notes - they have fixed dimensions
+        if (currentObject.type === 'text') {
+          setTimeout(() => {
+            const updatedObject = objects[immediateTextObjectId];
+            if (updatedObject) {
+              updateTextBounds(updatedObject, finalText);
+            }
+          }, 0);
+        }
       } else {
         // Delete the object if no text was entered
         deleteObject(immediateTextObjectId, userId);
