@@ -808,36 +808,26 @@ export const Canvas: React.FC = () => {
     const minWidth = 100;
     const textarea = e.target;
 
-    // Calculate available space from text position to canvas edge
+    // Calculate available space from text position to screen edge
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
-      const canvasWidth = canvasRect.width;
-      // Check if we're editing a sticky note
-      const isEditingStickyNote = immediateTextObjectId && objects[immediateTextObjectId]?.type === "sticky-note";
-      
-      // Only apply width constraints for sticky notes, not regular text
-      if (isEditingStickyNote) {
-        const textPositionX = immediateTextPosition.x - canvasRect.left;
-        const availableWidthToEdge = canvasWidth - textPositionX - 10;
-        const naturalTextWidth = Math.max(200, availableWidthToEdge);
-        
-        textarea.style.width = naturalTextWidth + "px";
-        textarea.style.maxWidth = naturalTextWidth + "px";
-        textarea.style.whiteSpace = "pre-wrap";
-      } else {
-        // For regular text, keep the large width and nowrap behavior
-        textarea.style.whiteSpace = "nowrap";
-        textarea.style.overflow = "visible";
-      }
+      const availableWidth =
+        canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
 
-      // Measure text without width constraint to match canvas rendering
+      // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
+      const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
+      const effectiveWidth = availableWidth - textPadding;
+      textarea.style.width = effectiveWidth + "px";
+      textarea.style.maxWidth = effectiveWidth + "px";
+
+      // Measure text with the same width for consistent wrapping
       const wrappedMetrics = measureText(
         newText || "",
         fontSize,
         fontFamily,
         bold,
-        italic
-        // No maxWidth - let text flow naturally like on canvas
+        italic,
+        effectiveWidth
       );
 
       // Update textarea height to match wrapped text height so cursor moves correctly
@@ -1467,14 +1457,13 @@ export const Canvas: React.FC = () => {
             <>
               <textarea
                 data-immediate-text="true"
-                className="absolute border-none resize-none outline-none placeholder-opacity-70"
+                className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
               style={
                 {
                   left: immediateTextPosition.x,
                   top: immediateTextPosition.y,
                    // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
-                   // For regular text, use large width to prevent premature wrapping
-                   width: isEditingStickyNote ? editingObject.width : 2000,
+                   width: isEditingStickyNote ? editingObject.width : 200,
                    height: isEditingStickyNote
                      ? editingObject.height
                      : toolStore.toolSettings.fontSize * 1.2 || 20,
@@ -1520,11 +1509,10 @@ export const Canvas: React.FC = () => {
                   boxShadow: isEditingStickyNote
                     ? "0px 2px 8px rgba(0,0,0,0.1)"
                     : "none", // Match sticky note shadow
-                   // Different wrapping behavior for sticky notes vs regular text
-                   whiteSpace: isEditingStickyNote ? "pre-wrap" : "nowrap",
-                   overflowWrap: isEditingStickyNote ? "break-word" : "normal",
-                   wordBreak: isEditingStickyNote ? "break-word" : "normal",
-                   wordWrap: isEditingStickyNote ? "break-word" : "normal",
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "break-word",
+                  wordBreak: "break-word",
+                  wordWrap: "break-word",
                   overflow: "hidden",
                   textRendering: "optimizeLegibility",
                   fontSmooth: "antialiased",
