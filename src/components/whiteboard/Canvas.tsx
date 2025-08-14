@@ -1417,7 +1417,7 @@ export const Canvas: React.FC = () => {
                 : objects[editingTextId]?.data?.textAlign || "left",
             caretColor: objects[editingTextId]?.stroke || "#000000",
             zIndex: 1000,
-            lineHeight: textEditorPosition.lineHeight + "px",
+            lineHeight: "1.2",
             margin: "0",
             border: "none",
             wordWrap: "break-word",
@@ -1429,6 +1429,8 @@ export const Canvas: React.FC = () => {
             MozOsxFontSmoothing: "grayscale",
             WebkitTextSizeAdjust: "100%",
             boxSizing: "border-box",
+            letterSpacing: "normal",
+            wordSpacing: "normal",
           }}
           value={editingText}
           onChange={handleTextChange}
