@@ -815,8 +815,21 @@ export const useCanvasInteractions = () => {
           isShiftPressed,
           currentSelection: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)),
           isDragging: isDraggingRef.current,
-          isDrawing: isDrawingRef.current
+          isDrawing: isDrawingRef.current,
+          eventType: event.type,
+          timestamp: Date.now()
         });
+
+        // CRITICAL: Ensure we're not in a conflicting state
+        if (isDraggingRef.current || isDrawingRef.current) {
+          console.warn('⚠️ SELECT TOOL - Already in dragging/drawing state, resetting:', {
+            isDragging: isDraggingRef.current,
+            isDrawing: isDrawingRef.current
+          });
+          isDraggingRef.current = false;
+          isDrawingRef.current = false;
+          cleanupBatching();
+        }
         
         if (objectId) {
           // Handle Shift+click for multi-select
@@ -1210,10 +1223,14 @@ export const useCanvasInteractions = () => {
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
           
-          console.log('🔄 Dragging movement:', {
+          console.log('🔄 SELECT TOOL - Dragging movement:', {
             selectedCount: whiteboardStore.selectedObjectIds.length,
             delta: { x: deltaX, y: deltaY },
-            initialPositions: Object.keys(initialDragPositionsRef.current).length
+            dragStart: dragStartRef.current,
+            currentCoords: coords,
+            initialPositions: Object.keys(initialDragPositionsRef.current).length,
+            liveDragPositions: Object.keys(liveDragPositionsRef.current).length,
+            timestamp: Date.now()
           });
           
           // Store current drag deltas for live rendering without creating actions
@@ -1478,8 +1495,16 @@ export const useCanvasInteractions = () => {
 
     switch (activeTool) {
       case 'select': {
+        console.log('🎯 SELECT TOOL - Pointer up processing:', {
+          isDragging: isDraggingRef.current,
+          isDrawing: isDrawingRef.current,
+          selectedObjects: whiteboardStore.selectedObjectIds.length,
+          hasSelectionBox: !!selectionBoxRef.current?.isActive,
+          timestamp: Date.now()
+        });
+
         if (isDraggingRef.current) {
-          console.log('🔄 Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
+          console.log('🔄 SELECT TOOL - Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
           
           // Create optimized drag completion batch with only final positions
           const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE', 'multi-object', userId);
@@ -1540,14 +1565,22 @@ export const useCanvasInteractions = () => {
         }
         
         // CRITICAL: Always reset these flags at the end of select pointer up
-        console.log('🧹 Resetting select tool state:', {
+        console.log('🧹 SELECT TOOL - Resetting select tool state:', {
           wasDragging: isDraggingRef.current,
           wasDrawing: isDrawingRef.current,
-          selectedObjects: whiteboardStore.selectedObjectIds.length
+          selectedObjects: whiteboardStore.selectedObjectIds.length,
+          cleanupComplete: true,
+          timestamp: Date.now()
         });
         
         isDraggingRef.current = false;
         isDrawingRef.current = false;
+        dragStartRef.current = null;
+
+        // Force a redraw to ensure everything is clean
+        if (redrawCanvasRef.current) {
+          redrawCanvasRef.current();
+        }
         dragStartRef.current = null;
         break;
       }

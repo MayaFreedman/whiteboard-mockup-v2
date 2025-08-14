@@ -1185,6 +1185,15 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    console.log('🖱️ Canvas onMouseDown triggered:', {
+      tool: activeTool,
+      button: event.button,
+      buttons: event.buttons,
+      isHandlingDoubleClick,
+      isImmediateTextEditing,
+      timestamp: Date.now()
+    });
+
     // Block events during double-click protection
     if (isHandlingDoubleClick) {
       console.log("🖱️ Mouse down blocked - double-click protection active");
@@ -1218,6 +1227,7 @@ export const Canvas: React.FC = () => {
         "immediate editing:",
         isImmediateTextEditing
       );
+      console.log('🖱️ Passing mouse down to handlePointerDown:', { tool: activeTool, timestamp: Date.now() });
       handlePointerDown(event.nativeEvent, canvasRef.current);
     }
   };
@@ -1228,6 +1238,13 @@ export const Canvas: React.FC = () => {
    */
   const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (canvasRef.current) {
+      // Only log for select tool to avoid spam
+      if (activeTool === 'select') {
+        console.log('🖱️ Canvas onMouseMove (select tool):', { 
+          tool: activeTool,
+          timestamp: Date.now()
+        });
+      }
       handlePointerMove(event.nativeEvent, canvasRef.current);
     }
   };
@@ -1237,6 +1254,12 @@ export const Canvas: React.FC = () => {
    * @param event - Mouse event
    */
   const onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    console.log('🖱️ Canvas onMouseUp triggered:', {
+      tool: activeTool,
+      button: event.button,
+      timestamp: Date.now()
+    });
+
     if (canvasRef.current) {
       handlePointerUp(event.nativeEvent, canvasRef.current);
     }
