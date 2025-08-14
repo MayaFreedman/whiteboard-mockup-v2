@@ -1252,31 +1252,58 @@ export const useCanvasInteractions = () => {
       case 'select': {
         // ONLY do work if we're actually dragging something
         if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
-          // Live preview approach - update visual positions without store updates during drag
+          // Multi-object dragging with absolute positioning to prevent drift
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
           
-          // Calculate and store live positions for smooth preview
+          // Only process movement if it's significant enough (prevents tiny movements from causing issues)
+          const movement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+          if (movement < 2) {
+            // Movement too small, skip processing
+            return;
+          }
+          // Store current drag deltas for live rendering without creating actions
+          dragDeltasRef.current = { x: deltaX, y: deltaY };
+          
+          // Apply visual updates without persisting to store during drag
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const initialPos = initialDragPositionsRef.current[objectId];
             if (initialPos) {
-              const newX = initialPos.x + deltaX;
-              const newY = initialPos.y + deltaY;
+              const unconstrained = {
+                x: initialPos.x + deltaX,
+                y: initialPos.y + deltaY
+              };
+              // Constrain position to screen bounds
+              const constrainedPos = constrainObjectToBounds(objectId, unconstrained.x, unconstrained.y);
               
-              // Apply bounds checking for live preview
-              const constrainedPos = constrainObjectToBounds(objectId, newX, newY);
+              console.log('🔄 DRAG MOVE - Object:', objectId.slice(0, 8), {
+                initial: initialPos,
+                delta: { x: deltaX, y: deltaY },
+                unconstrained,
+                constrained: constrainedPos,
+                currentStorePos: { x: whiteboardStore.objects[objectId]?.x, y: whiteboardStore.objects[objectId]?.y }
+              });
               
-              // Store live position for rendering preview (not store update)
+              // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = constrainedPos;
+            } else {
+              console.warn('❌ DRAG MOVE - No initial position stored for object:', objectId.slice(0, 8));
             }
           });
-
-          // Force redraw to show live preview positions
+          
+          // CRITICAL: Force re-render of ResizeHandles to show updated bounding box
+          if (forceRerenderRef.current) {
+            forceRerenderRef.current();
+          }
+          
+          // Check if batch is getting too large
+          if (currentBatchIdRef.current) {
+            checkBatchSize();
+          }
+          
           if (redrawCanvasRef.current) {
             redrawCanvasRef.current();
           }
-        }
-        } else if (isDrawingRef.current && selectionBoxRef.current) {
         } else if (isDrawingRef.current && selectionBoxRef.current) {
           // Updating selection box
           selectionBoxRef.current.endX = coords.x;
@@ -1965,8 +1992,8 @@ export const useCanvasInteractions = () => {
       return dragDeltasRef.current;
     },
     getLiveDragPositions: () => {
-      // Return live drag positions for smooth preview rendering
-      return liveDragPositionsRef.current;
+      // Simplified - no longer using live drag positions since we update store directly
+      return {};
     },
     setRedrawCanvas,
     setDoubleClickProtection,
