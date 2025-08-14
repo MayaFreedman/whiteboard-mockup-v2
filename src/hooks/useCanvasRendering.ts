@@ -1019,11 +1019,22 @@ export const useCanvasRendering = (
       // Apply live drag position if object is being dragged
       let renderObj = obj;
       if (liveDragPositions[id]) {
+        console.log('🎨 RENDER - Using live drag position for object:', id.slice(0, 8), {
+          storePos: { x: obj.x, y: obj.y },
+          livePos: liveDragPositions[id],
+          isSelected
+        });
         renderObj = {
           ...obj,
           x: liveDragPositions[id].x,
           y: liveDragPositions[id].y
         };
+      } else if (isSelected && Object.keys(liveDragPositions).length > 0) {
+        console.log('🎨 RENDER - Selected object without live position (POTENTIAL REVERSION):', id.slice(0, 8), {
+          storePos: { x: obj.x, y: obj.y },
+          isSelected,
+          availableLivePositions: Object.keys(liveDragPositions)
+        });
       }
       
       renderObject(ctx, renderObj, isSelected);

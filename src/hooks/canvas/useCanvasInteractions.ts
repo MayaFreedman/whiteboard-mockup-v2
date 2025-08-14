@@ -898,6 +898,7 @@ export const useCanvasInteractions = () => {
               const obj = whiteboardStore.objects[id];
               if (obj) {
                 initialPositions[id] = { x: obj.x, y: obj.y };
+                console.log('🎯 DRAG START - Storing initial position for object:', id.slice(0, 8), { x: obj.x, y: obj.y });
               }
             });
             initialDragPositionsRef.current = initialPositions;
@@ -1270,12 +1271,18 @@ export const useCanvasInteractions = () => {
               // Constrain position to screen bounds
               const constrainedPos = constrainObjectToBounds(objectId, unconstrained.x, unconstrained.y);
               
-              console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', constrainedPos);
-              console.log('🔄 STORING live position:', objectId.slice(0, 8), constrainedPos);
+              console.log('🔄 DRAG MOVE - Object:', objectId.slice(0, 8), {
+                initial: initialPos,
+                delta: { x: deltaX, y: deltaY },
+                unconstrained,
+                constrained: constrainedPos,
+                currentStorePos: { x: whiteboardStore.objects[objectId]?.x, y: whiteboardStore.objects[objectId]?.y }
+              });
+              
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = constrainedPos;
             } else {
-              console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
+              console.warn('❌ DRAG MOVE - No initial position stored for object:', objectId.slice(0, 8));
             }
           });
           
@@ -1540,13 +1547,34 @@ export const useCanvasInteractions = () => {
           // Individual updates will be separate actions that can be undone together
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const finalPos = liveDragPositionsRef.current[objectId];
+            const initialPos = initialDragPositionsRef.current[objectId];
+            const currentStorePos = whiteboardStore.objects[objectId];
+            
+            console.log('🎯 DRAG END - Processing object:', objectId.slice(0, 8), {
+              initialPos,
+              finalLivePos: finalPos,
+              currentStorePos: currentStorePos ? { x: currentStorePos.x, y: currentStorePos.y } : null,
+              hasLivePos: !!finalPos,
+              hasInitialPos: !!initialPos
+            });
+            
             if (finalPos) {
               // Final constraint check before saving
               const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
-              console.log('🎯 Applying final position for object:', objectId.slice(0, 8), 'from live:', finalPos, 'to constrained:', constrainedFinalPos);
+              console.log('🎯 DRAG END - Applying final position for object:', objectId.slice(0, 8), 'from live:', finalPos, 'to constrained:', constrainedFinalPos);
               whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
+              
+              // Verify the update took
+              setTimeout(() => {
+                const verifyPos = whiteboardStore.objects[objectId];
+                console.log('🔍 DRAG END - Verification check for object:', objectId.slice(0, 8), {
+                  applied: constrainedFinalPos,
+                  actual: verifyPos ? { x: verifyPos.x, y: verifyPos.y } : null,
+                  matches: verifyPos ? (verifyPos.x === constrainedFinalPos.x && verifyPos.y === constrainedFinalPos.y) : false
+                });
+              }, 10);
             } else {
-              console.warn('⚠️ No live drag position found for object:', objectId.slice(0, 8));
+              console.warn('⚠️ DRAG END - No live drag position found for object:', objectId.slice(0, 8), 'keeping at store position');
             }
           });
           
