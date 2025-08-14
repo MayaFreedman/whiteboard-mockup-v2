@@ -140,7 +140,7 @@ export const Canvas: React.FC = () => {
     
     const screenCoords = {
       x: coords.x + whiteboardRect.left,
-      y: coords.y + whiteboardRect.top - 60  // Moved down more to align with cursor
+      y: coords.y + whiteboardRect.top  // Removed -60 offset for immediate text
     };
     
     console.log('📝 Canvas coords:', coords);
