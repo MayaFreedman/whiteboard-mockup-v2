@@ -1233,7 +1233,7 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        // Handle dragging for text tool (identical to select tool)
+        // Handle dragging existing selected text objects (like select tool)
         if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
           // Multi-object dragging with absolute positioning to prevent drift
           const deltaX = coords.x - dragStartRef.current.x;
@@ -1273,17 +1273,13 @@ export const useCanvasInteractions = () => {
             redrawCanvasRef.current();
           }
         }
-        break;
-      }
-
-      case 'text': {
-        // Check for drag intent: if significant movement is detected, enter drag mode
-        if (textClickStartPosRef.current && !isDrawingRef.current) {
+        // Handle drag detection for creating new text boxes (only when no objects are selected)
+        else if (textClickStartPosRef.current && !isDrawingRef.current && whiteboardStore.selectedObjectIds.length === 0) {
           const deltaX = Math.abs(coords.x - textClickStartPosRef.current.x);
           const deltaY = Math.abs(coords.y - textClickStartPosRef.current.y);
           
           if (deltaX > 5 || deltaY > 5) {
-            console.log('📝 Drag detected - entering drag mode');
+            console.log('📝 Drag detected - entering drag mode for text box creation');
             isDrawingRef.current = true; // Now mark as drawing since it's a drag
           }
         }
@@ -1458,11 +1454,44 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        console.log('📝 Text pointer up - checking mode:', {
-          wasDrawing: isDrawingRef.current,
-          hasClickStartPos: !!textClickStartPosRef.current,
-          clickStartPos: textClickStartPosRef.current
-        });
+        // Handle text tool dragging completion (identical to select tool)
+        if (isDraggingRef.current && whiteboardStore.selectedObjectIds.length > 0) {
+          console.log('📝 TEXT TOOL - Completing drag operation for objects:', whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)));
+          
+          // Apply final positions from live drag to actual objects
+          whiteboardStore.selectedObjectIds.forEach(objectId => {
+            const finalPos = liveDragPositionsRef.current[objectId];
+            if (finalPos) {
+              // Final constraint check before saving
+              const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
+              console.log('📝 TEXT TOOL - Final position for object:', objectId.slice(0, 8), constrainedFinalPos);
+              whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
+            }
+          });
+          
+          // End the optimized batch
+          whiteboardStore.endActionBatch();
+          
+          console.log('📝 TEXT TOOL - Cleaning up drag state');
+          
+          // Clean up drag state - CRITICAL: ensure all refs are properly reset
+          currentBatchIdRef.current = null;
+          draggedObjectIdRef.current = null;
+          initialDragPositionsRef.current = {};
+          liveDragPositionsRef.current = {};
+          dragDeltasRef.current = { x: 0, y: 0 };
+          
+          // Ensure dragging state is fully reset
+          isDraggingRef.current = false;
+          dragStartRef.current = null;
+        }
+        // Handle text creation (original text tool functionality)
+        else {
+          console.log('📝 Text pointer up - checking mode:', {
+            wasDrawing: isDrawingRef.current,
+            hasClickStartPos: !!textClickStartPosRef.current,
+            clickStartPos: textClickStartPosRef.current
+          });
         
         // Additional check to prevent text creation while editing
         if (isEditingTextRef.current) {
@@ -1509,6 +1538,7 @@ export const useCanvasInteractions = () => {
         // Reset all states
         textClickStartPosRef.current = null;
         isDrawingRef.current = false;
+        }
         break;
       }
 
