@@ -808,18 +808,7 @@ export const Canvas: React.FC = () => {
     const minWidth = 100;
     const textarea = e.target;
 
-    // Only calculate width constraints for sticky notes - let regular text flow freely
-    const editingObject = immediateTextObjectId ? objects[immediateTextObjectId] : null;
-    const isEditingStickyNote = editingObject?.type === "sticky-note";
-    
-    if (!isEditingStickyNote) {
-      // For regular text, don't constrain width - let it flow until canvas edge
-      textarea.style.whiteSpace = "nowrap";
-      textarea.style.overflow = "visible";
-      return;
-    }
-
-    // For sticky notes only - calculate available space from text position to screen edge
+    // Calculate available space from text position to screen edge
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
       const availableWidth =
@@ -1474,7 +1463,7 @@ export const Canvas: React.FC = () => {
                   left: immediateTextPosition.x,
                   top: immediateTextPosition.y,
                    // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
-                   width: isEditingStickyNote ? editingObject.width : window.innerWidth,
+                   width: isEditingStickyNote ? editingObject.width : 800,
                    height: isEditingStickyNote
                      ? editingObject.height
                      : toolStore.toolSettings.fontSize * 1.2 || 20,
@@ -1520,11 +1509,11 @@ export const Canvas: React.FC = () => {
                   boxShadow: isEditingStickyNote
                     ? "0px 2px 8px rgba(0,0,0,0.1)"
                     : "none", // Match sticky note shadow
-                   whiteSpace: isEditingStickyNote ? "pre-wrap" : "nowrap",
-                   overflowWrap: isEditingStickyNote ? "break-word" : "normal",
-                   wordBreak: isEditingStickyNote ? "break-word" : "normal",
-                   wordWrap: isEditingStickyNote ? "break-word" : "normal",
-                   overflow: isEditingStickyNote ? "hidden" : "visible",
+                   whiteSpace: "pre-wrap",
+                   overflowWrap: "break-word",
+                   wordBreak: "break-word",
+                   wordWrap: "break-word",
+                   overflow: "hidden",
                   textRendering: "optimizeLegibility",
                   fontSmooth: "antialiased",
                   WebkitFontSmoothing: "antialiased",
