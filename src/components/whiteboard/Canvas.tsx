@@ -808,26 +808,30 @@ export const Canvas: React.FC = () => {
     const minWidth = 100;
     const textarea = e.target;
 
-    // Calculate available space from text position to screen edge
+    // Calculate available space from text position to canvas edge for single-click text
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
-      const availableWidth =
-        canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
+      const canvasWidth = canvasRect.width;
+      const textPositionX = immediateTextPosition.x - canvasRect.left;
+      const availableWidth = canvasWidth - textPositionX - 10; // 10px padding from canvas edge
 
-      // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
-      const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
-      const effectiveWidth = availableWidth - textPadding;
+      // For single-click text, use a generous width to avoid premature wrapping
+      // Only constrain when very close to canvas edge
+      const minTextWidth = 200; // Minimum width before text starts wrapping
+      const effectiveWidth = Math.max(minTextWidth, availableWidth);
+      
       textarea.style.width = effectiveWidth + "px";
       textarea.style.maxWidth = effectiveWidth + "px";
 
-      // Measure text with the same width for consistent wrapping
+      // Measure text with no maxWidth constraint to allow natural flow
+      // Text will only wrap when it hits the actual canvas boundaries
       const wrappedMetrics = measureText(
         newText || "",
         fontSize,
         fontFamily,
         bold,
-        italic,
-        effectiveWidth
+        italic
+        // No maxWidth parameter - let text flow naturally
       );
 
       // Update textarea height to match wrapped text height so cursor moves correctly
