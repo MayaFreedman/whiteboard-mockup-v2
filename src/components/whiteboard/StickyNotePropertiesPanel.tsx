@@ -7,6 +7,8 @@ import { SliderSetting } from './settings/SliderSetting';
 import { BadgeSelector } from './settings/BadgeSelector';
 import { SelectSetting } from './settings/SelectSetting';
 import { ToggleButtonGroup } from './settings/ToggleButtonGroup';
+import { SimpleTooltip } from '../ui/simple-tooltip';
+import { Label } from '../ui/label';
 import { calculateOptimalFontSize } from '../../utils/stickyNoteTextSizing';
 interface StickyNotePropertiesPanelProps {
   selectedObjectId: string;
@@ -19,16 +21,21 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
     updateObject
   } = useWhiteboardStore();
   const {
-    updateToolSettings
+    updateToolSettings,
+    getActiveColors
   } = useToolStore();
   const {
     userId
   } = useUser();
+  
   const stickyNote = objects[selectedObjectId] as StickyNoteObject;
+  
   if (!stickyNote || stickyNote.type !== 'sticky-note') {
     return null;
   }
+  
   const stickyNoteData = stickyNote.data;
+  const availableColors = getActiveColors().filter(c => c !== 'rainbow-gradient');
   const updateStickyNoteProperty = (property: string, value: any) => {
     const newData = {
       ...stickyNoteData,
@@ -91,6 +98,14 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
       updatedAt: Date.now()
     }, userId);
 
+    // Don't update global tool settings - keep sidebar and topbar colors separate
+  };
+
+  const updateStickyNoteTextColor = (newColor: string) => {
+    updateObject(selectedObjectId, {
+      stroke: newColor,
+      updatedAt: Date.now()
+    }, userId);
     // Don't update global tool settings - keep sidebar and topbar colors separate
   };
   return <div className="space-y-4">
@@ -158,5 +173,20 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
 
       {/* Font Size (Read-only display) */}
       
+      {/* Text Color */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Text Color</Label>
+        <div className="flex gap-1 flex-wrap">
+          {availableColors.map(color => (
+            <SimpleTooltip key={color} content={`Color: ${color}`}>
+              <button
+                className={`w-6 h-6 rounded border-2 ${stickyNote.stroke === color ? 'border-primary' : 'border-border'}`}
+                style={{ backgroundColor: color }}
+                onClick={() => updateStickyNoteTextColor(color)}
+              />
+            </SimpleTooltip>
+          ))}
+        </div>
+      </div>
     </div>;
 };
