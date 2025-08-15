@@ -112,11 +112,15 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
         const shouldLoad = visibleItems.has(item.url);
         const isLoaded = loadedImages.has(item.url);
         const isCustomStamp = item.url.startsWith('data:');
-        return <div key={`stamp-${index}-${item.url.substring(0, 50)}`} className="relative" ref={el => {
-          if (el) {
-            observeElement(el, item.url);
-          }
-        }}>
+        return <div 
+          key={`stamp-${index}-${item.url.substring(0, 50)}`} 
+          className="relative" 
+          ref={useCallback((el: HTMLDivElement | null) => {
+            if (el) {
+              observeElement(el, item.url);
+            }
+          }, [item.url, observeElement])}
+        >
               <StampGridItem item={item} isSelected={selectedValue === item.url} onSelect={onChange} onImageLoad={() => handleImageLoaded(item.url)} />
               
               {/* Delete button for custom stamps */}
