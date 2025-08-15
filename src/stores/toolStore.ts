@@ -79,9 +79,15 @@ interface ToolStore {
     settings: ToolSettings;
   }>;
   
+  // Auto-switch state for sticky note tool
+  autoSwitchedFromTool: Tool | null;
+  wasAutoSwitched: boolean;
+  
   // Actions
   setActiveTool: (tool: Tool) => void;
   updateToolSettings: (settings: Partial<ToolSettings>) => void;
+  setAutoSwitchState: (fromTool: Tool | null, wasAutoSwitched: boolean) => void;
+  clearAutoSwitchState: () => void;
   
   // Color palette management
   colorPalettes: {
@@ -209,6 +215,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     pastel: 'rainbow-gradient',
     professional: 'rainbow-gradient'
   },
+  
+  // Auto-switch state
+  autoSwitchedFromTool: null,
+  wasAutoSwitched: false,
 
   setActiveTool: (tool) => {
     console.log('🔧 Setting active tool:', tool);
@@ -216,6 +226,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     set((state) => {
       const timestamp = Date.now();
       const newVersion = state.stateVersion + 1;
+      
+      // Clear auto-switch state when user manually changes tools
+      // (unless this is part of an auto-switch operation)
+      const clearAutoSwitch = !state.wasAutoSwitched;
       
       // Add to history
       const newHistory = limitArraySize([
@@ -226,14 +240,19 @@ export const useToolStore = create<ToolStore>((set, get) => ({
       console.log('🔧 Tool state updated:', {
         tool,
         version: newVersion,
-        historyLength: newHistory.length
+        historyLength: newHistory.length,
+        clearingAutoSwitch: clearAutoSwitch
       });
       
       return {
         activeTool: tool,
         stateVersion: newVersion,
         lastStateUpdate: timestamp,
-        toolChangeHistory: newHistory
+        toolChangeHistory: newHistory,
+        ...(clearAutoSwitch && {
+          autoSwitchedFromTool: null,
+          wasAutoSwitched: false
+        })
       };
     });
   },
@@ -360,5 +379,21 @@ export const useToolStore = create<ToolStore>((set, get) => ({
       stateVersion: state.stateVersion + 1,
       lastStateUpdate: Date.now()
     }));
+  },
+
+  setAutoSwitchState: (fromTool, wasAutoSwitched) => {
+    console.log('🔄 Setting auto-switch state:', { fromTool, wasAutoSwitched });
+    set({
+      autoSwitchedFromTool: fromTool,
+      wasAutoSwitched
+    });
+  },
+
+  clearAutoSwitchState: () => {
+    console.log('🔄 Clearing auto-switch state');
+    set({
+      autoSwitchedFromTool: null,
+      wasAutoSwitched: false
+    });
   }
 }));
