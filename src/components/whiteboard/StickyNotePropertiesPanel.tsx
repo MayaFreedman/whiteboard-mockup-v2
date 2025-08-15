@@ -54,6 +54,11 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
     });
   };
   const updateStickyNoteSize = (newSize: number) => {
+    // Enforce 800px limit
+    if (newSize > 800) {
+      newSize = 800;
+    }
+    
     // Update dimensions
     updateObject(selectedObjectId, {
       width: newSize,
@@ -93,7 +98,7 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
   };
   return <div className="space-y-4">
       {/* Size Control */}
-      <SliderSetting label="Size" value={stickyNoteData.stickySize || stickyNote.width} min={120} max={300} step={10} onChange={updateStickyNoteSize} valueFormatter={value => `${value}px`} showValue={true} />
+      <SliderSetting label="Size" value={stickyNoteData.stickySize || stickyNote.width} min={120} max={800} step={10} onChange={updateStickyNoteSize} valueFormatter={value => `${value}px`} showValue={true} />
 
       {/* Background Color */}
       <BadgeSelector label="Background Color" items={[{
