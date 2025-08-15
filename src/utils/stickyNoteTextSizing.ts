@@ -23,7 +23,7 @@ export const calculateOptimalFontSize = (
   if (maxWidth <= 0 || maxHeight <= 0) return 8; // Minimum readable size
 
   const minFontSize = 8;
-  const maxFontSize = Math.min(width / 2, height / 2, 72);
+  const maxFontSize = Math.min(width / 2, height / 2, 100); // Limit to 100px max
 
   console.log('🔍 Sticky Note Text Analysis:', {
     content: content.substring(0, 50) + (content.length > 50 ? '...' : ''),

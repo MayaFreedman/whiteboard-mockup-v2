@@ -52,6 +52,11 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
   };
 
   const handleTextPropertyChange = (property: keyof TextData, value: any) => {
+    // Limit fontSize to 100px maximum
+    if (property === 'fontSize') {
+      value = Math.min(value, 100);
+    }
+    
     const updatedData = { ...textData, [property]: value };
     
     // Properties that affect text dimensions and should trigger resize
