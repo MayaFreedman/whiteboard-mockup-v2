@@ -1444,7 +1444,7 @@ export const Canvas: React.FC = () => {
             <>
               <textarea
                 data-immediate-text="true"
-                className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
+                className="absolute border-none resize-none outline-none placeholder-opacity-70"
                 style={
                  {
                    left: immediateTextPosition.x,
@@ -1498,10 +1498,11 @@ export const Canvas: React.FC = () => {
                     : "none", // Match sticky note shadow
                    whiteSpace: "pre-wrap", // Enable text wrapping
                    overflowWrap: "break-word", 
-                   wordBreak: "break-word",
+                   wordBreak: "break-word", 
                    wordWrap: "break-word",
-                   overflow: "hidden", // Prevent scrollbars, force wrapping
+                   overflow: "auto", // Allow scrolling if needed
                    resize: "none", // Disable manual resize
+                   maxWidth: "784px", // Enforce max width
                   textRendering: "optimizeLegibility",
                   fontSmooth: "antialiased",
                   WebkitFontSmoothing: "antialiased",
