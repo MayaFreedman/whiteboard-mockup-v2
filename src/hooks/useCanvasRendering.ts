@@ -242,7 +242,7 @@ export const useCanvasRendering = (
    * @param obj - Whiteboard object to render
    * @param isSelected - Whether the object is currently selected
    */
-  const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, isSelected: boolean = false, liveDragPositions?: Record<string, { x: number; y: number }>) => {
+  const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, isSelected: boolean = false) => {
     ctx.save();
     
     // Apply object transformations
@@ -257,20 +257,7 @@ export const useCanvasRendering = (
     
     // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text
     // Text objects are excluded because they have their own dashed border highlighting
-    // Skip selection highlight if object is being dragged
-    const isBeingDragged = liveDragPositions && liveDragPositions[obj.id];
-    
-    console.log('🎨 Canvas Selection Debug:', {
-      objectId: obj.id,
-      isSelected,
-      isEraser,
-      objType: obj.type,
-      isBeingDragged: !!isBeingDragged,
-      liveDragPositionsKeys: liveDragPositions ? Object.keys(liveDragPositions) : [],
-      willShowSelection: isSelected && !isEraser && obj.type !== 'text' && !isBeingDragged
-    });
-    
-    if (isSelected && !isEraser && obj.type !== 'text' && !isBeingDragged) {
+    if (isSelected && !isEraser && obj.type !== 'text') {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
       ctx.globalAlpha = 0.6;
@@ -694,8 +681,7 @@ export const useCanvasRendering = (
           }
           
           // Draw text box border - only show dashed border when selected (not being edited) or for placeholder
-          // Skip if object is being dragged
-          if (((isSelected && !isBeingEdited) || contentToRender === 'Double-click to edit') && !isBeingDragged) {
+          if ((isSelected && !isBeingEdited) || contentToRender === 'Double-click to edit') {
             ctx.save();
             // Use blue color if selected, otherwise use gray for placeholder
             ctx.strokeStyle = isSelected ? '#007AFF' : '#cccccc';
@@ -788,17 +774,8 @@ export const useCanvasRendering = (
             });
           }
 
-          // Selection border - skip if object is being dragged
-          console.log('🗒️ Sticky Note Selection Border Check:', {
-            objectId: obj.id,
-            isSelected,
-            isBeingDragged: !!isBeingDragged,
-            liveDragPositionsValue: isBeingDragged,
-            willShowBorder: isSelected && !isBeingDragged
-          });
-          
-          if (isSelected && !isBeingDragged) {
-            console.log('🔵 Drawing sticky note selection border for:', obj.id);
+          // Selection border
+          if (isSelected) {
             ctx.save();
             ctx.strokeStyle = '#007AFF';
             ctx.lineWidth = 3;
@@ -1061,7 +1038,7 @@ export const useCanvasRendering = (
         };
       }
       
-      renderObject(ctx, renderObj, isSelected, liveDragPositions);
+      renderObject(ctx, renderObj, isSelected);
     });
   }, [objects, selectedObjectIds, renderObject, getLiveDragPositions]);
 

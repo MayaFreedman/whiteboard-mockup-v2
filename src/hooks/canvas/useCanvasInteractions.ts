@@ -1081,12 +1081,11 @@ export const useCanvasInteractions = () => {
                 x: initialPos.x + deltaX,
                 y: initialPos.y + deltaY
               };
-              console.log('🔄 Live dragging object:', objectId, 'from', initialPos, 'to', newPos);
-              console.log('🔍 Drag Debug - storing in liveDragPositions:', { fullObjectId: objectId, newPos });
+              console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = newPos;
             } else {
-              console.warn('❌ No initial position stored for object:', objectId);
+              console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
             }
           });
           
@@ -1235,14 +1234,11 @@ export const useCanvasInteractions = () => {
           // End the optimized batch
           whiteboardStore.endActionBatch();
           
-          // Clean up drag state - delay clearing liveDragPositions to allow ResizeHandles to hide
+          // Clean up drag state
           currentBatchIdRef.current = null;
           draggedObjectIdRef.current = null;
           initialDragPositionsRef.current = {};
-          // Clear liveDragPositions after a short delay to allow ResizeHandles to detect and hide
-          setTimeout(() => {
-            liveDragPositionsRef.current = {};
-          }, 0);
+          liveDragPositionsRef.current = {};
           dragDeltasRef.current = { x: 0, y: 0 };
         } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
           // Complete selection box

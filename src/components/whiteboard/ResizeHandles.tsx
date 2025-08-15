@@ -5,37 +5,17 @@ import { useCanvasOffset } from '../../hooks/useCanvasOffset';
 
 interface ResizeHandlesProps {
   objectId: string;
-  liveDragPositions?: Record<string, { x: number; y: number }>;
   onResize: (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => void;
   onResizeStart?: (objectId: string) => void;
   onResizeEnd?: (objectId: string) => void;
 }
 
-export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, liveDragPositions, onResize, onResizeStart, onResizeEnd }) => {
+export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize, onResizeStart, onResizeEnd }) => {
   const { objects } = useWhiteboardStore();
   const { canvasOffset } = useCanvasOffset();
   const obj = objects[objectId];
   
   if (!obj || !obj.width || !obj.height) return null;
-
-  // Check if this object is being dragged
-  const isBeingDragged = liveDragPositions && liveDragPositions[objectId];
-  
-  // DEBUG: Log drag detection
-  console.log('🔍 ResizeHandles Debug:', {
-    objectId,
-    liveDragPositions,
-    isBeingDragged,
-    hasLiveDragPositions: !!liveDragPositions,
-    liveDragPositionsKeys: liveDragPositions ? Object.keys(liveDragPositions) : [],
-    shouldHide: !!isBeingDragged
-  });
-  
-  // Don't render resize handles if object is being dragged
-  if (isBeingDragged) {
-    console.log('🚫 ResizeHandles: Hiding for dragged object', objectId);
-    return null;
-  }
 
   const handleSize = 8;
   const handles = [
