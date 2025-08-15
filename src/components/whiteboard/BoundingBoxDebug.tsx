@@ -1,6 +1,6 @@
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
-import { getObjectDimensions } from '../../utils/boundaryConstraints';
+import { getObjectBoundingBox } from '../../utils/boundaryConstraints';
 
 interface BoundingBoxDebugProps {
   liveDragPositions: Record<string, { x: number; y: number }>;
@@ -46,19 +46,32 @@ export const BoundingBoxDebug: React.FC<BoundingBoxDebugProps> = ({
       </div>
       
       {selectedObjects.map(({ id, obj }) => {
-        // Get the current position (including live drag if applicable)
-        const currentPos = liveDragPositions[id] || { x: obj.x, y: obj.y };
-        const dimensions = getObjectDimensions(obj);
+        // Get the bounding box with proper coordinates
+        const boundingBox = getObjectBoundingBox(obj);
+        
+        // Apply live drag offset if applicable
+        const dragOffset = liveDragPositions[id];
+        const finalX = dragOffset ? boundingBox.x + (dragOffset.x - obj.x) : boundingBox.x;
+        const finalY = dragOffset ? boundingBox.y + (dragOffset.y - obj.y) : boundingBox.y;
+
+        console.log('🔴 Object bounding box:', {
+          id,
+          type: obj.type,
+          objPos: { x: obj.x, y: obj.y },
+          boundingBox,
+          dragOffset,
+          final: { x: finalX, y: finalY }
+        });
 
         return (
           <div
             key={`debug-${id}`}
             className="absolute border-2 border-red-500 border-dashed bg-red-500/10"
             style={{
-              left: currentPos.x - 1, // -1 for border
-              top: currentPos.y - 1,
-              width: dimensions.width + 2, // +2 for borders
-              height: dimensions.height + 2,
+              left: finalX - 1, // -1 for border
+              top: finalY - 1,
+              width: boundingBox.width + 2, // +2 for borders
+              height: boundingBox.height + 2,
               pointerEvents: 'none'
             }}
           >
@@ -70,7 +83,7 @@ export const BoundingBoxDebug: React.FC<BoundingBoxDebugProps> = ({
             
             {/* Debug info label */}
             <div className="absolute -top-8 left-0 bg-red-500 text-white text-xs px-1 rounded whitespace-nowrap">
-              {obj.type}: {Math.round(dimensions.width)}×{Math.round(dimensions.height)}
+              {obj.type}: {Math.round(boundingBox.width)}×{Math.round(boundingBox.height)}
               {obj.type === 'path' && obj.strokeWidth && ` (stroke: ${obj.strokeWidth})`}
             </div>
           </div>
