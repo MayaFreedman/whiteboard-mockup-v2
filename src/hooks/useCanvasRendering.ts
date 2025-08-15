@@ -255,9 +255,12 @@ export const useCanvasRendering = (
       ctx.globalCompositeOperation = 'destination-out';
     }
     
-    // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text
+    // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text AND not currently being dragged
     // Text objects are excluded because they have their own dashed border highlighting
-    if (isSelected && !isEraser && obj.type !== 'text') {
+    // During drag operations, hide the selection highlight for cleaner visuals
+    const liveDragPositions = getLiveDragPositions?.();
+    const isBeingDragged = liveDragPositions && liveDragPositions[obj.id];
+    if (isSelected && !isEraser && obj.type !== 'text' && !isBeingDragged) {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
       ctx.globalAlpha = 0.6;
@@ -794,7 +797,7 @@ export const useCanvasRendering = (
     }
 
     ctx.restore();
-  }, [editingTextId, editingText, objects, getOrLoadImage, canvas]);
+  }, [editingTextId, editingText, objects, getOrLoadImage, canvas, getLiveDragPositions]);
 
   /**
    * Renders the current drawing preview (work-in-progress path)
