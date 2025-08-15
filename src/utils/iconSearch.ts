@@ -25,7 +25,7 @@ function singularize(t: string): string | null {
   return null;
 }
 
-// Basic synonyms/intents map (kept tight to avoid over-expansion)
+// Enhanced synonyms/intents map with abbreviations and casual terms
 const SYNONYMS: Record<string, string[]> = {
   heart: ['love', 'valentine', 'romance'],
   smile: ['happy', 'grin', 'smiley', 'joy', 'lol', 'smiling'],
@@ -50,6 +50,51 @@ const SYNONYMS: Record<string, string[]> = {
   pig: ['hog', 'boar', 'piggy', 'swine'],
   bird: ['avian', 'birdie'],
   fish: ['seafood'],
+  
+  // Enhanced abbreviations and casual terms
+  do: ['dog', 'done', 'doing'],
+  mon: ['monday', 'money', 'monster', 'monkey'],
+  cal: ['calendar', 'call', 'calculation'],
+  app: ['apple', 'application'],
+  car: ['automobile', 'vehicle'],
+  biz: ['business', 'briefcase'],
+  pic: ['picture', 'photo', 'camera'],
+  vid: ['video', 'television'],
+  msg: ['message', 'mail', 'envelope'],
+  tel: ['telephone', 'phone'],
+  mic: ['microphone', 'music'],
+  cam: ['camera', 'photo'],
+  
+  // Single letter mappings
+  b: ['bee', 'ball', 'blue', 'bear', 'bird', 'book'],
+  c: ['cat', 'car', 'cup', 'cake', 'clock'],
+  d: ['dog', 'duck', 'diamond'],
+  f: ['fish', 'fire', 'flag', 'flower'],
+  g: ['green', 'gift', 'game', 'guitar'],
+  h: ['heart', 'house', 'hand', 'hat'],
+  k: ['key', 'kiss', 'kitchen'],
+  l: ['love', 'light', 'leaf', 'lock'],
+  m: ['money', 'mouse', 'music', 'moon'],
+  n: ['night', 'nose', 'number'],
+  p: ['phone', 'pig', 'pizza', 'plane'],
+  r: ['red', 'rose', 'rocket', 'ring'],
+  s: ['sun', 'star', 'smile', 'snow'],
+  t: ['tree', 'time', 'telephone', 'tiger'],
+  u: ['umbrella', 'up', 'unlock'],
+  w: ['water', 'wind', 'watch', 'wave'],
+  
+  // Time-related
+  time: ['clock', 'watch', 'calendar', 'timer'],
+  day: ['calendar', 'sun', 'time'],
+  week: ['calendar', 'seven'],
+  month: ['calendar', 'thirty'],
+  year: ['calendar', 'twelve'],
+  
+  // Common abbreviations
+  ice: ['ice cream', 'snowflake', 'cold'],
+  hot: ['fire', 'sun', 'pepper'],
+  big: ['large', 'elephant', 'whale'],
+  small: ['tiny', 'ant', 'mouse']
 };
 
 const GENERIC_TERMS = new Set<string>([
@@ -227,43 +272,53 @@ function scoreIcon(
     strongHit = true;
   }
 
-  // Multi-word strict gating: every token must be covered (exact/prefix/code). For generic 'face', require face subgroup.
+  // Enhanced multi-word flexible gating: require at least 50% of tokens to be covered for multi-word queries
   if (directTokens.length >= 2) {
     const isRedFlagQuery = directTokens.includes('red') && (directTokens.includes('flag') || directTokens.includes('flags'));
-    let allCovered = directTokens.every((t) => {
-      const allowPrefix = t.length >= 4;
+    const requiredMatches = Math.ceil(directTokens.length * 0.5); // At least 50% of tokens must match
+    let matchedTokens = 0;
+    
+    directTokens.forEach((t) => {
+      const allowPrefix = t.length >= 2; // Lowered from 4 to 2
+      const allowSubstring = t.length >= 3; // Lowered from 4 to 3
       const codeMatch = code && code.toLowerCase() === t;
 
       // Generic 'face' must be an actual face subgroup
       if (t === 'face' || t === 'faces' || t === 'emoji' || t === 'smiley') {
-        return subgroupRaw.startsWith('face');
+        if (subgroupRaw.startsWith('face')) matchedTokens++;
+        return;
       }
 
       const nameExact = nameTokens.includes(t);
       const keyExact = keywordTokens.includes(t);
       const nameStart = allowPrefix && nameTokens.some((w) => w.startsWith(t));
       const keyStart = allowPrefix && keywordTokens.some((w) => w.startsWith(t));
+      const nameSub = allowSubstring && nameTokens.some((w) => w.includes(t));
+      const keySub = allowSubstring && keywordTokens.some((w) => w.includes(t));
 
-      // Allow direct synonyms only (not broad concepts) to satisfy token coverage
+      // Allow direct synonyms and enhanced abbreviations to satisfy token coverage
       const syns = SYNONYMS[t] || [];
       const synonymHit = syns.some((s) =>
         nameTokens.includes(s) ||
         keywordTokens.includes(s) ||
-        (allowPrefix && (nameTokens.some((w) => w.startsWith(s)) || keywordTokens.some((w) => w.startsWith(s))))
+        (allowPrefix && (nameTokens.some((w) => w.startsWith(s)) || keywordTokens.some((w) => w.startsWith(s)))) ||
+        (allowSubstring && (nameTokens.some((w) => w.includes(s)) || keywordTokens.some((w) => w.includes(s))))
       );
 
-      return nameExact || keyExact || nameStart || keyStart || synonymHit || !!codeMatch;
+      if (nameExact || keyExact || nameStart || keyStart || nameSub || keySub || synonymHit || !!codeMatch) {
+        matchedTokens++;
+      }
     });
 
     // Phrase override: 'red flag' should include triangular red flag (🚩) even if 'red' isn't in the name
-    if (!allCovered && isRedFlagQuery) {
+    if (matchedTokens < requiredMatches && isRedFlagQuery) {
       const isTriangularFlag = (code && code.toLowerCase() === '1f6a9') ||
         ((nameTokens.includes('triangular') || keywordTokens.includes('triangular')) &&
          (nameTokens.includes('flag') || keywordTokens.includes('flag')));
-      if (isTriangularFlag) allCovered = true;
+      if (isTriangularFlag) matchedTokens = requiredMatches;
     }
 
-    if (!allCovered) return 0;
+    if (matchedTokens < requiredMatches) return 0;
   }
 
   // If query is like 'happy face', restrict to face-smiling or face-affection
@@ -285,13 +340,34 @@ function scoreIcon(
 
     if (nameExact) { score += 16; strongHit = true; exactHit = true; }
     if (keyExact) { score += 12; strongHit = true; exactHit = true; }
-    const allowPrefix = t.length >= 4;
-    if (!nameExact && allowPrefix && nameStart) { score += 8; strongHit = true; }
-    if (!keyExact && allowPrefix && keyStart) { score += 6; strongHit = true; }
-    // Avoid substring noise for short tokens like 'ice' in 'office' or 'cry' in 'crystal'
-    const allowSubstring = t.length >= 4;
-    if (allowSubstring && !nameExact && !nameStart && nameSub) { score += 2; strongHit = true; }
-    if (allowSubstring && !keyExact && !keyStart && keySub) { score += 2; strongHit = true; }
+    
+    // Enhanced prefix matching - allow for tokens >= 2 characters
+    const allowPrefix = t.length >= 2;
+    if (!nameExact && allowPrefix && nameStart) { 
+      // Bonus for very short queries that start with
+      const bonus = t.length <= 2 ? 4 : 0;
+      score += 8 + bonus; 
+      strongHit = true; 
+    }
+    if (!keyExact && allowPrefix && keyStart) { 
+      const bonus = t.length <= 2 ? 3 : 0;
+      score += 6 + bonus; 
+      strongHit = true; 
+    }
+    
+    // Enhanced substring matching - allow for tokens >= 3 characters, but reduce penalty
+    const allowSubstring = t.length >= 3;
+    if (allowSubstring && !nameExact && !nameStart && nameSub) { 
+      // Reduce penalty for short substring matches
+      const bonus = t.length <= 3 ? 2 : 0;
+      score += 4 + bonus; 
+      strongHit = true; 
+    }
+    if (allowSubstring && !keyExact && !keyStart && keySub) { 
+      const bonus = t.length <= 3 ? 2 : 0;
+      score += 3 + bonus; 
+      strongHit = true; 
+    }
 
     if (code && code.toLowerCase() === t) { score += 10; strongHit = true; exactHit = true; }
   };
@@ -308,11 +384,16 @@ function scoreIcon(
 
     if (nameExact) { score += 6; strongHit = true; }
     if (keyExact) { score += 6; strongHit = true; }
-    const allowPrefix = t.length >= 4;
+    
+    // More flexible prefix matching for expanded tokens
+    const allowPrefix = t.length >= 2;
     if (!nameExact && allowPrefix && nameStart) { score += 4; strongHit = true; }
     if (!keyExact && allowPrefix && keyStart) { score += 4; strongHit = true; }
-    // Intentionally avoid substring matches for expanded tokens to reduce false positives like
-    // 'rage' matching within 'beverage'.
+    
+    // Allow some substring matching for expanded tokens, but be conservative
+    const allowSubstring = t.length >= 4;
+    if (allowSubstring && !nameExact && !nameStart && nameSub) { score += 2; strongHit = true; }
+    if (allowSubstring && !keyExact && !keyStart && keySub) { score += 2; strongHit = true; }
 
     if (groupTokens.includes(t)) { score += 3; groupHit = true; }
     if (catTokens.includes(t)) { score += 1; categoryHit = true; }
@@ -386,10 +467,14 @@ function scoreIcon(
     return 0;
   }
 
-  // Gate: drop weak-only matches; for single specific queries, be strict even if 'generic'
+  // More lenient gating: allow weak matches for very short queries and known abbreviations
   const isGeneric = directTokens.some((t) => GENERIC_TERMS.has(t));
   const singleSpecific = directTokens.length === 1 && !['food','drink','animal','animals','face','emoji','flags','flag'].includes(directTokens[0]);
-  if (score > 0 && !strongHit && (singleSpecific || !isGeneric)) {
+  const veryShortQuery = directTokens.length === 1 && directTokens[0].length <= 3;
+  const hasKnownAbbreviation = directTokens.some(t => SYNONYMS[t]?.length > 0);
+  
+  // Allow weak matches for very short queries or known abbreviations
+  if (score > 0 && !strongHit && !veryShortQuery && !hasKnownAbbreviation && (singleSpecific || !isGeneric)) {
     return 0;
   }
 
