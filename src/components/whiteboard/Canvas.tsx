@@ -1444,13 +1444,13 @@ export const Canvas: React.FC = () => {
             <>
               <textarea
                 data-immediate-text="true"
-                className="absolute border-none resize-none outline-none placeholder-opacity-70"
-                style={
+                className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
+               style={
                  {
                    left: immediateTextPosition.x,
                    top: immediateTextPosition.y,
-                   // Use canvas width minus padding for proper text wrapping
-                   width: isEditingStickyNote ? editingObject.width : 784, // 800 - 16px padding
+                   // Use canvas width for both regular text and sticky notes to prevent early wrapping
+                   width: isEditingStickyNote ? editingObject.width : 800,
                    height: isEditingStickyNote
                      ? editingObject.height
                      : "auto", // Let height expand for regular text
@@ -1496,13 +1496,11 @@ export const Canvas: React.FC = () => {
                   boxShadow: isEditingStickyNote
                     ? "0px 2px 8px rgba(0,0,0,0.1)"
                     : "none", // Match sticky note shadow
-                   whiteSpace: "pre-wrap", // Enable text wrapping
+                   whiteSpace: "pre-wrap",
                    overflowWrap: "break-word", 
-                   wordBreak: "break-word", 
+                   wordBreak: "break-word",
                    wordWrap: "break-word",
-                   overflow: "auto", // Allow scrolling if needed
-                   resize: "none", // Disable manual resize
-                   maxWidth: "784px", // Enforce max width
+                   overflow: "visible", // Allow textarea to expand
                   textRendering: "optimizeLegibility",
                   fontSmooth: "antialiased",
                   WebkitFontSmoothing: "antialiased",
