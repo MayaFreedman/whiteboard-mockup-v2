@@ -118,11 +118,11 @@ export const BackgroundSettingsContent: React.FC = () => {
       <div>
         <label className="text-sm font-medium text-company-dark-blue mb-3 block">Set Custom Background</label>
 
-        {/* Custom Backgrounds Grid */}
+         {/* Custom Backgrounds Grid */}
         {customBackgrounds.length > 0 && (
           <div className="space-y-2 mb-3">
             <div className="text-xs text-muted-foreground">Your Backgrounds</div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-1">
               {customBackgrounds.map(bg => (
                 <div key={bg.id} className="relative group">
                   <button
