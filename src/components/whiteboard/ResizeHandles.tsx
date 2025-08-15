@@ -16,6 +16,23 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
   const { canvasOffset } = useCanvasOffset();
   const [, forceUpdate] = useState({});
   
+  // Force re-render when live drag positions might change
+  useEffect(() => {
+    if (!getLiveDragPositions) return;
+    
+    const checkForLiveDrag = () => {
+      const liveDragPositions = getLiveDragPositions();
+      if (Object.keys(liveDragPositions).length > 0) {
+        forceUpdate({});
+      }
+    };
+    
+    // Check immediately and continuously during potential drag
+    const intervalId = setInterval(checkForLiveDrag, 16); // ~60fps
+    
+    return () => clearInterval(intervalId);
+  }, [getLiveDragPositions]);
+  
   let obj = objects[objectId];
   
   // Hide resize handles while object is being dragged
