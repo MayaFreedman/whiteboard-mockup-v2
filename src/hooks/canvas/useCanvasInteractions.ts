@@ -17,8 +17,6 @@ import { useMultiplayer } from '../useMultiplayer';
  * Manages drawing state and coordinates tool-specific behaviors
  */
 export const useCanvasInteractions = () => {
-  // Add callback for forcing re-renders during drag
-  const forceRerenderRef = useRef<(() => void) | null>(null);
   const whiteboardStore = useWhiteboardStore();
   const toolStore = useToolStore();
   const { userId } = useUser();
@@ -51,14 +49,13 @@ export const useCanvasInteractions = () => {
   
   // Batching state refs
   const currentBatchIdRef = useRef<string | null>(null);
-  const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const draggedObjectIdRef = useRef<string | null>(null);
   const drawingObjectIdRef = useRef<string | null>(null);
   
   // Multi-object dragging state
   const initialDragPositionsRef = useRef<Record<string, { x: number; y: number }>>({});
   
-  // Refs for tracking drag optimization - simplified (removed live drag positions)
+  // Refs for tracking drag optimization
   const dragDeltasRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const liveDragPositionsRef = useRef<Record<string, { x: number; y: number }>>({});
 
@@ -70,79 +67,6 @@ export const useCanvasInteractions = () => {
            x <= activeWhiteboardSize.width && 
            y <= activeWhiteboardSize.height;
   }, [activeWhiteboardSize]);
-
-  /**
-   * Constrains object position to stay within screen bounds with 1px buffer
-   */
-  const constrainObjectToBounds = useCallback((
-    objectId: string,
-    newX: number,
-    newY: number
-  ): { x: number; y: number } => {
-    const obj = whiteboardStore.objects[objectId];
-    if (!obj) {
-      console.warn('⚠️ constrainObjectToBounds: Object not found:', objectId);
-      return { x: newX, y: newY };
-    }
-
-    // Handle path objects (drawings/pencil strokes) which don't have width/height
-    if (obj.type === 'path') {
-      // For path objects, we don't constrain them as they can extend beyond their origin point
-      // The path data contains the actual bounds, but calculating it would be expensive
-      // Instead, we just ensure the origin point stays within reasonable bounds
-      const buffer = 50; // Give more leeway for path objects
-      const constrainedX = Math.max(buffer, Math.min(activeWhiteboardSize.width - buffer, newX));
-      const constrainedY = Math.max(buffer, Math.min(activeWhiteboardSize.height - buffer, newY));
-      
-      console.log('🚧 Path object bounds check:', {
-        objectId: objectId.slice(0, 8),
-        type: obj.type,
-        requested: { x: newX, y: newY },
-        constrained: { x: constrainedX, y: constrainedY },
-        screenSize: { width: activeWhiteboardSize.width, height: activeWhiteboardSize.height }
-      });
-      
-      return { x: constrainedX, y: constrainedY };
-    }
-
-    // Handle regular objects with width and height
-    if (obj.width === undefined || obj.height === undefined) {
-      console.warn('⚠️ Object missing width/height:', {
-        objectId: objectId.slice(0, 8),
-        type: obj.type,
-        width: obj.width,
-        height: obj.height
-      });
-      // Fallback: don't constrain if we don't have dimensions
-      return { x: newX, y: newY };
-    }
-
-    const buffer = 1;
-    const minX = buffer;
-    const minY = buffer;
-    const maxX = activeWhiteboardSize.width - obj.width - buffer;
-    const maxY = activeWhiteboardSize.height - obj.height - buffer;
-
-    const constrainedX = Math.max(minX, Math.min(maxX, newX));
-    const constrainedY = Math.max(minY, Math.min(maxY, newY));
-
-    const wasConstrained = constrainedX !== newX || constrainedY !== newY;
-    if (wasConstrained) {
-      console.log('🚧 Object constrained to bounds:', {
-        objectId: objectId.slice(0, 8),
-        type: obj.type,
-        requested: { x: newX, y: newY },
-        constrained: { x: constrainedX, y: constrainedY },
-        bounds: { minX, minY, maxX, maxY },
-        objSize: { width: obj.width, height: obj.height }
-      });
-    }
-
-    return {
-      x: constrainedX,
-      y: constrainedY
-    };
-  }, [activeWhiteboardSize, whiteboardStore.objects]);
   
   // Simple path builder for smooth drawing
   const pathBuilderRef = useRef<SimplePathBuilder | null>(null);
@@ -184,30 +108,12 @@ export const useCanvasInteractions = () => {
    * Ends any active batch and cleans up batching state
    */
   const cleanupBatching = useCallback(() => {
-    console.log('🧹 CLEANUP BATCHING CALLED:', {
-      hasBatch: !!currentBatchIdRef.current,
-      isDragging: isDraggingRef.current,
-      timestamp: Date.now()
-    });
-    
     if (currentBatchIdRef.current) {
       endBatch();
       currentBatchIdRef.current = null;
     }
     draggedObjectIdRef.current = null;
     drawingObjectIdRef.current = null;
-    
-    // Only clear drag-specific state if not handling off-screen drag completion
-    // (off-screen drag will handle this cleanup with proper timing)
-    if (!isDraggingRef.current) {
-      console.log('🧹 CLEARING DRAG STATE in cleanupBatching:', Date.now());
-      initialDragPositionsRef.current = {};
-      dragDeltasRef.current = { x: 0, y: 0 };
-    } else {
-      console.log('🧹 SKIPPING drag state cleanup - still dragging:', Date.now());
-    }
-    
-    console.log('🧹 CLEANUP BATCHING COMPLETED:', Date.now());
   }, [endBatch]);
 
   /**
@@ -583,65 +489,6 @@ export const useCanvasInteractions = () => {
   const endCurrentDrawing = useCallback(() => {
     const activeTool = toolStore.activeTool;
     
-    // Handle select tool dragging when mouse leaves screen
-    if (activeTool === 'select' && isDraggingRef.current && whiteboardStore.selectedObjectIds.length > 0) {
-      console.log('🔄 DRAG OFF-SCREEN START: Mouse left screen during drag', {
-        selectedCount: whiteboardStore.selectedObjectIds.length,
-        liveDragPositions: Object.keys(liveDragPositionsRef.current).length,
-        timestamp: Date.now()
-      });
-      
-      // Create batch for final drag completion
-      const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE', 'multi-object', userId);
-      
-      // Apply final positions for all dragged objects
-      whiteboardStore.selectedObjectIds.forEach(objectId => {
-        const finalPos = liveDragPositionsRef.current[objectId];
-        if (finalPos) {
-          // Final constraint check before saving
-          const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
-          console.log('🎯 APPLYING FINAL POSITION:', objectId.slice(0, 8), constrainedFinalPos);
-          console.log('🎯 STORE STATE BEFORE UPDATE:', whiteboardStore.objects[objectId]?.x, whiteboardStore.objects[objectId]?.y);
-          whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
-          console.log('🎯 STORE STATE AFTER UPDATE:', whiteboardStore.objects[objectId]?.x, whiteboardStore.objects[objectId]?.y);
-        }
-      });
-      
-      // End the batch
-      whiteboardStore.endActionBatch();
-      console.log('🔄 DRAG OFF-SCREEN BATCH ENDED:', Date.now());
-      
-      // CRITICAL: Clear live drag positions FIRST before redraw
-      // Force redraw to ensure consistent state
-      console.log('🧹 CLEARING DRAG STATE BEFORE REDRAW:', Date.now());
-      dragDeltasRef.current = { x: 0, y: 0 };
-      
-      // Use requestAnimationFrame to ensure store updates are processed before redraw
-      requestAnimationFrame(() => {
-        console.log('🎨 DEFERRED REDRAW in requestAnimationFrame:', Date.now());
-        console.log('🎯 FINAL STORE VERIFICATION:', whiteboardStore.selectedObjectIds.map(id => ({
-          id: id.slice(0, 8),
-          position: { x: whiteboardStore.objects[id]?.x, y: whiteboardStore.objects[id]?.y }
-        })));
-        
-        if (redrawCanvasRef.current) {
-          redrawCanvasRef.current();
-        }
-        
-        // Clean up remaining drag state after successful redraw
-        console.log('🧹 FINAL CLEANUP after verified redraw:', Date.now());
-        currentBatchIdRef.current = null;
-        draggedObjectIdRef.current = null;
-        initialDragPositionsRef.current = {};
-        isDraggingRef.current = false;
-        isDrawingRef.current = false;
-        dragStartRef.current = null;
-      });
-      
-      console.log('🔄 OFF-SCREEN DRAG SETUP COMPLETE - RETURNING EARLY:', Date.now());
-      return; // CRITICAL: Return early to avoid general cleanup cascade
-    }
-    
     if ((activeTool === 'pencil' || activeTool === 'brush') && 
         isDrawingRef.current && 
         pathBuilderRef.current && 
@@ -725,8 +572,6 @@ export const useCanvasInteractions = () => {
         console.log('📝 Auto-saved text on mouse leave:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
       }
     }
-    
-    console.log('🧹 END CURRENT DRAWING: General cleanup starting', Date.now());
     
     // Clean up batching and reset all drawing state
     cleanupBatching();
@@ -841,28 +686,6 @@ export const useCanvasInteractions = () => {
         const isShiftPressed = 'shiftKey' in event ? event.shiftKey : false;
         const objectId = findObjectAt(coords.x, coords.y);
         
-        console.log('🎯 SELECT TOOL - Pointer down:', {
-          coords,
-          foundObject: objectId?.slice(0, 8) || 'none',
-          isShiftPressed,
-          currentSelection: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)),
-          isDragging: isDraggingRef.current,
-          isDrawing: isDrawingRef.current,
-          eventType: event.type,
-          timestamp: Date.now()
-        });
-
-        // CRITICAL: Ensure we're not in a conflicting state
-        if (isDraggingRef.current || isDrawingRef.current) {
-          console.warn('⚠️ SELECT TOOL - Already in dragging/drawing state, resetting:', {
-            isDragging: isDraggingRef.current,
-            isDrawing: isDrawingRef.current
-          });
-          isDraggingRef.current = false;
-          isDrawingRef.current = false;
-          cleanupBatching();
-        }
-        
         if (objectId) {
           // Handle Shift+click for multi-select
           if (isShiftPressed) {
@@ -871,21 +694,21 @@ export const useCanvasInteractions = () => {
               // Remove from selection
               const newSelection = currentSelection.filter(id => id !== objectId);
               whiteboardStore.selectObjects(newSelection, userId);
-              console.log('🎯 SELECT TOOL - Removed object from selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
+              console.log('🎯 Removed object from selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
             } else {
               // Add to selection
               const newSelection = [...currentSelection, objectId];
               whiteboardStore.selectObjects(newSelection, userId);
-              console.log('🎯 SELECT TOOL - Added object to selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
+              console.log('🎯 Added object to selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
             }
           } else {
             // Normal click - only change selection if clicking on unselected object
             if (!whiteboardStore.selectedObjectIds.includes(objectId)) {
               // Single selection - clear existing and select only this object
               whiteboardStore.selectObjects([objectId], userId);
-              console.log('🎯 SELECT TOOL - Selected single object:', objectId.slice(0, 8));
+              console.log('🎯 Selected single object:', objectId.slice(0, 8));
             } else {
-              console.log('🎯 SELECT TOOL - Clicked on already selected object - maintaining selection for drag');
+              console.log('🎯 Clicked on already selected object - maintaining selection for drag');
             }
           }
           
@@ -897,19 +720,9 @@ export const useCanvasInteractions = () => {
               const obj = whiteboardStore.objects[id];
               if (obj) {
                 initialPositions[id] = { x: obj.x, y: obj.y };
-                console.log('🎯 DRAG START - Storing initial position for object:', id.slice(0, 8), { x: obj.x, y: obj.y });
               }
             });
             initialDragPositionsRef.current = initialPositions;
-            
-            console.log('🎯 SELECT TOOL - Setting up drag state:', {
-              selectedCount: whiteboardStore.selectedObjectIds.length,
-              initialPositions: Object.keys(initialPositions).map(id => ({
-                id: id.slice(0, 8),
-                pos: initialPositions[id]
-              })),
-              dragStart: coords
-            });
             
             // START BATCH for object dragging - use appropriate action type based on selection count
             const actionType = whiteboardStore.selectedObjectIds.length > 1 ? 'MULTI_OBJECT_DRAG' : 'UPDATE_OBJECT';
@@ -917,7 +730,7 @@ export const useCanvasInteractions = () => {
             draggedObjectIdRef.current = objectId;
             isDraggingRef.current = true;
             dragStartRef.current = coords;
-            console.log('🎯 SELECT TOOL - Started dragging', whiteboardStore.selectedObjectIds.length, 'object(s):', objectId.slice(0, 8));
+            console.log('🎯 Started dragging', whiteboardStore.selectedObjectIds.length, 'object(s):', objectId.slice(0, 8));
           }
         } else {
           // Clicked on empty area
@@ -949,101 +762,16 @@ export const useCanvasInteractions = () => {
         }
 
         // Check if we're clicking on an existing text object
-        const existingClickedObjectId = findObjectAt(coords.x, coords.y);
-        const existingClickedObject = existingClickedObjectId ? whiteboardStore.objects[existingClickedObjectId] : null;
-        const isClickingOnExistingText = existingClickedObject && existingClickedObject.type === 'text';
-        
-        console.log('📝 TEXT TOOL - Click detection:', {
-          coords,
-          existingClickedObjectId: existingClickedObjectId?.slice(0, 8),
-          existingClickedObject: existingClickedObject ? {
-            type: existingClickedObject.type,
-            position: { x: existingClickedObject.x, y: existingClickedObject.y }
-          } : null,
-          isClickingOnExistingText,
-          currentSelection: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8))
-        });
+        const clickedObjectId = findObjectAt(coords.x, coords.y);
+        const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
+        const isClickingOnExistingText = clickedObject && clickedObject.type === 'text';
         
         if (isClickingOnExistingText) {
-          console.log('📝 TEXT TOOL - Clicked on existing text object:', existingClickedObjectId.slice(0, 8));
-          console.log('📝 TEXT TOOL - Preventing immediate text editing, waiting for potential double-click');
-          
-          // Handle selection logic for text tool (identical to select tool)
-          const isShiftPressed = 'shiftKey' in event ? event.shiftKey : false;
-          const currentSelection = [...whiteboardStore.selectedObjectIds];
-          const isAlreadySelected = currentSelection.includes(existingClickedObjectId);
-          
-          console.log('📝 TEXT TOOL - Selection logic:', {
-            isShiftPressed,
-            currentSelection: currentSelection.map(id => id.slice(0, 8)),
-            isAlreadySelected,
-            clickedObjectId: existingClickedObjectId.slice(0, 8)
-          });
-          
-          let newSelection: string[];
-          if (isShiftPressed) {
-            if (isAlreadySelected) {
-              // Remove from selection
-              newSelection = currentSelection.filter(id => id !== existingClickedObjectId);
-              console.log('📝 TEXT TOOL - Removing from selection via Shift+click');
-            } else {
-              // Add to selection
-              newSelection = [...currentSelection, existingClickedObjectId];
-              console.log('📝 TEXT TOOL - Adding to selection via Shift+click');
-            }
-          } else {
-            if (isAlreadySelected && currentSelection.length === 1) {
-              // Single selected object clicked again - keep it selected, prepare for potential drag
-              newSelection = currentSelection;
-              console.log('📝 TEXT TOOL - Already selected single object clicked - keeping selection');
-            } else {
-              // Replace selection with this object
-              newSelection = [existingClickedObjectId];
-              console.log('📝 TEXT TOOL - Replacing selection with clicked object');
-            }
-          }
-          
-          whiteboardStore.selectObjects(newSelection, userId);
-          console.log('📝 TEXT TOOL - Updated selection:', newSelection.map(id => id.slice(0, 8)));
-          
-          // Prepare for potential dragging (identical to select tool logic)
-          if (newSelection.length > 0) {
-            console.log('📝 TEXT TOOL - Preparing for potential drag of selected objects');
-            
-            // Store initial positions for all selected objects for potential dragging
-            initialDragPositionsRef.current = {};
-            newSelection.forEach(objectId => {
-              const obj = whiteboardStore.objects[objectId];
-              if (obj) {
-                initialDragPositionsRef.current[objectId] = { x: obj.x, y: obj.y };
-                console.log('📝 TEXT TOOL - Stored initial position for:', objectId.slice(0, 8), { x: obj.x, y: obj.y });
-              }
-            });
-            
-            // START BATCH for object dragging (identical to select tool)
-            const actionType = newSelection.length > 1 ? 'MULTI_OBJECT_DRAG' : 'UPDATE_OBJECT';
-            currentBatchIdRef.current = startBatch(actionType, existingClickedObjectId, userId);
-            draggedObjectIdRef.current = existingClickedObjectId;
-            isDraggingRef.current = true;
-            dragStartRef.current = coords;
-            console.log('📝 TEXT TOOL - Started dragging immediately (like select tool):', newSelection.length, 'object(s):', existingClickedObjectId.slice(0, 8));
-          }
-          
+          console.log('📝 Clicked on existing text object - preventing immediate text editing, waiting for potential double-click');
           // Don't set up immediate text editing when clicking on existing text
           // This allows double-click editing to work properly
           return;
         }
-
-        // Check if there's a current selection - if so, just deselect instead of creating a new text box
-        if (whiteboardStore.selectedObjectIds.length > 0) {
-          console.log('📝 TEXT TOOL - Clicked empty space with selection, deselecting:', 
-                      whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)));
-          whiteboardStore.clearSelection(userId);
-          return;
-        }
-
-        // Only create new text box if no selection exists
-        console.log('📝 TEXT TOOL - Clicked empty space with no selection, setting up for text creation');
 
         // Store click position for drag detection (only for new text creation)
         textClickStartPosRef.current = coords;
@@ -1081,58 +809,26 @@ export const useCanvasInteractions = () => {
         const isClickingOnStickyNote = clickedObject && clickedObject.type === 'sticky-note';
         
         if (isClickingOnStickyNote) {
-          console.log('🗒️ STICKY NOTE TOOL - Clicked on existing sticky note:', {
-            objectId: clickedObjectId.slice(0, 8),
-            objectPos: { x: clickedObject.x, y: clickedObject.y },
-            coords,
-            currentSelection: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)),
-            isDragging: isDraggingRef.current,
-            isDrawing: isDrawingRef.current
-          });
+          console.log('🗒️ Clicked on existing sticky note for dragging:', clickedObjectId.slice(0, 8));
           
-          // Select the sticky note (exactly like select tool)
+          // Select the sticky note and start dragging
           whiteboardStore.selectObjects([clickedObjectId], userId);
-          console.log('🗒️ STICKY NOTE TOOL - Selected object:', clickedObjectId.slice(0, 8));
           
-          // Store initial position for dragging (exactly like select tool)
+          // Store initial position for dragging
           const initialPositions: Record<string, { x: number; y: number }> = {};
           initialPositions[clickedObjectId] = { x: clickedObject.x, y: clickedObject.y };
           initialDragPositionsRef.current = initialPositions;
           
-          console.log('🗒️ STICKY NOTE TOOL - Setting up drag state:', {
-            selectedCount: 1,
-            initialPositions: Object.keys(initialPositions).map(id => ({
-              id: id.slice(0, 8),
-              pos: initialPositions[id]
-            })),
-            dragStart: coords
-          });
-          
-          // START BATCH for object dragging (exactly like select tool)
+          // START BATCH for object dragging
           currentBatchIdRef.current = startBatch('UPDATE_OBJECT', clickedObjectId, userId);
           draggedObjectIdRef.current = clickedObjectId;
           isDraggingRef.current = true;
           dragStartRef.current = coords;
-          
-          console.log('🗒️ STICKY NOTE TOOL - Started sticky note selection/drag (identical to select tool):', {
-            objectId: clickedObjectId.slice(0, 8),
-            batchId: currentBatchIdRef.current?.slice(0, 8),
-            isDragging: isDraggingRef.current,
-            dragStart: dragStartRef.current
-          });
+          console.log('🗒️ Started dragging sticky note:', clickedObjectId.slice(0, 8));
           return;
         }
 
-        // Check if there's a current selection - if so, just deselect instead of creating a new sticky note
-        if (whiteboardStore.selectedObjectIds.length > 0) {
-          console.log('🗒️ STICKY NOTE TOOL - Clicked empty space with selection, deselecting:', 
-                      whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)));
-          whiteboardStore.clearSelection(userId);
-          return;
-        }
-
-        // Only create new sticky note if no selection exists
-        console.log('🗒️ STICKY NOTE TOOL - Clicked empty space with no selection, creating new sticky note');
+        // Create new sticky note
         const stickySize = toolStore.toolSettings.stickyNoteSize || 180;
         const backgroundColor = toolStore.toolSettings.stickyNoteBackgroundColor || '#fef3c7';
         
@@ -1251,18 +947,17 @@ export const useCanvasInteractions = () => {
 
     switch (activeTool) {
       case 'select': {
-        // ONLY do work if we're actually dragging something
         if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
           // Multi-object dragging with absolute positioning to prevent drift
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
           
-          // Only process movement if it's significant enough (prevents tiny movements from causing issues)
-          const movement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-          if (movement < 2) {
-            // Movement too small, skip processing
-            return;
-          }
+          console.log('🔄 Dragging movement:', {
+            selectedCount: whiteboardStore.selectedObjectIds.length,
+            delta: { x: deltaX, y: deltaY },
+            initialPositions: Object.keys(initialDragPositionsRef.current).length
+          });
+          
           // Store current drag deltas for live rendering without creating actions
           dragDeltasRef.current = { x: deltaX, y: deltaY };
           
@@ -1270,32 +965,17 @@ export const useCanvasInteractions = () => {
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const initialPos = initialDragPositionsRef.current[objectId];
             if (initialPos) {
-              const unconstrained = {
+              const newPos = {
                 x: initialPos.x + deltaX,
                 y: initialPos.y + deltaY
               };
-              // Constrain position to screen bounds
-              const constrainedPos = constrainObjectToBounds(objectId, unconstrained.x, unconstrained.y);
-              
-              console.log('🔄 DRAG MOVE - Object:', objectId.slice(0, 8), {
-                initial: initialPos,
-                delta: { x: deltaX, y: deltaY },
-                unconstrained,
-                constrained: constrainedPos,
-                currentStorePos: { x: whiteboardStore.objects[objectId]?.x, y: whiteboardStore.objects[objectId]?.y }
-              });
-              
+              console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
-              liveDragPositionsRef.current[objectId] = constrainedPos;
+              liveDragPositionsRef.current[objectId] = newPos;
             } else {
-              console.warn('❌ DRAG MOVE - No initial position stored for object:', objectId.slice(0, 8));
+              console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
             }
           });
-          
-          // CRITICAL: Force re-render of ResizeHandles to show updated bounding box
-          if (forceRerenderRef.current) {
-            forceRerenderRef.current();
-          }
           
           // Check if batch is getting too large
           if (currentBatchIdRef.current) {
@@ -1317,137 +997,14 @@ export const useCanvasInteractions = () => {
         break;
       }
 
-      case 'sticky-note': {
-        // Handle dragging for sticky note tool (identical to select tool)
-        if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
-          // Multi-object dragging with absolute positioning to prevent drift
-          const deltaX = coords.x - dragStartRef.current.x;
-          const deltaY = coords.y - dragStartRef.current.y;
-          
-          console.log('🗒️ STICKY NOTE TOOL - Dragging movement:', {
-            selectedCount: whiteboardStore.selectedObjectIds.length,
-            delta: { x: deltaX, y: deltaY },
-            initialPositions: Object.keys(initialDragPositionsRef.current).length
-          });
-          
-          // Store current drag deltas for live rendering without creating actions
-          dragDeltasRef.current = { x: deltaX, y: deltaY };
-          
-          // Apply visual updates without persisting to store during drag (identical to select tool)
-          whiteboardStore.selectedObjectIds.forEach(objectId => {
-            const initialPos = initialDragPositionsRef.current[objectId];
-            if (initialPos) {
-              const unconstrained = {
-                x: initialPos.x + deltaX,
-                y: initialPos.y + deltaY
-              };
-              // Constrain position to screen bounds
-              const constrainedPos = constrainObjectToBounds(objectId, unconstrained.x, unconstrained.y);
-              
-              console.log('🗒️ STICKY NOTE TOOL - Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', constrainedPos);
-              console.log('🗒️ STICKY NOTE TOOL - STORING live position:', objectId.slice(0, 8), constrainedPos);
-              // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
-              liveDragPositionsRef.current[objectId] = constrainedPos;
-            } else {
-              console.warn('🗒️ STICKY NOTE TOOL - ❌ No initial position stored for object:', objectId.slice(0, 8));
-            }
-          });
-          
-          // CRITICAL: Force re-render of ResizeHandles to show updated bounding box (identical to select tool)
-          if (forceRerenderRef.current) {
-            forceRerenderRef.current();
-          }
-          
-          // Check if batch is getting too large
-          if (currentBatchIdRef.current) {
-            checkBatchSize();
-          }
-          
-          if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
-          }
-        }
-        break;
-      }
-
       case 'text': {
-        console.log('📝 TEXT TOOL - Pointer move:', {
-          isDragging: isDraggingRef.current,
-          hasDragStart: !!dragStartRef.current,
-          selectedCount: whiteboardStore.selectedObjectIds.length,
-          coords,
-          textClickStartPos: textClickStartPosRef.current
-        });
-        
-        // Handle dragging existing selected text objects (like select tool)
-        if (isDraggingRef.current && dragStartRef.current && whiteboardStore.selectedObjectIds.length > 0) {
-          // Multi-object dragging with absolute positioning to prevent drift
-          const deltaX = coords.x - dragStartRef.current.x;
-          const deltaY = coords.y - dragStartRef.current.y;
-          
-          console.log('📝 TEXT TOOL - Dragging movement:', {
-            selectedCount: whiteboardStore.selectedObjectIds.length,
-            delta: { x: deltaX, y: deltaY },
-            initialPositions: Object.keys(initialDragPositionsRef.current).length
-          });
-          
-          // Store current drag deltas for live rendering without creating actions
-          dragDeltasRef.current = { x: deltaX, y: deltaY };
-          
-          // Update live positions for each selected object
-          whiteboardStore.selectedObjectIds.forEach(objectId => {
-            const initialPos = initialDragPositionsRef.current[objectId];
-            if (initialPos) {
-              const unconstrained = {
-                x: initialPos.x + deltaX,
-                y: initialPos.y + deltaY
-              };
-              // Constrain position to screen bounds
-              const constrainedPos = constrainObjectToBounds(objectId, unconstrained.x, unconstrained.y);
-              
-              console.log('📝 TEXT TOOL - Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', constrainedPos);
-              console.log('📝 TEXT TOOL - STORING live position:', objectId.slice(0, 8), constrainedPos);
-              // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
-          liveDragPositionsRef.current[objectId] = constrainedPos;
-          
-          // Set/reset drag timeout to auto-complete if mouseup is missed
-          if (dragTimeoutRef.current) {
-            clearTimeout(dragTimeoutRef.current);
-          }
-          dragTimeoutRef.current = setTimeout(() => {
-            console.log('⏰ DRAG TIMEOUT - Auto-completing drag operation for:', objectId.slice(0, 8));
-            if (isDraggingRef.current && liveDragPositionsRef.current[objectId]) {
-              // Get canvas element for the simulated event
-              const canvas = document.getElementById('whiteboard-canvas') as HTMLCanvasElement;
-              const fakeEvent = new MouseEvent('mouseup', { bubbles: true });
-              if (canvas) {
-                handlePointerUp(fakeEvent, canvas);
-              }
-            }
-          }, 1000); // 1 second timeout
-            } else {
-              console.warn('📝 TEXT TOOL - ❌ No initial position stored for object:', objectId.slice(0, 8));
-            }
-          });
-          
-          // Trigger redraw to show live drag positions
-          if (redrawCanvasRef.current) {
-            redrawCanvasRef.current();
-          }
-          
-          // CRITICAL: Force Canvas component re-render to update ResizeHandles positions
-          // This ensures the bounding box moves with the dragged object
-          if (forceRerenderRef.current) {
-            forceRerenderRef.current();
-          }
-        }
-        // Handle drag detection for creating new text boxes (only when no objects are selected)
-        else if (textClickStartPosRef.current && !isDrawingRef.current && whiteboardStore.selectedObjectIds.length === 0) {
+        // Check for drag intent: if significant movement is detected, enter drag mode
+        if (textClickStartPosRef.current && !isDrawingRef.current) {
           const deltaX = Math.abs(coords.x - textClickStartPosRef.current.x);
           const deltaY = Math.abs(coords.y - textClickStartPosRef.current.y);
           
           if (deltaX > 5 || deltaY > 5) {
-            console.log('📝 Drag detected - entering drag mode for text box creation');
+            console.log('📝 Drag detected - entering drag mode');
             isDrawingRef.current = true; // Now mark as drawing since it's a drag
           }
         }
@@ -1543,110 +1100,34 @@ export const useCanvasInteractions = () => {
   const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const activeTool = toolStore.activeTool;
 
-    console.log('🟥 MOUSEUP LISTENER TRIGGERED:', {
-      isDragging: isDraggingRef.current,
-      isDrawing: isDrawingRef.current,
-      activeTool,
-      selectedObjectIds: whiteboardStore.selectedObjectIds,
-      liveDragPositions: Object.keys(liveDragPositionsRef.current),
-      draggedObjectId: draggedObjectIdRef.current,
-      timestamp: Date.now(),
-      eventType: event.type
-    });
+    console.log('🖱️ Pointer up:', { tool: activeTool, drawing: isDrawingRef.current });
 
     switch (activeTool) {
       case 'select': {
-        console.log('🎯 SELECT TOOL - Pointer up processing:', {
-          isDragging: isDraggingRef.current,
-          isDrawing: isDrawingRef.current,
-          selectedObjects: whiteboardStore.selectedObjectIds.length,
-          hasSelectionBox: !!selectionBoxRef.current?.isActive,
-          timestamp: Date.now()
-        });
-
         if (isDraggingRef.current) {
-          console.log('🔄 SELECT TOOL - Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
+          console.log('🔄 Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
           
-          // CRITICAL: End the existing batch first to prevent conflicts
-          // CRITICAL: End the batch to finalize all intermediate drag movements FIRST
-          if (currentBatchIdRef.current) {
-            console.log('🧹 Ending drag batch before final update:', currentBatchIdRef.current.slice(0, 8));
-            endBatch();
-            currentBatchIdRef.current = null;
-          }
+          // Create optimized drag completion batch with only final positions
+          const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE', 'multi-object', userId);
           
-          // Apply final positions for all dragged objects WITHOUT creating a new batch
-          // Individual updates will be separate actions that can be undone together
+          // Apply final positions for all dragged objects in a single batch
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const finalPos = liveDragPositionsRef.current[objectId];
-            const initialPos = initialDragPositionsRef.current[objectId];
-            const currentStorePos = whiteboardStore.objects[objectId];
-            
-            console.log('🎯 DRAG END - Processing object:', objectId.slice(0, 8), {
-              initialPos,
-              finalLivePos: finalPos,
-              currentStorePos: currentStorePos ? { x: currentStorePos.x, y: currentStorePos.y } : null,
-              hasLivePos: !!finalPos,
-              hasInitialPos: !!initialPos
-            });
-            
             if (finalPos) {
-              // Final constraint check before saving
-              const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
-              console.log('🎯 DRAG END - Applying final position for object:', objectId.slice(0, 8), 'from live:', finalPos, 'to constrained:', constrainedFinalPos);
-              whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
-              
-              console.log('📍 DRAG END - Store update completed for object:', objectId.slice(0, 8), {
-                appliedPosition: constrainedFinalPos,
-                storeUpdateTime: Date.now()
-              });
-              
-              // Force canvas re-render immediately after updating store
-              if (redrawCanvasRef.current) {
-                console.log('🔄 DRAG END - Forcing canvas redraw after store update');
-                redrawCanvasRef.current();
-              } else {
-                console.warn('⚠️ DRAG END - redrawCanvasRef.current is null, cannot force redraw');
-              }
-              
-              // Verify the update took
-              setTimeout(() => {
-                const verifyPos = whiteboardStore.objects[objectId];
-                console.log('🔍 DRAG END - Verification check for object:', objectId.slice(0, 8), {
-                  applied: constrainedFinalPos,
-                  actual: verifyPos ? { x: verifyPos.x, y: verifyPos.y } : null,
-                  matches: verifyPos ? (verifyPos.x === constrainedFinalPos.x && verifyPos.y === constrainedFinalPos.y) : false
-                });
-              }, 10);
-            } else {
-              // No live position means no actual movement occurred - this is normal for click-without-drag
-              console.log('ℹ️ DRAG END - No movement detected for object:', objectId.slice(0, 8), '(click without significant drag)');
+              console.log('🎯 Final position for object:', objectId.slice(0, 8), finalPos);
+              whiteboardStore.updateObject(objectId, finalPos, userId);
             }
           });
           
-          console.log('🧹 DRAG END - Cleaning up drag state after applying final positions');
+          // End the optimized batch
+          whiteboardStore.endActionBatch();
           
-          // Clean up drag state - CRITICAL: ensure all refs are properly reset
+          // Clean up drag state
+          currentBatchIdRef.current = null;
           draggedObjectIdRef.current = null;
           initialDragPositionsRef.current = {};
+          liveDragPositionsRef.current = {};
           dragDeltasRef.current = { x: 0, y: 0 };
-          
-          // Ensure dragging state is fully reset
-          isDraggingRef.current = false;
-          dragStartRef.current = null;
-          
-          console.log('🧹 DRAG END - Drag state cleaned up, scheduling live position cleanup');
-          
-          // Clear live positions AFTER a redraw to ensure the final store positions are rendered
-          setTimeout(() => {
-            console.log('🧹 DRAG END - Clearing live positions and forcing final redraw');
-            liveDragPositionsRef.current = {};
-            if (redrawCanvasRef.current) {
-              redrawCanvasRef.current();
-            }
-          }, 0);
-          
-          console.log('✅ DRAG END - Drag completion and cleanup finished successfully');
         } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
           // Complete selection box
           const objectIds = findObjectsInSelectionBox(selectionBoxRef.current);
@@ -1676,58 +1157,17 @@ export const useCanvasInteractions = () => {
           }
         }
         
-        // Reset flags
         isDraggingRef.current = false;
-        isDrawingRef.current = false;
-        dragStartRef.current = null;
-
-        // Force a redraw to ensure everything is clean
-        if (redrawCanvasRef.current) {
-          redrawCanvasRef.current();
-        }
         dragStartRef.current = null;
         break;
       }
 
       case 'text': {
-        // Handle text tool dragging completion (identical to select tool)
-        if (isDraggingRef.current && whiteboardStore.selectedObjectIds.length > 0) {
-          console.log('📝 TEXT TOOL - Completing drag operation for objects:', whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)));
-          
-          // Apply final positions from live drag to actual objects
-          whiteboardStore.selectedObjectIds.forEach(objectId => {
-            const finalPos = liveDragPositionsRef.current[objectId];
-            if (finalPos) {
-              // Final constraint check before saving
-              const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
-              console.log('📝 TEXT TOOL - Final position for object:', objectId.slice(0, 8), constrainedFinalPos);
-              whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
-            }
-          });
-          
-          // End the optimized batch
-          whiteboardStore.endActionBatch();
-          
-          console.log('📝 TEXT TOOL - Cleaning up drag state');
-          
-          // Clean up drag state - CRITICAL: ensure all refs are properly reset
-          currentBatchIdRef.current = null;
-          draggedObjectIdRef.current = null;
-          initialDragPositionsRef.current = {};
-          liveDragPositionsRef.current = {};
-          dragDeltasRef.current = { x: 0, y: 0 };
-          
-          // Ensure dragging state is fully reset
-          isDraggingRef.current = false;
-          dragStartRef.current = null;
-        }
-        // Handle text creation (original text tool functionality)
-        else {
-          console.log('📝 Text pointer up - checking mode:', {
-            wasDrawing: isDrawingRef.current,
-            hasClickStartPos: !!textClickStartPosRef.current,
-            clickStartPos: textClickStartPosRef.current
-          });
+        console.log('📝 Text pointer up - checking mode:', {
+          wasDrawing: isDrawingRef.current,
+          hasClickStartPos: !!textClickStartPosRef.current,
+          clickStartPos: textClickStartPosRef.current
+        });
         
         // Additional check to prevent text creation while editing
         if (isEditingTextRef.current) {
@@ -1774,7 +1214,6 @@ export const useCanvasInteractions = () => {
         // Reset all states
         textClickStartPosRef.current = null;
         isDrawingRef.current = false;
-        }
         break;
       }
 
@@ -1909,53 +1348,6 @@ export const useCanvasInteractions = () => {
         }
         break;
       }
-
-      case 'sticky-note': {
-        // Handle sticky note tool dragging completion (identical to select tool)
-        if (isDraggingRef.current && whiteboardStore.selectedObjectIds.length > 0) {
-          console.log('🗒️ STICKY NOTE TOOL - Completing drag operation for objects:', whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8)));
-          
-          // Apply final positions from live drag to actual objects
-          whiteboardStore.selectedObjectIds.forEach(objectId => {
-            const finalPos = liveDragPositionsRef.current[objectId];
-            if (finalPos) {
-              // Final constraint check before saving
-              const constrainedFinalPos = constrainObjectToBounds(objectId, finalPos.x, finalPos.y);
-              console.log('🗒️ STICKY NOTE TOOL - Final position for object:', objectId.slice(0, 8), constrainedFinalPos);
-              whiteboardStore.updateObject(objectId, constrainedFinalPos, userId);
-            }
-          });
-          
-          // End the optimized batch
-          whiteboardStore.endActionBatch();
-          
-          console.log('🗒️ STICKY NOTE TOOL - Cleaning up drag state');
-          
-          // Clean up drag state - CRITICAL: ensure all refs are properly reset
-          currentBatchIdRef.current = null;
-          draggedObjectIdRef.current = null;
-          initialDragPositionsRef.current = {};
-          liveDragPositionsRef.current = {};
-          dragDeltasRef.current = { x: 0, y: 0 };
-          
-          // Ensure dragging state is fully reset
-          isDraggingRef.current = false;
-          dragStartRef.current = null;
-        }
-        
-        // CRITICAL: Always reset these flags at the end of sticky note pointer up
-        console.log('🗒️ STICKY NOTE TOOL - Resetting state:', {
-          wasDragging: isDraggingRef.current,
-          wasDrawing: isDrawingRef.current,
-          selectedObjects: whiteboardStore.selectedObjectIds.length
-        });
-        
-        isDraggingRef.current = false;
-        isDrawingRef.current = false;
-        dragStartRef.current = null;
-        break;
-      }
-
     }
 
     console.log('🎨 POINTER UP CLEANUP:', {
@@ -2020,13 +1412,6 @@ export const useCanvasInteractions = () => {
     console.log('🧹 Text interaction state cleared');
   }, [toolStore.activeTool]);
 
-  /**
-   * Sets the force rerender callback (called by Canvas component)
-   */
-  const setForceRerender = useCallback((rerenderFn: () => void) => {
-    forceRerenderRef.current = rerenderFn;
-  }, []);
-
   return {
     handlePointerDown,
     handlePointerMove,
@@ -2037,19 +1422,12 @@ export const useCanvasInteractions = () => {
     getCurrentDrawingPreview,
     getCurrentShapePreview,
     getCurrentSelectionBox,
-    getCurrentDragDeltas: () => {
-      console.log('🔄 getCurrentDragDeltas called:', dragDeltasRef.current);
-      return dragDeltasRef.current;
-    },
-    getLiveDragPositions: () => {
-      // Simplified - no longer using live drag positions since we update store directly
-      return {};
-    },
+    getCurrentDragDeltas: () => dragDeltasRef.current,
+    getLiveDragPositions: () => liveDragPositionsRef.current,
     setRedrawCanvas,
     setDoubleClickProtection,
     setEditingState,
     setImmediateTextTrigger,
-    setForceRerender,
     clearTextInteractionState
   };
 };

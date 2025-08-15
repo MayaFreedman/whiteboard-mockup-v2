@@ -12,15 +12,8 @@ export const useToolSelection = () => {
   const { clearSelection } = useWhiteboardStore();
   
   useEffect(() => {
-    console.log('🎯 useToolSelection effect triggered:', {
-      activeTool,
-      timestamp: Date.now(),
-      willClearSelection: activeTool !== 'select'
-    });
-    
     // Clear selection when switching to any tool other than select
     if (activeTool !== 'select') {
-      console.log('🎯 About to clear selection - tool changed from select to:', activeTool);
       clearSelection();
       console.log('🎯 Cleared selection when switching from select tool');
     }

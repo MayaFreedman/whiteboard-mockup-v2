@@ -115,12 +115,11 @@ export const DynamicToolSettings: React.FC = () => {
     if (activeTool !== 'stamp') return null;
     const q = debouncedQuery.trim();
     if (!q) return null;
-    // Always search across all icons regardless of selected category
     return searchIcons(q, {
-      category: undefined, // Force search across all categories
+      category: resolvedCategory,
       limit: 500
     });
-  }, [activeTool, debouncedQuery, refreshKey]);
+  }, [activeTool, debouncedQuery, resolvedCategory, refreshKey]);
   const displayedItems = useMemo(() => {
     if (searchResults) {
       const seen = new Set<string>();
@@ -262,6 +261,18 @@ export const DynamicToolSettings: React.FC = () => {
               <div className="text-xs text-muted-foreground">
                 {totalResults > 0 ? (
                   <>Found {totalResults} result{totalResults === 1 ? '' : 's'}</>
+                ) : selectedCategory !== 'all' ? (
+                  <>
+                    No results for "{debouncedQuery}" in {getCategoryDisplayName(selectedCategory)}.{" "}
+                    <button
+                      type="button"
+                      className="underline underline-offset-2 text-primary hover:text-primary/80 font-medium"
+                      onClick={() => handleCategoryChange('all')}
+                    >
+                      Try searching all icons
+                    </button>
+                    .
+                  </>
                 ) : (
                   <>
                     No results for "{debouncedQuery}" across all icons. Can't find what you're looking for?{" "}

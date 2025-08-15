@@ -267,13 +267,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           return a.payload.object?.id || 'no-id';
         }
         return 'no-id';
-      }),
-      objectPositions: batch.actions.map(a => {
-        if (a.type === 'UPDATE_OBJECT' && a.payload.updates) {
-          return { id: a.payload.id, updates: a.payload.updates };
-        }
-        return null;
-      }).filter(Boolean)
+      })
     });
     
     // Create a batch action that contains all the individual actions
@@ -412,12 +406,11 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     if (!existingObject) return;
 
     console.log('🔄 Store updateObject called:', { 
-      id: id.slice(0, 8), 
+      id, 
       updates, 
       objectType: existingObject?.type,
-      currentPosition: existingObject ? { x: existingObject.x, y: existingObject.y } : null,
-      newDimensions: updates.width || updates.height ? { width: updates.width, height: updates.height } : null,
-      timestamp: Date.now()
+      currentDimensions: existingObject ? { width: existingObject.width, height: existingObject.height } : null,
+      newDimensions: updates.width || updates.height ? { width: updates.width, height: updates.height } : null
     });
 
     const action: WhiteboardAction = {
@@ -429,37 +422,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       previousState: { object: existingObject },
     };
 
-    set((state) => {
-      const updatedObject = {
-        ...state.objects[id],
-        ...updates,
-        updatedAt: Date.now(),
-      };
-      
-      console.log('🔄 Store IMMEDIATE position update:', { 
-        id: id.slice(0, 8), 
-        before: { x: state.objects[id]?.x, y: state.objects[id]?.y },
-        updates: updates.x !== undefined ? { x: updates.x, y: updates.y } : 'no position change',
-        after: { x: updatedObject.x, y: updatedObject.y },
-        timestamp: Date.now()
-      });
-      
-      const newState = {
-        objects: {
-          ...state.objects,
-          [id]: updatedObject,
+    set((state) => ({
+      objects: {
+        ...state.objects,
+        [id]: {
+          ...state.objects[id],
+          ...updates,
+          updatedAt: Date.now(),
         },
-      };
-      
-      // Verify the position was actually set
-      console.log('🔄 Store position SET verification:', {
-        id: id.slice(0, 8),
-        finalPosition: { x: newState.objects[id].x, y: newState.objects[id].y },
-        timestamp: Date.now()
-      });
-      
-      return newState;
-    });
+      },
+    }));
 
     // If we're in an active batch, add to batch instead of recording immediately
     const currentBatch = get().currentBatch;
@@ -537,25 +509,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
 
   selectObjects: (ids, userId = 'local') => {
-    console.log('🎯 SELECT OBJECTS CALLED:', {
-      newSelection: ids,
-      previousSelection: get().selectedObjectIds,
-      userId,
-      timestamp: Date.now(),
-      stackTrace: new Error().stack?.split('\n').slice(1, 3).join('\n')
-    });
     set({ selectedObjectIds: ids });
     // Note: Selection actions are not recorded in undo/redo history
     // They are ephemeral UI state that doesn't need to be undone
   },
 
   clearSelection: (userId = 'local') => {
-    console.log('🚨 CLEAR SELECTION CALLED:', {
-      previousSelection: get().selectedObjectIds,
-      userId,
-      timestamp: Date.now(),
-      stackTrace: new Error().stack?.split('\n').slice(1, 5).join('\n')
-    });
     set({ selectedObjectIds: [] });
     // Note: Selection actions are not recorded in undo/redo history
     // They are ephemeral UI state that doesn't need to be undone
