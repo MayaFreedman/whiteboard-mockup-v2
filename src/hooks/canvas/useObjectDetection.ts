@@ -37,8 +37,6 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
    */
   const isPointInPath = useCallback((pathString: string, x: number, y: number, strokeWidth: number = 2): boolean => {
     try {
-      console.log('🎯 Testing path collision:', { x, y, strokeWidth, pathString: pathString.substring(0, 50) + '...' });
-      
       // Handle degenerate paths (single-point "dots") that Path2D stroke tests miss
       const pts = pathToPoints(pathString);
       if (pts.length <= 1) {
@@ -47,17 +45,13 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
         const dy = y - p.y;
         const dist = Math.hypot(dx, dy);
         const pickRadius = Math.max(strokeWidth * 1.5, 8); // generous radius for chalk/spray dots
-        console.log('🎯 Single point path test:', { dist, pickRadius, hit: dist <= pickRadius });
         if (dist <= pickRadius) return true;
       }
 
       const path = new Path2D(pathString);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        console.log('🎯 No canvas context available');
-        return false;
-      }
+      if (!ctx) return false;
 
       // Primary method: stroke hit detection with generous hit area
       ctx.lineWidth = Math.max(strokeWidth * 2, 12); // At least 12px hit area
@@ -65,7 +59,6 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
       ctx.lineJoin = 'round';
       
       const strokeHit = ctx.isPointInStroke(path, x, y);
-      console.log('🎯 Primary stroke hit test:', { hit: strokeHit, lineWidth: ctx.lineWidth });
       
       // Fallback method: check multiple points around the target for better coverage
       if (!strokeHit) {
@@ -81,9 +74,7 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
           { x: x + radius/2, y: y + radius/2 }
         ];
         
-        const fallbackHit = testPoints.some(point => ctx.isPointInStroke(path, point.x, point.y));
-        console.log('🎯 Fallback test:', { hit: fallbackHit, testRadius: radius });
-        return fallbackHit;
+        return testPoints.some(point => ctx.isPointInStroke(path, point.x, point.y));
       }
       
       return strokeHit;
