@@ -230,20 +230,23 @@ export const Canvas: React.FC = () => {
 
     const objectId = addObject(textObject, userId);
 
-    setIsImmediateTextEditing(true);
-    setImmediateTextPosition(screenCoords);
-    setImmediateTextContent("");
-    setImmediateTextObjectId(objectId);
+    // Use regular text editing instead of immediate text editing
+    setEditingTextId(objectId);
+    
+    // Calculate exact text position using canvas metrics
+    const position = calculateTextPosition(textObject, canvasRef.current);
+    if (position) {
+      setTextEditorPosition(position);
+    }
+    
+    setEditingText("");
 
     redrawCanvas();
 
     // Focus the textarea after a short delay
     setTimeout(() => {
-      const textarea = document.querySelector(
-        "[data-immediate-text]"
-      ) as HTMLTextAreaElement;
-      if (textarea) {
-        textarea.focus();
+      if (textareaRef.current) {
+        textareaRef.current.focus();
       }
     }, 50);
   });
