@@ -24,7 +24,7 @@ export const ToolSettingCard: React.FC<ToolSettingCardProps> = ({ title, childre
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="pt-4 px-4">
+      <CardContent className="pt-4 px-4 max-h-[calc(100vh-var(--toolbar-height,64px)-120px)] overflow-y-auto">
         {children}
       </CardContent>
     </Card>

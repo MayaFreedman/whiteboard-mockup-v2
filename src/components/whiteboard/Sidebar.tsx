@@ -12,7 +12,7 @@ export const WhiteboardSidebar: React.FC = () => {
         transition: 'transform 0.2s ease-linear',
         top: 'var(--toolbar-height, 64px)',
         width: '320px', // Reduced from 384px (w-96) to 320px (w-80)
-        height: 'auto',
+        height: 'calc(100vh - var(--toolbar-height, 64px))',
         maxHeight: 'calc(100vh - var(--toolbar-height, 64px))',
         overflow: 'hidden'
       }}>
