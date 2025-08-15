@@ -116,30 +116,33 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
 
   return <div>
       
-      <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1 pt-2 pb-2 pr-2 pl-0" onScroll={handleScroll}>
-        {windowedItems.map((item, index) => {
-        const shouldLoad = visibleItems.has(item.url);
-        const isLoaded = loadedImages.has(item.url);
-        const isCustomStamp = item.url.startsWith('data:');
-        return <div 
-          key={`stamp-${index}-${item.url.substring(0, 50)}`} 
-          className="relative" 
-          ref={createRefCallback(item.url)}
-        >
-              <StampGridItem item={item} isSelected={selectedValue === item.url} onSelect={onChange} onImageLoad={() => handleImageLoaded(item.url)} />
-              
-              {/* Delete button for custom stamps */}
-              {isCustomStamp && <button onClick={e => handleDeleteCustomStamp(e, item.url)} className="absolute -top-1 -right-1 w-5 h-5 bg-gray-500 text-white rounded-full flex items-center justify-center z-20 hover:bg-gray-600 shadow-md" title="Delete custom stamp">
-                  <X className="w-3 h-3" />
-                </button>}
-            </div>;
-      })}
-        
-        {/* Show loading indicator when more items are available */}
-        {windowSize && currentWindowEnd < items.length && <div className="col-span-full flex justify-center py-4">
-            <div className="text-sm text-muted-foreground">...</div>
-          </div>}
-      </div>
+      {/* Only render grid if there are items to show or loading indicator */}
+      {(windowedItems.length > 0 || (windowSize && currentWindowEnd < items.length)) && (
+        <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1 pt-2 pb-2 pr-2 pl-0" onScroll={handleScroll}>
+          {windowedItems.map((item, index) => {
+          const shouldLoad = visibleItems.has(item.url);
+          const isLoaded = loadedImages.has(item.url);
+          const isCustomStamp = item.url.startsWith('data:');
+          return <div 
+            key={`stamp-${index}-${item.url.substring(0, 50)}`} 
+            className="relative" 
+            ref={createRefCallback(item.url)}
+          >
+                <StampGridItem item={item} isSelected={selectedValue === item.url} onSelect={onChange} onImageLoad={() => handleImageLoaded(item.url)} />
+                
+                {/* Delete button for custom stamps */}
+                {isCustomStamp && <button onClick={e => handleDeleteCustomStamp(e, item.url)} className="absolute -top-1 -right-1 w-5 h-5 bg-gray-500 text-white rounded-full flex items-center justify-center z-20 hover:bg-gray-600 shadow-md" title="Delete custom stamp">
+                    <X className="w-3 h-3" />
+                  </button>}
+              </div>;
+        })}
+          
+          {/* Show loading indicator when more items are available */}
+          {windowSize && currentWindowEnd < items.length && <div className="col-span-full flex justify-center py-4">
+              <div className="text-sm text-muted-foreground">...</div>
+            </div>}
+        </div>
+      )}
       {showUpload && <div className="mt-3">
           {/* Custom upload component will be added here */}
         </div>}
