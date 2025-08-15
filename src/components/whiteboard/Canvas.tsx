@@ -12,7 +12,9 @@ import { calculateOptimalFontSize } from "../../utils/stickyNoteTextSizing";
 import { useCanvasOffset } from "../../hooks/useCanvasOffset";
 import { CustomCursor } from "./CustomCursor";
 import { ResizeHandles } from "./ResizeHandles";
+import { BoundingBoxDebug } from "./BoundingBoxDebug";
 import { measureText } from "../../utils/textMeasurement";
+import { BOUNDING_BOX_DEBUG } from "../../config/devMode";
 
 /**
  * Gets the appropriate cursor style based on the active tool
@@ -1599,6 +1601,15 @@ export const Canvas: React.FC = () => {
 
       {/* Custom Cursor */}
       <CustomCursor canvas={canvasRef.current} />
+
+      {/* Bounding Box Debug Overlay */}
+      {BOUNDING_BOX_DEBUG && (
+        <BoundingBoxDebug
+          liveDragPositions={getLiveDragPositions()}
+          selectedObjectIds={selectedObjectIds}
+          enabled={true}
+        />
+      )}
 
       {/* Resize Handles for Selected Objects */}
       {activeTool === "select" &&
