@@ -11,6 +11,7 @@ import { useActionBatching } from '../useActionBatching';
 import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 import { useMultiplayer } from '../useMultiplayer';
+import { constrainWhiteboardObjectToBounds } from '../../utils/boundaryConstraints';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -1076,11 +1077,20 @@ export const useCanvasInteractions = () => {
           // Apply visual updates without persisting to store during drag
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const initialPos = initialDragPositionsRef.current[objectId];
-            if (initialPos) {
-              const newPos = {
+            const obj = whiteboardStore.objects[objectId];
+            if (initialPos && obj) {
+              const unconstrained = {
                 x: initialPos.x + deltaX,
                 y: initialPos.y + deltaY
               };
+              
+              // Apply boundary constraints to keep object on screen
+              const newPos = constrainWhiteboardObjectToBounds(
+                unconstrained,
+                obj,
+                activeWhiteboardSize
+              );
+              
               console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = newPos;
