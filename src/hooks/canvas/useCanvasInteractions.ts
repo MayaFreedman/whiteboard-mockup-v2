@@ -1081,11 +1081,11 @@ export const useCanvasInteractions = () => {
                 x: initialPos.x + deltaX,
                 y: initialPos.y + deltaY
               };
-              
+              console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = newPos;
             } else {
-              
+              console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
             }
           });
           
