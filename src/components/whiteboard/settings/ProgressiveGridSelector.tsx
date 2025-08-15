@@ -40,12 +40,18 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
     return itemsToShow;
   }, [items, currentWindowEnd, windowSize]);
 
+  // Memoize the URL array to prevent infinite loops in useLazyImageLoading
+  const itemUrls = useMemo(() => 
+    windowedItems.map(item => item.url), 
+    [windowedItems]
+  );
+
   // Use lazy loading hook with intersection observer
   const {
     visibleItems,
     observeElement
   } = useLazyImageLoading({
-    items: windowedItems.map(item => item.url),
+    items: itemUrls,
     rootMargin: '100px' // Load images 100px before they become visible
   });
 

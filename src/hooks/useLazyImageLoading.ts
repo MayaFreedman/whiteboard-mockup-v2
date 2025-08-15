@@ -69,16 +69,30 @@ export const useLazyImageLoading = ({
     observerRef.current.observe(element);
   }, []);
   
+  // Track if initial batch has been processed to prevent re-processing
+  const processedItemsRef = useRef<string>('');
+  
   // Preload first visible items immediately for instant feedback
   useEffect(() => {
+    const itemsKey = items.join(',');
+    if (processedItemsRef.current === itemsKey) return; // Prevent duplicate processing
+    
+    processedItemsRef.current = itemsKey;
     const firstBatch = items.slice(0, 8); // Load first 8 items immediately
-    firstBatch.forEach(url => {
-      setVisibleItems(prev => {
-        const newSet = new Set(prev);
-        newSet.add(url);
-        return newSet;
+    
+    setVisibleItems(prev => {
+      const newSet = new Set(prev);
+      let hasChanges = false;
+      
+      firstBatch.forEach(url => {
+        if (!newSet.has(url)) {
+          newSet.add(url);
+          hasChanges = true;
+          loadProgressiveImage(url).catch(console.error);
+        }
       });
-      loadProgressiveImage(url).catch(console.error);
+      
+      return hasChanges ? newSet : prev;
     });
   }, [items]);
   
