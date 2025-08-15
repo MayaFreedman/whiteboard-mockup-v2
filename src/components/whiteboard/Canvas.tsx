@@ -714,6 +714,11 @@ export const Canvas: React.FC = () => {
       timestamp: Date.now()
     });
     
+    // Calculate the available width for text wrapping (same as canvas)
+    const editingObject = immediateTextObjectId ? objects[immediateTextObjectId] : null;
+    const isEditingStickyNote = editingObject?.type === "sticky-note";
+    const availableWidth = isEditingStickyNote ? undefined : 184; // Match canvas available width
+    
     setImmediateTextContent(newText);
 
     // Check if we're editing a sticky note for dynamic font sizing
@@ -1443,11 +1448,11 @@ export const Canvas: React.FC = () => {
                  {
                    left: immediateTextPosition.x,
                    top: immediateTextPosition.y,
-                    // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
-                    width: isEditingStickyNote ? editingObject.width : 200,
-                    height: isEditingStickyNote
-                      ? editingObject.height
-                      : toolStore.toolSettings.fontSize * 1.2 || 20,
+                   // For regular text, use fixed width to match canvas; for sticky notes, use object width
+                   width: isEditingStickyNote ? editingObject.width : 184,
+                   height: isEditingStickyNote
+                     ? editingObject.height
+                     : "auto", // Let height expand for regular text
                   padding: "8px",
                   fontSize: fontSize,
                   fontFamily: isEditingStickyNote
@@ -1490,11 +1495,11 @@ export const Canvas: React.FC = () => {
                   boxShadow: isEditingStickyNote
                     ? "0px 2px 8px rgba(0,0,0,0.1)"
                     : "none", // Match sticky note shadow
-                  whiteSpace: "pre-wrap",
-                  overflowWrap: "break-word",
-                  wordBreak: "break-word",
-                  wordWrap: "break-word",
-                  overflow: "hidden",
+                   whiteSpace: "pre-wrap",
+                   overflowWrap: "break-word", 
+                   wordBreak: "break-word",
+                   wordWrap: "break-word",
+                   overflow: "visible", // Allow textarea to expand
                   textRendering: "optimizeLegibility",
                   fontSmooth: "antialiased",
                   WebkitFontSmoothing: "antialiased",
