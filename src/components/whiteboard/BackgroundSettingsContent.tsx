@@ -193,7 +193,10 @@ export const BackgroundSettingsContent: React.FC = () => {
             <div className="text-sm">
               <span className="font-medium">Upload a Background</span>
             </div>
-            <div className="text-xs text-muted-foreground">Click to upload or drag and drop</div>
+            <div className="text-xs text-muted-foreground">
+              Click to upload or drag and drop<br />
+              PNG, JPEG files • Images auto-resized to max 1280px
+            </div>
           </div>
           {isBgUploading && (
             <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
