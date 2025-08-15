@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useWhiteboardStore } from "../../stores/whiteboardStore";
 import { useToolStore } from "../../stores/toolStore";
 import { useCanvasInteractions } from "../../hooks/canvas/useCanvasInteractions";
@@ -77,6 +77,10 @@ export const Canvas: React.FC = () => {
 
   // Text editing state
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  
+  // Force re-render trigger for ResizeHandles during dragging
+  const [, setForceRerenderState] = useState(0);
+  const forceRerenderCallback = useCallback(() => setForceRerenderState(prev => prev + 1), []);
   const [textEditorPosition, setTextEditorPosition] = useState<{
     x: number;
     y: number;
@@ -121,6 +125,7 @@ export const Canvas: React.FC = () => {
     setDoubleClickProtection,
     setEditingState,
     setImmediateTextTrigger,
+    setForceRerender,
     clearTextInteractionState,
   } = useCanvasInteractions();
 
@@ -140,6 +145,7 @@ export const Canvas: React.FC = () => {
   setRedrawCanvas(redrawCanvas);
   setDoubleClickProtection(isHandlingDoubleClick);
   setEditingState(editingTextId !== null || isImmediateTextEditing);
+  setForceRerender(forceRerenderCallback);
 
   // Set callback for immediate text editing
   setImmediateTextTrigger((coords, existingObjectId?) => {
@@ -320,7 +326,7 @@ export const Canvas: React.FC = () => {
       typeof obj.width === "number" &&
       typeof obj.height === "number"
     ) {
-      // For text objects, scale font size AND update dimensions
+      // For text objects, scale font size based on resize AND update dimensions
       const currentWidth = obj.width;
       const currentHeight = obj.height;
 
@@ -333,19 +339,16 @@ export const Canvas: React.FC = () => {
 
       // Calculate new font size
       const currentFontSize = obj.data.fontSize || 16;
-      const newFontSize = Math.round(currentFontSize * scale);
+      const newFontSize = Math.max(8, Math.min(200, Math.round(currentFontSize * scale)));
 
       // Update object with new font size AND new dimensions
-      const changedWidth = newBounds.width !== obj.width;
-      const changedHeight = newBounds.height !== obj.height;
-
       const updates = {
         ...newBounds, // Include new position and dimensions
         data: {
           ...(obj.data || {}),
           fontSize: newFontSize,
-          ...(changedWidth ? { fixedWidth: true } : {}),
-          ...(changedHeight ? { fixedHeight: true } : {}),
+          fixedWidth: true,
+          fixedHeight: true,
         },
       };
 
@@ -356,24 +359,23 @@ export const Canvas: React.FC = () => {
       typeof obj.width === "number" &&
       typeof obj.height === "number"
     ) {
-      // For sticky notes, keep them square and recalculate font size
-      const size = Math.max(newBounds.width, newBounds.height); // Keep square
+      // For sticky notes, allow free resizing like other objects
       const newFontSize = calculateOptimalFontSize(
         obj.data.content || "",
-        size,
-        size,
+        newBounds.width,
+        newBounds.height,
         obj.data
       );
 
       const updates = {
         x: newBounds.x,
         y: newBounds.y,
-        width: size,
-        height: size,
+        width: newBounds.width,
+        height: newBounds.height,
         data: {
           ...obj.data,
           fontSize: newFontSize,
-          stickySize: size,
+          stickySize: Math.max(newBounds.width, newBounds.height), // Keep for compatibility
         },
       };
 
@@ -616,6 +618,9 @@ export const Canvas: React.FC = () => {
       const [objectId, obj] = textObject;
       console.log("🖱️ Found text object to edit:", objectId.slice(0, 8));
 
+      // Clear selection when entering edit mode
+      whiteboardStore.clearSelection(userId);
+
       setEditingTextId(objectId);
 
       // Calculate exact text position using canvas metrics
@@ -676,6 +681,9 @@ export const Canvas: React.FC = () => {
             setImmediateTextPosition(stickyScreenCoords);
             setImmediateTextContent(obj.data?.content || "");
             setImmediateTextObjectId(objectId);
+
+            // Clear selection once editing mode is active
+            whiteboardStore.clearSelection(userId);
 
             redrawCanvas();
 
@@ -903,8 +911,10 @@ export const Canvas: React.FC = () => {
           }, 0);
         }
       } else {
-        // Delete the object if no text was entered
-        deleteObject(immediateTextObjectId, userId);
+        // Delete the object if no text was entered, BUT allow empty sticky notes
+        if (currentObject.type !== "sticky-note") {
+          deleteObject(immediateTextObjectId, userId);
+        }
       }
 
       redrawCanvas();
@@ -1544,18 +1554,34 @@ export const Canvas: React.FC = () => {
       <CustomCursor canvas={canvasRef.current} />
 
       {/* Resize Handles for Selected Objects */}
-      {activeTool === "select" &&
-        selectedObjectIds.map((objectId) => (
-          <ResizeHandles
-            key={objectId}
-            objectId={objectId}
-            onResizeStart={() =>
-              startResizeBatch("UPDATE_OBJECT", objectId, userId)
-            }
-            onResize={(id, bounds) => handleResize(id, bounds)}
-            onResizeEnd={() => endResizeBatch()}
-          />
-        ))}
+      {(activeTool === "select" || activeTool === "sticky-note" || activeTool === "text") &&
+        selectedObjectIds.map((objectId) => {
+          const liveDragPositions = getLiveDragPositions();
+          const liveDragPosition = liveDragPositions[objectId] || null;
+          
+          console.log('🎯 Canvas ResizeHandles render (TEXT TOOL):', {
+            activeTool,
+            objectId: objectId.slice(0, 8),
+            isDragging,
+            allLiveDragPositions: Object.keys(liveDragPositions).length,
+            allLiveDragIds: Object.keys(liveDragPositions).map(id => id.slice(0, 8)),
+            thisObjectLivePos: liveDragPosition,
+            storePos: objects[objectId] ? { x: objects[objectId].x, y: objects[objectId].y } : 'not found'
+          });
+          
+          return (
+            <ResizeHandles
+              key={objectId}
+              objectId={objectId}
+              onResizeStart={() =>
+                startResizeBatch("UPDATE_OBJECT", objectId, userId)
+              }
+              onResize={(id, bounds) => handleResize(id, bounds)}
+              onResizeEnd={() => endResizeBatch()}
+              liveDragPosition={liveDragPosition}
+            />
+          );
+        })}
     </div>
   );
 };

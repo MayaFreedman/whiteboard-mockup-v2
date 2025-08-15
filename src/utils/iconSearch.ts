@@ -52,6 +52,26 @@ const SYNONYMS: Record<string, string[]> = {
   fish: ['seafood'],
 };
 
+// Smart partial mappings for short queries (2-3 characters)
+const PARTIAL_MAPPINGS: Record<string, string[]> = {
+  ca: ['cat', 'car', 'cake', 'camera'],
+  do: ['dog', 'door', 'dolphin'],
+  bi: ['bird', 'bike', 'birthday'],
+  ha: ['happy', 'hand', 'hat'],
+  he: ['heart', 'house', 'helicopter'],
+  tr: ['tree', 'train', 'truck'],
+  fi: ['fire', 'fish', 'flag'],
+  fo: ['food', 'football', 'fork'],
+  mo: ['money', 'moon', 'mouse'],
+  bo: ['book', 'boat', 'box'],
+  mu: ['music', 'mushroom'],
+  ic: ['ice', 'icon'],
+  sp: ['sports', 'space', 'spider'],
+  st: ['star', 'stop', 'stone'],
+  sw: ['swimming', 'sweet'],
+  cr: ['cry', 'crown', 'cross'],
+};
+
 const GENERIC_TERMS = new Set<string>([
   'face','emoji','smile','smileys','emotion',
   'animal','animals','pet','wildlife',
@@ -96,11 +116,14 @@ function expandQuery(tokens: string[]): { expanded: string[]; concept: string[];
   const negativeSet = new Set<string>();
 
   const stem = (w: string): string | null => {
-    if (w.length <= 3) return null;
+    if (w.length <= 2) return null; // Lower threshold for stemming
     if (/ing$/.test(w)) return w.replace(/ing$/, '');
     if (/ers$/.test(w)) return w.replace(/ers$/, 'er');
     if (/er$/.test(w)) return w.replace(/er$/, '');
     if (/ed$/.test(w)) return w.replace(/ed$/, '');
+    // Enhanced stemming patterns
+    if (/ly$/.test(w) && w.length > 4) return w.replace(/ly$/, '');
+    if (/ness$/.test(w) && w.length > 6) return w.replace(/ness$/, '');
     return null;
   };
 
@@ -120,6 +143,17 @@ function expandQuery(tokens: string[]): { expanded: string[]; concept: string[];
 
   tokens.forEach((t) => {
     add(t);
+
+    // Smart partial matching for 2-3 character queries
+    if (t.length >= 2 && t.length <= 3) {
+      const partialMatches = PARTIAL_MAPPINGS[t];
+      if (partialMatches) {
+        partialMatches.forEach((match) => {
+          add(match);
+          conceptSet.add(match); // Mark as concept to give lower priority
+        });
+      }
+    }
 
     // Synonyms
     Object.entries(SYNONYMS).forEach(([key, vals]) => {
@@ -231,7 +265,7 @@ function scoreIcon(
   if (directTokens.length >= 2) {
     const isRedFlagQuery = directTokens.includes('red') && (directTokens.includes('flag') || directTokens.includes('flags'));
     let allCovered = directTokens.every((t) => {
-      const allowPrefix = t.length >= 4;
+      const allowPrefix = t.length >= 3; // Reduced from 4 to 3 for better partial matching
       const codeMatch = code && code.toLowerCase() === t;
 
       // Generic 'face' must be an actual face subgroup
@@ -285,9 +319,29 @@ function scoreIcon(
 
     if (nameExact) { score += 16; strongHit = true; exactHit = true; }
     if (keyExact) { score += 12; strongHit = true; exactHit = true; }
-    const allowPrefix = t.length >= 4;
-    if (!nameExact && allowPrefix && nameStart) { score += 8; strongHit = true; }
-    if (!keyExact && allowPrefix && keyStart) { score += 6; strongHit = true; }
+    
+    // Progressive prefix scoring - better for partial matches
+    const allowPrefix = t.length >= 3; // Reduced from 4 to 3
+    if (!nameExact && allowPrefix && nameStart) { 
+      // Add bonus for closer matches (shorter remaining chars)
+      const matchedWords = nameTokens.filter((w) => w.startsWith(t));
+      const closestMatch = matchedWords.reduce((closest, word) => 
+        word.length < closest.length ? word : closest, matchedWords[0] || '');
+      const remainingChars = closestMatch.length - t.length;
+      const bonus = Math.max(0, 4 - remainingChars); // Bonus for closer matches
+      score += 8 + bonus; 
+      strongHit = true; 
+    }
+    if (!keyExact && allowPrefix && keyStart) { 
+      const matchedWords = keywordTokens.filter((w) => w.startsWith(t));
+      const closestMatch = matchedWords.reduce((closest, word) => 
+        word.length < closest.length ? word : closest, matchedWords[0] || '');
+      const remainingChars = closestMatch.length - t.length;
+      const bonus = Math.max(0, 3 - remainingChars);
+      score += 6 + bonus; 
+      strongHit = true; 
+    }
+    
     // Avoid substring noise for short tokens like 'ice' in 'office' or 'cry' in 'crystal'
     const allowSubstring = t.length >= 4;
     if (allowSubstring && !nameExact && !nameStart && nameSub) { score += 2; strongHit = true; }
@@ -308,7 +362,7 @@ function scoreIcon(
 
     if (nameExact) { score += 6; strongHit = true; }
     if (keyExact) { score += 6; strongHit = true; }
-    const allowPrefix = t.length >= 4;
+    const allowPrefix = t.length >= 3; // Reduced from 4 to 3 for consistency
     if (!nameExact && allowPrefix && nameStart) { score += 4; strongHit = true; }
     if (!keyExact && allowPrefix && keyStart) { score += 4; strongHit = true; }
     // Intentionally avoid substring matches for expanded tokens to reduce false positives like
@@ -450,7 +504,9 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
     })
     .map((x) => x.icon);
 
-  const THRESHOLD = 30;
+  // Smart threshold: be more permissive for short queries that likely need partial matching
+  const isShortQuery = directTokens.every(t => t.length <= 3);
+  const THRESHOLD = isShortQuery ? 15 : 30; // Lower threshold for short queries
   if (scored.length >= THRESHOLD) {
     return options.limit ? scored.slice(0, options.limit) : scored;
   }

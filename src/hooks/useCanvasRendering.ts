@@ -292,9 +292,7 @@ export const useCanvasRendering = (
           break;
         }
         case 'image': {
-          // Draw selection outline for image objects - use pixel-perfect positioning
-          ctx.lineWidth = 6;
-          ctx.strokeRect(Math.round(obj.x), Math.round(obj.y), Math.round(obj.width), Math.round(obj.height));
+          // No selection outline for image objects (stamps/emojis) - just skip
           break;
         }
         case 'triangle':
