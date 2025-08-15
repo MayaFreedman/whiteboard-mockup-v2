@@ -15,22 +15,16 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
   const { objects } = useWhiteboardStore();
   const { canvasOffset } = useCanvasOffset();
   const [, forceUpdate] = useState({});
-  const lastPositionRef = useRef<string>('');
-  
-  // Force re-render when live drag positions exist for this object
-  if (getLiveDragPositions) {
-    const liveDragPositions = getLiveDragPositions();
-    const currentPosition = liveDragPositions[objectId];
-    const positionKey = currentPosition ? `${currentPosition.x},${currentPosition.y}` : '';
-    
-    if (positionKey !== lastPositionRef.current) {
-      lastPositionRef.current = positionKey;
-      // Trigger re-render on next tick
-      setTimeout(() => forceUpdate({}), 0);
-    }
-  }
   
   let obj = objects[objectId];
+  
+  // Hide resize handles while object is being dragged
+  if (getLiveDragPositions) {
+    const liveDragPositions = getLiveDragPositions();
+    if (liveDragPositions[objectId]) {
+      return null; // Don't render handles during drag
+    }
+  }
   
   // Apply live drag position if object is being dragged
   const originalPosition = { x: obj?.x, y: obj?.y };
