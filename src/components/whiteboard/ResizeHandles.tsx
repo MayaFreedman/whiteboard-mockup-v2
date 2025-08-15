@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useCanvasOffset } from '../../hooks/useCanvasOffset';
 
@@ -14,14 +14,38 @@ interface ResizeHandlesProps {
 export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveDragPositions, onResize, onResizeStart, onResizeEnd }) => {
   const { objects } = useWhiteboardStore();
   const { canvasOffset } = useCanvasOffset();
+  const [, forceUpdate] = useState({});
+  
+  // Force re-render every animation frame when live drag positions might be changing
+  useEffect(() => {
+    let animationId: number;
+    
+    const update = () => {
+      if (getLiveDragPositions) {
+        const liveDragPositions = getLiveDragPositions();
+        if (Object.keys(liveDragPositions).length > 0) {
+          forceUpdate({});
+        }
+      }
+      animationId = requestAnimationFrame(update);
+    };
+    
+    animationId = requestAnimationFrame(update);
+    
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [getLiveDragPositions]);
+  
   let obj = objects[objectId];
   
   // Apply live drag position if object is being dragged
   const originalPosition = { x: obj?.x, y: obj?.y };
   if (getLiveDragPositions) {
     const liveDragPositions = getLiveDragPositions();
-    console.log("🔄 ResizeHandles - Live drag positions:", liveDragPositions);
-    console.log("🔄 ResizeHandles - Object ID:", objectId.slice(0, 8));
+    console.log("🔄 ResizeHandles - Live drag positions:", Object.keys(liveDragPositions).length, "objects");
     
     if (liveDragPositions[objectId]) {
       console.log("🔄 ResizeHandles - Applying live position:", liveDragPositions[objectId], "Original:", originalPosition);
@@ -30,11 +54,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
         x: liveDragPositions[objectId].x,
         y: liveDragPositions[objectId].y,
       };
-    } else {
-      console.log("🔄 ResizeHandles - No live position for object:", objectId.slice(0, 8));
     }
-  } else {
-    console.log("🔄 ResizeHandles - No getLiveDragPositions function");
   }
   
   if (!obj || !obj.width || !obj.height) return null;
