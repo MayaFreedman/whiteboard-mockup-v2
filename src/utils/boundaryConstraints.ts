@@ -128,13 +128,30 @@ export function getObjectBoundingBox(obj: WhiteboardObject): { x: number; y: num
 
 /**
  * Constrains a whiteboard object's position to canvas bounds
- * High-level utility that combines position constraint with object dimension handling
+ * High-level utility that combines position constraint with object bounding box handling
  */
 export function constrainWhiteboardObjectToBounds(
   position: Position,
   obj: WhiteboardObject,
   canvasBounds: CanvasBounds
 ): Position {
-  const dimensions = getObjectDimensions(obj);
-  return constrainObjectToBounds(position, dimensions, canvasBounds);
+  // Get the actual bounding box for this object
+  const boundingBox = getObjectBoundingBox(obj);
+  
+  // Calculate the offset between the object's position and its bounding box
+  const offsetX = boundingBox.x - obj.x;
+  const offsetY = boundingBox.y - obj.y;
+  
+  // Constrain the bounding box position
+  const constrainedBoundingPos = constrainObjectToBounds(
+    { x: position.x + offsetX, y: position.y + offsetY },
+    { width: boundingBox.width, height: boundingBox.height },
+    canvasBounds
+  );
+  
+  // Return the object position that results in the constrained bounding box
+  return {
+    x: constrainedBoundingPos.x - offsetX,
+    y: constrainedBoundingPos.y - offsetY
+  };
 }
