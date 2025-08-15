@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useCanvasOffset } from '../../hooks/useCanvasOffset';
 
@@ -16,28 +16,19 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
   const { canvasOffset } = useCanvasOffset();
   const [, forceUpdate] = useState({});
   
-  // Force re-render every animation frame when live drag positions might be changing
+  // Get current live drag position for this specific object
+  const currentLiveDragPosition = useMemo(() => {
+    if (!getLiveDragPositions) return null;
+    const liveDragPositions = getLiveDragPositions();
+    return liveDragPositions[objectId] || null;
+  }, [getLiveDragPositions, objectId]);
+  
+  // Force re-render immediately when this object's live position changes
   useEffect(() => {
-    let animationId: number;
-    
-    const update = () => {
-      if (getLiveDragPositions) {
-        const liveDragPositions = getLiveDragPositions();
-        if (Object.keys(liveDragPositions).length > 0) {
-          forceUpdate({});
-        }
-      }
-      animationId = requestAnimationFrame(update);
-    };
-    
-    animationId = requestAnimationFrame(update);
-    
-    return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-    };
-  }, [getLiveDragPositions]);
+    if (currentLiveDragPosition) {
+      forceUpdate({});
+    }
+  }, [currentLiveDragPosition]);
   
   let obj = objects[objectId];
   
