@@ -173,6 +173,14 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
     // Process the image
     const { dataUrl, preview, size } = await processImageFile(file);
     
+    // Check for duplicate stamps
+    const existingStamps = getCustomStamps();
+    const isDuplicate = existingStamps.some(stamp => stamp.dataUrl === dataUrl);
+    
+    if (isDuplicate) {
+      throw new Error('This stamp has already been uploaded');
+    }
+    
     // Create stamp object
     const stamp: CustomStamp = {
       id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -184,8 +192,7 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
       size
     };
     
-    // Get existing stamps and add new one
-    const existingStamps = getCustomStamps();
+    // Add new stamp to existing ones
     const updatedStamps = [stamp, ...existingStamps];
     
     // Save with automatic cleanup
