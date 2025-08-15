@@ -27,9 +27,9 @@ export const StampPropertiesPanel: React.FC<StampPropertiesPanelProps> = ({
   }
 
   const handlePropertyChange = (property: string, value: any) => {
-    // Enforce 800px limit for stamps
-    if ((property === 'width' || property === 'height') && value > 800) {
-      value = 800;
+    // Enforce 600px limit for stamps
+    if ((property === 'width' || property === 'height') && value > 600) {
+      value = 600;
     }
     updateObject(selectedObjectId, { [property]: value }, userId);
   };
@@ -50,7 +50,7 @@ export const StampPropertiesPanel: React.FC<StampPropertiesPanelProps> = ({
               onChange={(e) => handlePropertyChange('width', parseFloat(e.target.value) || 20)}
               className="h-8 text-xs"
               min="20"
-              max="800"
+              max="600"
             />
           </div>
           <div>
@@ -63,7 +63,7 @@ export const StampPropertiesPanel: React.FC<StampPropertiesPanelProps> = ({
               onChange={(e) => handlePropertyChange('height', parseFloat(e.target.value) || 20)}
               className="h-8 text-xs"
               min="20"
-              max="800"
+              max="600"
             />
           </div>
         </div>

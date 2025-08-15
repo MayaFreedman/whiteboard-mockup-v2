@@ -153,18 +153,18 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
         newBounds.height = 10;
       }
       
-      // Maximum size constraints for stamps (800px limit)
-      if (newBounds.width > 800) {
+      // Maximum size constraints for stamps (600px limit)
+      if (newBounds.width > 600) {
         if (handleId.includes('w')) {
-          newBounds.x = startBounds.x + startBounds.width - 800;
+          newBounds.x = startBounds.x + startBounds.width - 600;
         }
-        newBounds.width = 800;
+        newBounds.width = 600;
       }
-      if (newBounds.height > 800) {
+      if (newBounds.height > 600) {
         if (handleId.includes('n')) {
-          newBounds.y = startBounds.y + startBounds.height - 800;
+          newBounds.y = startBounds.y + startBounds.height - 600;
         }
-        newBounds.height = 800;
+        newBounds.height = 600;
       }
       
       console.log('🔄 Manual resize:', { objectId, handleId, newBounds, oldBounds: startBounds });
