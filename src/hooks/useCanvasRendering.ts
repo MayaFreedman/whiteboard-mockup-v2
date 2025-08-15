@@ -259,7 +259,7 @@ export const useCanvasRendering = (
     // Text objects are excluded because they have their own dashed border highlighting
     // Skip selection highlight if object is being dragged
     const isBeingDragged = liveDragPositions && liveDragPositions[obj.id];
-    console.log(`🎯 RENDER DEBUG - Object ${obj.id}: isSelected=${isSelected}, isBeingDragged=${isBeingDragged}, liveDragPositions=`, liveDragPositions);
+    console.log(`🎯 RENDER DEBUG - Object ${obj.id}: type=${obj.type}, isSelected=${isSelected}, isBeingDragged=${!!isBeingDragged}, excludedByType=${obj.type === 'text'}`);
     if (isSelected && !isEraser && obj.type !== 'text' && !isBeingDragged) {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
