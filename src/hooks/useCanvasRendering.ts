@@ -292,7 +292,6 @@ export const useCanvasRendering = (
 
       // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text, image, or sticky-note
       // Text, image, and sticky-note objects are excluded because they have their own selection highlighting
-      console.log("🔍 Selection highlighting check:", { objType: obj?.type, isSelected, isEraser });
       if (isSelected && !isEraser && obj.type !== "text" && obj.type !== "image" && obj.type !== "sticky-note") {
         ctx.save();
         ctx.strokeStyle = "#007AFF";

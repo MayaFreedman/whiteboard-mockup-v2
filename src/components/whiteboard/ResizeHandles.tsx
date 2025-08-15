@@ -5,15 +5,28 @@ import { useCanvasOffset } from '../../hooks/useCanvasOffset';
 
 interface ResizeHandlesProps {
   objectId: string;
+  getLiveDragPositions?: () => Record<string, { x: number; y: number }>;
   onResize: (objectId: string, newBounds: { x: number; y: number; width: number; height: number }) => void;
   onResizeStart?: (objectId: string) => void;
   onResizeEnd?: (objectId: string) => void;
 }
 
-export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize, onResizeStart, onResizeEnd }) => {
+export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveDragPositions, onResize, onResizeStart, onResizeEnd }) => {
   const { objects } = useWhiteboardStore();
   const { canvasOffset } = useCanvasOffset();
-  const obj = objects[objectId];
+  let obj = objects[objectId];
+  
+  // Apply live drag position if object is being dragged
+  if (getLiveDragPositions) {
+    const liveDragPositions = getLiveDragPositions();
+    if (liveDragPositions[objectId]) {
+      obj = {
+        ...obj,
+        x: liveDragPositions[objectId].x,
+        y: liveDragPositions[objectId].y,
+      };
+    }
+  }
   
   if (!obj || !obj.width || !obj.height) return null;
 
