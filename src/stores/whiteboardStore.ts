@@ -219,7 +219,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
 
   startActionBatch: (actionType, objectId, userId = 'local') => {
     const batchId = nanoid();
-    console.log('🎯 Starting action batch:', { batchId, actionType, objectId, userId });
+    
     
     set((state) => ({
       currentBatch: {
@@ -254,21 +254,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       return;
     }
     
-    console.log('🎯 Ending action batch:', { 
-      batchId: batch.id, 
-      actionCount: batch.actions.length,
-      actionType: batch.actionType,
-      objectId: batch.objectId,
-      actionTypes: batch.actions.map(a => a.type),
-      actionIds: batch.actions.map(a => {
-        if (a.type === 'UPDATE_OBJECT' || a.type === 'DELETE_OBJECT') {
-          return a.payload.id || 'no-id';
-        } else if (a.type === 'ADD_OBJECT') {
-          return a.payload.object?.id || 'no-id';
-        }
-        return 'no-id';
-      })
-    });
+    
+    
     
     // Create a batch action that contains all the individual actions
     const batchAction: WhiteboardAction = {

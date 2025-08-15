@@ -631,35 +631,28 @@ export const useCanvasInteractions = () => {
   const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     event.preventDefault();
     
-    console.log('🖱️ POINTER DOWN: Event triggered');
-    console.log('🖱️ POINTER DOWN: Double-click protection:', doubleClickProtectionRef.current);
-    console.log('🖱️ POINTER DOWN: Text editing state:', isEditingTextRef.current);
     
     // Check double-click protection OR text editing state
     if (doubleClickProtectionRef.current || isEditingTextRef.current) {
-      console.log('🛡️ Pointer down blocked - protection:', doubleClickProtectionRef.current, 'editing:', isEditingTextRef.current);
-      return;
     }
     
     const coords = getCanvasCoordinates(event, canvas);
-    console.log('🖱️ POINTER DOWN: Canvas coords:', coords);
+    
     
     // Check if coordinates are within whiteboard bounds for drawing tools
     const activeTool = toolStore.activeTool;
-    console.log('🖱️ POINTER DOWN: Active tool:', activeTool);
+    
     
     const isDrawingTool = ['pencil', 'brush', 'eraser', 'rectangle', 'circle', 'triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart', 'text', 'stamp', 'fill'].includes(activeTool);
     
     if (isDrawingTool && !isWithinWhiteboardBounds(coords.x, coords.y)) {
-      console.log('🚫 Interaction blocked - outside whiteboard bounds:', coords, 'bounds:', activeWhiteboardSize);
       return;
     }
-
     
 
     // BLOCK TEXT TOOL if currently editing any text
     if (activeTool === 'text' && isEditingTextRef.current) {
-      console.log('📝 Text tool blocked - already editing text');
+      
       return;
     }
 

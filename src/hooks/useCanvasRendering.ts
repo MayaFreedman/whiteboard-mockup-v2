@@ -1051,13 +1051,7 @@ export const useCanvasRendering = (
 
     const now = Date.now();
     
-    console.log('🎨 redrawCanvas called:', { 
-      immediate, 
-      source, 
-      objectCount: Object.keys(objects).length,
-      selectedCount: selectedObjectIds.length,
-      hasSelectedText: selectedObjectIds.some(id => objects[id]?.type === 'text')
-    });
+    
     
     // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
     const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
@@ -1207,30 +1201,18 @@ export const useCanvasRendering = (
       }
     }
 
-    console.log('🎨 Canvas redrawn with crisp rendering:', {
-      objectCount: Object.keys(objects).length,
-      selectedCount: selectedObjectIds.length,
-      canvasSize: { width: canvas.width, height: canvas.height },
-      devicePixelRatio: window.devicePixelRatio || 1,
-      hasDrawingPreview: !!getCurrentDrawingPreview?.(),
-      hasShapePreview: !!getCurrentShapePreview?.(),
-      hasSelectionBox: !!getCurrentSelectionBox?.()?.isActive,
-      editingTextId: editingTextId || 'none',
-      cachedImages: imageCache.current.size
-    });
   }, [canvas, viewport, objects, selectedObjectIds, getCurrentDrawingPreview, getCurrentShapePreview, getCurrentSelectionBox, editingTextId, editingText, settings, toolSettings, renderAllObjects, renderDrawingPreview, renderShapePreview]);
 
   // Auto-redraw when state changes - with debugging
   useEffect(() => {
-    console.log('🎨 Canvas useEffect triggered - redrawing due to state change');
+    
     redrawCanvas(false, 'state-change');
   }, [redrawCanvas]);
   
   // Debug: Track objects changes specifically
   useEffect(() => {
-    console.log('🔍 Objects dependency changed - triggering redraw. Object count:', Object.keys(objects).length);
-    console.log('🔍 Current object IDs:', Object.keys(objects));
   }, [objects]);
+  
 
   // Cleanup throttle timeout on unmount
   useEffect(() => {
@@ -1253,7 +1235,7 @@ export const useCanvasRendering = (
       // Only trigger redraw if we're not in a manual resize operation
       if (!isManualResizing.current) {
         for (const entry of entries) {
-          console.log('📐 Canvas size changed, triggering redraw');
+          
           redrawCanvas();
         }
       } else {

@@ -25,7 +25,7 @@ export const useToolSelection = () => {
 
   // Handle auto-switching back to original tool when selection is cleared
   useEffect(() => {
-    console.log('🔄 AUTO-SWITCH CHECK: Selection length:', selectedObjectIds.length, 'wasAutoSwitched:', wasAutoSwitched, 'autoSwitchedFromTool:', autoSwitchedFromTool);
+    
     if (wasAutoSwitched && selectedObjectIds.length === 0 && autoSwitchedFromTool) {
       console.log('🔄 AUTO-SWITCH: ✅ Switching back from select to:', autoSwitchedFromTool);
       setActiveTool(autoSwitchedFromTool);
