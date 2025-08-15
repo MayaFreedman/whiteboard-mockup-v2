@@ -698,6 +698,22 @@ export const Canvas: React.FC = () => {
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     const newText = e.target.value;
+    
+    console.log('🎯 TEXT PREVIEW DEBUG:', {
+      previewText: newText,
+      previewLength: newText.length,
+      previewWidth: e.target.offsetWidth,
+      previewHeight: e.target.offsetHeight,
+      previewScrollWidth: e.target.scrollWidth,
+      previewScrollHeight: e.target.scrollHeight,
+      previewFontSize: e.target.style.fontSize,
+      previewTextAlign: e.target.style.textAlign,
+      previewWhiteSpace: e.target.style.whiteSpace,
+      previewWordWrap: e.target.style.wordWrap,
+      previewBoxSizing: e.target.style.boxSizing,
+      timestamp: Date.now()
+    });
+    
     setImmediateTextContent(newText);
 
     // Check if we're editing a sticky note for dynamic font sizing
@@ -1405,20 +1421,32 @@ export const Canvas: React.FC = () => {
             ? editingObject.data?.fontSize || 32
             : toolStore.toolSettings.fontSize || 16;
 
+          console.log('🎯 TEXTAREA DIMENSIONS DEBUG:', {
+            isEditingStickyNote,
+            editingObjectId: immediateTextObjectId,
+            editingObjectWidth: editingObject?.width,
+            editingObjectHeight: editingObject?.height,
+            calculatedWidth: isEditingStickyNote ? editingObject.width : 200,
+            calculatedHeight: isEditingStickyNote ? editingObject.height : toolStore.toolSettings.fontSize * 1.2 || 20,
+            fontSize,
+            position: immediateTextPosition,
+            timestamp: Date.now()
+          });
+
           return (
             <>
               <textarea
                 data-immediate-text="true"
                 className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
-              style={
-                {
-                  left: immediateTextPosition.x,
-                  top: immediateTextPosition.y,
-                   // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
-                   width: isEditingStickyNote ? editingObject.width : 200,
-                   height: isEditingStickyNote
-                     ? editingObject.height
-                     : toolStore.toolSettings.fontSize * 1.2 || 20,
+               style={
+                 {
+                   left: immediateTextPosition.x,
+                   top: immediateTextPosition.y,
+                    // For sticky notes, use the EXACT sticky note dimensions to match canvas rendering
+                    width: isEditingStickyNote ? editingObject.width : 200,
+                    height: isEditingStickyNote
+                      ? editingObject.height
+                      : toolStore.toolSettings.fontSize * 1.2 || 20,
                   padding: "8px",
                   fontSize: fontSize,
                   fontFamily: isEditingStickyNote

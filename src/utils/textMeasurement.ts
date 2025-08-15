@@ -21,6 +21,16 @@ export const measureText = (
   italic: boolean = false,
   maxWidth?: number
 ): TextMetrics => {
+  console.log('🎯 TEXT MEASUREMENT DEBUG:', {
+    inputText: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
+    inputLength: text.length,
+    fontSize,
+    fontFamily,
+    bold,
+    italic,
+    maxWidth,
+    timestamp: Date.now()
+  });
   // Create a temporary canvas for measurement
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -116,6 +126,16 @@ export const measureText = (
   });
   
   const totalHeight = wrappedLines.length * lineHeight;
+  
+  console.log('🎯 TEXT MEASUREMENT RESULT:', {
+    outputLines: wrappedLines,
+    outputLinesCount: wrappedLines.length,
+    maxLineWidth,
+    totalHeight,
+    lineHeight,
+    longestLine: wrappedLines.reduce((longest, current) => current.length > longest.length ? current : longest, ''),
+    timestamp: Date.now()
+  });
   
   return {
     width: maxLineWidth,
