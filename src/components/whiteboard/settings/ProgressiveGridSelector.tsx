@@ -115,11 +115,11 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
         return <div 
           key={`stamp-${index}-${item.url.substring(0, 50)}`} 
           className="relative" 
-          ref={(el) => {
+          ref={useCallback((el: HTMLDivElement | null) => {
             if (el) {
               observeElement(el, item.url);
             }
-          }}
+          }, [item.url, observeElement])}
         >
               <StampGridItem item={item} isSelected={selectedValue === item.url} onSelect={onChange} onImageLoad={() => handleImageLoaded(item.url)} />
               

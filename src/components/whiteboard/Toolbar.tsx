@@ -116,13 +116,14 @@ const useToolbarHeight = (toolbarRef: React.RefObject<HTMLDivElement>, activeToo
 /**
  * Renders a tool button with proper styling based on active state
  */
-const ToolButton: React.FC<{
+const ToolButton = React.forwardRef<HTMLButtonElement, {
   tool: ToolItem;
   isActive: boolean;
   onClick: () => void;
-}> = ({ tool, isActive, onClick }) => (
+}>(({ tool, isActive, onClick }, ref) => (
   <SimpleTooltip content={tool.label}>
     <Button
+      ref={ref}
       variant={isActive ? "default" : "ghost"}
       size="sm"
       onClick={onClick}
@@ -131,7 +132,8 @@ const ToolButton: React.FC<{
       <tool.icon className="w-4 h-4" />
     </Button>
   </SimpleTooltip>
-);
+));
+ToolButton.displayName = "ToolButton";
 
 /**
  * Renders a color button for the color palette
