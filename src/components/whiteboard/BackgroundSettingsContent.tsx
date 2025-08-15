@@ -195,7 +195,7 @@ export const BackgroundSettingsContent: React.FC = () => {
             </div>
             <div className="text-xs text-muted-foreground">
               Click to upload or drag and drop<br />
-              PNG, JPEG files • Images auto-resized to max 1280px
+              PNG, JPEG files
             </div>
           </div>
           {isBgUploading && (
