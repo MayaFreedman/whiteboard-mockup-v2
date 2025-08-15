@@ -357,9 +357,20 @@ export const Canvas: React.FC = () => {
     const isPlaceholder =
       !content || content.trim() === "" || content === "Double-click to edit";
 
-    const maxWidth = isFixedW
-      ? Math.max((textObject.width || 0) - padding, 0)
-      : undefined;
+    // Calculate maxWidth using the same logic as the textarea wrapping
+    let maxWidth = undefined;
+    if (isFixedW) {
+      maxWidth = Math.max((textObject.width || 0) - padding, 0);
+    } else {
+      // For non-fixed width text, use the same available width calculation as textarea
+      const canvasRect = canvasRef.current?.getBoundingClientRect();
+      if (canvasRect) {
+        const textScreenX = textObject.x + (canvasRect?.left || 0);
+        const availableWidth = canvasRect.width - (textScreenX - canvasRect.left) - 10;
+        maxWidth = Math.max(availableWidth - padding, 100);
+      }
+    }
+    
     const metrics = measureText(
       content || "Double-click to edit",
       textData.fontSize,
