@@ -286,9 +286,9 @@ export const Canvas: React.FC = () => {
       // Use average scale for proportional font scaling, with min/max limits
       const scale = Math.max(0.1, Math.min(5, (scaleX + scaleY) / 2));
 
-      // Calculate new font size
+      // Calculate new font size with limits
       const currentFontSize = obj.data.fontSize || 16;
-      const newFontSize = Math.round(currentFontSize * scale);
+      const newFontSize = Math.max(8, Math.min(100, Math.round(currentFontSize * scale)));
 
       // Update object with new font size AND new dimensions
       const changedWidth = newBounds.width !== obj.width;
