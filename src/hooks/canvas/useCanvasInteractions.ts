@@ -1067,7 +1067,10 @@ export const useCanvasInteractions = () => {
           console.log('🔄 Dragging movement:', {
             selectedCount: whiteboardStore.selectedObjectIds.length,
             delta: { x: deltaX, y: deltaY },
-            initialPositions: Object.keys(initialDragPositionsRef.current).length
+            initialPositions: Object.keys(initialDragPositionsRef.current).length,
+            mouseCoords: coords,
+            dragStart: dragStartRef.current,
+            withinBounds: isWithinWhiteboardBounds(coords.x, coords.y)
           });
           
           // Store current drag deltas for live rendering without creating actions
@@ -1081,6 +1084,35 @@ export const useCanvasInteractions = () => {
                 x: initialPos.x + deltaX,
                 y: initialPos.y + deltaY
               };
+              
+              // Check for boundary constraints or unusual position jumps
+              const positionJump = Math.abs(newPos.x - (liveDragPositionsRef.current[objectId]?.x || initialPos.x)) + 
+                                   Math.abs(newPos.y - (liveDragPositionsRef.current[objectId]?.y || initialPos.y));
+              
+              if (positionJump > 50) {
+                console.warn('🚨 DRAG GLITCH DETECTED - Large position jump:', {
+                  objectId: objectId.slice(0, 8),
+                  previousPos: liveDragPositionsRef.current[objectId] || initialPos,
+                  newPos,
+                  jump: positionJump,
+                  deltaX,
+                  deltaY,
+                  initialPos
+                });
+              }
+              
+              // Check if hitting viewport boundaries
+              if (newPos.x < 0 || newPos.y < 0 || 
+                  newPos.x > activeWhiteboardSize.width || 
+                  newPos.y > activeWhiteboardSize.height) {
+                console.warn('🚨 BOUNDARY COLLISION:', {
+                  objectId: objectId.slice(0, 8),
+                  newPos,
+                  boundaries: activeWhiteboardSize,
+                  delta: { x: deltaX, y: deltaY }
+                });
+              }
+              
               console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = newPos;
