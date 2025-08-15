@@ -841,19 +841,45 @@ export const useCanvasRendering = (
               ctx.fillText(line, textX, lineY);
             }
 
-            // Draw underline if enabled
+            // Draw underline if enabled - using accurate text measurements and closer positioning
             if (textData.underline) {
-              drawTextUnderlines(
-                ctx,
-                textMetrics.lines,
-                textXBase,
-                textYBase,
-                textMetrics.lineHeight,
-                textData.fontSize,
-                textData.textAlign,
-                obj.stroke || "#000000",
-                obj.width
-              );
+              ctx.save();
+              ctx.strokeStyle = obj.stroke || "#000000";
+              ctx.lineWidth = 1;
+
+              // Draw underline for each line individually
+              for (let i = 0; i < textMetrics.lines.length; i++) {
+                const lineText = textMetrics.lines[i];
+                if (lineText.length === 0) continue; // Skip empty lines
+
+                // Measure the actual text width
+                const textMeasurement = ctx.measureText(lineText);
+                const textWidth = textMeasurement.width;
+
+                // Calculate underline position based on text alignment
+                let underlineStartX = textXBase;
+                if (textData.textAlign === "center") {
+                  underlineStartX = Math.round(
+                    obj.x + obj.width / 2 - textWidth / 2
+                  );
+                } else if (textData.textAlign === "right") {
+                  underlineStartX = Math.round(
+                    obj.x + obj.width - 8 - textWidth
+                  ); // Use 8px padding
+                }
+
+                const underlineEndX = Math.round(underlineStartX + textWidth);
+                // Move underline much closer to text - only 2px below baseline instead of fontSize + 2
+                const underlineY = Math.round(
+                  textYBase + i * textMetrics.lineHeight + textData.fontSize - 2
+                );
+
+                ctx.beginPath();
+                ctx.moveTo(underlineStartX, underlineY);
+                ctx.lineTo(underlineEndX, underlineY);
+                ctx.stroke();
+              }
+              ctx.restore();
             }
 
             // Draw text box border - only show dashed border when selected (not being edited) or for placeholder
