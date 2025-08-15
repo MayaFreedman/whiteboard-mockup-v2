@@ -13,14 +13,26 @@ export interface CustomStampUploadHandle {
 export const CustomStampUpload = forwardRef<CustomStampUploadHandle, CustomStampUploadProps>(({
   onStampAdded
 }, ref) => {
+  console.log('🔄 CustomStampUpload component rendering...');
+  
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(0); // Force re-render of file input
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  console.log('📋 Component state - isUploading:', isUploading, 'dragActive:', dragActive);
+  
   useImperativeHandle(ref, () => ({
-    openFileDialog: () => fileInputRef.current?.click()
+    openFileDialog: () => {
+      console.log('🎯 openFileDialog called, input ref:', fileInputRef.current);
+      fileInputRef.current?.click();
+    }
   }), []);
+  
   const supported = isCustomStampsSupported();
   const storageInfo = getStorageInfo();
+  
+  console.log('💾 Storage info:', storageInfo);
   const handleFileUpload = useCallback(async (files: FileList | File[]) => {
     console.log('🚀 handleFileUpload called with files:', files.length);
     if (!files.length) {
@@ -38,6 +50,10 @@ export const CustomStampUpload = forwardRef<CustomStampUploadHandle, CustomStamp
       console.log('✅ addCustomStamp completed');
       toast.success(`"${file.name}" added to custom stamps`);
       onStampAdded?.();
+      
+      // Reset the file input to allow re-uploading the same file
+      console.log('🔄 Resetting file input...');
+      setFileInputKey(prev => prev + 1);
     } catch (error) {
       console.error('❌ Error in handleFileUpload:', error);
       const message = error instanceof Error ? error.message : 'Failed to upload stamp';
@@ -82,7 +98,7 @@ export const CustomStampUpload = forwardRef<CustomStampUploadHandle, CustomStamp
   return <div className="space-y-3">
       {/* Upload Area */}
       <div className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${dragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
-        <input type="file" accept="image/png,image/jpeg,image/jpg" onChange={handleInputChange} disabled={isUploading} ref={fileInputRef} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" />
+        <input key={fileInputKey} type="file" accept="image/png,image/jpeg,image/jpg" onChange={handleInputChange} disabled={isUploading} ref={fileInputRef} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" />
         
         <div className="flex flex-col items-center gap-2 text-center">
           <Upload className="w-6 h-6 text-muted-foreground" />
