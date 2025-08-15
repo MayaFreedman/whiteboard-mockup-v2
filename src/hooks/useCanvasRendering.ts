@@ -789,7 +789,16 @@ export const useCanvasRendering = (
           }
 
           // Selection border - skip if object is being dragged
+          console.log('🗒️ Sticky Note Selection Border Check:', {
+            objectId: obj.id,
+            isSelected,
+            isBeingDragged: !!isBeingDragged,
+            liveDragPositionsValue: isBeingDragged,
+            willShowBorder: isSelected && !isBeingDragged
+          });
+          
           if (isSelected && !isBeingDragged) {
+            console.log('🔵 Drawing sticky note selection border for:', obj.id);
             ctx.save();
             ctx.strokeStyle = '#007AFF';
             ctx.lineWidth = 3;
