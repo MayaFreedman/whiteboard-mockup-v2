@@ -188,7 +188,6 @@ export const useCanvasInteractions = () => {
    * Triggers immediate text editing mode at the specified position
    */
   const triggerImmediateTextEditing = useCallback((coords: { x: number; y: number }) => {
-    console.log('📝 Triggering immediate text editing at:', coords);
     
     // Clear any existing timer
     if (textClickTimerRef.current) {
@@ -436,13 +435,13 @@ export const useCanvasInteractions = () => {
    * Handles fill tool click - fills the clicked shape with the current stroke color
    */
   const handleFillClick = useCallback((coords: { x: number; y: number }) => {
-    console.log('🎨 Fill tool clicked at:', coords);
+    
     
     const objectId = findObjectAt(coords.x, coords.y);
     if (!objectId) {
       // No shape under cursor: set background color using current stroke color
       const fillColor = toolStore.toolSettings.strokeColor;
-      console.log('🎨 No object found to fill; setting background to:', fillColor, 'at', coords);
+      
       whiteboardStore.updateSettings({ backgroundColor: fillColor }, userId);
       if (redrawCanvasRef.current) {
         redrawCanvasRef.current();
@@ -452,7 +451,7 @@ export const useCanvasInteractions = () => {
     
     const obj = whiteboardStore.objects[objectId];
     if (!obj) {
-      console.log('🎨 Object not found in store:', objectId);
+      
       return;
     }
     
@@ -513,12 +512,12 @@ export const useCanvasInteractions = () => {
 
       // NOW WITH USER ID
       const objectId = whiteboardStore.addObject(drawingObject, userId);
-      console.log('✏️ Auto-saved drawing on mouse leave:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
+      
     }
     
     if (activeTool === 'eraser' && isDrawingRef.current) {
       handleEraserEnd(redrawCanvasRef.current || undefined);
-      console.log('🧹 Auto-ended erasing on mouse leave');
+      
     }
 
     // Handle shape completion
@@ -545,7 +544,7 @@ export const useCanvasInteractions = () => {
         if (shapeObject) {
           // NOW WITH USER ID
           const objectId = whiteboardStore.addObject(shapeObject, userId);
-          console.log('🔷 Auto-saved shape on mouse leave:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
+          
         }
       }
     }
@@ -569,7 +568,7 @@ export const useCanvasInteractions = () => {
         );
 
         const objectId = whiteboardStore.addObject(textObject, userId);
-        console.log('📝 Auto-saved text on mouse leave:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
+        
       }
     }
     
@@ -621,7 +620,7 @@ export const useCanvasInteractions = () => {
    */
   const handleMouseLeave = useCallback(() => {
     if (isDrawingRef.current || isDraggingRef.current) {
-      console.log('🖱️ Mouse left canvas - ending current interaction');
+      
       endCurrentDrawing();
     }
   }, [endCurrentDrawing]);
@@ -649,7 +648,7 @@ export const useCanvasInteractions = () => {
       return;
     }
 
-    console.log('🖱️ Pointer down:', { tool: activeTool, coords });
+    
 
     // BLOCK TEXT TOOL if currently editing any text
     if (activeTool === 'text' && isEditingTextRef.current) {
@@ -1100,7 +1099,7 @@ export const useCanvasInteractions = () => {
   const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const activeTool = toolStore.activeTool;
 
-    console.log('🖱️ Pointer up:', { tool: activeTool, drawing: isDrawingRef.current });
+    
 
     switch (activeTool) {
       case 'select': {
@@ -1386,7 +1385,7 @@ export const useCanvasInteractions = () => {
    * Clears all text interaction state to prevent phantom text editor
    */
   const clearTextInteractionState = useCallback(() => {
-    console.log('🧹 Clearing text interaction state to prevent phantom editor');
+    
     
     // Clear text click timer
     if (textClickTimerRef.current) {
@@ -1409,7 +1408,7 @@ export const useCanvasInteractions = () => {
       pathStartRef.current = null;
     }
     
-    console.log('🧹 Text interaction state cleared');
+    
   }, [toolStore.activeTool]);
 
   return {

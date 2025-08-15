@@ -160,12 +160,12 @@ const ActionButtons: React.FC = () => {
   const { clearCanvas } = useWhiteboardStore();
   
   const handleUndo = () => {
-    console.log('🎯 Toolbar undo clicked for user:', userId);
+    
     undo(userId);
   };
   
   const handleRedo = () => {
-    console.log('🎯 Toolbar redo clicked for user:', userId);
+    
     redo(userId);
   };
 
@@ -212,7 +212,7 @@ const ActionButtons: React.FC = () => {
     }
   };
   const handleClearCanvas = () => {
-    console.log('🗑️ Toolbar clear canvas clicked for user:', userId);
+    
     clearCanvas(userId);
   };
 

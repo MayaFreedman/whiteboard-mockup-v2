@@ -143,13 +143,6 @@ export const Canvas: React.FC = () => {
 
   // Set callback for immediate text editing
   setImmediateTextTrigger((coords, existingObjectId?) => {
-    console.log(
-      "📝 Immediate text editing triggered at canvas coords:",
-      coords,
-      "existingObjectId:",
-      existingObjectId
-    );
-
     // Convert canvas-relative coordinates to screen coordinates
     // for textarea positioning
     const containerElement = containerRef.current;
@@ -173,54 +166,16 @@ export const Canvas: React.FC = () => {
       y: coords.y + whiteboardRect.top - 60, // Moved down more to align with cursor
     };
 
-    console.log("📝 Canvas coords:", coords);
-    console.log("📝 Whiteboard rect:", whiteboardRect);
-    console.log("📝 Final screen coords:", screenCoords);
-
     // If we have an existing object ID (sticky note), use that instead of creating a new text object
     if (existingObjectId) {
-      console.log(
-        "🎯 STARTING IMMEDIATE TEXT EDIT - existingObjectId:",
-        existingObjectId
-      );
       const existingObject = objects[existingObjectId];
       if (existingObject && existingObject.type === "sticky-note") {
-        console.log(
-          "🗒️ Setting up immediate editing for existing sticky note:",
-          existingObjectId.slice(0, 8)
-        );
-
         // Position textarea to align with sticky note boundaries
         // CSS text alignment handles centering the text content
         const stickyScreenCoords = {
           x: existingObject.x + whiteboardRect.left,
           y: existingObject.y + whiteboardRect.top - 65,
         };
-
-        console.log(
-          "🗒️ TEXTAREA COORDS - objectCoords x:",
-          existingObject.x,
-          "y:",
-          existingObject.y
-        );
-        console.log(
-          "🗒️ TEXTAREA COORDS - whiteboardRect left:",
-          whiteboardRect.left,
-          "top:",
-          whiteboardRect.top
-        );
-        console.log(
-          "🗒️ TEXTAREA COORDS - finalScreenCoords x:",
-          stickyScreenCoords.x,
-          "y:",
-          stickyScreenCoords.y
-        );
-        console.log(
-          "🗒️ TEXTAREA COORDS - canvas text center would be x:",
-          existingObject.x + existingObject.width / 2,
-          "y:",
-          existingObject.y + existingObject.height / 2
-        );
 
         setIsImmediateTextEditing(true);
         setImmediateTextPosition(stickyScreenCoords);
@@ -236,7 +191,6 @@ export const Canvas: React.FC = () => {
           ) as HTMLTextAreaElement;
           if (textarea) {
             textarea.focus();
-            console.log("🗒️ Focused sticky note immediate text textarea");
           }
         }, 50);
 
@@ -275,7 +229,6 @@ export const Canvas: React.FC = () => {
     };
 
     const objectId = addObject(textObject, userId);
-    console.log("📝 Created immediate text object:", objectId.slice(0, 8));
 
     setIsImmediateTextEditing(true);
     setImmediateTextPosition(screenCoords);
@@ -291,7 +244,6 @@ export const Canvas: React.FC = () => {
       ) as HTMLTextAreaElement;
       if (textarea) {
         textarea.focus();
-        console.log("📝 Focused immediate text textarea");
       }
     }, 50);
   });
@@ -519,7 +471,7 @@ export const Canvas: React.FC = () => {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    console.log("🖱️ Double-click coordinates:", { x, y });
+    
 
     // Find text object OR sticky note at click position using improved hit detection
     const textObject = Object.entries(objects).find(([id, obj]) => {
@@ -614,7 +566,7 @@ export const Canvas: React.FC = () => {
 
     if (textObject) {
       const [objectId, obj] = textObject;
-      console.log("🖱️ Found text object to edit:", objectId.slice(0, 8));
+      
 
       setEditingTextId(objectId);
 
@@ -643,7 +595,7 @@ export const Canvas: React.FC = () => {
       }
     } else if (stickyNoteObject) {
       const [objectId, obj] = stickyNoteObject;
-      console.log("🗒️ Found sticky note to edit:", objectId.slice(0, 8));
+      
 
       // For sticky notes, trigger immediate text editing using the existing system
       const coords = { x: x, y: y };

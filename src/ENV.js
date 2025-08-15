@@ -16,7 +16,7 @@ export const ENV = {
 
 export function getConfigurationServerURL() {
   const domain = window.location.hostname;
-  console.log("[Whiteboard] domain", domain);
+  
   let server = ENV.URL[domain];
   if (!server) {
     console.warn(
@@ -25,6 +25,6 @@ export function getConfigurationServerURL() {
     server = ENV.DEFAULT_URL;
   }
 
-  console.log("[Whiteboard] colyseus server ", server);
+  
   return server;
 }
