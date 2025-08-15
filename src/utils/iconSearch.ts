@@ -169,7 +169,7 @@ function expandQuery(tokens: string[]): { expanded: string[]; concept: string[];
       negVals.forEach((nv) => tokenize(nv).forEach((tok) => negativeSet.add(tok)));
     }
 
-    // Concepts
+    // Concepts - but make color expansions one-way only
     const conceptVals = SEARCH_CONCEPTS[t];
     if (conceptVals && conceptVals.length) {
       conceptVals.forEach((cv) => {
@@ -179,6 +179,23 @@ function expandQuery(tokens: string[]): { expanded: string[]; concept: string[];
           conceptSet.add(tok);
         });
       });
+    }
+
+    // Prevent reverse color expansion: if searching for an item that appears in a color concept,
+    // don't expand back to include all other items in that color
+    const COLOR_CONCEPT_KEYS = new Set(['red', 'green', 'blue', 'yellow', 'purple', 'pink', 'white', 'black', 'brown', 'orange', 'orange_color', 'grey', 'gray']);
+    
+    // Check if this token appears in any color concept arrays, but don't reverse-expand
+    for (const [colorKey, colorItems] of Object.entries(SEARCH_CONCEPTS)) {
+      if (COLOR_CONCEPT_KEYS.has(colorKey) && colorItems.includes(t)) {
+        // Found the token in a color concept, but don't add other color items
+        // Only add the color name itself if it's relevant
+        if (t.length >= 4) { // Only for longer tokens to avoid noise
+          add(colorKey);
+          conceptSet.add(colorKey);
+        }
+        break; // Stop after first color match to avoid multiple expansions
+      }
     }
   });
 
