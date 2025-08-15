@@ -631,6 +631,10 @@ export const useCanvasInteractions = () => {
   const handlePointerDown = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     event.preventDefault();
     
+    console.log('🖱️ POINTER DOWN: Event triggered');
+    console.log('🖱️ POINTER DOWN: Double-click protection:', doubleClickProtectionRef.current);
+    console.log('🖱️ POINTER DOWN: Text editing state:', isEditingTextRef.current);
+    
     // Check double-click protection OR text editing state
     if (doubleClickProtectionRef.current || isEditingTextRef.current) {
       console.log('🛡️ Pointer down blocked - protection:', doubleClickProtectionRef.current, 'editing:', isEditingTextRef.current);
@@ -638,9 +642,12 @@ export const useCanvasInteractions = () => {
     }
     
     const coords = getCanvasCoordinates(event, canvas);
+    console.log('🖱️ POINTER DOWN: Canvas coords:', coords);
     
     // Check if coordinates are within whiteboard bounds for drawing tools
     const activeTool = toolStore.activeTool;
+    console.log('🖱️ POINTER DOWN: Active tool:', activeTool);
+    
     const isDrawingTool = ['pencil', 'brush', 'eraser', 'rectangle', 'circle', 'triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart', 'text', 'stamp', 'fill'].includes(activeTool);
     
     if (isDrawingTool && !isWithinWhiteboardBounds(coords.x, coords.y)) {
@@ -796,28 +803,48 @@ export const useCanvasInteractions = () => {
       }
 
       case 'sticky-note': {
+        console.log('🗒️ STICKY NOTE: Pointer down triggered at:', coords);
+        console.log('🗒️ STICKY NOTE: Current tool:', toolStore.activeTool);
+        console.log('🗒️ STICKY NOTE: Checking text editing state:', isEditingTextRef.current);
+        
         // Block if currently editing text to avoid conflicts
         if (isEditingTextRef.current) {
-          console.log('🗒️ Sticky note creation blocked - currently editing text');
+          console.log('🗒️ STICKY NOTE: Blocked - currently editing text');
           return;
         }
 
-        // Check if we're clicking on an existing sticky note for dragging
+        // Check if we're clicking on an existing sticky note for auto-select
+        console.log('🗒️ STICKY NOTE: Looking for object at coords:', coords);
         const clickedObjectId = findObjectAt(coords.x, coords.y);
+        console.log('🗒️ STICKY NOTE: Found object ID:', clickedObjectId);
+        
         const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
+        console.log('🗒️ STICKY NOTE: Found object:', clickedObject ? { id: clickedObjectId, type: clickedObject.type } : 'null');
+        
         const isClickingOnStickyNote = clickedObject && clickedObject.type === 'sticky-note';
+        console.log('🗒️ STICKY NOTE: Is clicking on sticky note?', isClickingOnStickyNote);
         
         if (isClickingOnStickyNote) {
-          console.log('🗒️ Clicked on existing sticky note - auto-switching to select tool:', clickedObjectId.slice(0, 8));
+          console.log('🗒️ STICKY NOTE: ✅ DETECTED CLICK ON STICKY NOTE - auto-switching to select tool:', clickedObjectId.slice(0, 8));
+          console.log('🗒️ STICKY NOTE: Current auto-switch state before:', { 
+            wasAutoSwitched: toolStore.wasAutoSwitched, 
+            autoSwitchedFromTool: toolStore.autoSwitchedFromTool 
+          });
           
           // Auto-switch to select tool and track the original tool
           toolStore.setAutoSwitchState('sticky-note', true);
+          console.log('🗒️ STICKY NOTE: Set auto-switch state to sticky-note');
+          
           toolStore.setActiveTool('select');
+          console.log('🗒️ STICKY NOTE: Changed tool to select');
           
           // Select the sticky note
           whiteboardStore.selectObjects([clickedObjectId], userId);
-          console.log('🔄 Auto-switched from sticky-note to select tool');
+          console.log('🗒️ STICKY NOTE: Selected object:', clickedObjectId.slice(0, 8));
+          console.log('🔄 STICKY NOTE: ✅ Auto-switched from sticky-note to select tool');
           return;
+        } else {
+          console.log('🗒️ STICKY NOTE: Not clicking on sticky note - creating new one');
         }
 
         // Create new sticky note
