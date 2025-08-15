@@ -17,16 +17,10 @@ export const SEARCH_CONCEPTS: Readonly<Record<string, string[]>> =
     santa: ["christmas", "xmas"],
     xmas: ["christmas", "santa"],
 
-    // Time and calendar related
-    monday: ["calendar", "week", "day", "time", "mon"],
-    money: ["dollar", "coin", "bank", "currency", "cash", "mon"],
-    calendar: ["date", "day", "week", "month", "year", "time", "schedule", "cal"],
+    // Time and calendar related  
+    monday: ["calendar", "week", "day", "time"],
+    calendar: ["date", "day", "week", "month", "year", "time", "schedule"],
     clock: ["time", "hour", "minute", "watch", "timer"],
-    
-    // Common abbreviations and short forms
-    do: ["dog", "done", "check", "task"],
-    mon: ["monday", "money", "monster", "monkey"],
-    cal: ["calendar", "call", "calculation"],
 
     // Water & weather related
     water: [

@@ -51,13 +51,11 @@ const SYNONYMS: Record<string, string[]> = {
   bird: ['avian', 'birdie'],
   fish: ['seafood'],
   
-  // Enhanced abbreviations and casual terms
-  do: ['dog', 'done', 'doing'],
-  mon: ['monday', 'money', 'monster', 'monkey'],
-  cal: ['calendar', 'call', 'calculation'],
+  // Safer abbreviations - only add when they're unlikely to cause substring issues
+  mon: ['monday', 'money', 'monster', 'monkey'], // only expand 'mon' as full word
+  cal: ['calendar', 'call'],
   app: ['apple', 'application'],
   car: ['automobile', 'vehicle'],
-  biz: ['business', 'briefcase'],
   pic: ['picture', 'photo', 'camera'],
   vid: ['video', 'television'],
   msg: ['message', 'mail', 'envelope'],
@@ -65,36 +63,27 @@ const SYNONYMS: Record<string, string[]> = {
   mic: ['microphone', 'music'],
   cam: ['camera', 'photo'],
   
-  // Single letter mappings
-  b: ['bee', 'ball', 'blue', 'bear', 'bird', 'book'],
-  c: ['cat', 'car', 'cup', 'cake', 'clock'],
+  // Single letter mappings - be very selective to avoid noise
+  b: ['bee', 'ball', 'blue', 'bear'],
+  c: ['cat', 'car', 'cup', 'cake'],
   d: ['dog', 'duck', 'diamond'],
   f: ['fish', 'fire', 'flag', 'flower'],
-  g: ['green', 'gift', 'game', 'guitar'],
+  g: ['green', 'gift', 'game'],
   h: ['heart', 'house', 'hand', 'hat'],
-  k: ['key', 'kiss', 'kitchen'],
-  l: ['love', 'light', 'leaf', 'lock'],
+  k: ['key', 'kiss'],
+  l: ['love', 'light', 'leaf'],
   m: ['money', 'mouse', 'music', 'moon'],
-  n: ['night', 'nose', 'number'],
-  p: ['phone', 'pig', 'pizza', 'plane'],
-  r: ['red', 'rose', 'rocket', 'ring'],
+  p: ['phone', 'pig', 'pizza'],
+  r: ['red', 'rose', 'rocket'],
   s: ['sun', 'star', 'smile', 'snow'],
-  t: ['tree', 'time', 'telephone', 'tiger'],
-  u: ['umbrella', 'up', 'unlock'],
-  w: ['water', 'wind', 'watch', 'wave'],
+  t: ['tree', 'time', 'telephone'],
   
   // Time-related
-  time: ['clock', 'watch', 'calendar', 'timer'],
-  day: ['calendar', 'sun', 'time'],
-  week: ['calendar', 'seven'],
-  month: ['calendar', 'thirty'],
-  year: ['calendar', 'twelve'],
+  time: ['clock', 'watch', 'calendar'],
   
-  // Common abbreviations
+  // Common word expansions
   ice: ['ice cream', 'snowflake', 'cold'],
-  hot: ['fire', 'sun', 'pepper'],
-  big: ['large', 'elephant', 'whale'],
-  small: ['tiny', 'ant', 'mouse']
+  hot: ['fire', 'sun', 'pepper']
 };
 
 const GENERIC_TERMS = new Set<string>([
