@@ -260,6 +260,16 @@ export const useCanvasRendering = (
     // Skip selection highlight if object is being dragged
     const isBeingDragged = liveDragPositions && liveDragPositions[obj.id];
     
+    console.log('🎨 Canvas Selection Debug:', {
+      objectId: obj.id,
+      isSelected,
+      isEraser,
+      objType: obj.type,
+      isBeingDragged: !!isBeingDragged,
+      liveDragPositionsKeys: liveDragPositions ? Object.keys(liveDragPositions) : [],
+      willShowSelection: isSelected && !isEraser && obj.type !== 'text' && !isBeingDragged
+    });
+    
     if (isSelected && !isEraser && obj.type !== 'text' && !isBeingDragged) {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
