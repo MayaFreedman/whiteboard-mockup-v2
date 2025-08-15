@@ -23,7 +23,7 @@ export const useCanvasInteractions = () => {
   const { userId } = useUser();
   const { activeWhiteboardSize } = useScreenSizeStore();
   const { getCanvasCoordinates } = useCanvasCoordinates();
-  const { findObjectAt, findObjectsInSelectionBox } = useObjectDetection();
+  const { findObjectAt, findObjectsInSelectionBox } = useObjectDetection(() => liveDragPositionsRef.current);
   
   // Initialize action batching with optimized settings
   const { startBatch, endBatch, checkBatchSize } = useActionBatching({

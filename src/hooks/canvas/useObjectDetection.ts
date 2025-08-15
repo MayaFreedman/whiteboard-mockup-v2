@@ -15,8 +15,22 @@ import { pathToPoints } from '../../utils/path/pathConversion';
 /**
  * Hook for detecting objects at coordinates with improved accuracy
  */
-export const useObjectDetection = () => {
+export const useObjectDetection = (getLiveDragPositions?: () => Record<string, { x: number; y: number }>) => {
   const whiteboardStore = useWhiteboardStore();
+  
+  /**
+   * Gets the effective position of an object, accounting for live drag positions
+   */
+  const getEffectiveObjectPosition = useCallback((obj: WhiteboardObject, objectId: string) => {
+    const liveDragPositions = getLiveDragPositions?.() || {};
+    const livePosition = liveDragPositions[objectId];
+    
+    if (livePosition) {
+      return { ...obj, x: livePosition.x, y: livePosition.y };
+    }
+    
+    return obj;
+  }, [getLiveDragPositions]);
 
   /**
    * Checks if a point is inside a path using multiple detection methods
@@ -192,7 +206,10 @@ export const useObjectDetection = () => {
     
     // Check objects from top to bottom (reverse order for z-index)
     for (let i = objects.length - 1; i >= 0; i--) {
-      const [id, obj] = objects[i];
+      const [id, originalObj] = objects[i];
+      
+      // Get the effective object position (accounting for live drag)
+      const obj = getEffectiveObjectPosition(originalObj, id);
       
       // Skip eraser objects
       if (obj.data?.isEraser) {
@@ -317,7 +334,7 @@ export const useObjectDetection = () => {
     
     console.log('❌ No object found at coordinates');
     return null;
-  }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInText, isPointInImage, isPointInComplexShape]);
+  }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInText, isPointInImage, isPointInComplexShape, getEffectiveObjectPosition]);
 
   /**
    * Checks if an object intersects with a selection box
@@ -360,7 +377,10 @@ export const useObjectDetection = () => {
     
     console.log('🎯 Finding objects in selection box:', box);
     
-    for (const [id, obj] of objects) {
+    for (const [id, originalObj] of objects) {
+      // Get the effective object position (accounting for live drag)
+      const obj = getEffectiveObjectPosition(originalObj, id);
+      
       // Skip eraser objects
       if (obj.data?.isEraser) {
         continue;
@@ -378,7 +398,7 @@ export const useObjectDetection = () => {
     
     console.log('🎯 Found objects in selection box:', selectedIds.length);
     return selectedIds;
-  }, [whiteboardStore.objects, isObjectInSelectionBox]);
+  }, [whiteboardStore.objects, isObjectInSelectionBox, getEffectiveObjectPosition]);
 
   return {
     findObjectAt,
