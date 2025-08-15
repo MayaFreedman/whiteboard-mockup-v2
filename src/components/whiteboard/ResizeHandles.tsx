@@ -21,9 +21,12 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
   // Hide resize handles while object is being dragged
   if (getLiveDragPositions) {
     const liveDragPositions = getLiveDragPositions();
+    const liveDragKeys = Object.keys(liveDragPositions);
     console.log("🔍 ResizeHandles debug:", {
       objectId: objectId.slice(0, 8),
-      liveDragKeys: Object.keys(liveDragPositions),
+      fullObjectId: objectId,
+      liveDragKeys: liveDragKeys.map(id => id.slice(0, 8)),
+      fullLiveDragKeys: liveDragKeys,
       hasThisObject: !!liveDragPositions[objectId],
       position: liveDragPositions[objectId]
     });
