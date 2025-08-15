@@ -732,20 +732,6 @@ export const Canvas: React.FC = () => {
   ) => {
     const newText = e.target.value;
     
-    console.log('🎯 TEXT PREVIEW DEBUG:', {
-      previewText: newText,
-      previewLength: newText.length,
-      previewWidth: e.target.offsetWidth,
-      previewHeight: e.target.offsetHeight,
-      previewScrollWidth: e.target.scrollWidth,
-      previewScrollHeight: e.target.scrollHeight,
-      previewFontSize: e.target.style.fontSize,
-      previewTextAlign: e.target.style.textAlign,
-      previewWhiteSpace: e.target.style.whiteSpace,
-      previewWordWrap: e.target.style.wordWrap,
-      previewBoxSizing: e.target.style.boxSizing,
-      timestamp: Date.now()
-    });
     
     // Calculate the available width for text wrapping - use canvas width for no early wrapping
     const editingObject = immediateTextObjectId ? objects[immediateTextObjectId] : null;
@@ -821,8 +807,8 @@ export const Canvas: React.FC = () => {
       const availableWidth =
         canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
 
-      // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
-      const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
+      // Use same 16px padding as canvas text rendering for consistency
+      const textPadding = 16; // Match canvas rendering padding (8px left + 8px right)
       const effectiveWidth = availableWidth - textPadding;
       textarea.style.width = effectiveWidth + "px";
       textarea.style.maxWidth = effectiveWidth + "px";
@@ -841,15 +827,19 @@ export const Canvas: React.FC = () => {
       textarea.style.height =
         Math.max(wrappedMetrics.height, fontSize * 1.2) + "px";
 
-      // Update canvas object - only update content, not dimensions during typing to prevent cursor jumps
+      // Update canvas object with real-time content and dimensions during typing
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
         const textObject = objects[immediateTextObjectId];
+        const newWidth = Math.max(wrappedMetrics.width + 16, 100); // Add padding back for object width
+        const newHeight = Math.max(wrappedMetrics.height, fontSize * 1.2);
+        
         updateObject(immediateTextObjectId, {
           data: {
             ...textObject.data,
             content: newText || "",
           },
-          // Don't update width/height during active typing to prevent cursor position jumps
+          width: newWidth,
+          height: newHeight,
         });
       }
     } else {
@@ -879,8 +869,8 @@ export const Canvas: React.FC = () => {
       }
     }
 
-    // Don't redraw immediately during active typing to prevent multiple renders
-    // redrawCanvas();
+    // Redraw canvas immediately to keep preview in sync with textarea
+    redrawCanvas();
   };
 
   // Handle immediate text editing completion
@@ -899,15 +889,9 @@ export const Canvas: React.FC = () => {
           },
         });
 
-        // Only auto-resize for regular text objects created via immediate editing
-        // DO NOT auto-resize sticky notes - they have fixed dimensions
+        // For regular text objects, ensure final dimensions are correct (no setTimeout delay)
         if (currentObject.type === "text") {
-          setTimeout(() => {
-            const updatedObject = objects[immediateTextObjectId];
-            if (updatedObject) {
-              updateTextBounds(updatedObject, finalText);
-            }
-          }, 0);
+          updateTextBounds(currentObject, finalText);
         }
       } else {
         // Delete the object if no text was entered
@@ -1461,18 +1445,6 @@ export const Canvas: React.FC = () => {
             ? editingObject.data?.fontSize || 32
             : toolStore.toolSettings.fontSize || 16;
 
-          console.log('🎯 TEXTAREA RENDER DEBUG:', {
-            isEditingStickyNote,
-            editingObjectId: immediateTextObjectId,
-            editingObjectWidth: editingObject?.width,
-            editingObjectHeight: editingObject?.height,
-            calculatedWidth: isEditingStickyNote ? editingObject.width : 800,
-            calculatedHeight: isEditingStickyNote ? editingObject.height : toolStore.toolSettings.fontSize * 1.2 || 20,
-            fontSize,
-            position: immediateTextPosition,
-            currentContent: immediateTextContent,
-            timestamp: Date.now()
-          });
 
           return (
             <>
@@ -1483,12 +1455,12 @@ export const Canvas: React.FC = () => {
                   {
                     left: immediateTextPosition.x,
                     top: immediateTextPosition.y,
-                    // Calculate available width for proper text wrapping
+                    // Calculate available width for proper text wrapping - match text measurement
                     width: isEditingStickyNote ? editingObject.width : (() => {
                       const canvasRect = canvasRef.current?.getBoundingClientRect();
                       if (canvasRect) {
                         const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10;
-                        return Math.max(availableWidth - 8, 100) + "px";
+                        return Math.max(availableWidth - 16, 100) + "px"; // Use 16px padding to match text measurement
                       }
                       return "400px";
                     })(),
@@ -1563,28 +1535,6 @@ export const Canvas: React.FC = () => {
                onKeyDown={handleImmediateTextKeyDown}
                placeholder={isEditingStickyNote ? "" : "Type here..."}
                autoFocus
-               onInput={(e) => {
-                 const target = e.target as HTMLTextAreaElement;
-                 console.log('🎯 TEXTAREA INPUT EVENT:', {
-                   value: target.value,
-                   clientWidth: target.clientWidth,
-                   scrollWidth: target.scrollWidth,
-                   offsetWidth: target.offsetWidth,
-                   clientHeight: target.clientHeight,
-                   scrollHeight: target.scrollHeight,
-                   offsetHeight: target.offsetHeight,
-                   computedStyle: {
-                     width: getComputedStyle(target).width,
-                     height: getComputedStyle(target).height,
-                     fontSize: getComputedStyle(target).fontSize,
-                     fontFamily: getComputedStyle(target).fontFamily,
-                     whiteSpace: getComputedStyle(target).whiteSpace,
-                     wordWrap: getComputedStyle(target).wordWrap,
-                     overflowWrap: getComputedStyle(target).overflowWrap
-                   },
-                   timestamp: Date.now()
-                 });
-               }}
              />
             </>
           );
