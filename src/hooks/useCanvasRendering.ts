@@ -1053,9 +1053,11 @@ export const useCanvasRendering = (
     
     
     
-    // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active)
+    // Always redraw immediately if explicitly requested OR if we have a drawing preview (drawing is active) OR if we have live drag positions
     const hasDrawingPreview = getCurrentDrawingPreview && getCurrentDrawingPreview();
-    const shouldRedrawImmediately = immediate || hasDrawingPreview;
+    const liveDragPositions = getLiveDragPositions && getLiveDragPositions();
+    const hasActiveDrag = liveDragPositions && Object.keys(liveDragPositions).length > 0;
+    const shouldRedrawImmediately = immediate || hasDrawingPreview || hasActiveDrag;
     
     // If immediate redraw is requested, drawing preview exists (drawing is active), or enough time has passed, redraw now
     if (shouldRedrawImmediately || now - lastRedrawTime.current >= REDRAW_THROTTLE_MS) {
@@ -1080,7 +1082,7 @@ export const useCanvasRendering = (
         }, timeUntilNextRedraw);
       }
     }
-  }, [canvas, viewport, objects, selectedObjectIds, settings, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText]);
+  }, [canvas, viewport, objects, selectedObjectIds, settings, getCurrentDrawingPreview, getCurrentShapePreview, editingTextId, editingText, getLiveDragPositions]);
 
   const performRedraw = useCallback(() => {
     if (!canvas) return;
