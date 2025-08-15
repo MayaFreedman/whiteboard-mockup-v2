@@ -22,23 +22,38 @@ export const CustomStampUpload = forwardRef<CustomStampUploadHandle, CustomStamp
   const supported = isCustomStampsSupported();
   const storageInfo = getStorageInfo();
   const handleFileUpload = useCallback(async (files: FileList | File[]) => {
-    if (!files.length) return;
+    console.log('🚀 handleFileUpload called with files:', files.length);
+    if (!files.length) {
+      console.log('❌ No files provided');
+      return;
+    }
+    
     const file = files[0];
+    console.log('📁 Processing file:', file.name, 'type:', file.type, 'size:', file.size);
+    
     setIsUploading(true);
     try {
+      console.log('🔄 Calling addCustomStamp...');
       await addCustomStamp(file);
+      console.log('✅ addCustomStamp completed');
       toast.success(`"${file.name}" added to custom stamps`);
       onStampAdded?.();
     } catch (error) {
+      console.error('❌ Error in handleFileUpload:', error);
       const message = error instanceof Error ? error.message : 'Failed to upload stamp';
       toast.error(message);
     } finally {
+      console.log('🏁 Upload process finished');
       setIsUploading(false);
     }
   }, [onStampAdded]);
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('📤 handleInputChange called, files:', e.target.files?.length || 0);
     if (e.target.files) {
+      console.log('📂 Files found, calling handleFileUpload');
       handleFileUpload(e.target.files);
+    } else {
+      console.log('❌ No files in input');
     }
   }, [handleFileUpload]);
   const handleDragOver = useCallback((e: React.DragEvent) => {
