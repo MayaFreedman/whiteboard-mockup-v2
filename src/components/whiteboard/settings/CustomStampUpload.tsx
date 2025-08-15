@@ -27,12 +27,10 @@ export const CustomStampUpload = forwardRef<CustomStampUploadHandle, CustomStamp
     setIsUploading(true);
     try {
       await addCustomStamp(file);
-      toast.dismiss(); // Clear existing toasts
       toast.success(`"${file.name}" added to custom stamps`);
       onStampAdded?.();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to upload stamp';
-      toast.dismiss(); // Clear existing toasts
       toast.error(message);
     } finally {
       setIsUploading(false);
