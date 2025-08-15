@@ -387,20 +387,20 @@ export const Toolbar: React.FC = () => {
           <div className="flex items-center gap-1 flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant={shouldHighlightShapeButton ? "default" : "ghost"}
-                  size="sm"
-                  className={`p-2 gap-1 ${shouldHighlightShapeButton ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
-                  title="Select Shape"
-                >
-                  {displayedShape ? (
-                    <displayedShape.icon className="w-4 h-4" />
-                  ) : (
-                    <Square className="w-4 h-4" />
-                  )}
-                  <span className="text-xs">Shape</span>
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
+                <SimpleTooltip content="Shape">
+                  <Button
+                    variant={shouldHighlightShapeButton ? "default" : "ghost"}
+                    size="sm"
+                    className={`p-2 gap-1 ${shouldHighlightShapeButton ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
+                  >
+                    {displayedShape ? (
+                      <displayedShape.icon className="w-4 h-4" />
+                    ) : (
+                      <Square className="w-4 h-4" />
+                    )}
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </SimpleTooltip>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="bg-popover">
                 {SHAPE_TOOLS.map((shape) => (
@@ -421,15 +421,16 @@ export const Toolbar: React.FC = () => {
           <div className="flex items-center gap-1 flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`p-2 gap-1 text-sm font-medium ${isMobile ? 'px-2' : ''}`}
-                  title="Select color palette"
-                >
-                  <span className={isMobile ? 'hidden' : ''}>Colors</span>
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
+                <SimpleTooltip content="Select color palette">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`p-2 gap-1 text-sm font-medium ${isMobile ? 'px-2' : ''}`}
+                  >
+                    <span className={isMobile ? 'hidden' : ''}>Colors</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </SimpleTooltip>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="bg-popover">
                 {Object.entries(colorPalettes).map(([paletteName, palette]) => (
