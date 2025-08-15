@@ -175,6 +175,12 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
     
     // Check for duplicate stamps
     const existingStamps = getCustomStamps();
+    console.log('Checking for duplicates against', existingStamps.length, 'existing stamps');
+    console.log('New stamp dataUrl starts with:', dataUrl.substring(0, 50) + '...');
+    existingStamps.forEach((stamp, index) => {
+      console.log(`Stamp ${index} dataUrl starts with:`, stamp.dataUrl.substring(0, 50) + '...');
+    });
+    
     const isDuplicate = existingStamps.some(stamp => stamp.dataUrl === dataUrl);
     
     if (isDuplicate) {
