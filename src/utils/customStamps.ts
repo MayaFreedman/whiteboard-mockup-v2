@@ -170,8 +170,12 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
   }
   
   try {
+    console.log('🔄 Starting addCustomStamp process...');
+    
     // Process the image
+    console.log('📸 Processing image file...');
     const { dataUrl, preview, size } = await processImageFile(file);
+    console.log('✅ Image processed successfully, size:', size);
     
     // Check for duplicate stamps
     const existingStamps = getCustomStamps();
@@ -184,9 +188,11 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
     const isDuplicate = existingStamps.some(stamp => stamp.dataUrl === dataUrl);
     
     if (isDuplicate) {
-      console.log('Duplicate stamp detected'); // Debug log
+      console.log('❌ DUPLICATE DETECTED - throwing error');
       throw new Error('This stamp has already been uploaded');
     }
+    
+    console.log('✅ No duplicate found, creating stamp object...');
     
     // Create stamp object
     const stamp: CustomStamp = {
@@ -199,12 +205,15 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
       size
     };
     
+    console.log('📂 Saving stamp to localStorage...');
+    
     // Add new stamp to existing ones
     const updatedStamps = [stamp, ...existingStamps];
     
     // Save with automatic cleanup
     saveCustomStamps(updatedStamps);
     
+    console.log('✅ Stamp saved successfully! ID:', stamp.id);
     return stamp;
   } catch (error) {
     if (error instanceof Error) {
