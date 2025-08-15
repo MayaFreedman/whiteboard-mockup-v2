@@ -361,6 +361,7 @@ export const Canvas: React.FC = () => {
     let maxWidth = undefined;
     if (isFixedW) {
       maxWidth = Math.max((textObject.width || 0) - padding, 0);
+      console.log("🔧 updateTextBounds - Fixed width:", { maxWidth, objectWidth: textObject.width });
     } else {
       // For non-fixed width text, use the same available width calculation as textarea
       const canvasRect = canvasRef.current?.getBoundingClientRect();
@@ -368,6 +369,18 @@ export const Canvas: React.FC = () => {
         const textScreenX = textObject.x + (canvasRect?.left || 0);
         const availableWidth = canvasRect.width - (textScreenX - canvasRect.left) - 10;
         maxWidth = Math.max(availableWidth - padding, 100);
+        
+        console.log("🔧 updateTextBounds - Dynamic width calculation:", {
+          textObjectX: textObject.x,
+          canvasRectLeft: canvasRect.left,
+          canvasRectWidth: canvasRect.width,
+          textScreenX,
+          availableWidth,
+          maxWidth,
+          padding
+        });
+      } else {
+        console.log("🔧 updateTextBounds - No canvas rect, using fallback");
       }
     }
     
