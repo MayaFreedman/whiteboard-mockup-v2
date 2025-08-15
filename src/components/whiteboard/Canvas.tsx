@@ -804,37 +804,53 @@ export const Canvas: React.FC = () => {
     // Calculate available space from text position to screen edge
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect && immediateTextPosition) {
-      const availableWidth =
-        canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
-
-      // Use same 16px padding as canvas text rendering for consistency
-      const effectiveWidth = availableWidth - 16;
-      textarea.style.width = effectiveWidth + "px";
-      textarea.style.maxWidth = effectiveWidth + "px";
-
-      // Measure text with the same width for consistent wrapping
-      const wrappedMetrics = measureText(
-        newText || "",
-        fontSize,
-        fontFamily,
-        bold,
-        italic,
-        effectiveWidth
-      );
-
-      // Update textarea height to match wrapped text height so cursor moves correctly
-      textarea.style.height =
-        Math.max(wrappedMetrics.height, fontSize * 1.2) + "px";
-
-      // Update only content during typing, NOT dimensions to prevent circular dependency
+      // For text objects, use the object's current width for consistent wrapping with canvas
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
         const textObject = objects[immediateTextObjectId];
+        const objectWidth = textObject.width || 100;
+        
+        // Use same calculation as canvas rendering: obj.width - 16
+        const effectiveWidth = Math.max(objectWidth - 16, 50);
+        textarea.style.width = effectiveWidth + "px";
+        textarea.style.maxWidth = effectiveWidth + "px";
+
+        // Measure text with the same width for consistent wrapping
+        const wrappedMetrics = measureText(
+          newText || "",
+          fontSize,
+          fontFamily,
+          bold,
+          italic,
+          effectiveWidth
+        );
+
+        // Update textarea height to match wrapped text height so cursor moves correctly
+        textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + "px";
+
+        // Update only content during typing, NOT dimensions to prevent wrapping changes
         updateObject(immediateTextObjectId, {
           data: {
             ...textObject.data,
             content: newText || "",
           },
         });
+      } else {
+        // Fallback for new objects: use available screen width
+        const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10;
+        const effectiveWidth = availableWidth - 16;
+        textarea.style.width = effectiveWidth + "px";
+        textarea.style.maxWidth = effectiveWidth + "px";
+
+        const wrappedMetrics = measureText(
+          newText || "",
+          fontSize,
+          fontFamily,
+          bold,
+          italic,
+          effectiveWidth
+        );
+
+        textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + "px";
       }
     } else {
       // Fallback to original behavior if we can't calculate boundaries
