@@ -10,4 +10,4 @@ export const DEV_MODE = false;
  * Set to true to show visual debug overlays for object bounding boxes.
  * Useful for debugging collision detection and boundary constraints.
  */
-export const BOUNDING_BOX_DEBUG = true;
+export const BOUNDING_BOX_DEBUG = false;

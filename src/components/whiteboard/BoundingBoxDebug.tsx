@@ -32,18 +32,6 @@ export const BoundingBoxDebug: React.FC<BoundingBoxDebugProps> = ({
 
   return (
     <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1000 }}>
-      {/* Always show a test box */}
-      <div 
-        className="absolute border-4 border-red-500 bg-red-500/20"
-        style={{
-          left: 50,
-          top: 50, 
-          width: 100,
-          height: 50
-        }}
-      >
-        <div className="text-red-500 font-bold">DEBUG ACTIVE</div>
-      </div>
       
       {selectedObjects.map(({ id, obj }) => {
         // Get the bounding box with proper coordinates
