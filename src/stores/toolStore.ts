@@ -83,11 +83,15 @@ interface ToolStore {
   autoSwitchedFromTool: Tool | null;
   wasAutoSwitched: boolean;
   
+  // Last used shape tool memory
+  lastUsedShapeTool: Tool;
+  
   // Actions
   setActiveTool: (tool: Tool) => void;
   updateToolSettings: (settings: Partial<ToolSettings>) => void;
   setAutoSwitchState: (fromTool: Tool | null, wasAutoSwitched: boolean) => void;
   clearAutoSwitchState: () => void;
+  updateLastUsedShape: (shapeTool: Tool) => void;
   
   // Color palette management
   colorPalettes: {
@@ -219,13 +223,35 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   // Auto-switch state
   autoSwitchedFromTool: null,
   wasAutoSwitched: false,
+  
+  // Shape tool memory
+  lastUsedShapeTool: 'rectangle',
 
   setActiveTool: (tool) => {
     console.log('🔧 Setting active tool:', tool);
     
+    // Check if this is a shape tool being requested
+    const shapeTools: Tool[] = ['rectangle', 'circle', 'triangle', 'diamond', 'pentagon', 'hexagon', 'star', 'heart'];
+    const isShapeTool = shapeTools.includes(tool);
+    const currentState = get();
+    
+    // If switching to any shape tool, use the last used shape tool instead
+    const actualTool = isShapeTool && tool !== currentState.lastUsedShapeTool ? currentState.lastUsedShapeTool : tool;
+    
+    if (actualTool !== tool) {
+      console.log('🔧 Shape tool memory: Switching from', tool, 'to last used shape:', actualTool);
+    }
+    
     set((state) => {
       const timestamp = Date.now();
       const newVersion = state.stateVersion + 1;
+      
+      // Update last used shape if this is a shape tool
+      const updates: any = {};
+      if (shapeTools.includes(actualTool)) {
+        updates.lastUsedShapeTool = actualTool;
+        console.log('🔧 Updated last used shape tool to:', actualTool);
+      }
       
       // Clear auto-switch state when user manually changes tools
       // (unless this is part of an auto-switch operation)
@@ -234,21 +260,23 @@ export const useToolStore = create<ToolStore>((set, get) => ({
       // Add to history
       const newHistory = limitArraySize([
         ...state.toolChangeHistory,
-        { tool, timestamp, settings: state.toolSettings }
+        { tool: actualTool, timestamp, settings: state.toolSettings }
       ], 50);
       
       console.log('🔧 Tool state updated:', {
-        tool,
+        tool: actualTool,
         version: newVersion,
         historyLength: newHistory.length,
-        clearingAutoSwitch: clearAutoSwitch
+        clearingAutoSwitch: clearAutoSwitch,
+        lastUsedShape: updates.lastUsedShapeTool || state.lastUsedShapeTool
       });
       
       return {
-        activeTool: tool,
+        activeTool: actualTool,
         stateVersion: newVersion,
         lastStateUpdate: timestamp,
         toolChangeHistory: newHistory,
+        ...updates,
         ...(clearAutoSwitch && {
           autoSwitchedFromTool: null,
           wasAutoSwitched: false
@@ -395,5 +423,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
       autoSwitchedFromTool: null,
       wasAutoSwitched: false
     });
+  },
+
+  updateLastUsedShape: (shapeTool) => {
+    console.log('🔷 Updating last used shape tool to:', shapeTool);
+    set({ lastUsedShapeTool: shapeTool });
   }
 }));
