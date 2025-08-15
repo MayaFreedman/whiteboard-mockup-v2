@@ -791,29 +791,13 @@ export const Canvas: React.FC = () => {
     if (canvasRect && immediateTextPosition && immediateTextPosition.canvasX !== undefined) {
       // Use the stored canvas X coordinate for accurate width calculation
       const canvasX = immediateTextPosition.canvasX;
-      const availableWidth = 800 - canvasX - 10; // Use canvas width (800px) minus canvas X position
+      const availableWidth = 800 - canvasX - 10; // Canvas width minus position minus padding
+      
+      // Let textarea handle its own height automatically
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
 
-      // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
-      const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
-      const effectiveWidth = Math.max(100, availableWidth - textPadding); // Minimum 100px width
-      textarea.style.width = effectiveWidth + "px";
-      textarea.style.maxWidth = effectiveWidth + "px";
-
-      // Measure text with the same width for consistent wrapping
-      const wrappedMetrics = measureText(
-        newText || "",
-        fontSize,
-        fontFamily,
-        bold,
-        italic,
-        effectiveWidth
-      );
-
-      // Update textarea height to match wrapped text height so cursor moves correctly
-      textarea.style.height =
-        Math.max(wrappedMetrics.height, fontSize * 1.2) + "px";
-
-      // Update canvas object - only update content, not dimensions during typing to prevent cursor jumps
+      // Update canvas object content only
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
         const textObject = objects[immediateTextObjectId];
         updateObject(immediateTextObjectId, {
@@ -821,7 +805,6 @@ export const Canvas: React.FC = () => {
             ...textObject.data,
             content: newText || "",
           },
-          // Don't update width/height during active typing to prevent cursor position jumps
         });
       }
     } else {
@@ -1454,11 +1437,15 @@ export const Canvas: React.FC = () => {
                  {
                    left: immediateTextPosition.x,
                    top: immediateTextPosition.y,
-                   // Use canvas width for both regular text and sticky notes to prevent early wrapping
-                   width: isEditingStickyNote ? editingObject.width : 800,
-                   height: isEditingStickyNote
-                     ? editingObject.height
-                     : "auto", // Let height expand for regular text
+                    // Set width constraint based on available canvas space
+                    width: isEditingStickyNote 
+                      ? editingObject.width 
+                      : immediateTextPosition.canvasX !== undefined 
+                        ? Math.max(100, 800 - immediateTextPosition.canvasX - 10) 
+                        : 400,
+                    height: isEditingStickyNote
+                      ? editingObject.height
+                      : "auto", // Let height expand naturally
                   padding: "8px",
                   fontSize: fontSize,
                   fontFamily: isEditingStickyNote
@@ -1504,54 +1491,25 @@ export const Canvas: React.FC = () => {
                    whiteSpace: "pre-wrap",
                    overflowWrap: "break-word", 
                    wordBreak: "break-word",
-                   wordWrap: "break-word",
-                   overflow: "visible", // Allow textarea to expand
-                  textRendering: "optimizeLegibility",
-                  fontSmooth: "antialiased",
-                  WebkitFontSmoothing: "antialiased",
-                  MozOsxFontSmoothing: "grayscale",
-                  caretColor: isEditingStickyNote
-                    ? editingObject.stroke || "#000000"
-                    : toolStore.toolSettings.strokeColor || "#000000",
-                  WebkitTextSizeAdjust: "100%",
-                  boxSizing: "border-box",
-                  minHeight: fontSize * 1.2 + "px",
-                  "--placeholder-color": `${
-                    toolStore.toolSettings.strokeColor || "#000000"
-                  }B3`,
-                } as React.CSSProperties & { "--placeholder-color": string }
-              }
-              value={immediateTextContent}
-              onChange={handleImmediateTextChange}
-              onBlur={handleImmediateTextComplete}
+                   minHeight: fontSize * 1.2,
+                   maxHeight: isEditingStickyNote ? editingObject.height : "none",
+                   resize: "none",
+                   boxSizing: "border-box",
+                 }
+               }
+               value={immediateTextContent}
+               onChange={handleImmediateTextChange}
+               onBlur={handleImmediateTextComplete}
                onKeyDown={handleImmediateTextKeyDown}
-               placeholder={isEditingStickyNote ? "" : "Type here..."}
                autoFocus
-               onInput={(e) => {
-                 const target = e.target as HTMLTextAreaElement;
-                 console.log('🎯 TEXTAREA INPUT EVENT:', {
-                   value: target.value,
-                   clientWidth: target.clientWidth,
-                   scrollWidth: target.scrollWidth,
-                   offsetWidth: target.offsetWidth,
-                   clientHeight: target.clientHeight,
-                   scrollHeight: target.scrollHeight,
-                   offsetHeight: target.offsetHeight,
-                   computedStyle: {
-                     width: getComputedStyle(target).width,
-                     height: getComputedStyle(target).height,
-                     fontSize: getComputedStyle(target).fontSize,
-                     fontFamily: getComputedStyle(target).fontFamily,
-                     whiteSpace: getComputedStyle(target).whiteSpace,
-                     wordWrap: getComputedStyle(target).wordWrap,
-                     overflowWrap: getComputedStyle(target).overflowWrap
-                   },
-                   timestamp: Date.now()
-                 });
-               }}
-             />
-            </>
-          );
+               placeholder={
+                 isEditingStickyNote
+                   ? "Type your note..."
+                   : "Start typing..."
+                }
+              />
+             </>
+           );
         })()}
 
       {/* Custom Cursor */}
