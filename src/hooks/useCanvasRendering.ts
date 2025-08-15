@@ -242,7 +242,7 @@ export const useCanvasRendering = (
    * @param obj - Whiteboard object to render
    * @param isSelected - Whether the object is currently selected
    */
-  const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, isSelected: boolean = false) => {
+  const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, isSelected: boolean = false, liveDragPositions: Record<string, { x: number; y: number }> = {}) => {
     ctx.save();
     
     // Apply object transformations
@@ -258,8 +258,7 @@ export const useCanvasRendering = (
     // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text AND not currently being dragged
     // Text objects are excluded because they have their own dashed border highlighting
     // During drag operations, hide the selection highlight for cleaner visuals
-    const liveDragPositions = getLiveDragPositions?.();
-    const isBeingDragged = liveDragPositions && liveDragPositions[obj.id];
+    const isBeingDragged = liveDragPositions[obj.id];
     if (isSelected && !isEraser && obj.type !== 'text' && !isBeingDragged) {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
@@ -797,7 +796,7 @@ export const useCanvasRendering = (
     }
 
     ctx.restore();
-  }, [editingTextId, editingText, objects, getOrLoadImage, canvas, getLiveDragPositions]);
+  }, [editingTextId, editingText, objects, getOrLoadImage, canvas]);
 
   /**
    * Renders the current drawing preview (work-in-progress path)
@@ -1041,7 +1040,7 @@ export const useCanvasRendering = (
         };
       }
       
-      renderObject(ctx, renderObj, isSelected);
+      renderObject(ctx, renderObj, isSelected, liveDragPositions);
     });
   }, [objects, selectedObjectIds, renderObject, getLiveDragPositions]);
 
