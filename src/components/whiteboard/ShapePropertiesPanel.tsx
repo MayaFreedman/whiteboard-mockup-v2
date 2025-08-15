@@ -2,6 +2,7 @@
 import React from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
+import { SimpleTooltip } from '../ui/simple-tooltip';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
