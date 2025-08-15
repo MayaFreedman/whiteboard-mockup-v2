@@ -670,17 +670,54 @@ export const useCanvasInteractions = () => {
       }
 
       case 'stamp': {
+        console.log('🖼️ STAMP TOOL: Pointer down triggered at:', coords);
+        console.log('🖼️ STAMP TOOL: Current tool:', toolStore.activeTool);
+        
         // Validate that a stamp is selected before proceeding
         if (!toolStore.toolSettings.selectedSticker) {
-          console.warn('🖼️ No stamp selected, ignoring click');
+          console.warn('🖼️ STAMP TOOL: No stamp selected, ignoring click');
           return;
+        }
+
+        // Check if we're clicking on an existing stamp/image for auto-select
+        console.log('🖼️ STAMP TOOL: Looking for object at coords:', coords);
+        const clickedObjectId = findObjectAt(coords.x, coords.y);
+        console.log('🖼️ STAMP TOOL: Found object ID:', clickedObjectId);
+        
+        const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
+        console.log('🖼️ STAMP TOOL: Found object:', clickedObject ? { id: clickedObjectId, type: clickedObject.type } : 'null');
+        
+        const isClickingOnStamp = clickedObject && clickedObject.type === 'image';
+        console.log('🖼️ STAMP TOOL: Is clicking on stamp/image?', isClickingOnStamp);
+        
+        if (isClickingOnStamp) {
+          console.log('🖼️ STAMP TOOL: ✅ DETECTED CLICK ON STAMP - auto-switching to select tool:', clickedObjectId.slice(0, 8));
+          console.log('🖼️ STAMP TOOL: Current auto-switch state before:', { 
+            wasAutoSwitched: toolStore.wasAutoSwitched, 
+            autoSwitchedFromTool: toolStore.autoSwitchedFromTool 
+          });
+          
+          // Auto-switch to select tool and track the original tool
+          toolStore.setAutoSwitchState('stamp', true);
+          console.log('🖼️ STAMP TOOL: Set auto-switch state to stamp');
+          
+          toolStore.setActiveTool('select');
+          console.log('🖼️ STAMP TOOL: Changed tool to select');
+          
+          // Select the stamp
+          whiteboardStore.selectObjects([clickedObjectId], userId);
+          console.log('🖼️ STAMP TOOL: Selected object:', clickedObjectId.slice(0, 8));
+          console.log('🔄 STAMP TOOL: ✅ Auto-switched from stamp to select tool');
+          return;
+        } else {
+          console.log('🖼️ STAMP TOOL: Not clicking on stamp - creating new one');
         }
         
         const stampSize = toolStore.toolSettings.stampSize || 10;
         const stampObject = createStampObject(coords.x, coords.y, stampSize);
         
         const objectId = whiteboardStore.addObject(stampObject, userId);
-        console.log('🖼️ Created stamp:', objectId.slice(0, 8));
+        console.log('🖼️ STAMP TOOL: Created stamp:', objectId.slice(0, 8));
         
         if (redrawCanvasRef.current) {
           redrawCanvasRef.current();
@@ -941,6 +978,43 @@ export const useCanvasInteractions = () => {
       case 'hexagon':
       case 'star':
       case 'heart': {
+        console.log('🔷 SHAPE TOOL: Pointer down triggered at:', coords, 'for shape:', activeTool);
+        console.log('🔷 SHAPE TOOL: Current tool:', toolStore.activeTool);
+
+        // Check if we're clicking on an existing shape of the same type for auto-select
+        console.log('🔷 SHAPE TOOL: Looking for object at coords:', coords);
+        const clickedObjectId = findObjectAt(coords.x, coords.y);
+        console.log('🔷 SHAPE TOOL: Found object ID:', clickedObjectId);
+        
+        const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
+        console.log('🔷 SHAPE TOOL: Found object:', clickedObject ? { id: clickedObjectId, type: clickedObject.type } : 'null');
+        
+        const isClickingOnSameShape = clickedObject && clickedObject.type === activeTool;
+        console.log('🔷 SHAPE TOOL: Is clicking on same shape type?', isClickingOnSameShape, `(${activeTool})`);
+        
+        if (isClickingOnSameShape) {
+          console.log('🔷 SHAPE TOOL: ✅ DETECTED CLICK ON MATCHING SHAPE - auto-switching to select tool:', clickedObjectId.slice(0, 8));
+          console.log('🔷 SHAPE TOOL: Current auto-switch state before:', { 
+            wasAutoSwitched: toolStore.wasAutoSwitched, 
+            autoSwitchedFromTool: toolStore.autoSwitchedFromTool 
+          });
+          
+          // Auto-switch to select tool and track the original tool
+          toolStore.setAutoSwitchState(activeTool, true);
+          console.log('🔷 SHAPE TOOL: Set auto-switch state to', activeTool);
+          
+          toolStore.setActiveTool('select');
+          console.log('🔷 SHAPE TOOL: Changed tool to select');
+          
+          // Select the shape
+          whiteboardStore.selectObjects([clickedObjectId], userId);
+          console.log('🔷 SHAPE TOOL: Selected object:', clickedObjectId.slice(0, 8));
+          console.log('🔄 SHAPE TOOL: ✅ Auto-switched from', activeTool, 'to select tool');
+          return;
+        } else {
+          console.log('🔷 SHAPE TOOL: Not clicking on matching shape - creating new', activeTool);
+        }
+
         isDrawingRef.current = true;
         lastPointRef.current = coords;
         pathStartRef.current = coords;
