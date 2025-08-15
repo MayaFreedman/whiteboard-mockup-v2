@@ -14,20 +14,22 @@ export const useToolSelection = () => {
   useEffect(() => {
     console.log('🎯 TOOL SELECTION: Tool changed to:', activeTool, 'wasAutoSwitched:', wasAutoSwitched);
     // Clear selection when switching to any tool other than select
-    // Always clear when switching away from select, regardless of previous auto-switch state
-    if (activeTool !== 'select') {
-      console.log('🎯 TOOL SELECTION: Clearing selection when switching away from select tool');
+    // But skip clearing if this was an auto-switch to select tool
+    if (activeTool !== 'select' && !wasAutoSwitched) {
+      console.log('🎯 TOOL SELECTION: Clearing selection when switching from select tool');
       clearSelection();
+    } else if (activeTool !== 'select' && wasAutoSwitched) {
+      console.log('🎯 TOOL SELECTION: Skipping selection clear due to auto-switch');
     }
-  }, [activeTool, clearSelection]);
+  }, [activeTool, clearSelection, wasAutoSwitched]);
 
   // Handle auto-switching back to original tool when selection is cleared
-  // Only if the selection was cleared naturally (not by manual tool switch)
   useEffect(() => {
-    if (wasAutoSwitched && selectedObjectIds.length === 0 && autoSwitchedFromTool && activeTool === 'select') {
+    
+    if (wasAutoSwitched && selectedObjectIds.length === 0 && autoSwitchedFromTool) {
       console.log('🔄 AUTO-SWITCH: ✅ Switching back from select to:', autoSwitchedFromTool);
       setActiveTool(autoSwitchedFromTool);
       clearAutoSwitchState();
     }
-  }, [selectedObjectIds.length, wasAutoSwitched, autoSwitchedFromTool, activeTool, setActiveTool, clearAutoSwitchState]);
+  }, [selectedObjectIds.length, wasAutoSwitched, autoSwitchedFromTool, setActiveTool, clearAutoSwitchState]);
 };

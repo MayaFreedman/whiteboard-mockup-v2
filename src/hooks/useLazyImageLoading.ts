@@ -80,7 +80,7 @@ export const useLazyImageLoading = ({
       });
       loadProgressiveImage(url).catch(console.error);
     });
-  }, [items.length]); // Only depend on length, not the entire array
+  }, [items]);
   
   // Cleanup on unmount
   useEffect(() => {

@@ -593,30 +593,13 @@ export const useCanvasInteractions = () => {
   useEffect(() => {
     const handleDocumentMouseUp = (event: MouseEvent) => {
       // Only handle if we're actually drawing or dragging something on the canvas
-      // AND the mouseup happened outside the canvas area
-      const canvas = document.getElementById('whiteboard-canvas') as HTMLCanvasElement;
-      if (canvas && (isDrawingRef.current || isDraggingRef.current)) {
-        const canvasRect = canvas.getBoundingClientRect();
-        const isOutsideCanvas = event.clientX < canvasRect.left || 
-                               event.clientX > canvasRect.right || 
-                               event.clientY < canvasRect.top || 
-                               event.clientY > canvasRect.bottom;
-        
-        if (isOutsideCanvas) {
-          console.log('🖱️ Document mouse up outside canvas - ending interaction', {
-            target: event.target,
-            drawing: isDrawingRef.current,
-            dragging: isDraggingRef.current,
-            mousePos: { x: event.clientX, y: event.clientY },
-            canvasRect: { left: canvasRect.left, right: canvasRect.right, top: canvasRect.top, bottom: canvasRect.bottom }
-          });
-          endCurrentDrawing();
-        } else {
-          console.log('🖱️ Document mouse up inside canvas - letting canvas handle it', {
-            drawing: isDrawingRef.current,
-            dragging: isDraggingRef.current
-          });
-        }
+      if (isDrawingRef.current || isDraggingRef.current) {
+        console.log('🖱️ Document mouse up - ending current interaction', {
+          target: event.target,
+          drawing: isDrawingRef.current,
+          dragging: isDraggingRef.current
+        });
+        endCurrentDrawing();
       } else {
         console.log('🖱️ Document mouse up - ignoring (not drawing/dragging)', {
           target: event.target,
@@ -1067,16 +1050,6 @@ export const useCanvasInteractions = () => {
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
     
-    // Debug mouse coordinate issues for dragging
-    if (activeTool === 'select' && isDraggingRef.current) {
-      console.log('🖱️ RAW MOUSE COORDS during drag:', {
-        coords,
-        clientX: 'touches' in event ? event.touches[0].clientX : event.clientX,
-        clientY: 'touches' in event ? event.touches[0].clientY : event.clientY,
-        canvasRect: canvas.getBoundingClientRect()
-      });
-    }
-    
     // For drawing tools, constrain movement to whiteboard bounds
     const isDrawingTool = ['pencil', 'brush', 'eraser'].includes(activeTool);
     if (isDrawingTool && isDrawingRef.current && !isWithinWhiteboardBounds(coords.x, coords.y)) {
@@ -1094,20 +1067,7 @@ export const useCanvasInteractions = () => {
           console.log('🔄 Dragging movement:', {
             selectedCount: whiteboardStore.selectedObjectIds.length,
             delta: { x: deltaX, y: deltaY },
-            initialPositions: Object.keys(initialDragPositionsRef.current).length,
-            mouseCoords: coords,
-            dragStart: dragStartRef.current,
-            withinBounds: isWithinWhiteboardBounds(coords.x, coords.y),
-            whiteboardBounds: {
-              width: activeWhiteboardSize.width,
-              height: activeWhiteboardSize.height
-            },
-            mousePosVsBounds: {
-              x: coords.x,
-              y: coords.y,
-              exceedsWidth: coords.x > activeWhiteboardSize.width,
-              exceedsHeight: coords.y > activeWhiteboardSize.height
-            }
+            initialPositions: Object.keys(initialDragPositionsRef.current).length
           });
           
           // Store current drag deltas for live rendering without creating actions
@@ -1121,35 +1081,6 @@ export const useCanvasInteractions = () => {
                 x: initialPos.x + deltaX,
                 y: initialPos.y + deltaY
               };
-              
-              // Check for boundary constraints or unusual position jumps
-              const positionJump = Math.abs(newPos.x - (liveDragPositionsRef.current[objectId]?.x || initialPos.x)) + 
-                                   Math.abs(newPos.y - (liveDragPositionsRef.current[objectId]?.y || initialPos.y));
-              
-              if (positionJump > 50) {
-                console.warn('🚨 DRAG GLITCH DETECTED - Large position jump:', {
-                  objectId: objectId.slice(0, 8),
-                  previousPos: liveDragPositionsRef.current[objectId] || initialPos,
-                  newPos,
-                  jump: positionJump,
-                  deltaX,
-                  deltaY,
-                  initialPos
-                });
-              }
-              
-              // Check if hitting viewport boundaries
-              if (newPos.x < 0 || newPos.y < 0 || 
-                  newPos.x > activeWhiteboardSize.width || 
-                  newPos.y > activeWhiteboardSize.height) {
-                console.warn('🚨 BOUNDARY COLLISION:', {
-                  objectId: objectId.slice(0, 8),
-                  newPos,
-                  boundaries: activeWhiteboardSize,
-                  delta: { x: deltaX, y: deltaY }
-                });
-              }
-              
               console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = newPos;
