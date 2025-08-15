@@ -598,8 +598,8 @@ export const useCanvasRendering = (
           const textXBase = Math.round(obj.x + 8); // Add 8px left padding to match textarea
           const textYBase = Math.round(obj.y + 8); // 8px padding from top to match textarea
           
-          // Calculate available width for text wrapping - use canvas width to prevent early wrapping
-          const availableWidth = Math.max(800 - 16, 50); // Use wide constraint, minimum 50px
+          // Calculate available width for text wrapping - use object's actual width
+          const availableWidth = Math.max((obj.width || 100) - 16, 50); // Use object width minus padding, minimum 50px
           
           // Use the same measureText function as the measurement system for consistent wrapping
           const textMetrics = measureText(
