@@ -1421,7 +1421,7 @@ export const Canvas: React.FC = () => {
             ? editingObject.data?.fontSize || 32
             : toolStore.toolSettings.fontSize || 16;
 
-          console.log('🎯 TEXTAREA DIMENSIONS DEBUG:', {
+          console.log('🎯 TEXTAREA RENDER DEBUG:', {
             isEditingStickyNote,
             editingObjectId: immediateTextObjectId,
             editingObjectWidth: editingObject?.width,
@@ -1430,6 +1430,7 @@ export const Canvas: React.FC = () => {
             calculatedHeight: isEditingStickyNote ? editingObject.height : toolStore.toolSettings.fontSize * 1.2 || 20,
             fontSize,
             position: immediateTextPosition,
+            currentContent: immediateTextContent,
             timestamp: Date.now()
           });
 
@@ -1512,10 +1513,32 @@ export const Canvas: React.FC = () => {
               value={immediateTextContent}
               onChange={handleImmediateTextChange}
               onBlur={handleImmediateTextComplete}
-              onKeyDown={handleImmediateTextKeyDown}
-              placeholder={isEditingStickyNote ? "" : "Type here..."}
-              autoFocus
-            />
+               onKeyDown={handleImmediateTextKeyDown}
+               placeholder={isEditingStickyNote ? "" : "Type here..."}
+               autoFocus
+               onInput={(e) => {
+                 const target = e.target as HTMLTextAreaElement;
+                 console.log('🎯 TEXTAREA INPUT EVENT:', {
+                   value: target.value,
+                   clientWidth: target.clientWidth,
+                   scrollWidth: target.scrollWidth,
+                   offsetWidth: target.offsetWidth,
+                   clientHeight: target.clientHeight,
+                   scrollHeight: target.scrollHeight,
+                   offsetHeight: target.offsetHeight,
+                   computedStyle: {
+                     width: getComputedStyle(target).width,
+                     height: getComputedStyle(target).height,
+                     fontSize: getComputedStyle(target).fontSize,
+                     fontFamily: getComputedStyle(target).fontFamily,
+                     whiteSpace: getComputedStyle(target).whiteSpace,
+                     wordWrap: getComputedStyle(target).wordWrap,
+                     overflowWrap: getComputedStyle(target).overflowWrap
+                   },
+                   timestamp: Date.now()
+                 });
+               }}
+             />
             </>
           );
         })()}
