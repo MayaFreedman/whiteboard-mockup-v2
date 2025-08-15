@@ -1050,6 +1050,16 @@ export const useCanvasInteractions = () => {
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
     
+    // Debug mouse coordinate issues for dragging
+    if (activeTool === 'select' && isDraggingRef.current) {
+      console.log('🖱️ RAW MOUSE COORDS during drag:', {
+        coords,
+        clientX: 'touches' in event ? event.touches[0].clientX : event.clientX,
+        clientY: 'touches' in event ? event.touches[0].clientY : event.clientY,
+        canvasRect: canvas.getBoundingClientRect()
+      });
+    }
+    
     // For drawing tools, constrain movement to whiteboard bounds
     const isDrawingTool = ['pencil', 'brush', 'eraser'].includes(activeTool);
     if (isDrawingTool && isDrawingRef.current && !isWithinWhiteboardBounds(coords.x, coords.y)) {
@@ -1070,7 +1080,17 @@ export const useCanvasInteractions = () => {
             initialPositions: Object.keys(initialDragPositionsRef.current).length,
             mouseCoords: coords,
             dragStart: dragStartRef.current,
-            withinBounds: isWithinWhiteboardBounds(coords.x, coords.y)
+            withinBounds: isWithinWhiteboardBounds(coords.x, coords.y),
+            whiteboardBounds: {
+              width: activeWhiteboardSize.width,
+              height: activeWhiteboardSize.height
+            },
+            mousePosVsBounds: {
+              x: coords.x,
+              y: coords.y,
+              exceedsWidth: coords.x > activeWhiteboardSize.width,
+              exceedsHeight: coords.y > activeWhiteboardSize.height
+            }
           });
           
           // Store current drag deltas for live rendering without creating actions
