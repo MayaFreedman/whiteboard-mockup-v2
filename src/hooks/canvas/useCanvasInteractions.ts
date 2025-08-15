@@ -1249,7 +1249,7 @@ export const useCanvasInteractions = () => {
             const finalPos = liveDragPositionsRef.current[objectId];
             if (finalPos) {
               console.log('🎯 Final position for object:', objectId.slice(0, 8), finalPos);
-              whiteboardStore.updateObject(objectId, finalPos, userId);
+              whiteboardStore.updateObjectPosition(objectId, finalPos.x, finalPos.y);
             }
           });
           
