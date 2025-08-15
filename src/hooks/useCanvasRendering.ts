@@ -1363,6 +1363,7 @@ export const useCanvasRendering = (
         // Apply live drag position if object is being dragged
         let renderObj = obj;
         if (liveDragPositions[id]) {
+          console.log("🎯 Canvas rendering - applying live drag position for:", id.slice(0, 8), liveDragPositions[id]);
           renderObj = {
             ...obj,
             x: liveDragPositions[id].x,

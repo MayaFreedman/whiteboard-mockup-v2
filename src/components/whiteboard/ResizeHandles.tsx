@@ -17,15 +17,24 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
   let obj = objects[objectId];
   
   // Apply live drag position if object is being dragged
+  const originalPosition = { x: obj?.x, y: obj?.y };
   if (getLiveDragPositions) {
     const liveDragPositions = getLiveDragPositions();
+    console.log("🔄 ResizeHandles - Live drag positions:", liveDragPositions);
+    console.log("🔄 ResizeHandles - Object ID:", objectId.slice(0, 8));
+    
     if (liveDragPositions[objectId]) {
+      console.log("🔄 ResizeHandles - Applying live position:", liveDragPositions[objectId], "Original:", originalPosition);
       obj = {
         ...obj,
         x: liveDragPositions[objectId].x,
         y: liveDragPositions[objectId].y,
       };
+    } else {
+      console.log("🔄 ResizeHandles - No live position for object:", objectId.slice(0, 8));
     }
+  } else {
+    console.log("🔄 ResizeHandles - No getLiveDragPositions function");
   }
   
   if (!obj || !obj.width || !obj.height) return null;
