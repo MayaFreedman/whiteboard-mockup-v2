@@ -1391,7 +1391,7 @@ export const Canvas: React.FC = () => {
           style={{
             left: textEditorPosition.x + 2,
             top: textEditorPosition.y + 7,
-            width: textEditorPosition.width + 16,
+            width: Math.max((objects[editingTextId]?.width || 100) - 16, 50) + 16, // Match text measurement width calculation
             height: textEditorPosition.height + 16,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
             fontFamily: objects[editingTextId]?.data?.fontFamily || "Arial",
