@@ -105,13 +105,6 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
   const handleImageError = useCallback((url: string) => {
     console.warn('Failed to load progressive image:', url);
   }, []);
-
-  // Stable ref callback to avoid hooks in map
-  const createRefCallback = useCallback((url: string) => (el: HTMLDivElement | null) => {
-    if (el) {
-      observeElement(el, url);
-    }
-  }, [observeElement]);
   return <div>
       
       <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3 max-h-[400px] overflow-y-auto pr-1 pt-2 pb-2 pr-2 pl-0" onScroll={handleScroll}>
@@ -122,7 +115,11 @@ export const ProgressiveGridSelector: React.FC<GridSelectorProps> = ({
         return <div 
           key={`stamp-${index}-${item.url.substring(0, 50)}`} 
           className="relative" 
-          ref={createRefCallback(item.url)}
+          ref={useCallback((el: HTMLDivElement | null) => {
+            if (el) {
+              observeElement(el, item.url);
+            }
+          }, [item.url, observeElement])}
         >
               <StampGridItem item={item} isSelected={selectedValue === item.url} onSelect={onChange} onImageLoad={() => handleImageLoaded(item.url)} />
               
