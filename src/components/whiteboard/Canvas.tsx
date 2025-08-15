@@ -219,7 +219,7 @@ export const Canvas: React.FC = () => {
       type: "text" as const,
       x: coords.x - 4, // Account for canvas text 4px left padding
       y: coords.y,
-      width: 200, // Initial width
+      width: 800, // Wide initial width to prevent early wrapping
       height: fontSize + 8, // Initial height with padding
       stroke: toolStore.toolSettings.strokeColor,
       fill: "transparent",
@@ -714,10 +714,11 @@ export const Canvas: React.FC = () => {
       timestamp: Date.now()
     });
     
-    // Calculate the available width for text wrapping (same as canvas)
+    // Calculate the available width for text wrapping - use canvas width for no early wrapping
     const editingObject = immediateTextObjectId ? objects[immediateTextObjectId] : null;
     const isEditingStickyNote = editingObject?.type === "sticky-note";
-    const availableWidth = isEditingStickyNote ? undefined : 184; // Match canvas available width
+    const canvasWidth = 800; // Use a wide constraint so text doesn't wrap early
+    const availableWidth = isEditingStickyNote ? undefined : canvasWidth;
     
     setImmediateTextContent(newText);
 
@@ -1431,7 +1432,7 @@ export const Canvas: React.FC = () => {
             editingObjectId: immediateTextObjectId,
             editingObjectWidth: editingObject?.width,
             editingObjectHeight: editingObject?.height,
-            calculatedWidth: isEditingStickyNote ? editingObject.width : 200,
+            calculatedWidth: isEditingStickyNote ? editingObject.width : 800,
             calculatedHeight: isEditingStickyNote ? editingObject.height : toolStore.toolSettings.fontSize * 1.2 || 20,
             fontSize,
             position: immediateTextPosition,
@@ -1448,8 +1449,8 @@ export const Canvas: React.FC = () => {
                  {
                    left: immediateTextPosition.x,
                    top: immediateTextPosition.y,
-                   // For regular text, use fixed width to match canvas; for sticky notes, use object width
-                   width: isEditingStickyNote ? editingObject.width : 184,
+                   // Use canvas width for both regular text and sticky notes to prevent early wrapping
+                   width: isEditingStickyNote ? editingObject.width : 800,
                    height: isEditingStickyNote
                      ? editingObject.height
                      : "auto", // Let height expand for regular text
