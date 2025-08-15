@@ -15,6 +15,15 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, onResize
   const { canvasOffset } = useCanvasOffset();
   const obj = objects[objectId];
   
+  console.log('🔍 DRAG DEBUG - ResizeHandles render:', {
+    objectId: objectId.slice(0, 8),
+    hasObject: !!obj,
+    position: obj ? { x: obj.x, y: obj.y } : null,
+    size: obj ? { width: obj.width, height: obj.height } : null,
+    canvasOffset,
+    timestamp: Date.now()
+  });
+  
   if (!obj || !obj.width || !obj.height) return null;
 
   const handleSize = 8;
