@@ -242,7 +242,7 @@ export const useCanvasRendering = (
    * @param obj - Whiteboard object to render
    * @param isSelected - Whether the object is currently selected
    */
-  const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, isSelected: boolean = false) => {
+  const renderObject = useCallback((ctx: CanvasRenderingContext2D, obj: WhiteboardObject, isSelected: boolean = false, liveDragPositions?: Record<string, { x: number; y: number }>) => {
     ctx.save();
     
     // Apply object transformations
@@ -257,7 +257,9 @@ export const useCanvasRendering = (
     
     // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text
     // Text objects are excluded because they have their own dashed border highlighting
-    if (isSelected && !isEraser && obj.type !== 'text') {
+    // Skip selection highlight if object is being dragged
+    const isBeingDragged = liveDragPositions && liveDragPositions[obj.id];
+    if (isSelected && !isEraser && obj.type !== 'text' && !isBeingDragged) {
       ctx.save();
       ctx.strokeStyle = '#007AFF';
       ctx.globalAlpha = 0.6;
@@ -1038,7 +1040,7 @@ export const useCanvasRendering = (
         };
       }
       
-      renderObject(ctx, renderObj, isSelected);
+      renderObject(ctx, renderObj, isSelected, liveDragPositions);
     });
   }, [objects, selectedObjectIds, renderObject, getLiveDragPositions]);
 
