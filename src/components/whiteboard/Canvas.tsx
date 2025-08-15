@@ -91,6 +91,7 @@ export const Canvas: React.FC = () => {
   const [immediateTextPosition, setImmediateTextPosition] = useState<{
     x: number;
     y: number;
+    canvasX: number; // Store original canvas X coordinate for width calculations
   } | null>(null);
   const [immediateTextContent, setImmediateTextContent] = useState("");
   const [immediateTextObjectId, setImmediateTextObjectId] = useState<
@@ -163,7 +164,8 @@ export const Canvas: React.FC = () => {
 
     const screenCoords = {
       x: coords.x + whiteboardRect.left,
-      y: coords.y + whiteboardRect.top - 60, // Moved down more to align with cursor
+      y: coords.y + whiteboardRect.top - 65, // Standardized Y offset
+      canvasX: coords.x, // Store original canvas coordinates for width calculations
     };
 
     // If we have an existing object ID (sticky note), use that instead of creating a new text object
@@ -175,6 +177,7 @@ export const Canvas: React.FC = () => {
         const stickyScreenCoords = {
           x: existingObject.x + whiteboardRect.left,
           y: existingObject.y + whiteboardRect.top - 65,
+          canvasX: existingObject.x, // Store original canvas X for width calculations
         };
 
         setIsImmediateTextEditing(true);
@@ -442,7 +445,7 @@ export const Canvas: React.FC = () => {
 
     return {
       x: Math.round(textObject.x + 4 + rect.left - 4), // Canvas position + padding + screen offset - 4 left
-      y: Math.round(textObject.y + rect.top - 60 - 7), // Match canvas text rendering position with Y offset - 7 up
+      y: Math.round(textObject.y + rect.top - 65), // Standardized Y offset
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight,
@@ -622,6 +625,7 @@ export const Canvas: React.FC = () => {
             const stickyScreenCoords = {
               x: obj.x + whiteboardRect.left,
               y: obj.y + whiteboardRect.top - 65,
+              canvasX: obj.x, // Store original canvas X for width calculations
             };
 
             setIsImmediateTextEditing(true);
@@ -782,15 +786,16 @@ export const Canvas: React.FC = () => {
     const minWidth = 100;
     const textarea = e.target;
 
-    // Calculate available space from text position to screen edge
+    // Calculate available space from text position to screen edge using stored canvas coordinates
     const canvasRect = canvasRef.current?.getBoundingClientRect();
-    if (canvasRect && immediateTextPosition) {
-      const availableWidth =
-        canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10; // 10px padding from edge
+    if (canvasRect && immediateTextPosition && immediateTextPosition.canvasX !== undefined) {
+      // Use the stored canvas X coordinate for accurate width calculation
+      const canvasX = immediateTextPosition.canvasX;
+      const availableWidth = 800 - canvasX - 10; // Use canvas width (800px) minus canvas X position
 
       // Set both width and maxWidth to ensure consistent line wrapping, accounting for text padding
       const textPadding = 8; // Same as canvas rendering (4px left + 4px right)
-      const effectiveWidth = availableWidth - textPadding;
+      const effectiveWidth = Math.max(100, availableWidth - textPadding); // Minimum 100px width
       textarea.style.width = effectiveWidth + "px";
       textarea.style.maxWidth = effectiveWidth + "px";
 
