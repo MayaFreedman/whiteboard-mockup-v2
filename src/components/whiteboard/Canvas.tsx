@@ -13,7 +13,6 @@ import { useCanvasOffset } from "../../hooks/useCanvasOffset";
 import { CustomCursor } from "./CustomCursor";
 import { ResizeHandles } from "./ResizeHandles";
 import { measureText } from "../../utils/textMeasurement";
-import { DragDebugOverlay } from "../DragDebugOverlay";
 
 /**
  * Gets the appropriate cursor style based on the active tool
@@ -1614,9 +1613,6 @@ export const Canvas: React.FC = () => {
             onResizeEnd={() => endResizeBatch()}
           />
         ))}
-      
-      {/* Debug Overlay for Drag Issues */}
-      <DragDebugOverlay />
     </div>
   );
 };

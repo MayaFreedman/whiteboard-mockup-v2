@@ -488,14 +488,6 @@ export const useCanvasInteractions = () => {
   const endCurrentDrawing = useCallback(() => {
     const activeTool = toolStore.activeTool;
     
-    console.log('🎯 DRAG DEBUG - endCurrentDrawing called:', {
-      activeTool,
-      isDrawing: isDrawingRef.current,
-      isDragging: isDraggingRef.current,
-      selectedObjectIds: whiteboardStore.selectedObjectIds.length,
-      timestamp: Date.now()
-    });
-    
     if ((activeTool === 'pencil' || activeTool === 'brush') && 
         isDrawingRef.current && 
         pathBuilderRef.current && 
@@ -774,15 +766,7 @@ export const useCanvasInteractions = () => {
             draggedObjectIdRef.current = objectId;
             isDraggingRef.current = true;
             dragStartRef.current = coords;
-            
-            console.log('🎯 DRAG DEBUG - Drag initiated:', {
-              selectedCount: whiteboardStore.selectedObjectIds.length,
-              primaryObjectId: objectId.slice(0, 8),
-              dragStart: coords,
-              initialPositions: Object.keys(initialPositions).length,
-              timestamp: Date.now(),
-              selectedIds: whiteboardStore.selectedObjectIds.map(id => id.slice(0, 8))
-            });
+            console.log('🎯 Started dragging', whiteboardStore.selectedObjectIds.length, 'object(s):', objectId.slice(0, 8));
           }
         } else {
           // Clicked on empty area
@@ -1228,13 +1212,7 @@ export const useCanvasInteractions = () => {
   const handlePointerUp = useCallback((event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const activeTool = toolStore.activeTool;
 
-    console.log('🎯 DRAG DEBUG - handlePointerUp called:', {
-      activeTool,
-      isDragging: isDraggingRef.current,
-      isDrawing: isDrawingRef.current,
-      selectedCount: whiteboardStore.selectedObjectIds.length,
-      timestamp: Date.now()
-    });
+    
 
     switch (activeTool) {
       case 'select': {
@@ -1249,7 +1227,7 @@ export const useCanvasInteractions = () => {
             const finalPos = liveDragPositionsRef.current[objectId];
             if (finalPos) {
               console.log('🎯 Final position for object:', objectId.slice(0, 8), finalPos);
-              whiteboardStore.updateObjectPosition(objectId, finalPos.x, finalPos.y);
+              whiteboardStore.updateObject(objectId, finalPos, userId);
             }
           });
           
@@ -1291,22 +1269,8 @@ export const useCanvasInteractions = () => {
           }
         }
         
-        console.log('🔄 DRAG DEBUG - Final state cleanup in handlePointerUp:', {
-          beforeFinalCleanup: {
-            isDragging: isDraggingRef.current,
-            dragStart: !!dragStartRef.current,
-            selectedCount: whiteboardStore.selectedObjectIds.length
-          }
-        });
-        
         isDraggingRef.current = false;
         dragStartRef.current = null;
-        
-        console.log('🔄 DRAG DEBUG - Drag state completely cleared:', {
-          isDragging: isDraggingRef.current,
-          dragStart: !!dragStartRef.current,
-          timestamp: Date.now()
-        });
         break;
       }
 
