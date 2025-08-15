@@ -214,8 +214,16 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
 export const removeCustomStamp = (stampDataUrl: string): void => {
   try {
     const stamps = getCustomStamps();
+    console.log('Before removal - stamp count:', stamps.length);
     const updatedStamps = stamps.filter(stamp => stamp.dataUrl !== stampDataUrl);
+    console.log('After filtering - stamp count:', updatedStamps.length);
+    
+    if (stamps.length === updatedStamps.length) {
+      console.warn('No stamp was removed - dataUrl not found');
+    }
+    
     saveCustomStamps(updatedStamps);
+    console.log('Successfully saved updated stamps to localStorage');
   } catch (error) {
     console.error('Failed to remove custom stamp:', error);
     throw new Error('Failed to remove stamp');
