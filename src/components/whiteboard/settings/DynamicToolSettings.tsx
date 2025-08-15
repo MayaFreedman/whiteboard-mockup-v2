@@ -314,6 +314,7 @@ export const DynamicToolSettings: React.FC = () => {
             valueFormatter={(value) => `${value}px`}
             showValue={true}
           />
+          
           <BadgeSelector
             label="Background Color"
             items={[
@@ -324,6 +325,35 @@ export const DynamicToolSettings: React.FC = () => {
             ]}
             selectedValue={toolSettings.stickyNoteBackgroundColor || '#fef3c7'}
             onChange={(value) => updateToolSettings({ stickyNoteBackgroundColor: value })}
+          />
+
+          <SelectSetting
+            label="Font Family"
+            value={toolSettings.fontFamily || 'Arial'}
+            options={[
+              { value: 'Arial', label: 'Arial' },
+              { value: 'Helvetica', label: 'Helvetica' },
+              { value: 'Times New Roman', label: 'Times New Roman' },
+              { value: 'Courier New', label: 'Courier New' },
+              { value: 'Georgia', label: 'Georgia' },
+              { value: 'Verdana', label: 'Verdana' }
+            ]}
+            onChange={(value) => updateToolSettings({ fontFamily: value })}
+          />
+
+          <ToggleButtonGroup
+            label="Text Formatting"
+            items={[
+              { value: 'textBold', label: 'Bold', icon: 'Bold' },
+              { value: 'textItalic', label: 'Italic', icon: 'Italic' },
+              { value: 'textUnderline', label: 'Underline', icon: 'Underline' }
+            ]}
+            values={{
+              textBold: toolSettings.textBold || false,
+              textItalic: toolSettings.textItalic || false,
+              textUnderline: toolSettings.textUnderline || false
+            }}
+            onChange={(key, value) => updateToolSettings({ [key]: value })}
           />
         </div>
       </ToolSettingCard>;
