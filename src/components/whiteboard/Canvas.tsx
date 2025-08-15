@@ -1606,7 +1606,15 @@ export const Canvas: React.FC = () => {
           <ResizeHandles
             key={objectId}
             objectId={objectId}
-            liveDragPositions={getLiveDragPositions()}
+            liveDragPositions={(() => {
+              const liveDragPositions = getLiveDragPositions();
+              console.log('🎯 Canvas: Rendering ResizeHandles for', objectId, {
+                liveDragPositions,
+                hasLiveDragPositions: !!liveDragPositions,
+                keys: liveDragPositions ? Object.keys(liveDragPositions) : []
+              });
+              return liveDragPositions;
+            })()}
             onResizeStart={() =>
               startResizeBatch("UPDATE_OBJECT", objectId, userId)
             }

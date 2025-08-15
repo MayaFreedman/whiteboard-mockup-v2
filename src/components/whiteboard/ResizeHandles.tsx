@@ -21,8 +21,21 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, liveDrag
   // Check if this object is being dragged
   const isBeingDragged = liveDragPositions && liveDragPositions[objectId];
   
+  // DEBUG: Log drag detection
+  console.log('🔍 ResizeHandles Debug:', {
+    objectId,
+    liveDragPositions,
+    isBeingDragged,
+    hasLiveDragPositions: !!liveDragPositions,
+    liveDragPositionsKeys: liveDragPositions ? Object.keys(liveDragPositions) : [],
+    shouldHide: !!isBeingDragged
+  });
+  
   // Don't render resize handles if object is being dragged
-  if (isBeingDragged) return null;
+  if (isBeingDragged) {
+    console.log('🚫 ResizeHandles: Hiding for dragged object', objectId);
+    return null;
+  }
 
   const handleSize = 8;
   const handles = [
