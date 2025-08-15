@@ -550,36 +550,9 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
     });
   }
 
-  // Stage 1: direct-only
+  // Only use Stage 1: direct token matching with intelligent prefix/substring logic
   let scored = source
     .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, [], conceptTokens, negativeTokens, emotionHint, 1) }))
-    .filter((x) => x.s > 0)
-    .sort((a, b) => {
-      if (b.s !== a.s) return b.s - a.s;
-      if (a.icon.category !== b.icon.category) return a.icon.category.localeCompare(b.icon.category);
-      return a.icon.name.localeCompare(b.icon.name);
-    })
-    .map((x) => x.icon);
-
-  const THRESHOLD = 30;
-  
-  // For specific high-precision queries like "star", use stricter thresholds
-  const HIGH_PRECISION_QUERIES = new Set(['star', 'heart', 'flag', 'flower', 'tree', 'sun', 'moon']);
-  const isHighPrecisionQuery = directTokens.some(t => HIGH_PRECISION_QUERIES.has(t));
-  const effectiveThreshold = isHighPrecisionQuery ? 5 : THRESHOLD; // Much lower threshold for precise queries
-  
-  if (scored.length >= effectiveThreshold) {
-    return options.limit ? scored.slice(0, options.limit) : scored;
-  }
-
-  // Stage 2: broaden with expansions - but be much more conservative for high-precision queries
-  const useConservativeStage2 = isHighPrecisionQuery;
-  
-  scored = source
-    .map((icon) => ({ 
-      icon, 
-      s: scoreIcon(icon, q, directTokens, useConservativeStage2 ? [] : qExpanded, conceptTokens, negativeTokens, emotionHint, 2) 
-    }))
     .filter((x) => x.s > 0)
     .sort((a, b) => {
       if (b.s !== a.s) return b.s - a.s;
