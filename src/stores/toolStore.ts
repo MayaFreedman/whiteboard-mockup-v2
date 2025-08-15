@@ -83,6 +83,9 @@ interface ToolStore {
   autoSwitchedFromTool: Tool | null;
   wasAutoSwitched: boolean;
   
+  // Shape tool memory
+  lastUsedShapeTool: Tool;
+  
   // Actions
   setActiveTool: (tool: Tool) => void;
   updateToolSettings: (settings: Partial<ToolSettings>) => void;
@@ -219,6 +222,9 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   // Auto-switch state
   autoSwitchedFromTool: null,
   wasAutoSwitched: false,
+  
+  // Shape tool memory
+  lastUsedShapeTool: 'rectangle',
 
   setActiveTool: (tool) => {
     console.log('🔧 Setting active tool:', tool);
@@ -226,6 +232,10 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     set((state) => {
       const timestamp = Date.now();
       const newVersion = state.stateVersion + 1;
+      
+      // Track shape tool usage
+      const isShapeTool = ['rectangle', 'circle', 'ellipse', 'triangle', 'hexagon', 'star', 'pentagon', 'diamond', 'heart'].includes(tool);
+      const lastUsedShapeTool = isShapeTool ? tool : state.lastUsedShapeTool;
       
       // Clear auto-switch state when user manually changes tools
       // (unless this is part of an auto-switch operation)
@@ -241,11 +251,13 @@ export const useToolStore = create<ToolStore>((set, get) => ({
         tool,
         version: newVersion,
         historyLength: newHistory.length,
-        clearingAutoSwitch: clearAutoSwitch
+        clearingAutoSwitch: clearAutoSwitch,
+        lastUsedShapeTool
       });
       
       return {
         activeTool: tool,
+        lastUsedShapeTool,
         stateVersion: newVersion,
         lastStateUpdate: timestamp,
         toolChangeHistory: newHistory,

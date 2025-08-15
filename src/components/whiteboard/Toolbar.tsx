@@ -287,7 +287,8 @@ export const Toolbar: React.FC = () => {
     activeColorPalette,
     setPaletteCustomColor,
     colorPalettes,
-    setActiveColorPalette
+    setActiveColorPalette,
+    lastUsedShapeTool
   } = useToolStore();
   
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -332,6 +333,10 @@ export const Toolbar: React.FC = () => {
   // Find the currently selected shape for the dropdown button
   const selectedShape = SHAPE_TOOLS.find(shape => shape.id === activeTool);
   const isShapeSelected = !!selectedShape;
+  
+  // Show last used shape when not actively using a shape tool
+  const displayedShape = selectedShape || SHAPE_TOOLS.find(shape => shape.id === lastUsedShapeTool);
+  const shouldHighlightShapeButton = isShapeSelected;
 
   return (
     <div ref={toolbarRef} className="bg-card border-b border-company-light-pink/20 relative">
@@ -376,13 +381,13 @@ export const Toolbar: React.FC = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant={isShapeSelected ? "default" : "ghost"}
+                  variant={shouldHighlightShapeButton ? "default" : "ghost"}
                   size="sm"
-                  className={`p-2 gap-1 ${isShapeSelected ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
-                  title={selectedShape ? selectedShape.label : "Select Shape"}
+                  className={`p-2 gap-1 ${shouldHighlightShapeButton ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
+                  title={displayedShape ? displayedShape.label : "Select Shape"}
                 >
-                  {selectedShape ? (
-                    <selectedShape.icon className="w-4 h-4" />
+                  {displayedShape ? (
+                    <displayedShape.icon className="w-4 h-4" />
                   ) : (
                     <Square className="w-4 h-4" />
                   )}
