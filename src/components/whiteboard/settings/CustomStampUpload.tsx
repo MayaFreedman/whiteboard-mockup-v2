@@ -76,7 +76,7 @@ export const CustomStampUpload = forwardRef<CustomStampUploadHandle, CustomStamp
           </div>
           <div className="text-xs text-muted-foreground">
             Click to upload or drag and drop<br />
-            PNG, JPEG files only • Max 2MB
+            PNG, JPEG files only • Max 1MB
           </div>
         </div>
         
