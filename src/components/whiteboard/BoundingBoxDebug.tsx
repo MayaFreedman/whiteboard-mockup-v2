@@ -15,14 +15,36 @@ export const BoundingBoxDebug: React.FC<BoundingBoxDebugProps> = ({
 }) => {
   const { objects } = useWhiteboardStore();
 
+  console.log('🔴 BoundingBoxDebug render:', { 
+    enabled, 
+    selectedCount: selectedObjectIds.length, 
+    selectedIds: selectedObjectIds,
+    totalObjects: Object.keys(objects).length 
+  });
+
   if (!enabled) return null;
 
   const selectedObjects = selectedObjectIds
     .map(id => ({ id, obj: objects[id] }))
     .filter(({ obj }) => obj);
 
+  console.log('🔴 Filtered selected objects:', selectedObjects.length);
+
   return (
     <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1000 }}>
+      {/* Always show a test box */}
+      <div 
+        className="absolute border-4 border-red-500 bg-red-500/20"
+        style={{
+          left: 50,
+          top: 50, 
+          width: 100,
+          height: 50
+        }}
+      >
+        <div className="text-red-500 font-bold">DEBUG ACTIVE</div>
+      </div>
+      
       {selectedObjects.map(({ id, obj }) => {
         // Get the current position (including live drag if applicable)
         const currentPos = liveDragPositions[id] || { x: obj.x, y: obj.y };
