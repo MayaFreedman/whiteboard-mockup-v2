@@ -593,13 +593,30 @@ export const useCanvasInteractions = () => {
   useEffect(() => {
     const handleDocumentMouseUp = (event: MouseEvent) => {
       // Only handle if we're actually drawing or dragging something on the canvas
-      if (isDrawingRef.current || isDraggingRef.current) {
-        console.log('🖱️ Document mouse up - ending current interaction', {
-          target: event.target,
-          drawing: isDrawingRef.current,
-          dragging: isDraggingRef.current
-        });
-        endCurrentDrawing();
+      // AND the mouseup happened outside the canvas area
+      const canvas = document.getElementById('whiteboard-canvas') as HTMLCanvasElement;
+      if (canvas && (isDrawingRef.current || isDraggingRef.current)) {
+        const canvasRect = canvas.getBoundingClientRect();
+        const isOutsideCanvas = event.clientX < canvasRect.left || 
+                               event.clientX > canvasRect.right || 
+                               event.clientY < canvasRect.top || 
+                               event.clientY > canvasRect.bottom;
+        
+        if (isOutsideCanvas) {
+          console.log('🖱️ Document mouse up outside canvas - ending interaction', {
+            target: event.target,
+            drawing: isDrawingRef.current,
+            dragging: isDraggingRef.current,
+            mousePos: { x: event.clientX, y: event.clientY },
+            canvasRect: { left: canvasRect.left, right: canvasRect.right, top: canvasRect.top, bottom: canvasRect.bottom }
+          });
+          endCurrentDrawing();
+        } else {
+          console.log('🖱️ Document mouse up inside canvas - letting canvas handle it', {
+            drawing: isDrawingRef.current,
+            dragging: isDraggingRef.current
+          });
+        }
       } else {
         console.log('🖱️ Document mouse up - ignoring (not drawing/dragging)', {
           target: event.target,
@@ -609,10 +626,9 @@ export const useCanvasInteractions = () => {
       }
     };
 
-    // Use capture phase to ensure this runs before canvas mouseup handlers
-    document.addEventListener('mouseup', handleDocumentMouseUp, true);
+    document.addEventListener('mouseup', handleDocumentMouseUp);
     return () => {
-      document.removeEventListener('mouseup', handleDocumentMouseUp, true);
+      document.removeEventListener('mouseup', handleDocumentMouseUp);
     };
   }, [endCurrentDrawing]);
 
