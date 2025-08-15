@@ -933,8 +933,9 @@ export const Canvas: React.FC = () => {
     if (immediateTextObjectId && objects[immediateTextObjectId]) {
       const currentObject = objects[immediateTextObjectId];
 
-      if (finalText) {
+      if (finalText || currentObject.type === "sticky-note") {
         // Keep the existing object with final content
+        // Allow empty sticky notes but not empty text objects
         updateObject(immediateTextObjectId, {
           data: {
             ...currentObject.data,
@@ -947,7 +948,7 @@ export const Canvas: React.FC = () => {
           updateTextBounds(currentObject, finalText);
         }
       } else {
-        // Delete the object if no text was entered
+        // Delete the object if no text was entered (only for regular text objects)
         deleteObject(immediateTextObjectId, userId);
       }
 
