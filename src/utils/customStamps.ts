@@ -170,29 +170,16 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
   }
   
   try {
-    console.log('🔄 Starting addCustomStamp process...');
-    
     // Process the image
-    console.log('📸 Processing image file...');
     const { dataUrl, preview, size } = await processImageFile(file);
-    console.log('✅ Image processed successfully, size:', size);
     
     // Check for duplicate stamps
     const existingStamps = getCustomStamps();
-    console.log('Checking for duplicates against', existingStamps.length, 'existing stamps');
-    console.log('New stamp dataUrl starts with:', dataUrl.substring(0, 50) + '...');
-    existingStamps.forEach((stamp, index) => {
-      console.log(`Stamp ${index} dataUrl starts with:`, stamp.dataUrl.substring(0, 50) + '...');
-    });
-    
     const isDuplicate = existingStamps.some(stamp => stamp.dataUrl === dataUrl);
     
     if (isDuplicate) {
-      console.log('❌ DUPLICATE DETECTED - throwing error');
       throw new Error('This stamp has already been uploaded');
     }
-    
-    console.log('✅ No duplicate found, creating stamp object...');
     
     // Create stamp object
     const stamp: CustomStamp = {
@@ -205,15 +192,12 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
       size
     };
     
-    console.log('📂 Saving stamp to localStorage...');
-    
     // Add new stamp to existing ones
     const updatedStamps = [stamp, ...existingStamps];
     
     // Save with automatic cleanup
     saveCustomStamps(updatedStamps);
     
-    console.log('✅ Stamp saved successfully! ID:', stamp.id);
     return stamp;
   } catch (error) {
     if (error instanceof Error) {
@@ -229,16 +213,13 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
 export const removeCustomStamp = (stampDataUrl: string): void => {
   try {
     const stamps = getCustomStamps();
-    console.log('Before removal - stamp count:', stamps.length);
     const updatedStamps = stamps.filter(stamp => stamp.dataUrl !== stampDataUrl);
-    console.log('After filtering - stamp count:', updatedStamps.length);
     
     if (stamps.length === updatedStamps.length) {
       console.warn('No stamp was removed - dataUrl not found');
     }
     
     saveCustomStamps(updatedStamps);
-    console.log('Successfully saved updated stamps to localStorage');
   } catch (error) {
     console.error('Failed to remove custom stamp:', error);
     throw new Error('Failed to remove stamp');

@@ -13,63 +13,40 @@ export interface CustomStampUploadHandle {
 export const CustomStampUpload = forwardRef<CustomStampUploadHandle, CustomStampUploadProps>(({
   onStampAdded
 }, ref) => {
-  console.log('🔄 CustomStampUpload component rendering...');
-  
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [fileInputKey, setFileInputKey] = useState(0); // Force re-render of file input
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  console.log('📋 Component state - isUploading:', isUploading, 'dragActive:', dragActive);
-  
   useImperativeHandle(ref, () => ({
-    openFileDialog: () => {
-      console.log('🎯 openFileDialog called, input ref:', fileInputRef.current);
-      fileInputRef.current?.click();
-    }
+    openFileDialog: () => fileInputRef.current?.click()
   }), []);
   
   const supported = isCustomStampsSupported();
   const storageInfo = getStorageInfo();
-  
-  console.log('💾 Storage info:', storageInfo);
   const handleFileUpload = useCallback(async (files: FileList | File[]) => {
-    console.log('🚀 handleFileUpload called with files:', files.length);
-    if (!files.length) {
-      console.log('❌ No files provided');
-      return;
-    }
+    if (!files.length) return;
     
     const file = files[0];
-    console.log('📁 Processing file:', file.name, 'type:', file.type, 'size:', file.size);
-    
     setIsUploading(true);
     try {
-      console.log('🔄 Calling addCustomStamp...');
       await addCustomStamp(file);
-      console.log('✅ addCustomStamp completed');
       toast.success(`"${file.name}" added to custom stamps`);
       onStampAdded?.();
       
       // Reset the file input to allow re-uploading the same file
-      console.log('🔄 Resetting file input...');
       setFileInputKey(prev => prev + 1);
     } catch (error) {
-      console.error('❌ Error in handleFileUpload:', error);
       const message = error instanceof Error ? error.message : 'Failed to upload stamp';
       toast.error(message);
     } finally {
-      console.log('🏁 Upload process finished');
       setIsUploading(false);
     }
   }, [onStampAdded]);
+  
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('📤 handleInputChange called, files:', e.target.files?.length || 0);
     if (e.target.files) {
-      console.log('📂 Files found, calling handleFileUpload');
       handleFileUpload(e.target.files);
-    } else {
-      console.log('❌ No files in input');
     }
   }, [handleFileUpload]);
   const handleDragOver = useCallback((e: React.DragEvent) => {
