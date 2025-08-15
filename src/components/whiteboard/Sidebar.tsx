@@ -14,9 +14,9 @@ export const WhiteboardSidebar: React.FC = () => {
         width: '320px', // Reduced from 384px (w-96) to 320px (w-80)
         height: 'auto',
         maxHeight: 'calc(100vh - var(--toolbar-height, 64px))',
-        overflow: 'visible'
+        overflow: 'hidden'
       }}>
-        <div className="flex flex-col bg-sidebar border-sidebar-border">
+        <div className="flex flex-col bg-sidebar border-sidebar-border h-full overflow-y-auto">
           <div className="p-2">
             <DynamicToolSettings />
           </div>

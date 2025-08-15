@@ -130,7 +130,7 @@ export const BackgroundSettings: React.FC<BackgroundSettingsProps> = ({ open, on
             {customBackgrounds.length > 0 && (
               <div className="space-y-2 mb-3">
                 <div className="text-xs text-muted-foreground">Your Backgrounds</div>
-                <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-1">
+                <div className="grid grid-cols-2 gap-2">
                   {customBackgrounds.map(bg => (
                     <div key={bg.id} className="relative group">
                       <SimpleTooltip content={bg.name}>
