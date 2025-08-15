@@ -4,7 +4,7 @@ import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useToolStore } from '../../stores/toolStore';
 import { useUser } from '../../contexts/UserContext';
 import { Button } from '../ui/button';
-
+import { SimpleTooltip } from '../ui/simple-tooltip';
 import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -136,33 +136,36 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
       <div className="space-y-2">
         <Label className="text-sm font-medium">Formatting</Label>
         <div className="flex gap-1">
-          <Button
-            variant={textData.bold ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleTextPropertyChange('bold', !textData.bold)}
-            className="p-2"
-            title="Bold"
-          >
-            <Bold className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={textData.italic ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleTextPropertyChange('italic', !textData.italic)}
-            className="p-2"
-            title="Italic"
-          >
-            <Italic className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={textData.underline ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleTextPropertyChange('underline', !textData.underline)}
-            className="p-2"
-            title="Underline"
-          >
-            <Underline className="w-4 h-4" />
-          </Button>
+          <SimpleTooltip content="Bold">
+            <Button
+              variant={textData.bold ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTextPropertyChange('bold', !textData.bold)}
+              className="p-2"
+            >
+              <Bold className="w-4 h-4" />
+            </Button>
+          </SimpleTooltip>
+          <SimpleTooltip content="Italic">
+            <Button
+              variant={textData.italic ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTextPropertyChange('italic', !textData.italic)}
+              className="p-2"
+            >
+              <Italic className="w-4 h-4" />
+            </Button>
+          </SimpleTooltip>
+          <SimpleTooltip content="Underline">
+            <Button
+              variant={textData.underline ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTextPropertyChange('underline', !textData.underline)}
+              className="p-2"
+            >
+              <Underline className="w-4 h-4" />
+            </Button>
+          </SimpleTooltip>
         </div>
       </div>
 
@@ -170,33 +173,36 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
       <div className="space-y-2">
         <Label className="text-sm font-medium">Alignment</Label>
         <div className="flex gap-1">
-          <Button
-            variant={textData.textAlign === 'left' ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleTextPropertyChange('textAlign', 'left')}
-            className="p-2"
-            title="Align Left"
-          >
-            <AlignLeft className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={textData.textAlign === 'center' ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleTextPropertyChange('textAlign', 'center')}
-            className="p-2"
-            title="Align Center"
-          >
-            <AlignCenter className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={textData.textAlign === 'right' ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleTextPropertyChange('textAlign', 'right')}
-            className="p-2"
-            title="Align Right"
-          >
-            <AlignRight className="w-4 h-4" />
-          </Button>
+          <SimpleTooltip content="Align Left">
+            <Button
+              variant={textData.textAlign === 'left' ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTextPropertyChange('textAlign', 'left')}
+              className="p-2"
+            >
+              <AlignLeft className="w-4 h-4" />
+            </Button>
+          </SimpleTooltip>
+          <SimpleTooltip content="Align Center">
+            <Button
+              variant={textData.textAlign === 'center' ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTextPropertyChange('textAlign', 'center')}
+              className="p-2"
+            >
+              <AlignCenter className="w-4 h-4" />
+            </Button>
+          </SimpleTooltip>
+          <SimpleTooltip content="Align Right">
+            <Button
+              variant={textData.textAlign === 'right' ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTextPropertyChange('textAlign', 'right')}
+              className="p-2"
+            >
+              <AlignRight className="w-4 h-4" />
+            </Button>
+          </SimpleTooltip>
         </div>
       </div>
 
@@ -205,13 +211,13 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
         <Label className="text-sm font-medium">Text Color</Label>
         <div className="flex gap-1 flex-wrap">
           {availableColors.map(color => (
-            <button
-              key={color}
-              className={`w-6 h-6 rounded border-2 ${obj.stroke === color ? 'border-primary' : 'border-border'}`}
-              style={{ backgroundColor: color }}
-              onClick={() => handleColorChange(color)}
-              title={`Color: ${color}`}
-            />
+            <SimpleTooltip key={color} content={`Color: ${color}`}>
+              <button
+                className={`w-6 h-6 rounded border-2 ${obj.stroke === color ? 'border-primary' : 'border-border'}`}
+                style={{ backgroundColor: color }}
+                onClick={() => handleColorChange(color)}
+              />
+            </SimpleTooltip>
           ))}
         </div>
       </div>

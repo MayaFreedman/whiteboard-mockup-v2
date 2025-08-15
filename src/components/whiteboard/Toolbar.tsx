@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { SimpleTooltip } from '../ui/simple-tooltip';
 
 import { 
   Pencil, 
@@ -120,15 +121,16 @@ const ToolButton: React.FC<{
   isActive: boolean;
   onClick: () => void;
 }> = ({ tool, isActive, onClick }) => (
-  <Button
-    variant={isActive ? "default" : "ghost"}
-    size="sm"
-    onClick={onClick}
-    className={`p-2 ${isActive ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
-    title={tool.label}
-  >
-    <tool.icon className="w-4 h-4" />
-  </Button>
+  <SimpleTooltip content={tool.label}>
+    <Button
+      variant={isActive ? "default" : "ghost"}
+      size="sm"
+      onClick={onClick}
+      className={`p-2 ${isActive ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
+    >
+      <tool.icon className="w-4 h-4" />
+    </Button>
+  </SimpleTooltip>
 );
 
 /**
@@ -139,16 +141,17 @@ const ColorButton: React.FC<{
   isSelected: boolean;
   onClick: () => void;
 }> = ({ color, isSelected, onClick }) => (
-  <button
-    className={`w-6 h-6 rounded border-2 transition-all flex-shrink-0 ${
-      isSelected 
-        ? 'border-company-dark-blue scale-110' 
-        : 'border-border hover:border-muted-foreground/50'
-    }`}
-    style={{ backgroundColor: color }}
-    onClick={onClick}
-    title={`Select color: ${color}`}
-  />
+  <SimpleTooltip content={`Select color: ${color}`}>
+    <button
+      className={`w-6 h-6 rounded border-2 transition-all flex-shrink-0 ${
+        isSelected 
+          ? 'border-company-dark-blue scale-110' 
+          : 'border-border hover:border-muted-foreground/50'
+      }`}
+      style={{ backgroundColor: color }}
+      onClick={onClick}
+    />
+  </SimpleTooltip>
 );
 
 /**
@@ -234,41 +237,45 @@ const ActionButtons: React.FC = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        title="Undo (Ctrl+Z)"
-        onClick={handleUndo}
-        disabled={!canUndo(userId)}
-      >
-        <Undo className="w-4 h-4" />
-      </Button>
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        title="Redo (Ctrl+Y)"
-        onClick={handleRedo}
-        disabled={!canRedo(userId)}
-      >
-        <Redo className="w-4 h-4" />
-      </Button>
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        title="Screenshot"
-        onClick={handleScreenshot}
-      >
-        <Camera className="w-4 h-4" />
-      </Button>
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        title="Clear Canvas"
-        onClick={handleClearCanvas}
-        className="text-destructive hover:text-destructive"
-      >
-        <Trash2 className="w-4 h-4" />
-      </Button>
+      <SimpleTooltip content="Undo (Ctrl+Z)">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleUndo}
+          disabled={!canUndo(userId)}
+        >
+          <Undo className="w-4 h-4" />
+        </Button>
+      </SimpleTooltip>
+      <SimpleTooltip content="Redo (Ctrl+Y)">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleRedo}
+          disabled={!canRedo(userId)}
+        >
+          <Redo className="w-4 h-4" />
+        </Button>
+      </SimpleTooltip>
+      <SimpleTooltip content="Screenshot">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleScreenshot}
+        >
+          <Camera className="w-4 h-4" />
+        </Button>
+      </SimpleTooltip>
+      <SimpleTooltip content="Clear Canvas">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleClearCanvas}
+          className="text-destructive hover:text-destructive"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </SimpleTooltip>
     </div>
   );
 };
@@ -380,19 +387,20 @@ export const Toolbar: React.FC = () => {
           <div className="flex items-center gap-1 flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant={shouldHighlightShapeButton ? "default" : "ghost"}
-                  size="sm"
-                  className={`p-2 gap-1 ${shouldHighlightShapeButton ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
-                  title={displayedShape ? displayedShape.label : "Select Shape"}
-                >
-                  {displayedShape ? (
-                    <displayedShape.icon className="w-4 h-4" />
-                  ) : (
-                    <Square className="w-4 h-4" />
-                  )}
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
+                <SimpleTooltip content={displayedShape ? displayedShape.label : "Select Shape"}>
+                  <Button
+                    variant={shouldHighlightShapeButton ? "default" : "ghost"}
+                    size="sm"
+                    className={`p-2 gap-1 ${shouldHighlightShapeButton ? 'bg-company-dark-blue text-company-dark-blue-foreground hover:bg-company-dark-blue/90' : ''}`}
+                  >
+                    {displayedShape ? (
+                      <displayedShape.icon className="w-4 h-4" />
+                    ) : (
+                      <Square className="w-4 h-4" />
+                    )}
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </SimpleTooltip>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="bg-popover">
                 {SHAPE_TOOLS.map((shape) => (
@@ -413,15 +421,16 @@ export const Toolbar: React.FC = () => {
           <div className="flex items-center gap-1 flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`p-2 gap-1 text-sm font-medium ${isMobile ? 'px-2' : ''}`}
-                  title="Select color palette"
-                >
-                  <span className={isMobile ? 'hidden' : ''}>Colors</span>
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
+                <SimpleTooltip content="Select color palette">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`p-2 gap-1 text-sm font-medium ${isMobile ? 'px-2' : ''}`}
+                  >
+                    <span className={isMobile ? 'hidden' : ''}>Colors</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </SimpleTooltip>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="bg-popover">
                 {Object.entries(colorPalettes).map(([paletteName, palette]) => (
@@ -481,7 +490,7 @@ export const Toolbar: React.FC = () => {
                             handleColorSelect(color);
                           }
                         }}
-                        title={isRainbow ? "Click to choose custom color" : "Click to select color, or click rainbow dot to change"}
+                        
                       />
                       
                       {/* Rainbow dot indicator when custom color is set - clickable to open picker */}
@@ -495,7 +504,7 @@ export const Toolbar: React.FC = () => {
                             e.stopPropagation(); // Prevent triggering the main button
                             colorPickerRef.current?.click();
                           }}
-                          title="Click to change custom color"
+                          
                         >
                           <div className="w-1.5 h-1.5 bg-white rounded-full" />
                         </button>

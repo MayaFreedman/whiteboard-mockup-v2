@@ -4,6 +4,7 @@ import { useUser } from '../../contexts/UserContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Switch } from '../ui/switch';
+import { SimpleTooltip } from '../ui/simple-tooltip';
 import { Upload, X } from 'lucide-react';
 import { getCustomBackgrounds, removeCustomBackgroundById, addCustomBackground } from '../../utils/customBackgrounds';
 import { preloadAndCacheImage } from '../../utils/imagePreloader';
@@ -132,26 +133,28 @@ export const BackgroundSettings: React.FC<BackgroundSettingsProps> = ({ open, on
                 <div className="grid grid-cols-2 gap-2">
                   {customBackgrounds.map(bg => (
                     <div key={bg.id} className="relative group">
-                      <button
-                        className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden"
-                        title={bg.name}
-                        onMouseEnter={() => preloadAndCacheImage(bg.dataUrl)}
-                        onClick={() => handleSelectCustomBg(bg)}
-                      >
-                        <img src={bg.preview} alt={`${bg.name} custom background`} loading="lazy" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors" />
-                      </button>
-                      <button 
-                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-background/90 border border-border shadow-sm flex items-center justify-center hover:bg-muted" 
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleDeleteBackground(bg.id);
-                        }} 
-                        aria-label={`Delete ${bg.name}`} 
-                        title="Delete custom background"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
+                      <SimpleTooltip content={bg.name}>
+                        <button
+                          className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden"
+                          onMouseEnter={() => preloadAndCacheImage(bg.dataUrl)}
+                          onClick={() => handleSelectCustomBg(bg)}
+                        >
+                          <img src={bg.preview} alt={`${bg.name} custom background`} loading="lazy" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors" />
+                        </button>
+                      </SimpleTooltip>
+                      <SimpleTooltip content="Delete custom background">
+                        <button 
+                          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-background/90 border border-border shadow-sm flex items-center justify-center hover:bg-muted" 
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleDeleteBackground(bg.id);
+                          }} 
+                          aria-label={`Delete ${bg.name}`}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </SimpleTooltip>
                     </div>
                   ))}
                 </div>
@@ -163,19 +166,19 @@ export const BackgroundSettings: React.FC<BackgroundSettingsProps> = ({ open, on
               <div className="text-xs text-muted-foreground">Preset Backgrounds</div>
               <div className="grid grid-cols-2 gap-2">
                 {backgroundImages.map(bg => (
-                  <button 
-                    key={bg.name} 
-                    className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group" 
-                    onMouseEnter={() => preloadAndCacheImage(bg.url)} 
-                    onClick={() => handleSelectPresetBg(bg.url)} 
-                    title={bg.name}
-                  >
-                    <img src={bg.preview} alt={`${bg.name} background`} loading="lazy" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                    <div className="absolute bottom-1 left-1 right-1">
-                      <span className="text-xs text-white font-medium bg-black/50 px-1 rounded">{bg.name}</span>
-                    </div>
-                  </button>
+                  <SimpleTooltip key={bg.name} content={bg.name}>
+                    <button 
+                      className="relative w-full h-16 rounded border-2 border-border hover:border-company-dark-blue transition-colors overflow-hidden group" 
+                      onMouseEnter={() => preloadAndCacheImage(bg.url)} 
+                      onClick={() => handleSelectPresetBg(bg.url)}
+                    >
+                      <img src={bg.preview} alt={`${bg.name} background`} loading="lazy" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                      <div className="absolute bottom-1 left-1 right-1">
+                        <span className="text-xs text-white font-medium bg-black/50 px-1 rounded">{bg.name}</span>
+                      </div>
+                    </button>
+                  </SimpleTooltip>
                 ))}
               </div>
             </div>

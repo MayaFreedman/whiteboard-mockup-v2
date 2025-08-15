@@ -1,5 +1,6 @@
 
 import React, { useMemo } from 'react';
+import { SimpleTooltip } from '../ui/simple-tooltip';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { Badge } from '../ui/badge';
 
@@ -130,19 +131,20 @@ export const StrokeTrackingPanel: React.FC = () => {
               {Object.entries(strokeStats.colorFrequency).map(([color, count]) => {
                 const percentage = (count / strokeStats.totalStrokes) * 100;
                 return (
-                  <div 
+                  <SimpleTooltip 
                     key={color} 
-                    className="flex-shrink-0"
-                    title={`${color}: ${count} strokes (${percentage.toFixed(1)}%)`}
+                    content={`${color}: ${count} strokes (${percentage.toFixed(1)}%)`}
                   >
-                    <div 
-                      className="w-3 h-6 border rounded-sm"
-                      style={{ 
-                        backgroundColor: color,
-                        opacity: Math.max(0.3, percentage / 100)
-                      }}
-                    ></div>
-                  </div>
+                    <div className="flex-shrink-0">
+                      <div 
+                        className="w-3 h-6 border rounded-sm"
+                        style={{ 
+                          backgroundColor: color,
+                          opacity: Math.max(0.3, percentage / 100)
+                        }}
+                      ></div>
+                    </div>
+                  </SimpleTooltip>
                 );
               })}
             </div>

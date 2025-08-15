@@ -142,17 +142,17 @@ export const ShapePropertiesPanel: React.FC<ShapePropertiesPanelProps> = ({ sele
         {/* Active Color Palette */}
         <div className="flex flex-wrap gap-1">
           {activeColors.map((color, index) => (
-            <button
-              key={index}
-              className={`w-6 h-6 rounded border-2 transition-all ${
-                (colorMode === 'fill' ? obj.fill : obj.stroke) === color 
-                  ? 'border-primary ring-2 ring-primary/30' 
-                  : 'border-border hover:border-primary'
-              }`}
-              style={{ backgroundColor: color }}
-              onClick={() => handleColorSelect(color)}
-              title={`${colorMode === 'fill' ? 'Fill' : 'Stroke'}: ${color}`}
-            />
+            <SimpleTooltip key={index} content={`${colorMode === 'fill' ? 'Fill' : 'Stroke'}: ${color}`}>
+              <button
+                className={`w-6 h-6 rounded border-2 transition-all ${
+                  (colorMode === 'fill' ? obj.fill : obj.stroke) === color 
+                    ? 'border-primary ring-2 ring-primary/30' 
+                    : 'border-border hover:border-primary'
+                }`}
+                style={{ backgroundColor: color }}
+                onClick={() => handleColorSelect(color)}
+              />
+            </SimpleTooltip>
           ))}
         </div>
       </div>

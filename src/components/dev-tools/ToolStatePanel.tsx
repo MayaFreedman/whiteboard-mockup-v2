@@ -1,6 +1,7 @@
 
 
 import React from 'react';
+import { SimpleTooltip } from '../ui/simple-tooltip';
 import { useToolStore } from '../../stores/toolStore';
 import { Badge } from '../ui/badge';
 
@@ -73,14 +74,14 @@ export const ToolStatePanel: React.FC = () => {
           </div>
           <div className="flex flex-wrap gap-1">
             {activeColors.map((color, index) => (
-              <span
-                key={index}
-                className={`inline-block w-4 h-4 border rounded ${
-                  color === toolSettings.strokeColor ? 'border-primary border-2 ring-1 ring-primary/30' : 'border-border'
-                }`}
-                style={{ backgroundColor: color }}
-                title={`${color} ${color === toolSettings.strokeColor ? '(current)' : ''}`}
-              ></span>
+              <SimpleTooltip key={index} content={`${color} ${color === toolSettings.strokeColor ? '(current)' : ''}`}>
+                <span
+                  className={`inline-block w-4 h-4 border rounded ${
+                    color === toolSettings.strokeColor ? 'border-primary border-2 ring-1 ring-primary/30' : 'border-border'
+                  }`}
+                  style={{ backgroundColor: color }}
+                ></span>
+              </SimpleTooltip>
             ))}
           </div>
         </div>
@@ -94,11 +95,12 @@ export const ToolStatePanel: React.FC = () => {
             <div className="flex flex-wrap gap-1">
               {recentlyUsedColors.map((color, index) => (
                 <div key={index} className="flex items-center gap-1">
-                  <span
-                    className="inline-block w-3 h-3 border rounded"
-                    style={{ backgroundColor: color }}
-                    title={color}
-                  ></span>
+                  <SimpleTooltip content={color}>
+                    <span
+                      className="inline-block w-3 h-3 border rounded"
+                      style={{ backgroundColor: color }}
+                    ></span>
+                  </SimpleTooltip>
                   <span className="text-xs">{color}</span>
                 </div>
               ))}
@@ -113,12 +115,12 @@ export const ToolStatePanel: React.FC = () => {
         <div className="bg-muted/30 p-2 rounded">
           <div className="flex flex-wrap gap-1">
             {mostRecentColors.map((color, index) => (
-              <span
-                key={index}
-                className="inline-block w-4 h-4 border rounded"
-                style={{ backgroundColor: color }}
-                title={color}
-              ></span>
+              <SimpleTooltip key={index} content={color}>
+                <span
+                  className="inline-block w-4 h-4 border rounded"
+                  style={{ backgroundColor: color }}
+                ></span>
+              </SimpleTooltip>
             ))}
           </div>
         </div>
@@ -137,12 +139,12 @@ export const ToolStatePanel: React.FC = () => {
               </div>
               <div className="flex flex-wrap gap-1">
                 {colors.map((color, index) => (
-                  <span
-                    key={index}
-                    className="inline-block w-3 h-3 border rounded"
-                    style={{ backgroundColor: color }}
-                    title={color}
-                  ></span>
+                  <SimpleTooltip key={index} content={color}>
+                    <span
+                      className="inline-block w-3 h-3 border rounded"
+                      style={{ backgroundColor: color }}
+                    ></span>
+                  </SimpleTooltip>
                 ))}
               </div>
             </div>

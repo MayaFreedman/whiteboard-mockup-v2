@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '../../ui/button';
+import { SimpleTooltip } from '../../ui/simple-tooltip';
 import { Upload, X } from 'lucide-react';
 import { Skeleton } from '../../ui/skeleton';
 import { removeCustomStamp } from '../../../utils/customStamps';
@@ -92,39 +93,41 @@ export const GridSelector: React.FC<GridSelectorProps> = ({
           
           return (
             <div key={`stamp-${index}-${item.url.substring(0, 50)}`} className="relative">
-              <button
-                className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden flex items-center justify-center ${
-                  selectedValue === item.url
-                    ? 'border-primary ring-2 ring-primary/20'
-                    : 'border-border hover:border-primary'
-                }`}
-                onClick={() => onChange(item.url)}
-                title={item.name}
-              >
+              <SimpleTooltip content={item.name}>
+                <button
+                  className={`relative w-full h-20 rounded border-2 transition-colors overflow-hidden flex items-center justify-center ${
+                    selectedValue === item.url
+                      ? 'border-primary ring-2 ring-primary/20'
+                      : 'border-border hover:border-primary'
+                  }`}
+                  onClick={() => onChange(item.url)}
+                >
                 {isLoading && (
                   <Skeleton className="w-full h-full absolute inset-0" />
                 )}
-                <img 
-                  src={item.preview} 
-                  alt={item.name}
-                  className={`w-full h-full object-contain p-2 transition-opacity duration-200 ${
-                    isLoading ? 'opacity-0' : 'opacity-100'
-                  }`}
-                  onLoad={() => handleImageLoaded(item.url)}
-                  onError={() => handleImageError(item.url)}
-                  loading="lazy"
-                />
-              </button>
+                  <img 
+                    src={item.preview} 
+                    alt={item.name}
+                    className={`w-full h-full object-contain p-2 transition-opacity duration-200 ${
+                      isLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
+                    onLoad={() => handleImageLoaded(item.url)}
+                    onError={() => handleImageError(item.url)}
+                    loading="lazy"
+                  />
+                </button>
+              </SimpleTooltip>
               
               {/* Simple X in top-right corner for custom stamps */}
               {isCustomStamp && (
-                <button
-                  onClick={(e) => handleDeleteCustomStamp(e, item.url)}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-gray-500 text-white rounded-full flex items-center justify-center z-20 hover:bg-gray-600 shadow-md"
-                  title="Delete custom stamp"
-                >
-                  <X className="w-3 h-3" />
-                </button>
+                <SimpleTooltip content="Delete custom stamp">
+                  <button
+                    onClick={(e) => handleDeleteCustomStamp(e, item.url)}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-gray-500 text-white rounded-full flex items-center justify-center z-20 hover:bg-gray-600 shadow-md"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </SimpleTooltip>
               )}
             </div>
           );
