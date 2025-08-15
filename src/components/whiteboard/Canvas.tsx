@@ -476,9 +476,12 @@ export const Canvas: React.FC = () => {
       ? whiteboardContainer.getBoundingClientRect()
       : canvas.getBoundingClientRect();
 
+    // Calculate font-size proportional offset for better cursor alignment
+    const fontSizeOffset = -(textObject.data.fontSize * 0.8 + 20);
+    
     return {
       x: Math.round(textObject.x + 4 + rect.left - 4), // Canvas position + padding + screen offset - 4 left
-      y: Math.round(textObject.y + rect.top - 70), // Adjusted for better cursor alignment
+      y: Math.round(textObject.y + rect.top + fontSizeOffset), // Font-size aware cursor alignment
       width: Math.round(textObject.width - 8), // Account for left/right padding
       height: Math.round(textObject.height - 8), // Account for top/bottom padding
       lineHeight: lineHeight,
