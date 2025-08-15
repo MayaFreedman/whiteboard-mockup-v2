@@ -756,7 +756,9 @@ export const useCanvasInteractions = () => {
             whiteboardStore.selectedObjectIds.forEach(id => {
               const obj = whiteboardStore.objects[id];
               if (obj) {
-                initialPositions[id] = { x: obj.x, y: obj.y };
+                // Use live drag position if available, otherwise use stored position
+                const livePosition = liveDragPositionsRef.current[id];
+                initialPositions[id] = livePosition ? { x: livePosition.x, y: livePosition.y } : { x: obj.x, y: obj.y };
               }
             });
             initialDragPositionsRef.current = initialPositions;
