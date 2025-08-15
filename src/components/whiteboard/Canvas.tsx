@@ -1356,7 +1356,7 @@ export const Canvas: React.FC = () => {
             className="absolute border-none resize-none outline-none overflow-hidden"
           style={{
             left: textEditorPosition.x + 2,
-            top: textEditorPosition.y - 65,
+            top: textEditorPosition.y + 7,
             width: textEditorPosition.width + 16,
             height: textEditorPosition.height + 16,
             fontSize: objects[editingTextId]?.data?.fontSize || 16,
@@ -1447,8 +1447,8 @@ export const Canvas: React.FC = () => {
                 className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
                style={
                  {
-                    left: immediateTextPosition.x,
-                    top: immediateTextPosition.y - 65,
+                   left: immediateTextPosition.x,
+                   top: immediateTextPosition.y,
                    // Use canvas width for both regular text and sticky notes to prevent early wrapping
                    width: isEditingStickyNote ? editingObject.width : 800,
                    height: isEditingStickyNote
