@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useWhiteboardStore } from '../../stores/whiteboardStore';
 import { useCanvasOffset } from '../../hooks/useCanvasOffset';
 
@@ -15,20 +15,38 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
   const { objects } = useWhiteboardStore();
   const { canvasOffset } = useCanvasOffset();
   const [, forceUpdate] = useState({});
+  const lastPositionRef = useRef<{ x: number; y: number } | null>(null);
   
-  // Get current live drag position for this specific object
-  const currentLiveDragPosition = useMemo(() => {
-    if (!getLiveDragPositions) return null;
-    const liveDragPositions = getLiveDragPositions();
-    return liveDragPositions[objectId] || null;
-  }, [getLiveDragPositions, objectId]);
-  
-  // Force re-render immediately when this object's live position changes
+  // Check for live drag position changes and force re-render immediately
   useEffect(() => {
-    if (currentLiveDragPosition) {
-      forceUpdate({});
-    }
-  }, [currentLiveDragPosition]);
+    if (!getLiveDragPositions) return;
+    
+    const checkForUpdates = () => {
+      const liveDragPositions = getLiveDragPositions();
+      const currentPosition = liveDragPositions[objectId];
+      
+      // Check if this object's position has changed
+      if (currentPosition) {
+        const lastPosition = lastPositionRef.current;
+        if (!lastPosition || 
+            lastPosition.x !== currentPosition.x || 
+            lastPosition.y !== currentPosition.y) {
+          lastPositionRef.current = { ...currentPosition };
+          forceUpdate({});
+        }
+      } else if (lastPositionRef.current) {
+        // Object is no longer being dragged
+        lastPositionRef.current = null;
+        forceUpdate({});
+      }
+    };
+    
+    // Check immediately and then continuously during potential drag
+    checkForUpdates();
+    const interval = setInterval(checkForUpdates, 16); // ~60fps
+    
+    return () => clearInterval(interval);
+  }, [objectId, getLiveDragPositions]);
   
   let obj = objects[objectId];
   
