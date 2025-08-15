@@ -1026,16 +1026,17 @@ export const useCanvasRendering = (
               });
             }
 
-            // Selection border
+            // Selection border - use dashed border like text objects
             if (isSelected) {
               ctx.save();
               ctx.strokeStyle = "#007AFF";
-              ctx.lineWidth = 3;
+              ctx.lineWidth = 1;
+              ctx.setLineDash([2, 2]);
               ctx.strokeRect(
-                obj.x - 2,
-                obj.y - 2,
-                obj.width + 4,
-                obj.height + 4
+                Math.round(obj.x),
+                Math.round(obj.y),
+                Math.round(obj.width),
+                Math.round(obj.height)
               );
               ctx.restore();
             }
