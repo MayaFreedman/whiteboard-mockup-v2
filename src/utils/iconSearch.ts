@@ -325,21 +325,30 @@ function scoreIcon(
     const nameStart = nameTokens.some((w) => w.startsWith(t));
     const keyStart = keywordTokens.some((w) => w.startsWith(t));
     
-    // More intelligent substring matching - avoid false positives
+    // Much more restrictive substring matching - only for very specific cases
     const nameSub = nameTokens.some((w) => {
-      // Only allow substring if it's a meaningful portion of the word
-      if (w.length < 6) return false; // Don't substring match short words
-      if (t.length < 4) return false; // Don't substring match with very short queries
+      // Only allow substring for longer words and longer queries
+      if (w.length < 8) return false; // Increased from 6
+      if (t.length < 5) return false; // Increased from 4
       const includes = w.includes(t);
-      // Avoid matching at the very end of words (like "star" in "restart")
-      if (includes && w.endsWith(t) && w.length > t.length + 2) return false;
+      // Must be in the middle of the word, not at start or end
+      const startsWithQuery = w.startsWith(t);
+      const endsWithQuery = w.endsWith(t);
+      if (startsWithQuery || endsWithQuery) return false;
+      
+      // Additional check: the query should be a meaningful part (at least 40% of the word)
+      if (t.length / w.length < 0.4) return false;
+      
       return includes;
     });
     const keySub = keywordTokens.some((w) => {
-      if (w.length < 6) return false;
-      if (t.length < 4) return false;
+      if (w.length < 8) return false;
+      if (t.length < 5) return false;
       const includes = w.includes(t);
-      if (includes && w.endsWith(t) && w.length > t.length + 2) return false;
+      const startsWithQuery = w.startsWith(t);
+      const endsWithQuery = w.endsWith(t);
+      if (startsWithQuery || endsWithQuery) return false;
+      if (t.length / w.length < 0.4) return false;
       return includes;
     });
 
@@ -360,13 +369,13 @@ function scoreIcon(
       strongHit = true; 
     }
     
-    // More restrictive substring matching
+    // Very restrictive substring matching
     if (!nameExact && !nameStart && nameSub) { 
-      score += 3; // Reduced from 4 + bonus
+      score += 2; // Further reduced
       strongHit = true; 
     }
     if (!keyExact && !keyStart && keySub) { 
-      score += 2; // Reduced from 3 + bonus
+      score += 1; // Further reduced
       strongHit = true; 
     }
 
@@ -381,22 +390,9 @@ function scoreIcon(
     const nameStart = nameTokens.some((w) => w.startsWith(t));
     const keyStart = keywordTokens.some((w) => w.startsWith(t));
     
-    // Be very conservative with substring matching for expanded tokens
-    const nameSub = nameTokens.some((w) => {
-      if (w.length < 7) return false; // Even more restrictive for expanded tokens
-      if (t.length < 5) return false; // Require longer query tokens
-      const includes = w.includes(t);
-      // Avoid end-of-word matches completely for expanded tokens
-      if (includes && (w.endsWith(t) || w.startsWith(t))) return false;
-      return includes && (w.indexOf(t) > 0 && w.indexOf(t) < w.length - t.length);
-    });
-    const keySub = keywordTokens.some((w) => {
-      if (w.length < 7) return false;
-      if (t.length < 5) return false; 
-      const includes = w.includes(t);
-      if (includes && (w.endsWith(t) || w.startsWith(t))) return false;
-      return includes && (w.indexOf(t) > 0 && w.indexOf(t) < w.length - t.length);
-    });
+    // Disable substring matching for expanded tokens completely to prevent false positives
+    const nameSub = false; // Completely disabled
+    const keySub = false; // Completely disabled
 
     if (nameExact) { score += 6; strongHit = true; }
     if (keyExact) { score += 6; strongHit = true; }
@@ -406,9 +402,7 @@ function scoreIcon(
     if (!nameExact && allowPrefix && nameStart) { score += 4; strongHit = true; }
     if (!keyExact && allowPrefix && keyStart) { score += 4; strongHit = true; }
     
-    // Very limited substring matching for expanded tokens
-    if (!nameExact && !nameStart && nameSub) { score += 1; strongHit = true; }
-    if (!keyExact && !keyStart && keySub) { score += 1; strongHit = true; }
+    // No substring matching for expanded tokens
 
     if (groupTokens.includes(t)) { score += 3; groupHit = true; }
     if (catTokens.includes(t)) { score += 1; categoryHit = true; }
