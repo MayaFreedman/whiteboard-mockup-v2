@@ -476,9 +476,9 @@ export const Canvas: React.FC = () => {
       ? whiteboardContainer.getBoundingClientRect()
       : canvas.getBoundingClientRect();
 
-    // Calculate font-size proportional offset - much smaller base offset for tiny fonts
+    // Calculate font-size proportional offset - larger offset for tiny fonts to bring cursor up
     const fontSizeOffset = textObject.data.fontSize < 30 
-      ? -(textObject.data.fontSize * 0.01 + 55) // Much smaller offset for tiny fonts
+      ? -(textObject.data.fontSize * 0.01 + 63) // Larger offset to bring tiny fonts up
       : textObject.data.fontSize < 40
       ? -(textObject.data.fontSize * 0.02 + 65) // Very minimal scaling for small fonts
       : -(textObject.data.fontSize * 0.1 + 63);  // Normal scaling for larger fonts
