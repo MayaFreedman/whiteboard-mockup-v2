@@ -178,6 +178,50 @@ const breakLongWord = (word: string, maxWidth: number, ctx: CanvasRenderingConte
 };
 
 /**
+ * Draws underlines for text lines
+ */
+export const drawTextUnderlines = (
+  ctx: CanvasRenderingContext2D,
+  lines: string[],
+  textX: number,
+  textY: number,
+  lineHeight: number,
+  fontSize: number,
+  textAlign: 'left' | 'center' | 'right',
+  strokeColor: string,
+  objectWidth?: number
+): void => {
+  ctx.save();
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = 1;
+
+  lines.forEach((lineText, i) => {
+    if (lineText.trim()) {
+      const textMeasurement = ctx.measureText(lineText);
+      const textWidth = textMeasurement.width;
+
+      // Calculate underline position based on text alignment
+      let underlineStartX = textX;
+      if (textAlign === "center" && objectWidth) {
+        underlineStartX = Math.round(textX - textWidth / 2);
+      } else if (textAlign === "right" && objectWidth) {
+        underlineStartX = Math.round(textX - textWidth);
+      }
+
+      const underlineEndX = Math.round(underlineStartX + textWidth);
+      const underlineY = Math.round(textY + i * lineHeight + fontSize - 2);
+
+      ctx.beginPath();
+      ctx.moveTo(underlineStartX, underlineY);
+      ctx.lineTo(underlineEndX, underlineY);
+      ctx.stroke();
+    }
+  });
+
+  ctx.restore();
+};
+
+/**
  * Checks if a point is within text bounds using accurate measurement
  */
 export const isPointInTextBounds = (
