@@ -263,7 +263,8 @@ export const DynamicToolSettings: React.FC = () => {
                   <>Found {totalResults} result{totalResults === 1 ? '' : 's'}</>
                 ) : (
                   <>
-                    No results for "{debouncedQuery}". Can't find what you're looking for?{" "}
+                    No results for "{debouncedQuery}". Can't find what you're looking for?
+                    <br />
                     <button
                       type="button"
                       className="underline underline-offset-2 text-primary hover:text-primary/80 font-medium"
