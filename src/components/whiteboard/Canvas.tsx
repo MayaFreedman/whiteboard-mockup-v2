@@ -965,14 +965,15 @@ export const Canvas: React.FC = () => {
         );
       } else {
         // Regular text handling
-        // Measure text to get proper height
+        // Measure text to get proper height - use same width calculation as canvas rendering
+        const textRenderingWidth = Math.max((textObject.width || 100) - 16, 50);
         const wrappedMetrics = measureText(
           newText || "",
           fontSize,
           fontFamily,
           bold,
           italic,
-          textEditorPosition.width
+          textRenderingWidth
         );
 
         // Update textarea height so it expands downward and cursor moves correctly
