@@ -1235,11 +1235,14 @@ export const useCanvasInteractions = () => {
           // End the optimized batch
           whiteboardStore.endActionBatch();
           
-          // Clean up drag state
+          // Clean up drag state - delay clearing liveDragPositions to allow ResizeHandles to hide
           currentBatchIdRef.current = null;
           draggedObjectIdRef.current = null;
           initialDragPositionsRef.current = {};
-          liveDragPositionsRef.current = {};
+          // Clear liveDragPositions after a short delay to allow ResizeHandles to detect and hide
+          setTimeout(() => {
+            liveDragPositionsRef.current = {};
+          }, 0);
           dragDeltasRef.current = { x: 0, y: 0 };
         } else if (isDrawingRef.current && selectionBoxRef.current && selectionBoxRef.current.isActive) {
           // Complete selection box
