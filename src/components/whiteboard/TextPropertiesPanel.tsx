@@ -105,7 +105,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
           value={[textData.fontSize]}
           onValueChange={([value]) => handleTextPropertyChange('fontSize', value)}
           min={8}
-          max={200}
+          max={72}
           step={1}
           className="w-full"
         />
