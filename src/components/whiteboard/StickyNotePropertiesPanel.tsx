@@ -91,10 +91,7 @@ export const StickyNotePropertiesPanel: React.FC<StickyNotePropertiesPanelProps>
       updatedAt: Date.now()
     }, userId);
 
-    // Update global tool settings
-    updateToolSettings({
-      stickyNoteBackgroundColor: newColor
-    });
+    // Don't update global tool settings - keep sidebar and topbar colors separate
   };
   return <div className="space-y-4">
       {/* Size Control */}

@@ -96,7 +96,7 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
 
   const handleColorChange = (color: string) => {
     updateObject(selectedObjectId, { stroke: color }, userId);
-    updateToolSettings({ strokeColor: color });
+    // Don't update global tool settings - keep sidebar and topbar colors separate
   };
 
   return (
