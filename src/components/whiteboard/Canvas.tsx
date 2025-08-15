@@ -232,13 +232,13 @@ export const Canvas: React.FC = () => {
 
     // Use regular text editing instead of immediate text editing
     setEditingTextId(objectId);
-    
+
     // Calculate exact text position using canvas metrics
     const position = calculateTextPosition(textObject, canvasRef.current);
     if (position) {
       setTextEditorPosition(position);
     }
-    
+
     setEditingText("");
 
     redrawCanvas();
@@ -365,15 +365,22 @@ export const Canvas: React.FC = () => {
     if (isFixedW) {
       // Use fixed width constraint
       maxWidth = Math.max((textObject.width || 0) - padding, 0);
-      console.log("🔧 updateTextBounds - Fixed width:", { maxWidth, objectWidth: textObject.width });
-    } else if (isImmediateTextEditing && immediateTextObjectId === textObject.id) {
+      console.log("🔧 updateTextBounds - Fixed width:", {
+        maxWidth,
+        objectWidth: textObject.width,
+      });
+    } else if (
+      isImmediateTextEditing &&
+      immediateTextObjectId === textObject.id
+    ) {
       // Only use dynamic width calculation during immediate editing of this specific object
       const canvasRect = canvasRef.current?.getBoundingClientRect();
       if (canvasRect) {
         const textScreenX = textObject.x + (canvasRect?.left || 0);
-        const availableWidth = canvasRect.width - (textScreenX - canvasRect.left) - 10;
+        const availableWidth =
+          canvasRect.width - (textScreenX - canvasRect.left) - 10;
         maxWidth = Math.max(availableWidth - padding, 100);
-        
+
         console.log("🔧 updateTextBounds - Immediate editing dynamic width:", {
           textObjectX: textObject.x,
           canvasRectLeft: canvasRect.left,
@@ -381,21 +388,21 @@ export const Canvas: React.FC = () => {
           textScreenX,
           availableWidth,
           maxWidth,
-          padding
+          padding,
         });
       }
     } else {
       // For existing text objects, use their current width as constraint
       maxWidth = Math.max((textObject.width || 0) - padding, 100);
-      console.log("🔧 updateTextBounds - Using existing object width:", { 
-        maxWidth, 
+      console.log("🔧 updateTextBounds - Using existing object width:", {
+        maxWidth,
         objectWidth: textObject.width,
         isImmediate: isImmediateTextEditing,
         editingObjectId: immediateTextObjectId,
-        thisObjectId: textObject.id
+        thisObjectId: textObject.id,
       });
     }
-    
+
     const metrics = measureText(
       content || "Double-click to edit",
       textData.fontSize,
@@ -477,12 +484,17 @@ export const Canvas: React.FC = () => {
       : canvas.getBoundingClientRect();
 
     // Calculate font-size proportional offset - larger offset for tiny fonts to bring cursor up
-    const fontSizeOffset = textObject.data.fontSize < 30 
-      ? -(textObject.data.fontSize * 0.01 + 63) // Larger offset to bring tiny fonts up
-      : textObject.data.fontSize < 40
-      ? -(textObject.data.fontSize * 0.02 + 65) // Very minimal scaling for small fonts
-      : -(textObject.data.fontSize * 0.1 + 63);  // Normal scaling for larger fonts
-    
+    const fontSizeOffset =
+      textObject.data.fontSize < 10
+        ? -(textObject.data.fontSize * 0.01 + 72)
+        : textObject.data.fontSize < 14
+        ? -(textObject.data.fontSize * 0.01 + 70)
+        : textObject.data.fontSize < 30
+        ? -(textObject.data.fontSize * 0.01 + 65) // Larger offset to bring tiny fonts up
+        : textObject.data.fontSize < 40
+        ? -(textObject.data.fontSize * 0.02 + 65) // Very minimal scaling for small fonts
+        : -(textObject.data.fontSize * 0.1 + 63); // Normal scaling for larger fonts
+
     return {
       x: Math.round(textObject.x + 4 + rect.left - 4), // Canvas position + padding + screen offset - 4 left
       y: Math.round(textObject.y + rect.top + fontSizeOffset), // Font-size aware cursor alignment
@@ -513,8 +525,6 @@ export const Canvas: React.FC = () => {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-
-    
 
     // Find text object OR sticky note at click position using improved hit detection
     const textObject = Object.entries(objects).find(([id, obj]) => {
@@ -585,31 +595,38 @@ export const Canvas: React.FC = () => {
     });
 
     // Check for sticky notes if no text object was found
-    const stickyNoteObject = !textObject ? Object.entries(objects).find(([id, obj]) => {
-      if (obj.type !== "sticky-note" || !obj.width || !obj.height) return false;
+    const stickyNoteObject = !textObject
+      ? Object.entries(objects).find(([id, obj]) => {
+          if (obj.type !== "sticky-note" || !obj.width || !obj.height)
+            return false;
 
-      // For sticky notes, check if click is within the rectangle bounds
-      const tolerance = 5;
-      const isInBounds =
-        x >= obj.x - tolerance &&
-        x <= obj.x + obj.width + tolerance &&
-        y >= obj.y - tolerance &&
-        y <= obj.y + obj.height + tolerance;
+          // For sticky notes, check if click is within the rectangle bounds
+          const tolerance = 5;
+          const isInBounds =
+            x >= obj.x - tolerance &&
+            x <= obj.x + obj.width + tolerance &&
+            y >= obj.y - tolerance &&
+            y <= obj.y + obj.height + tolerance;
 
-      console.log("🗒️ Checking sticky note bounds:", {
-        id: id.slice(0, 8),
-        bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
-        clickPos: { x, y },
-        tolerance,
-        isInBounds,
-      });
+          console.log("🗒️ Checking sticky note bounds:", {
+            id: id.slice(0, 8),
+            bounds: {
+              x: obj.x,
+              y: obj.y,
+              width: obj.width,
+              height: obj.height,
+            },
+            clickPos: { x, y },
+            tolerance,
+            isInBounds,
+          });
 
-      return isInBounds;
-    }) : null;
+          return isInBounds;
+        })
+      : null;
 
     if (textObject) {
       const [objectId, obj] = textObject;
-      
 
       setEditingTextId(objectId);
 
@@ -638,14 +655,13 @@ export const Canvas: React.FC = () => {
       }
     } else if (stickyNoteObject) {
       const [objectId, obj] = stickyNoteObject;
-      
 
       // For sticky notes, trigger immediate text editing using the existing system
       const coords = { x: x, y: y };
-      
+
       console.log("🗒️ Double-click triggering sticky note immediate editing:", {
         objectId: objectId.slice(0, 8),
-        canvasCoords: coords
+        canvasCoords: coords,
       });
 
       // Trigger immediate sticky note editing - the setImmediateTextTrigger callback will handle coordinate conversion
@@ -653,13 +669,15 @@ export const Canvas: React.FC = () => {
         // Use the same immediate text trigger system that's already set up
         const containerElement = containerRef.current;
         if (containerElement) {
-          const whiteboardDiv = containerElement.querySelector(".absolute.bg-background") as HTMLElement;
+          const whiteboardDiv = containerElement.querySelector(
+            ".absolute.bg-background"
+          ) as HTMLElement;
           const whiteboardRect = whiteboardDiv?.getBoundingClientRect();
-          
+
           if (whiteboardRect) {
             // Convert canvas coordinates to match what the trigger expects
             const triggerCoords = { x: x, y: y };
-            
+
             // The setImmediateTextTrigger callback is already configured above, just call it
             // Find and call the trigger function manually since we're in a double-click context
             const stickyScreenCoords = {
@@ -676,18 +694,25 @@ export const Canvas: React.FC = () => {
 
             // Focus the textarea after a short delay and position cursor at end
             setTimeout(() => {
-              const textarea = document.querySelector("[data-immediate-text]") as HTMLTextAreaElement;
+              const textarea = document.querySelector(
+                "[data-immediate-text]"
+              ) as HTMLTextAreaElement;
               if (textarea) {
                 textarea.focus();
-                
+
                 // Position cursor at the end of the text, just like regular text objects
                 const currentContent = obj.data?.content || "";
                 if (currentContent) {
                   const textLength = currentContent.length;
                   textarea.setSelectionRange(textLength, textLength);
-                  console.log("🗒️ Positioned cursor at end of sticky note text (double-click), length:", textLength);
+                  console.log(
+                    "🗒️ Positioned cursor at end of sticky note text (double-click), length:",
+                    textLength
+                  );
                 } else {
-                  console.log("🗒️ Focused sticky note textarea with empty content (double-click)");
+                  console.log(
+                    "🗒️ Focused sticky note textarea with empty content (double-click)"
+                  );
                 }
               }
             }, 50);
@@ -695,7 +720,9 @@ export const Canvas: React.FC = () => {
         }
       }, 10);
     } else {
-      console.log("🖱️ No text object or sticky note found at double-click position");
+      console.log(
+        "🖱️ No text object or sticky note found at double-click position"
+      );
     }
 
     // Reset protection flag after a shorter delay - reduced to 200ms
@@ -741,14 +768,15 @@ export const Canvas: React.FC = () => {
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     const newText = e.target.value;
-    
-    
+
     // Calculate the available width for text wrapping - use canvas width for no early wrapping
-    const editingObject = immediateTextObjectId ? objects[immediateTextObjectId] : null;
+    const editingObject = immediateTextObjectId
+      ? objects[immediateTextObjectId]
+      : null;
     const isEditingStickyNote = editingObject?.type === "sticky-note";
     const canvasWidth = 800; // Use a wide constraint so text doesn't wrap early
     const availableWidth = isEditingStickyNote ? undefined : canvasWidth;
-    
+
     setImmediateTextContent(newText);
 
     // Check if we're editing a sticky note for dynamic font sizing
@@ -818,7 +846,7 @@ export const Canvas: React.FC = () => {
       if (immediateTextObjectId && objects[immediateTextObjectId]) {
         const textObject = objects[immediateTextObjectId];
         const objectWidth = textObject.width || 100;
-        
+
         // Use same calculation as canvas rendering: obj.width - 16
         const effectiveWidth = Math.max(objectWidth - 16, 50);
         textarea.style.width = effectiveWidth + "px";
@@ -835,7 +863,8 @@ export const Canvas: React.FC = () => {
         );
 
         // Update textarea height to match wrapped text height so cursor moves correctly
-        textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + "px";
+        textarea.style.height =
+          Math.max(wrappedMetrics.height, fontSize * 1.2) + "px";
 
         // Update only content during typing, NOT dimensions to prevent wrapping changes
         updateObject(immediateTextObjectId, {
@@ -846,7 +875,8 @@ export const Canvas: React.FC = () => {
         });
       } else {
         // Fallback for new objects: use available screen width
-        const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10;
+        const availableWidth =
+          canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10;
         const effectiveWidth = availableWidth - 16;
         textarea.style.width = effectiveWidth + "px";
         textarea.style.maxWidth = effectiveWidth + "px";
@@ -860,7 +890,8 @@ export const Canvas: React.FC = () => {
           effectiveWidth
         );
 
-        textarea.style.height = Math.max(wrappedMetrics.height, fontSize * 1.2) + "px";
+        textarea.style.height =
+          Math.max(wrappedMetrics.height, fontSize * 1.2) + "px";
       }
     } else {
       // Fallback to original behavior if we can't calculate boundaries
@@ -1392,64 +1423,67 @@ export const Canvas: React.FC = () => {
           <textarea
             ref={textareaRef}
             className="absolute border-none resize-none outline-none overflow-hidden"
-          style={{
-            left: textEditorPosition.x + 2,
-            top: textEditorPosition.y + 7,
-            width: Math.max((objects[editingTextId]?.width || 100) - 16, 50) + 16, // Match text measurement width calculation
-            height: textEditorPosition.height + 16,
-            fontSize: objects[editingTextId]?.data?.fontSize || 16,
-            fontFamily: objects[editingTextId]?.data?.fontFamily || "Arial",
-            fontWeight: objects[editingTextId]?.data?.bold ? "bold" : "normal",
-            fontStyle: objects[editingTextId]?.data?.italic
-              ? "italic"
-              : "normal",
-            textDecoration: objects[editingTextId]?.data?.underline
-              ? "underline"
-              : "none",
-            // Conditional styling for sticky notes
-            backgroundColor:
-              objects[editingTextId]?.type === "sticky-note"
-                ? objects[editingTextId]?.data?.backgroundColor || "#fff3cd"
-                : "transparent",
-            borderRadius:
-              objects[editingTextId]?.type === "sticky-note" ? "8px" : "0",
-            boxShadow:
-              objects[editingTextId]?.type === "sticky-note"
-                ? "0px 2px 8px rgba(0,0,0,0.1)"
+            style={{
+              left: textEditorPosition.x + 2,
+              top: textEditorPosition.y + 7,
+              width:
+                Math.max((objects[editingTextId]?.width || 100) - 16, 50) + 16, // Match text measurement width calculation
+              height: textEditorPosition.height + 16,
+              fontSize: objects[editingTextId]?.data?.fontSize || 16,
+              fontFamily: objects[editingTextId]?.data?.fontFamily || "Arial",
+              fontWeight: objects[editingTextId]?.data?.bold
+                ? "bold"
+                : "normal",
+              fontStyle: objects[editingTextId]?.data?.italic
+                ? "italic"
+                : "normal",
+              textDecoration: objects[editingTextId]?.data?.underline
+                ? "underline"
                 : "none",
-            padding: "8px",
-            // Text visibility and alignment
-            color:
-              objects[editingTextId]?.type === "sticky-note"
-                ? objects[editingTextId]?.stroke || "#000000"
-                : "transparent",
-            textAlign:
-              objects[editingTextId]?.type === "sticky-note"
-                ? "center"
-                : objects[editingTextId]?.data?.textAlign || "left",
-            caretColor: objects[editingTextId]?.stroke || "#000000",
-            zIndex: 1000,
-            lineHeight: "1.2",
-            margin: "0",
-            border: "none",
-            wordWrap: "break-word",
-            whiteSpace: "pre-wrap",
-            overflowWrap: "break-word",
-            textRendering: "optimizeLegibility",
-            fontSmooth: "antialiased",
-            WebkitFontSmoothing: "antialiased",
-            MozOsxFontSmoothing: "grayscale",
-            WebkitTextSizeAdjust: "100%",
-            boxSizing: "border-box",
-            letterSpacing: "normal",
-            wordSpacing: "normal",
-          }}
-          value={editingText}
-          onChange={handleTextChange}
-          onBlur={handleTextEditComplete}
-          onKeyDown={handleTextKeyDown}
-          autoFocus
-        />
+              // Conditional styling for sticky notes
+              backgroundColor:
+                objects[editingTextId]?.type === "sticky-note"
+                  ? objects[editingTextId]?.data?.backgroundColor || "#fff3cd"
+                  : "transparent",
+              borderRadius:
+                objects[editingTextId]?.type === "sticky-note" ? "8px" : "0",
+              boxShadow:
+                objects[editingTextId]?.type === "sticky-note"
+                  ? "0px 2px 8px rgba(0,0,0,0.1)"
+                  : "none",
+              padding: "8px",
+              // Text visibility and alignment
+              color:
+                objects[editingTextId]?.type === "sticky-note"
+                  ? objects[editingTextId]?.stroke || "#000000"
+                  : "transparent",
+              textAlign:
+                objects[editingTextId]?.type === "sticky-note"
+                  ? "center"
+                  : objects[editingTextId]?.data?.textAlign || "left",
+              caretColor: objects[editingTextId]?.stroke || "#000000",
+              zIndex: 1000,
+              lineHeight: "1.2",
+              margin: "0",
+              border: "none",
+              wordWrap: "break-word",
+              whiteSpace: "pre-wrap",
+              overflowWrap: "break-word",
+              textRendering: "optimizeLegibility",
+              fontSmooth: "antialiased",
+              WebkitFontSmoothing: "antialiased",
+              MozOsxFontSmoothing: "grayscale",
+              WebkitTextSizeAdjust: "100%",
+              boxSizing: "border-box",
+              letterSpacing: "normal",
+              wordSpacing: "normal",
+            }}
+            value={editingText}
+            onChange={handleTextChange}
+            onBlur={handleTextEditComplete}
+            onKeyDown={handleTextKeyDown}
+            autoFocus
+          />
         </>
       )}
 
@@ -1465,7 +1499,6 @@ export const Canvas: React.FC = () => {
             ? editingObject.data?.fontSize || 32
             : toolStore.toolSettings.fontSize || 16;
 
-
           return (
             <>
               <textarea
@@ -1476,86 +1509,90 @@ export const Canvas: React.FC = () => {
                     left: immediateTextPosition.x,
                     top: immediateTextPosition.y,
                     // Calculate available width for proper text wrapping - match text measurement
-                    width: isEditingStickyNote ? editingObject.width : (() => {
-                      const canvasRect = canvasRef.current?.getBoundingClientRect();
-                      if (canvasRect) {
-                        const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10;
-                        return Math.max(availableWidth - 16, 100) + "px"; // Use 16px padding to match text measurement
-                      }
-                      return "400px";
-                    })(),
-                   height: isEditingStickyNote
-                     ? editingObject.height
-                     : "auto", // Let height expand for regular text
-                  padding: "8px",
-                  fontSize: fontSize,
-                  fontFamily: isEditingStickyNote
-                    ? editingObject.data?.fontFamily || "Inter"
-                    : toolStore.toolSettings.fontFamily || "Arial",
-                  fontWeight: isEditingStickyNote
-                    ? editingObject.data?.bold
+                    width: isEditingStickyNote
+                      ? editingObject.width
+                      : (() => {
+                          const canvasRect =
+                            canvasRef.current?.getBoundingClientRect();
+                          if (canvasRect) {
+                            const availableWidth =
+                              canvasRect.width -
+                              (immediateTextPosition.x - canvasRect.left) -
+                              10;
+                            return Math.max(availableWidth - 16, 100) + "px"; // Use 16px padding to match text measurement
+                          }
+                          return "400px";
+                        })(),
+                    height: isEditingStickyNote ? editingObject.height : "auto", // Let height expand for regular text
+                    padding: "8px",
+                    fontSize: fontSize,
+                    fontFamily: isEditingStickyNote
+                      ? editingObject.data?.fontFamily || "Inter"
+                      : toolStore.toolSettings.fontFamily || "Arial",
+                    fontWeight: isEditingStickyNote
+                      ? editingObject.data?.bold
+                        ? "bold"
+                        : "normal"
+                      : toolStore.toolSettings.textBold
                       ? "bold"
-                      : "normal"
-                    : toolStore.toolSettings.textBold
-                    ? "bold"
-                    : "normal",
-                  fontStyle: isEditingStickyNote
-                    ? editingObject.data?.italic
+                      : "normal",
+                    fontStyle: isEditingStickyNote
+                      ? editingObject.data?.italic
+                        ? "italic"
+                        : "normal"
+                      : toolStore.toolSettings.textItalic
                       ? "italic"
-                      : "normal"
-                    : toolStore.toolSettings.textItalic
-                    ? "italic"
-                    : "normal",
-                  textDecoration: isEditingStickyNote
-                    ? editingObject.data?.underline
+                      : "normal",
+                    textDecoration: isEditingStickyNote
+                      ? editingObject.data?.underline
+                        ? "underline"
+                        : "none"
+                      : toolStore.toolSettings.textUnderline
                       ? "underline"
-                      : "none"
-                    : toolStore.toolSettings.textUnderline
-                    ? "underline"
-                    : "none",
-                  textAlign: isEditingStickyNote ? "center" : "left",
-                  verticalAlign: isEditingStickyNote ? "top" : "top", // Changed from 'middle' to 'top' for better cursor alignment
-                  color: isEditingStickyNote
-                    ? editingObject.stroke || "#000000"
-                    : "transparent", // Make sticky note text visible
-                  backgroundColor: isEditingStickyNote
-                    ? editingObject.data?.backgroundColor || "#fff3cd"
-                    : "transparent", // Match sticky note background
-                  zIndex: 1001,
-                  lineHeight: `${fontSize * 1.2}px`, // Must match the text rendering lineHeight
-                  margin: "0",
-                  border: "none",
-                  borderRadius: isEditingStickyNote ? "8px" : "0", // Match sticky note styling
-                  boxShadow: isEditingStickyNote
-                    ? "0px 2px 8px rgba(0,0,0,0.1)"
-                    : "none", // Match sticky note shadow
-                   whiteSpace: "pre-wrap",
-                   overflowWrap: "break-word", 
-                   wordBreak: "break-word",
-                   wordWrap: "break-word",
-                   overflow: "visible", // Allow textarea to expand
-                  textRendering: "optimizeLegibility",
-                  fontSmooth: "antialiased",
-                  WebkitFontSmoothing: "antialiased",
-                  MozOsxFontSmoothing: "grayscale",
-                  caretColor: isEditingStickyNote
-                    ? editingObject.stroke || "#000000"
-                    : toolStore.toolSettings.strokeColor || "#000000",
-                  WebkitTextSizeAdjust: "100%",
-                  boxSizing: "border-box",
-                  minHeight: fontSize * 1.2 + "px",
-                  "--placeholder-color": `${
-                    toolStore.toolSettings.strokeColor || "#000000"
-                  }B3`,
-                } as React.CSSProperties & { "--placeholder-color": string }
-              }
-              value={immediateTextContent}
-              onChange={handleImmediateTextChange}
-              onBlur={handleImmediateTextComplete}
-               onKeyDown={handleImmediateTextKeyDown}
-               placeholder={isEditingStickyNote ? "" : "Type here..."}
-               autoFocus
-             />
+                      : "none",
+                    textAlign: isEditingStickyNote ? "center" : "left",
+                    verticalAlign: isEditingStickyNote ? "top" : "top", // Changed from 'middle' to 'top' for better cursor alignment
+                    color: isEditingStickyNote
+                      ? editingObject.stroke || "#000000"
+                      : "transparent", // Make sticky note text visible
+                    backgroundColor: isEditingStickyNote
+                      ? editingObject.data?.backgroundColor || "#fff3cd"
+                      : "transparent", // Match sticky note background
+                    zIndex: 1001,
+                    lineHeight: `${fontSize * 1.2}px`, // Must match the text rendering lineHeight
+                    margin: "0",
+                    border: "none",
+                    borderRadius: isEditingStickyNote ? "8px" : "0", // Match sticky note styling
+                    boxShadow: isEditingStickyNote
+                      ? "0px 2px 8px rgba(0,0,0,0.1)"
+                      : "none", // Match sticky note shadow
+                    whiteSpace: "pre-wrap",
+                    overflowWrap: "break-word",
+                    wordBreak: "break-word",
+                    wordWrap: "break-word",
+                    overflow: "visible", // Allow textarea to expand
+                    textRendering: "optimizeLegibility",
+                    fontSmooth: "antialiased",
+                    WebkitFontSmoothing: "antialiased",
+                    MozOsxFontSmoothing: "grayscale",
+                    caretColor: isEditingStickyNote
+                      ? editingObject.stroke || "#000000"
+                      : toolStore.toolSettings.strokeColor || "#000000",
+                    WebkitTextSizeAdjust: "100%",
+                    boxSizing: "border-box",
+                    minHeight: fontSize * 1.2 + "px",
+                    "--placeholder-color": `${
+                      toolStore.toolSettings.strokeColor || "#000000"
+                    }B3`,
+                  } as React.CSSProperties & { "--placeholder-color": string }
+                }
+                value={immediateTextContent}
+                onChange={handleImmediateTextChange}
+                onBlur={handleImmediateTextComplete}
+                onKeyDown={handleImmediateTextKeyDown}
+                placeholder={isEditingStickyNote ? "" : "Type here..."}
+                autoFocus
+              />
             </>
           );
         })()}
