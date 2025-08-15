@@ -18,19 +18,21 @@ interface CanvasBounds {
 /**
  * Constrains an object's position to stay within canvas bounds
  * Ensures no part of the object's bounding box goes off-screen
+ * Includes a small margin to prevent objects from touching edges
  */
 export function constrainObjectToBounds(
   position: Position,
   objectDimensions: Dimensions,
-  canvasBounds: CanvasBounds
+  canvasBounds: CanvasBounds,
+  margin: number = 2
 ): Position {
   const { x, y } = position;
   const { width, height } = objectDimensions;
   const { width: canvasWidth, height: canvasHeight } = canvasBounds;
 
-  // Calculate constrained position
-  const constrainedX = Math.max(0, Math.min(x, canvasWidth - width));
-  const constrainedY = Math.max(0, Math.min(y, canvasHeight - height));
+  // Calculate constrained position with margin
+  const constrainedX = Math.max(margin, Math.min(x, canvasWidth - width - margin));
+  const constrainedY = Math.max(margin, Math.min(y, canvasHeight - height - margin));
 
   return {
     x: constrainedX,
