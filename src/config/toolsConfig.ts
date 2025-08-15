@@ -96,7 +96,7 @@ export const toolsConfig: Record<string, ToolConfig> = {
         label: 'Font Size',
         key: 'fontSize',
         min: 8,
-        max: 72,
+        max: 100,
         step: 2,
         showValue: true,
         valueFormatter: (value) => `${value}px`
