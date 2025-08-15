@@ -53,12 +53,12 @@ export const useCanvasRendering = (
    * Normalizes image path for consistent cache keys
    */
   const normalizeImagePath = useCallback((path: string): string => {
-    console.log(`🔧 Normalizing path: "${path}"`);
+    
     // Remove any URL encoding and normalize path separators
     const decoded = decodeURIComponent(path);
-    console.log(`🔧 After decode: "${decoded}"`);
+    
     const normalized = decoded.replace(/\\/g, '/');
-    console.log(`🔧 Final normalized: "${normalized}"`);
+    
     return normalized;
   }, []);
 
