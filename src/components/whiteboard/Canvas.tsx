@@ -357,20 +357,21 @@ export const Canvas: React.FC = () => {
     const isPlaceholder =
       !content || content.trim() === "" || content === "Double-click to edit";
 
-    // Calculate maxWidth using the same logic as the textarea wrapping
+    // Calculate maxWidth based on context
     let maxWidth = undefined;
     if (isFixedW) {
+      // Use fixed width constraint
       maxWidth = Math.max((textObject.width || 0) - padding, 0);
       console.log("🔧 updateTextBounds - Fixed width:", { maxWidth, objectWidth: textObject.width });
-    } else {
-      // For non-fixed width text, use the same available width calculation as textarea
+    } else if (isImmediateTextEditing && immediateTextObjectId === textObject.id) {
+      // Only use dynamic width calculation during immediate editing of this specific object
       const canvasRect = canvasRef.current?.getBoundingClientRect();
       if (canvasRect) {
         const textScreenX = textObject.x + (canvasRect?.left || 0);
         const availableWidth = canvasRect.width - (textScreenX - canvasRect.left) - 10;
         maxWidth = Math.max(availableWidth - padding, 100);
         
-        console.log("🔧 updateTextBounds - Dynamic width calculation:", {
+        console.log("🔧 updateTextBounds - Immediate editing dynamic width:", {
           textObjectX: textObject.x,
           canvasRectLeft: canvasRect.left,
           canvasRectWidth: canvasRect.width,
@@ -379,9 +380,17 @@ export const Canvas: React.FC = () => {
           maxWidth,
           padding
         });
-      } else {
-        console.log("🔧 updateTextBounds - No canvas rect, using fallback");
       }
+    } else {
+      // For existing text objects, use their current width as constraint
+      maxWidth = Math.max((textObject.width || 0) - padding, 100);
+      console.log("🔧 updateTextBounds - Using existing object width:", { 
+        maxWidth, 
+        objectWidth: textObject.width,
+        isImmediate: isImmediateTextEditing,
+        editingObjectId: immediateTextObjectId,
+        thisObjectId: textObject.id
+      });
     }
     
     const metrics = measureText(
