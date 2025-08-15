@@ -609,9 +609,10 @@ export const useCanvasInteractions = () => {
       }
     };
 
-    document.addEventListener('mouseup', handleDocumentMouseUp);
+    // Use capture phase to ensure this runs before canvas mouseup handlers
+    document.addEventListener('mouseup', handleDocumentMouseUp, true);
     return () => {
-      document.removeEventListener('mouseup', handleDocumentMouseUp);
+      document.removeEventListener('mouseup', handleDocumentMouseUp, true);
     };
   }, [endCurrentDrawing]);
 
