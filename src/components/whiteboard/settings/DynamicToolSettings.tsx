@@ -308,7 +308,7 @@ export const DynamicToolSettings: React.FC = () => {
             label="Size"
             value={toolSettings.stickyNoteSize || 180}
             min={120}
-            max={300}
+            max={600}
             step={10}
             onChange={(value) => updateToolSettings({ stickyNoteSize: value })}
             valueFormatter={(value) => `${value}px`}

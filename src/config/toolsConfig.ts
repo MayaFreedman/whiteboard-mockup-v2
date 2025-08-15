@@ -135,7 +135,7 @@ export const toolsConfig: Record<string, ToolConfig> = {
         label: 'Size',
         key: 'stickyNoteSize',
         min: 120,
-        max: 300,
+        max: 600,
         step: 10,
         showValue: true,
         valueFormatter: (value) => `${value}px`
