@@ -15,38 +15,20 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
   const { objects } = useWhiteboardStore();
   const { canvasOffset } = useCanvasOffset();
   const [, forceUpdate] = useState({});
-  const lastPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const lastPositionRef = useRef<string>('');
   
-  // Check for live drag position changes and force re-render immediately
-  useEffect(() => {
-    if (!getLiveDragPositions) return;
+  // Force re-render when live drag positions exist for this object
+  if (getLiveDragPositions) {
+    const liveDragPositions = getLiveDragPositions();
+    const currentPosition = liveDragPositions[objectId];
+    const positionKey = currentPosition ? `${currentPosition.x},${currentPosition.y}` : '';
     
-    const checkForUpdates = () => {
-      const liveDragPositions = getLiveDragPositions();
-      const currentPosition = liveDragPositions[objectId];
-      
-      // Check if this object's position has changed
-      if (currentPosition) {
-        const lastPosition = lastPositionRef.current;
-        if (!lastPosition || 
-            lastPosition.x !== currentPosition.x || 
-            lastPosition.y !== currentPosition.y) {
-          lastPositionRef.current = { ...currentPosition };
-          forceUpdate({});
-        }
-      } else if (lastPositionRef.current) {
-        // Object is no longer being dragged
-        lastPositionRef.current = null;
-        forceUpdate({});
-      }
-    };
-    
-    // Check immediately and then continuously during potential drag
-    checkForUpdates();
-    const interval = setInterval(checkForUpdates, 16); // ~60fps
-    
-    return () => clearInterval(interval);
-  }, [objectId, getLiveDragPositions]);
+    if (positionKey !== lastPositionRef.current) {
+      lastPositionRef.current = positionKey;
+      // Trigger re-render on next tick
+      setTimeout(() => forceUpdate({}), 0);
+    }
+  }
   
   let obj = objects[objectId];
   
