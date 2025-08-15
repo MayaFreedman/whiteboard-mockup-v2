@@ -562,13 +562,24 @@ export function searchIcons(query: string, options: SearchOptions = {}): IconInf
     .map((x) => x.icon);
 
   const THRESHOLD = 30;
-  if (scored.length >= THRESHOLD) {
+  
+  // For specific high-precision queries like "star", use stricter thresholds
+  const HIGH_PRECISION_QUERIES = new Set(['star', 'heart', 'flag', 'flower', 'tree', 'sun', 'moon']);
+  const isHighPrecisionQuery = directTokens.some(t => HIGH_PRECISION_QUERIES.has(t));
+  const effectiveThreshold = isHighPrecisionQuery ? 5 : THRESHOLD; // Much lower threshold for precise queries
+  
+  if (scored.length >= effectiveThreshold) {
     return options.limit ? scored.slice(0, options.limit) : scored;
   }
 
-  // Stage 2: broaden with expansions
+  // Stage 2: broaden with expansions - but be much more conservative for high-precision queries
+  const useConservativeStage2 = isHighPrecisionQuery;
+  
   scored = source
-    .map((icon) => ({ icon, s: scoreIcon(icon, q, directTokens, qExpanded, conceptTokens, negativeTokens, emotionHint, 2) }))
+    .map((icon) => ({ 
+      icon, 
+      s: scoreIcon(icon, q, directTokens, useConservativeStage2 ? [] : qExpanded, conceptTokens, negativeTokens, emotionHint, 2) 
+    }))
     .filter((x) => x.s > 0)
     .sort((a, b) => {
       if (b.s !== a.s) return b.s - a.s;
