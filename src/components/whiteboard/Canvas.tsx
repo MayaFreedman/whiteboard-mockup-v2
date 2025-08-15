@@ -1445,12 +1445,19 @@ export const Canvas: React.FC = () => {
               <textarea
                 data-immediate-text="true"
                 className="absolute border-none resize-none outline-none overflow-hidden placeholder-opacity-70"
-               style={
-                 {
-                   left: immediateTextPosition.x,
-                   top: immediateTextPosition.y,
-                   // Use canvas width for both regular text and sticky notes to prevent early wrapping
-                   width: isEditingStickyNote ? editingObject.width : 800,
+                style={
+                  {
+                    left: immediateTextPosition.x,
+                    top: immediateTextPosition.y,
+                    // Calculate available width for proper text wrapping
+                    width: isEditingStickyNote ? editingObject.width : (() => {
+                      const canvasRect = canvasRef.current?.getBoundingClientRect();
+                      if (canvasRect) {
+                        const availableWidth = canvasRect.width - (immediateTextPosition.x - canvasRect.left) - 10;
+                        return Math.max(availableWidth - 8, 100) + "px";
+                      }
+                      return "400px";
+                    })(),
                    height: isEditingStickyNote
                      ? editingObject.height
                      : "auto", // Let height expand for regular text
