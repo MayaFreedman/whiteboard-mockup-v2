@@ -178,6 +178,7 @@ export const addCustomStamp = async (file: File, name?: string): Promise<CustomS
     const isDuplicate = existingStamps.some(stamp => stamp.dataUrl === dataUrl);
     
     if (isDuplicate) {
+      console.log('Duplicate stamp detected'); // Debug log
       throw new Error('This stamp has already been uploaded');
     }
     
