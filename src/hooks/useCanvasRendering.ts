@@ -290,9 +290,9 @@ export const useCanvasRendering = (
         ctx.globalCompositeOperation = "destination-out";
       }
 
-      // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text or sticky-note
-      // Text and sticky-note objects are excluded because they have their own border highlighting
-      if (isSelected && !isEraser && obj.type !== "text" && obj.type !== "sticky-note") {
+      // Draw selection highlight FIRST (behind the object) if selected and not an eraser AND not text, image, or sticky-note
+      // Text, image, and sticky-note objects are excluded because they have their own selection highlighting
+      if (isSelected && !isEraser && obj.type !== "text" && obj.type !== "image" && obj.type !== "sticky-note") {
         ctx.save();
         ctx.strokeStyle = "#007AFF";
         ctx.globalAlpha = 0.6;
@@ -329,17 +329,6 @@ export const useCanvasRendering = (
             ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
             ctx.lineWidth = (obj.strokeWidth || 2) + 6;
             ctx.stroke();
-            break;
-          }
-          case "image": {
-            // Draw selection outline for image objects - use pixel-perfect positioning
-            ctx.lineWidth = 6;
-            ctx.strokeRect(
-              Math.round(obj.x),
-              Math.round(obj.y),
-              Math.round(obj.width),
-              Math.round(obj.height)
-            );
             break;
           }
           case "triangle":
