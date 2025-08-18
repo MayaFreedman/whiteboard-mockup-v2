@@ -35,6 +35,7 @@ export const useScreenSizeSync = () => {
     const senderSessionId = multiplayer?.serverInstance?.server?.room?.sessionId;
 
     // Send screen size update via multiplayer
+    console.log('📡 Broadcasting screen size update:', { size, userId: userId.slice(0, 8) });
     multiplayer.serverInstance?.server?.room?.send('broadcast', {
       type: 'screen_size_update',
       userId: userId,

@@ -131,6 +131,7 @@ export class ServerClass {
         "Cannot send stateUpdate message as this.room does not exist"
       );
     }
+    console.log('📡 Multiplayer message sent:', { type: 'stateUpdate', actionType: payload.type, actionId: payload.id?.slice(0, 8) });
     this.server.room.send("stateUpdate", payload);
   }
 
@@ -140,7 +141,8 @@ export class ServerClass {
     }
 
     try {
-      this.server.room.send("broadcast", payload);
+    console.log('📡 Multiplayer broadcast sent:', { type: payload.type, messageId: payload.requesterId || payload.responderId || 'broadcast' });
+    this.server.room.send("broadcast", payload);
     } catch (error) {
       console.error("❌ Failed to send event:", error);
       throw error;

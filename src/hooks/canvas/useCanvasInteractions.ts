@@ -486,11 +486,27 @@ export const useCanvasInteractions = () => {
     const finalPositions = { ...liveDragPositionsRef.current };
     
     // Apply final positions for all dragged objects in a single batch
+    const draggedObjects: Array<{id: string, from: {x: number, y: number}, to: {x: number, y: number}, type: string}> = [];
+    
     whiteboardStore.selectedObjectIds.forEach(objectId => {
       const finalPos = liveDragPositionsRef.current[objectId];
       if (finalPos) {
+        const object = whiteboardStore.objects[objectId];
+        const originalPos = { x: object.x, y: object.y };
+        draggedObjects.push({
+          id: objectId.slice(0, 8),
+          from: originalPos,
+          to: finalPos,
+          type: object.type
+        });
         whiteboardStore.updateObject(objectId, finalPos, userId);
       }
+    });
+    
+    console.log('🚚 Drag operation completed (off-canvas):', {
+      objectCount: draggedObjects.length,
+      objects: draggedObjects,
+      userId: userId.slice(0, 8)
     });
     
     // End the optimized batch
@@ -1239,11 +1255,27 @@ export const useCanvasInteractions = () => {
           const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE', 'multi-object', userId);
           
           // Apply final positions for all dragged objects in a single batch
+          const draggedObjects: Array<{id: string, from: {x: number, y: number}, to: {x: number, y: number}, type: string}> = [];
+          
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const finalPos = liveDragPositionsRef.current[objectId];
             if (finalPos) {
+              const object = whiteboardStore.objects[objectId];
+              const originalPos = { x: object.x, y: object.y };
+              draggedObjects.push({
+                id: objectId.slice(0, 8),
+                from: originalPos,
+                to: finalPos,
+                type: object.type
+              });
               whiteboardStore.updateObject(objectId, finalPos, userId);
             }
+          });
+          
+          console.log('🚚 Drag operation completed:', {
+            objectCount: draggedObjects.length,
+            objects: draggedObjects,
+            userId: userId.slice(0, 8)
           });
           
           // End the optimized batch

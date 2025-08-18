@@ -948,15 +948,6 @@ export const useCanvasRendering = (
 
               let startX = obj.x + obj.width / 2;
 
-              console.log("🗒️ STICKY TEXT COORDINATES (SIMPLIFIED):");
-              console.log("  - id:", objectId?.slice(0, 8));
-              console.log("  - canvasTextPosition:", { x: startX, y: startY });
-              console.log("  - objectBounds:", {
-                x: obj.x,
-                y: obj.y,
-                width: obj.width,
-                height: obj.height,
-              });
               if (stickyNoteData.textAlign === "left") startX = obj.x + 8;
               else if (stickyNoteData.textAlign === "right")
                 startX = obj.x + obj.width - 8;
@@ -1318,7 +1309,7 @@ export const useCanvasRendering = (
         // Apply live drag position if object is being dragged
         let renderObj = obj;
         if (liveDragPositions[id]) {
-          console.log("🎯 Canvas rendering - applying live drag position for:", id.slice(0, 8), liveDragPositions[id]);
+          
           renderObj = {
             ...obj,
             x: liveDragPositions[id].x,
