@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useScreenSizeStore } from '../stores/screenSizeStore';
 import { useUser } from '../contexts/UserContext';
 import { useMultiplayer } from './useMultiplayer';
+import { debugLog } from '../config/devMode';
 
 /**
  * Hook for synchronizing screen sizes across multiplayer users
@@ -35,7 +36,7 @@ export const useScreenSizeSync = () => {
     const senderSessionId = multiplayer?.serverInstance?.server?.room?.sessionId;
 
     // Send screen size update via multiplayer
-    console.log('📡 Broadcasting screen size update:', { size, userId: userId.slice(0, 8) });
+    debugLog('📡 Broadcasting screen size update:', { size, userId: userId.slice(0, 8) });
     multiplayer.serverInstance?.server?.room?.send('broadcast', {
       type: 'screen_size_update',
       userId: userId,

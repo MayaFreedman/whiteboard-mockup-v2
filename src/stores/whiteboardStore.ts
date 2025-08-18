@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import { Viewport } from '../types/viewport';
 import { WhiteboardAction, WhiteboardObject } from '../types/whiteboard';
 import { brushEffectCache, precalculateSprayEffect, precalculateChalkEffect, pathToPointsForBrush } from '../utils/brushCache';
+import { debugLog } from '../config/devMode';
 
 export interface WhiteboardSettings {
   gridVisible: boolean;
@@ -375,7 +376,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     get().recordAction(action);
     
     // Essential log: Object creation
-    console.log(`Created ${newObject.type} object:`, newObject);
+    debugLog(`Created ${newObject.type} object:`, newObject);
     
     return id;
   },

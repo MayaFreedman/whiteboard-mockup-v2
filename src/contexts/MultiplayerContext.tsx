@@ -3,6 +3,7 @@ import React, { createContext, useState, useCallback, useEffect, ReactNode } fro
 import { ServerClass } from '../server'
 import { WhiteboardAction } from '../types/whiteboard'
 import { useScreenSizeStore } from '../stores/screenSizeStore'
+import { debugLog } from '../config/devMode'
 
 interface User {
   id: string
@@ -68,12 +69,12 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   const registerMessageHandlers = useCallback((room: any) => {
     room.onMessage('participantJoined', (participant: any) => {
       setConnectedUserCount(prev => prev + 1)
-      console.log('User joined multiplayer room')
+      debugLog('User joined multiplayer room')
     })
 
     room.onMessage('participantLeft', (data: any) => {
       setConnectedUserCount(prev => Math.max(0, prev - 1))
-      console.log('User left multiplayer room')
+      debugLog('User left multiplayer room')
       try {
         const participantId = data?.sessionId || data?.id || data?.clientId || data?.userId
         if (participantId) {

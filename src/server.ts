@@ -2,6 +2,7 @@
 "use strict";
 import { Client } from "colyseus.js";
 import { getConfigurationServerURL } from "./ENV";
+import { debugLog } from './config/devMode';
 
 export class ServerClass {
   constructor() {}
@@ -131,7 +132,7 @@ export class ServerClass {
         "Cannot send stateUpdate message as this.room does not exist"
       );
     }
-    console.log('📡 Multiplayer message sent:', { type: 'stateUpdate', actionType: payload.type, actionId: payload.id?.slice(0, 8) });
+    debugLog('📡 Multiplayer message sent:', { type: 'stateUpdate', actionType: payload.type, actionId: payload.id?.slice(0, 8) });
     this.server.room.send("stateUpdate", payload);
   }
 
@@ -141,7 +142,7 @@ export class ServerClass {
     }
 
     try {
-    console.log('📡 Multiplayer broadcast sent:', { type: payload.type, messageId: payload.requesterId || payload.responderId || 'broadcast' });
+    debugLog('📡 Multiplayer broadcast sent:', { type: payload.type, messageId: payload.requesterId || payload.responderId || 'broadcast' });
     this.server.room.send("broadcast", payload);
     } catch (error) {
       console.error("❌ Failed to send event:", error);

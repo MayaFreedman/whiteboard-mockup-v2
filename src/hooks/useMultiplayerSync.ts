@@ -5,6 +5,7 @@ import { WhiteboardAction } from '../types/whiteboard'
 import { MultiplayerContext } from '../contexts/MultiplayerContext'
 import { useScreenSizeStore } from '../stores/screenSizeStore'
 import { addCustomBackgroundFromObject, removeCustomBackgroundById, removeCustomBackgroundByDataUrl, type CustomBackground } from '../utils/customBackgrounds'
+import { debugLog } from '../config/devMode'
 
 /**
  * Determines if an action should be synchronized across multiplayer clients
@@ -238,7 +239,7 @@ export const useMultiplayerSync = () => {
         if (!senderSessionId) return
         // Ignore our own echo
         if (senderSessionId === room.sessionId) return
-        console.log('Screen size synced')
+        debugLog('Screen size synced')
         updateUserScreenSize(senderSessionId, message.screenSize)
       }
 
@@ -320,7 +321,7 @@ export const useMultiplayerSync = () => {
               sentActionIdsRef.current.add(state.lastAction.id)
               
               // Essential log: Multiplayer broadcast
-              console.log(`Broadcasted ${state.lastAction.type} to multiplayer room`);
+              debugLog(`Broadcasted ${state.lastAction.type} to multiplayer room`);
               
               // Clean up old IDs to prevent memory leak
               if (sentActionIdsRef.current.size > 1000) {
@@ -345,7 +346,7 @@ export const useMultiplayerSync = () => {
   useEffect(() => {
     if (isConnected && !userJoinTimeRef.current) {
       userJoinTimeRef.current = Date.now()
-      console.log('👋 User joined room at:', userJoinTimeRef.current)
+      debugLog('👋 User joined room at:', userJoinTimeRef.current)
     }
   }, [isConnected])
 

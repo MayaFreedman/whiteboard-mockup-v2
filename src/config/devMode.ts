@@ -6,8 +6,24 @@
 export const DEV_MODE = false;
 
 /**
+ * Debug Logging toggle.
+ * Set to true to enable all console.log statements throughout the application.
+ * When false, all debug logs are suppressed for production.
+ */
+export const DEBUG_LOGGING = false;
+
+/**
  * Bounding Box Debug toggle.
  * Set to true to show visual debug overlays for object bounding boxes.
  * Useful for debugging collision detection and boundary constraints.
  */
 export const BOUNDING_BOX_DEBUG = false;
+
+/**
+ * Conditional logging utility - only logs when DEBUG_LOGGING is true
+ */
+export const debugLog = (...args: any[]) => {
+  if (DEBUG_LOGGING) {
+    console.log(...args);
+  }
+};

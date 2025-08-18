@@ -12,6 +12,7 @@ import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 import { useMultiplayer } from '../useMultiplayer';
 import { constrainWhiteboardObjectToBounds, constrainGroupToBounds } from '../../utils/boundaryConstraints';
+import { debugLog } from '../../config/devMode';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -503,7 +504,7 @@ export const useCanvasInteractions = () => {
       }
     });
     
-    console.log('🚚 Drag operation completed (off-canvas):', {
+    debugLog("🚚 Drag operation completed (off-canvas):", {
       objectCount: draggedObjects.length,
       objects: draggedObjects,
       userId: userId.slice(0, 8)
@@ -1272,7 +1273,7 @@ export const useCanvasInteractions = () => {
             }
           });
           
-          console.log('🚚 Drag operation completed:', {
+          debugLog("🚚 Drag operation completed:", {
             objectCount: draggedObjects.length,
             objects: draggedObjects,
             userId: userId.slice(0, 8)
