@@ -42,34 +42,13 @@ export const calculateOptimalFontSize = (
     const hasMultipleLines = metrics.lines.length > 1;
     const canWrapMore = content.includes(' ') && !hasMultipleLines;
 
-    // Enhanced debugging
-    if (fontSize === maxFontSize || fontSize % 5 === 0 || fits || fontSize === minFontSize) {
-      console.log(`📏 Font size ${fontSize}px test:`, {
-        fits,
-        lines: metrics.lines.length,
-        height: `${metrics.height}/${maxHeight}`,
-        hasMultipleLines,
-        canWrapMore,
-        maxLineWidth: metrics.width,
-        actualLines: metrics.lines.slice(0, 3), // Show first 3 lines
-        decision: fits ? '✅ USE THIS SIZE' : '❌ too big - shrink more',
-        wrappingEnabled: maxWidth > 0 ? '✅' : '❌'
-      });
-    }
 
     if (fits) {
-      console.log('🎯 Final decision:', {
-        chosenFontSize: fontSize,
-        totalLines: metrics.lines.length,
-        reason: fontSize === maxFontSize ? 'max size fits perfectly' : 'found optimal size with proper wrapping',
-        actualHeight: `${metrics.height}px/${maxHeight}px`,
-        wrappedCorrectly: hasMultipleLines && content.includes(' ') ? '✅ text wrapped to multiple lines' : '⚪ single line or no spaces'
-      });
       return fontSize;
     }
   }
 
-  console.log('⚠️ Fallback to minimum font size');
+  
   return minFontSize;
 };
 

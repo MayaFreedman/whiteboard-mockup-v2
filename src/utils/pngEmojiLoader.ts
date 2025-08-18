@@ -87,13 +87,13 @@ export async function loadPngBatch(paths: string[]): Promise<LoadResult[]> {
  * Used when user opens a category for the first time
  */
 export async function preloadCategoryEmojis(paths: string[]): Promise<void> {
-  console.log(`🎯 Preloading ${paths.length} emojis for category`);
+  
   
   const results = await loadPngBatch(paths);
   const success = results.filter(r => r.success).length;
   const failed = results.filter(r => !r.success).length;
   
-  console.log(`✅ Category preload: ${success} success, ${failed} failed`);
+  
   
   if (failed > 0) {
     const failedPaths = results.filter(r => !r.success).map(r => r.path);

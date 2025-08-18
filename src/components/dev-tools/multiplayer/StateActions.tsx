@@ -23,7 +23,7 @@ export const StateActions: React.FC<StateActionsProps> = ({
       timestamp: Date.now()
     };
     navigator.clipboard.writeText(JSON.stringify(state, null, 2));
-    console.log('📋 State copied to clipboard');
+    
   };
 
   const handleDownloadState = () => {
@@ -42,13 +42,13 @@ export const StateActions: React.FC<StateActionsProps> = ({
     a.download = `whiteboard-state-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    console.log('💾 State downloaded');
+    
   };
 
   const handleClearHistory = () => {
     whiteboardStore.clearActionHistory();
     toolStore.clearToolHistory();
-    console.log('🧹 All history cleared');
+    
   };
 
   return (
