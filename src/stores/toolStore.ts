@@ -82,6 +82,7 @@ interface ToolStore {
   // Auto-switch state for sticky note tool
   autoSwitchedFromTool: Tool | null;
   wasAutoSwitched: boolean;
+  isAutoSwitching: boolean;
   
   // Shape tool memory
   lastUsedShapeTool: Tool;
@@ -222,6 +223,7 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   // Auto-switch state
   autoSwitchedFromTool: null,
   wasAutoSwitched: false,
+  isAutoSwitching: false,
   
   // Shape tool memory
   lastUsedShapeTool: 'rectangle',
@@ -263,7 +265,8 @@ export const useToolStore = create<ToolStore>((set, get) => ({
         toolChangeHistory: newHistory,
         ...(clearAutoSwitch && {
           autoSwitchedFromTool: null,
-          wasAutoSwitched: false
+          wasAutoSwitched: false,
+          isAutoSwitching: false
         })
       };
     });
@@ -397,15 +400,22 @@ export const useToolStore = create<ToolStore>((set, get) => ({
     console.log('🔄 Setting auto-switch state:', { fromTool, wasAutoSwitched });
     set({
       autoSwitchedFromTool: fromTool,
-      wasAutoSwitched
+      wasAutoSwitched,
+      isAutoSwitching: true
     });
+    
+    // Clear the isAutoSwitching flag after a brief moment
+    setTimeout(() => {
+      set((state) => ({ ...state, isAutoSwitching: false }));
+    }, 10);
   },
 
   clearAutoSwitchState: () => {
     console.log('🔄 Clearing auto-switch state');
     set({
       autoSwitchedFromTool: null,
-      wasAutoSwitched: false
+      wasAutoSwitched: false,
+      isAutoSwitching: false
     });
   }
 }));

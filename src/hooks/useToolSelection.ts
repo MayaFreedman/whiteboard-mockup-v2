@@ -8,20 +8,20 @@ import { useWhiteboardStore } from '../stores/whiteboardStore';
  * This avoids circular dependencies between stores
  */
 export const useToolSelection = () => {
-  const { activeTool, wasAutoSwitched, autoSwitchedFromTool, setActiveTool, clearAutoSwitchState } = useToolStore();
+  const { activeTool, wasAutoSwitched, autoSwitchedFromTool, isAutoSwitching, setActiveTool, clearAutoSwitchState } = useToolStore();
   const { clearSelection, selectedObjectIds } = useWhiteboardStore();
   
   useEffect(() => {
-    console.log('🎯 TOOL SELECTION: Tool changed to:', activeTool, 'wasAutoSwitched:', wasAutoSwitched);
+    console.log('🎯 TOOL SELECTION: Tool changed to:', activeTool, 'wasAutoSwitched:', wasAutoSwitched, 'isAutoSwitching:', isAutoSwitching);
     // Clear selection when switching to any tool other than select
-    // But skip clearing if this was an auto-switch to select tool
-    if (activeTool !== 'select' && !wasAutoSwitched) {
+    // Only skip clearing if we're currently auto-switching TO select tool
+    if (activeTool !== 'select' && !isAutoSwitching) {
       console.log('🎯 TOOL SELECTION: Clearing selection when switching from select tool');
       clearSelection();
-    } else if (activeTool !== 'select' && wasAutoSwitched) {
-      console.log('🎯 TOOL SELECTION: Skipping selection clear due to auto-switch');
+    } else if (activeTool !== 'select' && isAutoSwitching) {
+      console.log('🎯 TOOL SELECTION: Skipping selection clear due to active auto-switch');
     }
-  }, [activeTool, clearSelection, wasAutoSwitched]);
+  }, [activeTool, clearSelection, isAutoSwitching]);
 
   // Handle auto-switching back to original tool when selection is cleared
   useEffect(() => {
