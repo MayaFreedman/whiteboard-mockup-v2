@@ -512,7 +512,7 @@ export const useCanvasInteractions = () => {
         redrawCanvasRef.current();
       }
     }, 0);
-    console.log('✅ DRAG COMPLETION: Off-canvas drag completed and synchronized');
+    
   }, [whiteboardStore, userId]);
 
   /**
@@ -848,7 +848,7 @@ export const useCanvasInteractions = () => {
             isActive: true
           };
           isDrawingRef.current = true;
-          console.log('📦 Started selection box at:', coords);
+          
         }
         break;
       }
@@ -936,7 +936,7 @@ export const useCanvasInteractions = () => {
         const stickyNoteObject = createStickyNoteObject(coords.x, coords.y, stickySize, backgroundColor);
         
         const objectId = whiteboardStore.addObject(stickyNoteObject, userId);
-        console.log('🗒️ Created sticky note:', objectId.slice(0, 8), 'for user:', userId.slice(0, 8));
+        
         
         // Trigger immediate sticky note editing (pass the sticky note object ID)
         setTimeout(() => {
@@ -953,11 +953,6 @@ export const useCanvasInteractions = () => {
 
       case 'pencil':
       case 'brush': {
-        console.log('🎨 DRAWING START:', {
-          tool: activeTool,
-          coords,
-          timestamp: Date.now()
-        });
         
         // START BATCH for drawing
         currentBatchIdRef.current = startBatch('ADD_OBJECT', 'drawing', userId);
@@ -980,12 +975,6 @@ export const useCanvasInteractions = () => {
           opacity: toolStore.toolSettings.opacity,
           brushType: activeTool === 'brush' ? toolStore.toolSettings.brushType : 'pencil'
         };
-        
-        console.log('🎨 PREVIEW CREATED:', {
-          hasPreview: !!currentDrawingPreviewRef.current,
-          batchId: currentBatchIdRef.current?.slice(0, 8),
-          timestamp: Date.now()
-        });
         break;
       }
 
@@ -997,8 +986,6 @@ export const useCanvasInteractions = () => {
       case 'hexagon':
       case 'star':
       case 'heart': {
-        console.log('🔷 SHAPE TOOL: Pointer down triggered at:', coords, 'for shape:', activeTool);
-        console.log('🔷 SHAPE TOOL: Current tool:', toolStore.activeTool);
 
         // Check if we're clicking on an existing shape of the same type for auto-select
         console.log('🔷 SHAPE TOOL: Looking for object at coords:', coords);
@@ -1030,8 +1017,6 @@ export const useCanvasInteractions = () => {
           console.log('🔷 SHAPE TOOL: Selected object:', clickedObjectId.slice(0, 8));
           console.log('🔄 SHAPE TOOL: ✅ Auto-switched from', activeTool, 'to select tool');
           return;
-        } else {
-          console.log('🔷 SHAPE TOOL: Not clicking on matching shape - creating new', activeTool);
         }
 
         isDrawingRef.current = true;
@@ -1050,7 +1035,7 @@ export const useCanvasInteractions = () => {
           opacity: toolStore.toolSettings.opacity
         };
         
-        console.log('🔷 Started shape:', activeTool);
+        
         break;
       }
 
@@ -1060,12 +1045,12 @@ export const useCanvasInteractions = () => {
         
         handleEraserStart(coords, findObjectAt, redrawCanvasRef.current || undefined);
         
-        console.log('🧹 Started erasing');
+        
         break;
       }
 
       default:
-        console.log('🔧 Tool not implemented yet:', activeTool);
+        
     }
   }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, findObjectAt, getCanvasCoordinates, handleEraserStart, handleFillClick, createTextObject, createStampObject, userId, startBatch]);
 
@@ -1106,7 +1091,7 @@ export const useCanvasInteractions = () => {
               activeWhiteboardSize
             );
             
-            console.log('🔄 Group constraint applied:', { original: { x: deltaX, y: deltaY }, constrained: constrainedDelta });
+            
           }
           
           // Store current drag deltas for live rendering without creating actions
@@ -1166,7 +1151,7 @@ export const useCanvasInteractions = () => {
           const deltaY = Math.abs(coords.y - textClickStartPosRef.current.y);
           
           if (deltaX > 5 || deltaY > 5) {
-            console.log('📝 Drag detected - entering drag mode');
+            
             isDrawingRef.current = true; // Now mark as drawing since it's a drag
           }
         }
@@ -1261,7 +1246,7 @@ export const useCanvasInteractions = () => {
     switch (activeTool) {
       case 'select': {
         if (isDraggingRef.current) {
-          console.log('🔄 ON-CANVAS: Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
+          
           
           // Clear any drag timeout since we're completing normally
           if (dragTimeoutRef.current) {
@@ -1307,7 +1292,7 @@ export const useCanvasInteractions = () => {
             }
             
             whiteboardStore.selectObjects(newSelection, userId);
-            console.log('📦 Selection box completed, selected:', newSelection.length, 'objects');
+            
           }
           
           // Clear selection box
@@ -1332,7 +1317,7 @@ export const useCanvasInteractions = () => {
         
         // Additional check to prevent text creation while editing
         if (isEditingTextRef.current) {
-          console.log('📝 Text creation blocked in pointer up - currently editing text');
+          
           isDrawingRef.current = false;
           currentShapePreviewRef.current = null;
           textClickStartPosRef.current = null;
@@ -1342,7 +1327,7 @@ export const useCanvasInteractions = () => {
         // Decide: was this a click or a drag?
         if (!isDrawingRef.current && textClickStartPosRef.current) {
           // This was a click (no drag detected) - trigger immediate text editing
-          console.log('📝 Single click detected - triggering immediate text editing');
+          
           triggerImmediateTextEditing(textClickStartPosRef.current);
         } else if (isDrawingRef.current && pathStartRef.current && currentShapePreviewRef.current) {
           // This was a drag - create text box
@@ -1363,7 +1348,7 @@ export const useCanvasInteractions = () => {
             );
 
             const objectId = whiteboardStore.addObject(textObject, userId);
-            console.log('📝 Created text object via drag:', objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
+            
           }
           
           // Force immediate redraw after object creation
@@ -1381,28 +1366,13 @@ export const useCanvasInteractions = () => {
       case 'pencil':
       case 'brush': {
         if (isDrawingRef.current && pathBuilderRef.current && pathStartRef.current) {
-          console.log('🎨 DRAWING COMPLETION START:', {
-            tool: activeTool,
-            hasPreview: !!currentDrawingPreviewRef.current,
-            pathLength: pathBuilderRef.current.getCurrentPath().length,
-            timestamp: Date.now()
-          });
           
           const finalSmoothPath = pathBuilderRef.current.getCurrentPath();
           
           // Clear preview IMMEDIATELY before creating final object to prevent flickering
-          console.log('🎨 CLEARING PREVIEW:', {
-            hadPreview: !!currentDrawingPreviewRef.current,
-            timestamp: Date.now()
-          });
           currentDrawingPreviewRef.current = null;
           pathBuilderRef.current = null;
           
-          console.log('🎨 CREATING FINAL OBJECT:', {
-            pathLength: finalSmoothPath.length,
-            startCoords: pathStartRef.current,
-            timestamp: Date.now()
-          });
           
           const drawingObject: Omit<WhiteboardObject, 'id' | 'createdAt' | 'updatedAt'> = {
             type: 'path',
@@ -1419,31 +1389,15 @@ export const useCanvasInteractions = () => {
           };
 
           // END BATCH before adding final object to prevent batch interference
-          console.log('🎨 ENDING BATCH:', {
-            hadBatch: !!currentBatchIdRef.current,
-            batchId: currentBatchIdRef.current?.slice(0, 8),
-            timestamp: Date.now()
-          });
           if (currentBatchIdRef.current) {
             endBatch();
             currentBatchIdRef.current = null;
             drawingObjectIdRef.current = null;
           }
 
-          console.log('🎨 ADDING OBJECT TO STORE:', {
-            timestamp: Date.now()
-          });
           const objectId = whiteboardStore.addObject(drawingObject, userId);
-          console.log('🎨 OBJECT ADDED TO STORE:', {
-            objectId: objectId.slice(0, 8),
-            timestamp: Date.now()
-          });
           
           // Force immediate redraw after object creation with small delay to ensure store state is updated
-          console.log('🎨 TRIGGERING REDRAW:', {
-            hasRedrawFn: !!redrawCanvasRef.current,
-            timestamp: Date.now()
-          });
           if (redrawCanvasRef.current) {
             // Use setTimeout to ensure Zustand state is fully updated before redraw
             setTimeout(() => {
@@ -1452,10 +1406,6 @@ export const useCanvasInteractions = () => {
               }
             }, 0);
           }
-          console.log('🎨 DRAWING COMPLETION END:', {
-            objectId: objectId.slice(0, 8),
-            timestamp: Date.now()
-          });
         }
         break;
       }
@@ -1490,7 +1440,7 @@ export const useCanvasInteractions = () => {
 
             if (shapeObject) {
               const objectId = whiteboardStore.addObject(shapeObject, userId);
-              console.log('🔷 Created shape object:', activeTool, objectId.slice(0, 8), { width, height, userId: userId.slice(0, 8) });
+              
             }
           }
           
@@ -1505,17 +1455,12 @@ export const useCanvasInteractions = () => {
       case 'eraser': {
         if (isDrawingRef.current) {
           handleEraserEnd(redrawCanvasRef.current || undefined);
-          console.log('🧹 Finished erasing:', { mode: toolStore.toolSettings.eraserMode, userId: userId.slice(0, 8) });
+          
         }
         break;
       }
     }
 
-    console.log('🎨 POINTER UP CLEANUP:', {
-      tool: activeTool,
-      wasDrawing: isDrawingRef.current,
-      timestamp: Date.now()
-    });
     isDrawingRef.current = false;
     lastPointRef.current = null;
     pathStartRef.current = null;

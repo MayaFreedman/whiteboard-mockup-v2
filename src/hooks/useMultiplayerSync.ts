@@ -95,35 +95,22 @@ export const useMultiplayerSync = () => {
       return
     }
 
-    console.log('📤 Sending initial state request...')
     hasRequestedStateRef.current = true
     setIsWaitingForInitialState(true)
     
     try {
-      console.log('📤 Attempting to call serverInstance.requestInitialState()')
       serverInstance.requestInitialState()
-      console.log('✅ Successfully called serverInstance.requestInitialState()')
     } catch (error) {
       console.error('❌ Failed to send state request:', error)
-      // Don't return early - still set up timeout for empty room scenario
     }
 
-    // Always set timeout regardless of whether the request succeeded
-    // This handles the case where multiple users join empty room simultaneously
     if (responseTimeoutRef.current) {
-      console.log('🧹 Clearing existing timeout before setting new one')
       clearTimeout(responseTimeoutRef.current)
     }
-    console.log('⏰ Setting 2s timeout for initial state response')
     responseTimeoutRef.current = setTimeout(() => {
-      console.log('⏰ Timeout triggered: hasReceivedInitialStateRef.current =', hasReceivedInitialStateRef.current)
-      console.log('⏰ Timeout triggered: isWaitingForInitialState =', isWaitingForInitialState)
       if (!hasReceivedInitialStateRef.current) {
-        console.warn('⏳ No state response received within 2s; clearing loader for empty room');
-        // Finalize initial state attempt to avoid infinite loader/retry loop
         hasReceivedInitialStateRef.current = true;
         setIsWaitingForInitialState(false);
-        // allow a future manual retry if needed (keep requested=false)
         hasRequestedStateRef.current = false;
       }
     }, 2000)
@@ -140,13 +127,10 @@ export const useMultiplayerSync = () => {
     const room = serverInstance.server.room
     
     const handleBroadcastMessage = (message: any) => {
-      console.log('📡 Received broadcast message:', message.type, 'from session:', message.senderSessionId || 'unknown')
       // Handle state request messages
       if (message.type === 'request_state') {
-        console.log('📥 Received state request from:', message.requesterId)
         if (message.requesterId !== room.sessionId) {
           const currentState = whiteboardStore.getStateSnapshot()
-          console.log('📤 Sending state response with objects:', Object.keys(currentState.objects).length)
           
           // Always respond, even with empty state (so requester knows they got a response)
           setTimeout(() => {
@@ -158,13 +142,8 @@ export const useMultiplayerSync = () => {
       
       // Handle state response messages
       if (message.type === 'state_response') {
-        console.log('📥 Received state response for:', message.requesterId, 'with objects:', Object.keys(message.state?.objects || {}).length, ' ourSession:', room.sessionId)
-        
         // Only apply if this response is for us AND we haven't already applied initial state
         if (message.requesterId === room.sessionId && !hasReceivedInitialStateRef.current) {
-          console.log('✅ State response is for us, applying state (first time only)')
-          
-          // Immediately mark as received to prevent duplicate applications
           hasReceivedInitialStateRef.current = true
           if (responseTimeoutRef.current) {
             clearTimeout(responseTimeoutRef.current)
@@ -172,17 +151,9 @@ export const useMultiplayerSync = () => {
           }
           setIsWaitingForInitialState(false)
           
-          const objectCount = Object.keys(message.state?.objects || {}).length
-          if (objectCount === 0) {
-            console.log('📭 Empty room - no objects to sync, ready to start fresh')
-          }
-          
-          // Clear any existing objects first to prevent duplicates
           whiteboardStore.clearObjects()
           
-          // Apply received state using batch update to prevent multiple redraws
           if (message.state?.objects && Object.keys(message.state.objects).length > 0) {
-            console.log('🎯 Batching', Object.keys(message.state.objects).length, 'objects from state response')
             
             // Create all ADD_OBJECT actions for batch processing
             const addActions: WhiteboardAction[] = Object.values(message.state.objects).map((obj: any) => ({
@@ -214,7 +185,7 @@ export const useMultiplayerSync = () => {
           
           // Apply history state if available
           if (message.state?.actionHistory && message.state?.userActionHistories) {
-            console.log('🔄 Applying history state with', message.state.actionHistory.length, 'actions')
+            
             whiteboardStore.restoreHistoryState({
               actionHistory: message.state.actionHistory,
               userActionHistories: message.state.userActionHistories,
@@ -237,7 +208,7 @@ export const useMultiplayerSync = () => {
           
           // Handle BATCH_UPDATE actions specially
           if (action.type === 'BATCH_UPDATE') {
-            console.log('🔄 Processing remote BATCH_UPDATE:', action.id?.slice(0, 8), 'with', action.payload.actions?.length, 'nested actions')
+            
             if (action.payload.actions && Array.isArray(action.payload.actions)) {
               // Apply updates to objects
               whiteboardStore.batchUpdate(action.payload.actions)
@@ -267,7 +238,7 @@ export const useMultiplayerSync = () => {
         if (!senderSessionId) return
         // Ignore our own echo
         if (senderSessionId === room.sessionId) return
-        console.log('📥 Received screen size update from participant:', senderSessionId, message.screenSize)
+        console.log('Screen size synced')
         updateUserScreenSize(senderSessionId, message.screenSize)
       }
 
@@ -278,7 +249,7 @@ export const useMultiplayerSync = () => {
         try {
           const bg = message.background as CustomBackground
           addCustomBackgroundFromObject(bg)
-          console.log('🧩 Added remote custom background to local storage:', bg.id)
+          
         } catch (e) {
           console.warn('Failed to apply remote custom background:', e)
         }
@@ -295,7 +266,7 @@ export const useMultiplayerSync = () => {
             // Fallback removal by dataUrl
             removeCustomBackgroundByDataUrl(String(message.dataUrl))
           }
-          console.log('🧽 Removed remote custom background from local storage')
+          
         } catch (e) {
           console.warn('Failed to remove remote custom background:', e)
         }
@@ -347,6 +318,9 @@ export const useMultiplayerSync = () => {
               
               sendWhiteboardAction(actionToSend)
               sentActionIdsRef.current.add(state.lastAction.id)
+              
+              // Essential log: Multiplayer broadcast
+              console.log(`Broadcasted ${state.lastAction.type} to multiplayer room`);
               
               // Clean up old IDs to prevent memory leak
               if (sentActionIdsRef.current.size > 1000) {

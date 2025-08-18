@@ -68,10 +68,12 @@ export const MultiplayerProvider: React.FC<MultiplayerProviderProps> = ({
   const registerMessageHandlers = useCallback((room: any) => {
     room.onMessage('participantJoined', (participant: any) => {
       setConnectedUserCount(prev => prev + 1)
+      console.log('User joined multiplayer room')
     })
 
     room.onMessage('participantLeft', (data: any) => {
       setConnectedUserCount(prev => Math.max(0, prev - 1))
+      console.log('User left multiplayer room')
       try {
         const participantId = data?.sessionId || data?.id || data?.clientId || data?.userId
         if (participantId) {

@@ -306,10 +306,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       }
     }));
     
-    console.log('🎯 Added action to batch:', { 
-      actionType: action.type, 
-      batchSize: get().currentBatch.actions.length 
-    });
   },
 
   setViewport: (viewport) => set({ viewport }),
@@ -377,13 +373,16 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           opacity,
           effectData
         });
-        console.log('🗂️ Cached brush effect on add:', { id: id.slice(0,8), type: newObject.data.brushType, points: points.length, strokeWidth });
       } catch (e) {
         console.warn('⚠️ Failed to precompute brush effect on add:', e);
       }
     }
 
     get().recordAction(action);
+    
+    // Essential log: Object creation
+    console.log(`Created ${newObject.type} object ${id.slice(0, 8)} at (${Math.round(newObject.x)}, ${Math.round(newObject.y)})`);
+    
     return id;
   },
 
@@ -392,13 +391,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     const existingObject = state.objects[id];
     if (!existingObject) return;
 
-    console.log('🔄 Store updateObject called:', { 
-      id, 
-      updates, 
-      objectType: existingObject?.type,
-      currentDimensions: existingObject ? { width: existingObject.width, height: existingObject.height } : null,
-      newDimensions: updates.width || updates.height ? { width: updates.width, height: updates.height } : null
-    });
 
     const action: WhiteboardAction = {
       type: 'UPDATE_OBJECT',
@@ -423,7 +415,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     // If we're in an active batch, add to batch instead of recording immediately
     const currentBatch = get().currentBatch;
     if (currentBatch.id && currentBatch.actions.length >= 0) {
-      console.log('🎯 Adding UPDATE_OBJECT to active batch:', action.id, 'batch:', currentBatch.id);
+      
       get().addToBatch(action);
     } else {
       get().recordAction(action);
@@ -468,7 +460,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     const isObjectsEmpty = Object.keys(state.objects).length === 0;
     const isBgDefault = (state.settings.backgroundColor || '#ffffff') === '#ffffff';
     if (isObjectsEmpty && isBgDefault) {
-      console.log('🗑️ Canvas already empty and background default, skipping clear action');
+      
       return;
     }
     
