@@ -623,17 +623,24 @@ export const useCanvasInteractions = () => {
       }
     }
     
-    // Clean up batching and reset all drawing state
-    cleanupBatching();
-    isDrawingRef.current = false;
-    isDraggingRef.current = false;
-    lastPointRef.current = null;
-    pathStartRef.current = null;
-    pathBuilderRef.current = null;
-    dragStartRef.current = null;
-    currentDrawingPreviewRef.current = null;
-    currentShapePreviewRef.current = null;
-    selectionBoxRef.current = null;
+    // Handle drag completion properly
+    if (isDraggingRef.current && Object.keys(liveDragPositionsRef.current).length > 0) {
+      // Use the proper drag completion that updates store first
+      completeDragOperation();
+    } else {
+      // For non-drag operations, clean up normally
+      cleanupBatching();
+      isDrawingRef.current = false;
+      isDraggingRef.current = false;
+      lastPointRef.current = null;
+      pathStartRef.current = null;
+      pathBuilderRef.current = null;
+      dragStartRef.current = null;
+      currentDrawingPreviewRef.current = null;
+      currentShapePreviewRef.current = null;
+      selectionBoxRef.current = null;
+      liveDragPositionsRef.current = {};
+    }
     
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
