@@ -39,31 +39,17 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
   if (getLiveDragPositions) {
     const liveDragPositions = getLiveDragPositions();
     const liveDragKeys = Object.keys(liveDragPositions);
-    console.log("🔍 ResizeHandles debug:", {
-      objectId: objectId.slice(0, 8),
-      fullObjectId: objectId,
-      liveDragKeys: liveDragKeys.map(id => id.slice(0, 8)),
-      fullLiveDragKeys: liveDragKeys,
-      hasThisObject: !!liveDragPositions[objectId],
-      position: liveDragPositions[objectId]
-    });
     
     if (liveDragPositions[objectId]) {
-      console.log("🚫 Hiding resize handles during drag for:", objectId.slice(0, 8));
       return null; // Don't render handles during drag
     }
-  } else {
-    console.log("🔍 ResizeHandles: No getLiveDragPositions function");
   }
   
   // Apply live drag position if object is being dragged
   const originalPosition = { x: obj?.x, y: obj?.y };
   if (getLiveDragPositions) {
     const liveDragPositions = getLiveDragPositions();
-    console.log("🔄 ResizeHandles - Live drag positions:", Object.keys(liveDragPositions).length, "objects");
-    
     if (liveDragPositions[objectId]) {
-      console.log("🔄 ResizeHandles - Applying live position:", liveDragPositions[objectId], "Original:", originalPosition);
       obj = {
         ...obj,
         x: liveDragPositions[objectId].x,
@@ -167,7 +153,6 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
         newBounds.height = 600;
       }
       
-      console.log('🔄 Manual resize:', { objectId, handleId, newBounds, oldBounds: startBounds });
       onResize(objectId, newBounds);
     };
     
