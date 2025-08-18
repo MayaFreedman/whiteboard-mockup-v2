@@ -496,6 +496,9 @@ export const useCanvasInteractions = () => {
     // Create optimized drag completion batch with only final positions
     const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE_OFFCANVAS', 'multi-object', userId);
     
+    // Store current live positions before clearing
+    const finalPositions = { ...liveDragPositionsRef.current };
+    
     // Apply final positions for all dragged objects in a single batch
     whiteboardStore.selectedObjectIds.forEach(objectId => {
       const finalPos = liveDragPositionsRef.current[objectId];
@@ -512,10 +515,17 @@ export const useCanvasInteractions = () => {
     currentBatchIdRef.current = null;
     draggedObjectIdRef.current = null;
     initialDragPositionsRef.current = {};
-    liveDragPositionsRef.current = {};
     dragDeltasRef.current = { x: 0, y: 0 };
     isDraggingRef.current = false;
     dragStartRef.current = null;
+    
+    // Clear live positions after a brief delay to ensure store updates render first
+    setTimeout(() => {
+      liveDragPositionsRef.current = {};
+      if (redrawCanvasRef.current) {
+        redrawCanvasRef.current();
+      }
+    }, 0);
     
     console.log('✅ DRAG COMPLETION: Off-canvas drag completed and synchronized');
   }, [whiteboardStore, userId]);
