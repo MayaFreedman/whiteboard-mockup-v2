@@ -76,7 +76,7 @@ export const useUndoRedo = (): UndoRedoManager => {
    * Creates the state change needed to undo an action with conflict resolution
    */
   const createUndoStateChange = useCallback((action: WhiteboardAction, currentState: any): { stateChange: Partial<WhiteboardState> | null; conflict?: string } => {
-    console.log('🔄 Creating undo state change for:', action.type, action.id);
+    
 
     // Validate that we're not trying to undo a sync action
     if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
@@ -86,7 +86,7 @@ export const useUndoRedo = (): UndoRedoManager => {
 
     // Handle BATCH_UPDATE actions by undoing all actions in reverse order
     if (action.type === 'BATCH_UPDATE') {
-      console.log('🎯 Undoing batch action with', action.payload.actions.length, 'actions');
+      
       
       let finalStateChange = { ...currentState };
       
@@ -265,7 +265,7 @@ export const useUndoRedo = (): UndoRedoManager => {
    * Creates the state change needed to redo an action with conflict resolution
    */
   const createRedoStateChange = useCallback((action: WhiteboardAction, currentState: any): { stateChange: Partial<WhiteboardState> | null; conflict?: string } => {
-    console.log('🔄 Creating redo state change for:', action.type, action.id);
+    
 
     // Validate that we're not trying to redo a sync action
     if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
@@ -275,7 +275,7 @@ export const useUndoRedo = (): UndoRedoManager => {
 
     // Handle BATCH_UPDATE actions by redoing all actions in order
     if (action.type === 'BATCH_UPDATE') {
-      console.log('🎯 Redoing batch action with', action.payload.actions.length, 'actions');
+      
       
       let finalStateChange = { ...currentState };
       
@@ -450,10 +450,10 @@ export const useUndoRedo = (): UndoRedoManager => {
     });
     
     // Log current objects state before undo
-    console.log('🔍 Objects before undo:', Object.keys(state.objects));
+    
     
     if (currentIndex < 0 || currentIndex >= userHistory.length) {
-      console.log('↶ Cannot undo: invalid index');
+      
       return;
     }
 
@@ -470,7 +470,7 @@ export const useUndoRedo = (): UndoRedoManager => {
       return;
     }
     
-    console.log('↶ Undoing action:', actionToUndo.type, actionToUndo.id);
+    
     
     // Validate the action can be undone (check for conflicts)
     const validation = validateActionForUndo(actionToUndo);
@@ -502,12 +502,12 @@ export const useUndoRedo = (): UndoRedoManager => {
     
     // Log objects state after undo
     const newState = store.getState();
-    console.log('🔍 Objects after undo:', Object.keys(newState.objects));
+    
     
     // Force canvas redraw after undo to ensure visual update
     // This is needed because newly synced users might not have proper React dependency tracking
     setTimeout(() => {
-      console.log('🎨 Forcing canvas redraw after undo operation');
+      
       // Trigger a state change that React will detect
       store.setViewport({ ...newState.viewport });
     }, 10);
@@ -527,11 +527,11 @@ export const useUndoRedo = (): UndoRedoManager => {
         userId: userId // Keep the original userId in the sync action
       };
       
-      console.log('↶ Sending undo sync to other clients for user:', userId);
+      
       multiplayer.sendWhiteboardAction(syncAction);
     }
     
-    console.log('↶ Undo completed successfully');
+    
   }, [createUndoStateChange, store, multiplayer]);
 
   const redo = useCallback((userId: string) => {
@@ -548,7 +548,7 @@ export const useUndoRedo = (): UndoRedoManager => {
     });
     
     if (nextIndex >= userHistory.length) {
-      console.log('↷ Cannot redo: no more actions');
+      
       return;
     }
 
@@ -565,7 +565,7 @@ export const useUndoRedo = (): UndoRedoManager => {
       return;
     }
     
-    console.log('↷ Redoing action:', actionToRedo.type, actionToRedo.id);
+    
     
     // Create the redo state change with conflict detection
     const result = createRedoStateChange(actionToRedo, state);
@@ -596,11 +596,11 @@ export const useUndoRedo = (): UndoRedoManager => {
         userId: userId // Keep the original userId in the sync action
       };
       
-      console.log('↷ Sending redo sync to other clients for user:', userId);
+      
       multiplayer.sendWhiteboardAction(syncAction);
     }
     
-    console.log('↷ Redo completed successfully');
+    
   }, [createRedoStateChange, store, multiplayer]);
 
   const canUndo = useCallback((userId: string) => {

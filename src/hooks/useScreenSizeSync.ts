@@ -94,14 +94,14 @@ export const useScreenSizeSync = () => {
     
     if (userCount <= 1) {
       // Single player mode - clear stale entries and ensure local size is active
-      console.log('📏 Single player mode - ensuring local size is active');
+      
       clearAllSizes();
       const currentSize = calculateUsableScreenSize();
       updateLocalUserScreenSize(participantId, currentSize);
       recalculateMinimumSize();
     } else {
       // Multi-player mode - broadcast current size and ensure local presence
-      console.log('📏 Multi-player mode - broadcasting screen size');
+      
       const currentSize = calculateUsableScreenSize();
       updateLocalUserScreenSize(participantId, currentSize);
       // Force re-broadcast on participant changes so newcomers receive sizes

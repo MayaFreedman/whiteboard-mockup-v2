@@ -355,14 +355,14 @@ export const useMultiplayerSync = () => {
   useEffect(() => {
     if (isConnected && connectedUserCount > 1 && !hasReceivedInitialStateRef.current && !hasRequestedStateRef.current) {
       if (isGenuinelyNewUser()) {
-        console.log('🔄 Genuinely new user detected - requesting initial state')
+        
         
         // Small delay to ensure room is fully initialized
         setTimeout(() => {
           requestInitialState()
         }, 100)
       } else {
-        console.log('⏭️ Existing user detected - skipping initial state request')
+        
       }
     }
   }, [isConnected, connectedUserCount, isGenuinelyNewUser])
@@ -372,14 +372,14 @@ export const useMultiplayerSync = () => {
    */
    useEffect(() => {
      if (!isConnected) {
-       console.log('🔌 Connection lost - resetting sync state and clearing timeout')
+       
        hasReceivedInitialStateRef.current = false
        hasRequestedStateRef.current = false
        userJoinTimeRef.current = null
        setIsWaitingForInitialState(false)
        handlersReadyRef.current = false
        if (responseTimeoutRef.current) {
-         console.log('🧹 Clearing timeout due to disconnection')
+         
          clearTimeout(responseTimeoutRef.current)
          responseTimeoutRef.current = null
        }

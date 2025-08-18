@@ -26,10 +26,6 @@ export const useEraserBatching = () => {
     // Start the batch with the consistent stroke ID
     batchIdRef.current = actionBatching.startBatch('ERASE_PATH', strokeObjectId, userId);
     
-    console.log('🧹 Started eraser stroke batch:', {
-      strokeId: strokeIdRef.current.slice(0, 8),
-      batchId: batchIdRef.current.slice(0, 8)
-    });
     
     return {
       strokeId: strokeIdRef.current,
@@ -41,10 +37,6 @@ export const useEraserBatching = () => {
     if (batchIdRef.current && strokeIdRef.current) {
       actionBatching.endBatch();
       
-      console.log('🧹 Ended eraser stroke batch:', {
-        strokeId: strokeIdRef.current.slice(0, 8),
-        batchId: batchIdRef.current.slice(0, 8)
-      });
       
       strokeIdRef.current = null;
       batchIdRef.current = null;

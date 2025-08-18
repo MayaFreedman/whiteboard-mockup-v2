@@ -38,7 +38,7 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
   activeWhiteboardSize: calculateUsableScreenSize(),
 
   updateUserScreenSize: (userId: string, size: { width: number; height: number }) => {
-    console.log('📏 Remote screen size update:', userId, size);
+    
     set((state) => {
       const newUserScreenSizes = {
         ...state.userScreenSizes,
@@ -63,7 +63,7 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
   },
 
   updateLocalUserScreenSize: (userId: string, size: { width: number; height: number }) => {
-    console.log('📏 Local screen size update:', userId, size);
+    
     set((state) => {
       const newUserScreenSizes = {
         ...state.userScreenSizes,
@@ -107,7 +107,7 @@ export const useScreenSizeStore = create<ScreenSizeState>((set, get) => ({
   },
 
   clearAllSizes: () => {
-    console.log('📏 Clearing all screen sizes for fresh recalculation');
+    
     set({ userScreenSizes: {} });
     
     // Immediate recalculation after clearing

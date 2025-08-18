@@ -46,7 +46,7 @@ export class ServerClass {
             });
 
             room.onLeave((code: any) => {
-              console.log("👋 Left room with code:", code);
+              
             });
 
             clearTimeout(timeout);
