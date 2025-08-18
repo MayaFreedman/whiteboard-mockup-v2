@@ -108,14 +108,14 @@ export const useMultiplayerSync = () => {
       }
       responseTimeoutRef.current = setTimeout(() => {
         if (!hasReceivedInitialStateRef.current) {
-          console.warn('⏳ No state response received within 1s; assuming empty room');
+          console.warn('⏳ No state response received within 2s; assuming empty room or connection issue');
           // Finalize initial state attempt to avoid infinite loader/retry loop
           hasReceivedInitialStateRef.current = true;
           setIsWaitingForInitialState(false);
           // allow a future manual retry if needed (keep requested=false)
           hasRequestedStateRef.current = false;
         }
-      }, 1000)
+      }, 2000)
     } catch (error) {
       console.error('❌ Failed to send state request:', error)
       hasReceivedInitialStateRef.current = true
@@ -139,6 +139,7 @@ export const useMultiplayerSync = () => {
     const room = serverInstance.server.room
     
     const handleBroadcastMessage = (message: any) => {
+      console.log('📡 Received broadcast message:', message.type, 'from session:', message.senderSessionId || 'unknown')
       // Handle state request messages
       if (message.type === 'request_state') {
         console.log('📥 Received state request from:', message.requesterId)
