@@ -487,7 +487,7 @@ export const Toolbar: React.FC = () => {
                             colorPickerRef.current?.click();
                           } else {
                             // If custom color is set, select it
-                            handleColorSelect(color);
+                            handleColorSelect(toolSettings.strokeColor);
                           }
                         }}
                         
