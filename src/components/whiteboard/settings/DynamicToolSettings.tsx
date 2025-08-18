@@ -285,6 +285,13 @@ export const DynamicToolSettings: React.FC = () => {
           <div ref={uploaderRef}>
             <CustomStampUpload ref={uploaderCtrlRef} onStampAdded={handleCustomStampAdded} />
           </div>
+          
+          {/* OpenMoji Attribution Footer */}
+          <div className="mt-4 pt-4 border-t border-border/20">
+            <p className="text-xs text-muted-foreground text-center leading-relaxed">
+              All emojis designed by OpenMoji – the open-source emoji and icon project. License: CC BY-SA 4.0
+            </p>
+          </div>
         </div>
       </ToolSettingCard>;
   }
