@@ -375,7 +375,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     get().recordAction(action);
     
     // Essential log: Object creation
-    console.log(`Created ${newObject.type} object ${id.slice(0, 8)} at (${Math.round(newObject.x)}, ${Math.round(newObject.y)})`);
+    console.log(`Created ${newObject.type} object:`, newObject);
     
     return id;
   },
