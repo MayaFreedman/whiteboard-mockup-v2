@@ -105,10 +105,13 @@ export const useMultiplayerSync = () => {
 
       // Start timeout: if no response, assume empty room and clear loader
       if (responseTimeoutRef.current) {
+        console.log('🧹 Clearing existing timeout before setting new one')
         clearTimeout(responseTimeoutRef.current)
       }
+      console.log('⏰ Setting 2s timeout for initial state response')
       responseTimeoutRef.current = setTimeout(() => {
         console.log('⏰ Timeout triggered: hasReceivedInitialStateRef.current =', hasReceivedInitialStateRef.current)
+        console.log('⏰ Timeout triggered: isWaitingForInitialState =', isWaitingForInitialState)
         if (!hasReceivedInitialStateRef.current) {
           console.warn('⏳ No state response received within 2s; assuming empty room or connection issue');
           // Finalize initial state attempt to avoid infinite loader/retry loop
@@ -397,19 +400,21 @@ export const useMultiplayerSync = () => {
   /**
    * Reset state sync flags when disconnecting
    */
-  useEffect(() => {
-    if (!isConnected) {
-      hasReceivedInitialStateRef.current = false
-      hasRequestedStateRef.current = false
-      userJoinTimeRef.current = null
-      setIsWaitingForInitialState(false)
-      handlersReadyRef.current = false
-      if (responseTimeoutRef.current) {
-        clearTimeout(responseTimeoutRef.current)
-        responseTimeoutRef.current = null
-      }
-    }
-  }, [isConnected])
+   useEffect(() => {
+     if (!isConnected) {
+       console.log('🔌 Connection lost - resetting sync state and clearing timeout')
+       hasReceivedInitialStateRef.current = false
+       hasRequestedStateRef.current = false
+       userJoinTimeRef.current = null
+       setIsWaitingForInitialState(false)
+       handlersReadyRef.current = false
+       if (responseTimeoutRef.current) {
+         console.log('🧹 Clearing timeout due to disconnection')
+         clearTimeout(responseTimeoutRef.current)
+         responseTimeoutRef.current = null
+       }
+     }
+   }, [isConnected])
 
   return {
     isConnected,
