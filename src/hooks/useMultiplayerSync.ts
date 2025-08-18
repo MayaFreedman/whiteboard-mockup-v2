@@ -100,6 +100,7 @@ export const useMultiplayerSync = () => {
     setIsWaitingForInitialState(true)
     
     try {
+      console.log('📤 Sending initial state request...')
       serverInstance.requestInitialState()
 
       // Start timeout: if no response, assume empty room and clear loader
@@ -107,6 +108,7 @@ export const useMultiplayerSync = () => {
         clearTimeout(responseTimeoutRef.current)
       }
       responseTimeoutRef.current = setTimeout(() => {
+        console.log('⏰ Timeout triggered: hasReceivedInitialStateRef.current =', hasReceivedInitialStateRef.current)
         if (!hasReceivedInitialStateRef.current) {
           console.warn('⏳ No state response received within 2s; assuming empty room or connection issue');
           // Finalize initial state attempt to avoid infinite loader/retry loop
