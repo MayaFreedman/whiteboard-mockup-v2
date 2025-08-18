@@ -752,15 +752,11 @@ export const useCanvasInteractions = () => {
           
           // Auto-switch to select tool and track the original tool
           toolStore.setAutoSwitchState('stamp', true);
-          console.log('🖼️ STAMP TOOL: Set auto-switch state to stamp');
           
           toolStore.setActiveTool('select');
-          console.log('🖼️ STAMP TOOL: Changed tool to select');
           
           // Select the stamp
           whiteboardStore.selectObjects([clickedObjectId], userId);
-          console.log('🖼️ STAMP TOOL: Selected object:', clickedObjectId.slice(0, 8));
-          console.log('🔄 STAMP TOOL: ✅ Auto-switched from stamp to select tool');
           return;
         } else {
           // Create new stamp
@@ -858,48 +854,30 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        console.log('📝 TEXT TOOL: Pointer down triggered at:', coords);
-        console.log('📝 TEXT TOOL: Current tool:', toolStore.activeTool);
-        console.log('📝 TEXT TOOL: Checking text editing state:', isEditingTextRef.current);
         
         // Additional check to prevent text creation while editing
         if (isEditingTextRef.current) {
-          console.log('📝 TEXT TOOL: Blocked - currently editing text');
           return;
         }
 
         // Check if we're clicking on an existing text object
-        console.log('📝 TEXT TOOL: Looking for object at coords:', coords);
         const clickedObjectId = findObjectAt(coords.x, coords.y);
-        console.log('📝 TEXT TOOL: Found object ID:', clickedObjectId);
         
         const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
-        console.log('📝 TEXT TOOL: Found object:', clickedObject ? { id: clickedObjectId, type: clickedObject.type } : 'null');
         
         const isClickingOnExistingText = clickedObject && clickedObject.type === 'text';
-        console.log('📝 TEXT TOOL: Is clicking on text object?', isClickingOnExistingText);
         
         if (isClickingOnExistingText) {
-          console.log('📝 TEXT TOOL: ✅ DETECTED CLICK ON TEXT OBJECT - auto-switching to select tool:', clickedObjectId.slice(0, 8));
-          console.log('📝 TEXT TOOL: Current auto-switch state before:', { 
-            wasAutoSwitched: toolStore.wasAutoSwitched, 
-            autoSwitchedFromTool: toolStore.autoSwitchedFromTool 
-          });
-          
           // Auto-switch to select tool and track the original tool
           toolStore.setAutoSwitchState('text', true);
-          console.log('📝 TEXT TOOL: Set auto-switch state to text');
           
           toolStore.setActiveTool('select');
-          console.log('📝 TEXT TOOL: Changed tool to select');
           
           // Select the text object
           whiteboardStore.selectObjects([clickedObjectId], userId);
-          console.log('📝 TEXT TOOL: Selected object:', clickedObjectId.slice(0, 8));
-          console.log('🔄 TEXT TOOL: ✅ Auto-switched from text to select tool');
           return;
         } else {
-          console.log('📝 TEXT TOOL: Not clicking on text object - preparing for new text creation');
+          // Preparing for new text creation
         }
 
         // Store click position for drag detection (only for new text creation)
@@ -921,53 +899,34 @@ export const useCanvasInteractions = () => {
           opacity: 1
         };
         
-        console.log('📝 TEXT TOOL: Started text interaction on empty space (waiting for click/drag decision):', coords, 'for user:', userId.slice(0, 8));
         break;
       }
 
       case 'sticky-note': {
-        console.log('🗒️ STICKY NOTE: Pointer down triggered at:', coords);
-        console.log('🗒️ STICKY NOTE: Current tool:', toolStore.activeTool);
-        console.log('🗒️ STICKY NOTE: Checking text editing state:', isEditingTextRef.current);
         
         // Block if currently editing text to avoid conflicts
         if (isEditingTextRef.current) {
-          console.log('🗒️ STICKY NOTE: Blocked - currently editing text');
           return;
         }
 
         // Check if we're clicking on an existing sticky note for auto-select
-        console.log('🗒️ STICKY NOTE: Looking for object at coords:', coords);
         const clickedObjectId = findObjectAt(coords.x, coords.y);
-        console.log('🗒️ STICKY NOTE: Found object ID:', clickedObjectId);
         
         const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
-        console.log('🗒️ STICKY NOTE: Found object:', clickedObject ? { id: clickedObjectId, type: clickedObject.type } : 'null');
         
         const isClickingOnStickyNote = clickedObject && clickedObject.type === 'sticky-note';
-        console.log('🗒️ STICKY NOTE: Is clicking on sticky note?', isClickingOnStickyNote);
         
         if (isClickingOnStickyNote) {
-          console.log('🗒️ STICKY NOTE: ✅ DETECTED CLICK ON STICKY NOTE - auto-switching to select tool:', clickedObjectId.slice(0, 8));
-          console.log('🗒️ STICKY NOTE: Current auto-switch state before:', { 
-            wasAutoSwitched: toolStore.wasAutoSwitched, 
-            autoSwitchedFromTool: toolStore.autoSwitchedFromTool 
-          });
-          
           // Auto-switch to select tool and track the original tool
           toolStore.setAutoSwitchState('sticky-note', true);
-          console.log('🗒️ STICKY NOTE: Set auto-switch state to sticky-note');
           
           toolStore.setActiveTool('select');
-          console.log('🗒️ STICKY NOTE: Changed tool to select');
           
           // Select the sticky note
           whiteboardStore.selectObjects([clickedObjectId], userId);
-          console.log('🗒️ STICKY NOTE: Selected object:', clickedObjectId.slice(0, 8));
-          console.log('🔄 STICKY NOTE: ✅ Auto-switched from sticky-note to select tool');
           return;
         } else {
-          console.log('🗒️ STICKY NOTE: Not clicking on sticky note - creating new one');
+          // Create new sticky note
         }
 
         // Create new sticky note
@@ -1271,12 +1230,6 @@ export const useCanvasInteractions = () => {
           }
           
           if (redrawCanvasRef.current) {
-            console.log('🎨 PREVIEW REDRAW:', {
-              tool: activeTool,
-              hasPreview: !!currentDrawingPreviewRef.current,
-              pathLength: currentDrawingPreviewRef.current?.path.length || 0,
-              timestamp: Date.now()
-            });
             requestAnimationFrame(() => {
               if (redrawCanvasRef.current && isDrawingRef.current) {
                 redrawCanvasRef.current();
