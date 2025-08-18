@@ -456,11 +456,6 @@ export const useCanvasInteractions = () => {
       return;
     }
     
-    console.log('🎨 Found object to fill:', { 
-      id: objectId.slice(0, 8), 
-      type: obj.type, 
-      currentFill: obj.fill 
-    });
     
     // Use the current stroke color from toolbar as fill color
     const fillColor = toolStore.toolSettings.strokeColor;
@@ -469,13 +464,6 @@ export const useCanvasInteractions = () => {
     whiteboardStore.updateObject(objectId, {
       fill: fillColor
     }, userId);
-    
-    console.log('🎨 Filled object:', { 
-      objectId: objectId.slice(0, 8), 
-      fillColor,
-      previousFill: obj.fill,
-      userId: userId.slice(0, 8)
-    });
     
     // Trigger redraw
     if (redrawCanvasRef.current) {
@@ -491,7 +479,6 @@ export const useCanvasInteractions = () => {
       return;
     }
 
-    console.log('🔄 DRAG COMPLETION: Completing off-canvas drag for', whiteboardStore.selectedObjectIds.length, 'object(s)');
     
     // Create optimized drag completion batch with only final positions
     const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE_OFFCANVAS', 'multi-object', userId);
@@ -503,7 +490,6 @@ export const useCanvasInteractions = () => {
     whiteboardStore.selectedObjectIds.forEach(objectId => {
       const finalPos = liveDragPositionsRef.current[objectId];
       if (finalPos) {
-        console.log('🎯 OFF-CANVAS: Final position for object:', objectId.slice(0, 8), finalPos);
         whiteboardStore.updateObject(objectId, finalPos, userId);
       }
     });
@@ -526,7 +512,6 @@ export const useCanvasInteractions = () => {
         redrawCanvasRef.current();
       }
     }, 0);
-    
     console.log('✅ DRAG COMPLETION: Off-canvas drag completed and synchronized');
   }, [whiteboardStore, userId]);
 
@@ -537,13 +522,7 @@ export const useCanvasInteractions = () => {
   const endCurrentDrawing = useCallback(() => {
     const activeTool = toolStore.activeTool;
     
-    console.log('🔄 END CURRENT DRAWING:', {
-      activeTool,
-      isDrawing: isDrawingRef.current,
-      isDragging: isDraggingRef.current,
-      selectedCount: whiteboardStore.selectedObjectIds.length
-    });
-
+    
     // Handle drag completion for select tool
     if (activeTool === 'select' && isDraggingRef.current) {
       completeDragOperation();
