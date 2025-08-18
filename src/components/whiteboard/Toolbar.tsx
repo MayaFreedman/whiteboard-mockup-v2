@@ -511,14 +511,14 @@ export const Toolbar: React.FC = () => {
                       )}
                       
                       {/* Hidden color input */}
-                      <input
-                        ref={colorPickerRef}
-                        type="color"
-                        value={isRainbow ? '#ff0000' : color}
-                        onChange={handleCustomColorChange}
-                        className="absolute opacity-0 pointer-events-none"
-                        aria-label="Custom color picker"
-                      />
+                       <input
+                         ref={colorPickerRef}
+                         type="color"
+                         value={isRainbow ? '#ff0000' : toolSettings.strokeColor}
+                         onChange={handleCustomColorChange}
+                         className="absolute opacity-0 pointer-events-none"
+                         aria-label="Custom color picker"
+                       />
                     </div>
                   );
                 }
