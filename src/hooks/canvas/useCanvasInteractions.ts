@@ -1055,6 +1055,13 @@ export const useCanvasInteractions = () => {
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
     
+    console.log('🔍 DEBUG Pointer move:', {
+      activeTool,
+      isDragging: isDraggingRef.current,
+      selectedCount: whiteboardStore.selectedObjectIds.length,
+      coords: { x: coords.x, y: coords.y }
+    });
+    
     // For drawing tools, constrain movement to whiteboard bounds
     const isDrawingTool = ['pencil', 'brush', 'eraser'].includes(activeTool);
     if (isDrawingTool && isDrawingRef.current && !isWithinWhiteboardBounds(coords.x, coords.y)) {
