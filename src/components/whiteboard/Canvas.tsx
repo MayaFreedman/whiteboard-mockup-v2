@@ -258,11 +258,6 @@ export const Canvas: React.FC = () => {
     objectId: string,
     newBounds: { x: number; y: number; width: number; height: number }
   ) => {
-    console.log("🎯 Canvas handleResize called:", {
-      objectId,
-      newBounds,
-      objectType: objects[objectId]?.type,
-    });
 
     // Set manual resizing flag to prevent ResizeObserver from triggering additional redraws
     if (isManualResizing) {

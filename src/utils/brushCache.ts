@@ -81,16 +81,9 @@ class BrushEffectCache {
   ): any {
     const originalData = this.get(originalPathId, brushType);
     if (!originalData || !originalData.effectData) {
-      console.log('⚠️ No original brush data found for transfer:', originalPathId.slice(0, 8));
       return null;
     }
 
-    console.log('🔄 ATOMIC: Pre-populating segment cache data:', {
-      originalPathId: originalPathId.slice(0, 8),
-      brushType,
-      segmentCount: segments.length,
-      originalEffectData: originalData.effectData
-    });
 
     const transferredSegmentData: any = {};
     
@@ -143,7 +136,7 @@ class BrushEffectCache {
     });
     
     if (allSegmentsCached && segmentCacheValidation.length === segments.length) {
-      console.log('✅ ATOMIC: All segments have cached data - no flashing possible');
+      
       return transferredSegmentData;
     } else {
       console.error('❌ ATOMIC FAILURE: Some segments missing cache data:', {
@@ -395,10 +388,6 @@ export function pathToPointsForBrush(path: string): Array<{ x: number; y: number
     return cachedPoints;
   }
 
-  console.log('🔍 Computing path-to-points conversion:', {
-    inputPath: path.slice(0, 100) + (path.length > 100 ? '...' : ''),
-    pathLength: path.length
-  });
 
   const points: Array<{ x: number; y: number }> = [];
   
@@ -487,11 +476,6 @@ export function pathToPointsForBrush(path: string): Array<{ x: number; y: number
   // Cache the result for future use
   pathPointsCache.set(path, points);
   
-  console.log('✅ Path-to-points conversion complete:', {
-    commandCount: commands.length,
-    extractedPoints: points.length,
-    firstFewPoints: points.slice(0, 3)
-  });
   
   return points;
 }

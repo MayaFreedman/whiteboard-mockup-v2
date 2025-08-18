@@ -26,7 +26,7 @@ export const fallbackEraserDetection = (
   const verySmallErasers = eraserPoints.filter(e => e.radius < 12);
   if (verySmallErasers.length === 0) return pointsToErase;
   
-  console.log(`🔍 Running toned-down fallback detection for ${verySmallErasers.length} very small erasers on ${strokeWidth}px stroke`);
+  
   
   for (let i = 1; i < points.length; i++) {
     for (const eraser of verySmallErasers) {
@@ -58,7 +58,7 @@ export const fallbackEraserDetection = (
       const threshold = eraser.radius * baseMultiplier + strokeCompensation;
       
       if (lineDistance <= threshold) {
-        console.log(`🎯 Toned-down fallback: Line segment ${i-1}-${i} within ${lineDistance.toFixed(1)}px of eraser (threshold: ${threshold.toFixed(1)}px, sizeRatio: ${sizeRatio.toFixed(2)})`);
+        
         pointsToErase.push(i-1, i);
         
         // Reduced neighboring point marking for similar sizes
@@ -96,17 +96,6 @@ export const erasePointsFromPathBatch = (
   const sizeRatio = Math.min(strokeWidth, avgEraserDiameter) / Math.max(strokeWidth, avgEraserDiameter);
   const isSimilarSize = sizeRatio > 0.7; // Within 30% of each other
   
-  console.log('🧹 Starting toned-down eraser batch processing:', {
-    originalPoints: points.length,
-    eraserPoints: eraserPoints.length,
-    eraserSizes: eraserPoints.map(e => e.radius * 2),
-    strokeWidth,
-    minRadius,
-    isSmallEraser,
-    isVerySmallEraser,
-    isSimilarSize,
-    sizeRatio: sizeRatio.toFixed(2)
-  });
   
   // Step 1: Pre-process path for small erasers (less aggressive for similar sizes)
   let processedPoints = points;
@@ -132,14 +121,6 @@ export const erasePointsFromPathBatch = (
   
   const interpolatedPoints = interpolatePathPoints(processedPoints, interpolationDistance);
   
-  console.log('🔧 Toned-down point processing complete:', {
-    originalPoints: points.length,
-    processedPoints: processedPoints.length,
-    interpolatedPoints: interpolatedPoints.length,
-    interpolationDistance,
-    strokeWidth,
-    isSimilarSize
-  });
   
   const segments: PathSegment[] = [];
   let currentSegment: Point[] = [];
@@ -298,17 +279,6 @@ export const erasePointsFromPathBatch = (
   // Filter out segments that are too small to be meaningful
   const filteredSegments = segments.filter(segment => segment.points.length >= 2);
   
-  console.log('✅ Toned-down eraser processing complete:', {
-    originalPoints: points.length,
-    interpolatedPoints: interpolatedPoints.length,
-    erasedPoints: totalErasedPoints,
-    detectionStats,
-    resultingSegments: filteredSegments.length,
-    totalRemainingPoints: filteredSegments.reduce((sum, seg) => sum + seg.points.length, 0),
-    strokeWidth,
-    isSimilarSize,
-    sizeRatio: sizeRatio.toFixed(2)
-  });
   
   return filteredSegments;
 };
