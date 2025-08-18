@@ -100,37 +100,33 @@ export const useMultiplayerSync = () => {
     setIsWaitingForInitialState(true)
     
     try {
-      console.log('📤 Sending initial state request...')
+      console.log('📤 Attempting to call serverInstance.requestInitialState()')
       serverInstance.requestInitialState()
-
-      // Start timeout: if no response, assume empty room and clear loader
-      if (responseTimeoutRef.current) {
-        console.log('🧹 Clearing existing timeout before setting new one')
-        clearTimeout(responseTimeoutRef.current)
-      }
-      console.log('⏰ Setting 2s timeout for initial state response')
-      responseTimeoutRef.current = setTimeout(() => {
-        console.log('⏰ Timeout triggered: hasReceivedInitialStateRef.current =', hasReceivedInitialStateRef.current)
-        console.log('⏰ Timeout triggered: isWaitingForInitialState =', isWaitingForInitialState)
-        if (!hasReceivedInitialStateRef.current) {
-          console.warn('⏳ No state response received within 2s; assuming empty room or connection issue');
-          // Finalize initial state attempt to avoid infinite loader/retry loop
-          hasReceivedInitialStateRef.current = true;
-          setIsWaitingForInitialState(false);
-          // allow a future manual retry if needed (keep requested=false)
-          hasRequestedStateRef.current = false;
-        }
-      }, 2000)
+      console.log('✅ Successfully called serverInstance.requestInitialState()')
     } catch (error) {
       console.error('❌ Failed to send state request:', error)
-      hasReceivedInitialStateRef.current = true
-      hasRequestedStateRef.current = false
-      setIsWaitingForInitialState(false)
-      if (responseTimeoutRef.current) {
-        clearTimeout(responseTimeoutRef.current)
-        responseTimeoutRef.current = null
-      }
+      // Don't return early - still set up timeout for empty room scenario
     }
+
+    // Always set timeout regardless of whether the request succeeded
+    // This handles the case where multiple users join empty room simultaneously
+    if (responseTimeoutRef.current) {
+      console.log('🧹 Clearing existing timeout before setting new one')
+      clearTimeout(responseTimeoutRef.current)
+    }
+    console.log('⏰ Setting 2s timeout for initial state response')
+    responseTimeoutRef.current = setTimeout(() => {
+      console.log('⏰ Timeout triggered: hasReceivedInitialStateRef.current =', hasReceivedInitialStateRef.current)
+      console.log('⏰ Timeout triggered: isWaitingForInitialState =', isWaitingForInitialState)
+      if (!hasReceivedInitialStateRef.current) {
+        console.warn('⏳ No state response received within 2s; clearing loader for empty room');
+        // Finalize initial state attempt to avoid infinite loader/retry loop
+        hasReceivedInitialStateRef.current = true;
+        setIsWaitingForInitialState(false);
+        // allow a future manual retry if needed (keep requested=false)
+        hasRequestedStateRef.current = false;
+      }
+    }, 2000)
   }, [isReadyToSend, serverInstance])
 
   /**
