@@ -7,12 +7,11 @@ import { calculateOptimalFontSize } from '../../utils/stickyNoteTextSizing';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
-import { useCanvasOffset } from '../useCanvasOffset';
 import { useActionBatching } from '../useActionBatching';
 import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
 import { useMultiplayer } from '../useMultiplayer';
-import { constrainWhiteboardObjectToBounds, constrainGroupToBounds } from '../../utils/boundaryConstraints';
+import { constrainWhiteboardObjectToBounds } from '../../utils/boundaryConstraints';
 
 /**
  * Custom hook for handling canvas mouse and touch interactions
@@ -25,7 +24,6 @@ export const useCanvasInteractions = () => {
   const { activeWhiteboardSize } = useScreenSizeStore();
   const { getCanvasCoordinates } = useCanvasCoordinates();
   const { findObjectAt, findObjectsInSelectionBox } = useObjectDetection(() => liveDragPositionsRef.current);
-  const { canvasOffset } = useCanvasOffset();
   
   // Initialize action batching with optimized settings
   const { startBatch, endBatch, checkBatchSize } = useActionBatching({
@@ -1055,13 +1053,6 @@ export const useCanvasInteractions = () => {
     const coords = getCanvasCoordinates(event, canvas);
     const activeTool = toolStore.activeTool;
     
-    console.log('🔍 DEBUG Pointer move:', {
-      activeTool,
-      isDragging: isDraggingRef.current,
-      selectedCount: whiteboardStore.selectedObjectIds.length,
-      coords: { x: coords.x, y: coords.y }
-    });
-    
     // For drawing tools, constrain movement to whiteboard bounds
     const isDrawingTool = ['pencil', 'brush', 'eraser'].includes(activeTool);
     if (isDrawingTool && isDrawingRef.current && !isWithinWhiteboardBounds(coords.x, coords.y)) {
@@ -1085,100 +1076,30 @@ export const useCanvasInteractions = () => {
           // Store current drag deltas for live rendering without creating actions
           dragDeltasRef.current = { x: deltaX, y: deltaY };
           
-          // Get all selected objects for group constraint calculation
-          const selectedObjects = whiteboardStore.selectedObjectIds
-            .map(id => whiteboardStore.objects[id])
-            .filter(obj => obj);
-          
-          if (selectedObjects.length > 1) {
-            // Multi-object dragging: use group bounding box constraint
-            // Calculate effective canvas bounds including offset
-            const { x: offsetX, y: offsetY } = canvasOffset;
-            const effectiveCanvasBounds = {
-              width: activeWhiteboardSize.width,
-              height: activeWhiteboardSize.height
-            };
-            
-            console.log('🔍 DEBUG Multi-drag coordinates:', {
-              canvasOffset: { offsetX, offsetY },
-              activeWhiteboardSize,
-              effectiveCanvasBounds,
-              rawDeltas: { deltaX, deltaY },
-              selectedObjectsCount: selectedObjects.length,
-              firstObjectPos: selectedObjects[0] ? { x: selectedObjects[0].x, y: selectedObjects[0].y } : null
-            });
-            
-            // Adjust selected objects positions to account for canvas offset
-            const offsetAdjustedObjects = selectedObjects.map(obj => ({
-              ...obj,
-              x: obj.x - offsetX,
-              y: obj.y - offsetY
-            }));
-            
-            console.log('🔍 DEBUG Offset adjustment:', {
-              beforeAdjustment: selectedObjects.slice(0, 2).map(obj => ({ id: obj.id, x: obj.x, y: obj.y })),
-              afterAdjustment: offsetAdjustedObjects.slice(0, 2).map(obj => ({ id: obj.id, x: obj.x, y: obj.y }))
-            });
-            
-            const constrainedDeltas = constrainGroupToBounds(
-              deltaX,
-              deltaY,
-              offsetAdjustedObjects,
-              effectiveCanvasBounds
-            );
-            
-            console.log('🔍 DEBUG Constraint result:', {
-              inputDeltas: { deltaX, deltaY },
-              constrainedDeltas,
-              deltaChanged: deltaX !== constrainedDeltas.x || deltaY !== constrainedDeltas.y
-            });
-            
-            console.log('🔄 Group constraint applied:', {
-              originalDeltas: { x: deltaX, y: deltaY },
-              constrainedDeltas,
-              objectCount: selectedObjects.length
-            });
-            
-            // Apply the same constrained deltas to all objects in the group
-            whiteboardStore.selectedObjectIds.forEach(objectId => {
-              const initialPos = initialDragPositionsRef.current[objectId];
-              if (initialPos) {
-                const newPos = {
-                  x: initialPos.x + constrainedDeltas.x,
-                  y: initialPos.y + constrainedDeltas.y
-                };
-                
-                console.log('🔄 Live dragging object (group):', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
-                liveDragPositionsRef.current[objectId] = newPos;
-              } else {
-                console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
-              }
-            });
-          } else {
-            // Single object dragging: use individual object constraint
-            whiteboardStore.selectedObjectIds.forEach(objectId => {
-              const initialPos = initialDragPositionsRef.current[objectId];
-              const obj = whiteboardStore.objects[objectId];
-              if (initialPos && obj) {
-                const unconstrained = {
-                  x: initialPos.x + deltaX,
-                  y: initialPos.y + deltaY
-                };
-                
-                // Apply boundary constraints to keep object on screen
-                const newPos = constrainWhiteboardObjectToBounds(
-                  unconstrained,
-                  obj,
-                  activeWhiteboardSize
-                );
-                
-                console.log('🔄 Live dragging object (single):', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
-                liveDragPositionsRef.current[objectId] = newPos;
-              } else {
-                console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
-              }
-            });
-          }
+          // Apply visual updates without persisting to store during drag
+          whiteboardStore.selectedObjectIds.forEach(objectId => {
+            const initialPos = initialDragPositionsRef.current[objectId];
+            const obj = whiteboardStore.objects[objectId];
+            if (initialPos && obj) {
+              const unconstrained = {
+                x: initialPos.x + deltaX,
+                y: initialPos.y + deltaY
+              };
+              
+              // Apply boundary constraints to keep object on screen
+              const newPos = constrainWhiteboardObjectToBounds(
+                unconstrained,
+                obj,
+                activeWhiteboardSize
+              );
+              
+              console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
+              // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
+              liveDragPositionsRef.current[objectId] = newPos;
+            } else {
+              console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
+            }
+          });
           
           // Check if batch is getting too large
           if (currentBatchIdRef.current) {

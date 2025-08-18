@@ -13,7 +13,6 @@ import { useCanvasOffset } from "../../hooks/useCanvasOffset";
 import { CustomCursor } from "./CustomCursor";
 import { ResizeHandles } from "./ResizeHandles";
 import { BoundingBoxDebug } from "./BoundingBoxDebug";
-import { GroupBoundingBoxDebug } from "./GroupBoundingBoxDebug";
 import { measureText } from "../../utils/textMeasurement";
 import { BOUNDING_BOX_DEBUG } from "../../config/devMode";
 
@@ -1606,18 +1605,11 @@ export const Canvas: React.FC = () => {
 
       {/* Bounding Box Debug Overlay */}
       {BOUNDING_BOX_DEBUG && (
-        <>
-          <BoundingBoxDebug
-            liveDragPositions={getLiveDragPositions()}
-            selectedObjectIds={selectedObjectIds}
-            enabled={true}
-          />
-          <GroupBoundingBoxDebug
-            liveDragPositions={getLiveDragPositions()}
-            selectedObjectIds={selectedObjectIds}
-            enabled={true}
-          />
-        </>
+        <BoundingBoxDebug
+          liveDragPositions={getLiveDragPositions()}
+          selectedObjectIds={selectedObjectIds}
+          enabled={true}
+        />
       )}
 
       {/* Resize Handles for Selected Objects */}
