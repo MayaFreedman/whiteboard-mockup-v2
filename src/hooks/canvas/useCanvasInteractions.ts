@@ -7,6 +7,7 @@ import { calculateOptimalFontSize } from '../../utils/stickyNoteTextSizing';
 import { useCanvasCoordinates } from './useCanvasCoordinates';
 import { useObjectDetection } from './useObjectDetection';
 import { useEraserLogic } from './useEraserLogic';
+import { useCanvasOffset } from '../useCanvasOffset';
 import { useActionBatching } from '../useActionBatching';
 import { useScreenSizeStore } from '../../stores/screenSizeStore';
 import { SimplePathBuilder, getSmoothingConfig } from '../../utils/path/simpleSmoothing';
@@ -24,6 +25,7 @@ export const useCanvasInteractions = () => {
   const { activeWhiteboardSize } = useScreenSizeStore();
   const { getCanvasCoordinates } = useCanvasCoordinates();
   const { findObjectAt, findObjectsInSelectionBox } = useObjectDetection(() => liveDragPositionsRef.current);
+  const { canvasOffset } = useCanvasOffset();
   
   // Initialize action batching with optimized settings
   const { startBatch, endBatch, checkBatchSize } = useActionBatching({
@@ -1083,11 +1085,25 @@ export const useCanvasInteractions = () => {
           
           if (selectedObjects.length > 1) {
             // Multi-object dragging: use group bounding box constraint
+            // Calculate effective canvas bounds including offset
+            const { x: offsetX, y: offsetY } = canvasOffset;
+            const effectiveCanvasBounds = {
+              width: activeWhiteboardSize.width,
+              height: activeWhiteboardSize.height
+            };
+            
+            // Adjust selected objects positions to account for canvas offset
+            const offsetAdjustedObjects = selectedObjects.map(obj => ({
+              ...obj,
+              x: obj.x - offsetX,
+              y: obj.y - offsetY
+            }));
+            
             const constrainedDeltas = constrainGroupToBounds(
               deltaX,
               deltaY,
-              selectedObjects,
-              activeWhiteboardSize
+              offsetAdjustedObjects,
+              effectiveCanvasBounds
             );
             
             console.log('🔄 Group constraint applied:', {
