@@ -775,31 +775,6 @@ export const useCanvasRendering = (
               availableWidth
             );
 
-            console.log("🎯 CANVAS TEXT RENDER DEBUG:", {
-              content:
-                contentToRender.slice(0, 50) +
-                (contentToRender.length > 50 ? "..." : ""),
-              contentLength: contentToRender.length,
-              availableWidth,
-              measuredLines: textMetrics.lines.length,
-              lines: textMetrics.lines,
-              maxLineLength: Math.max(
-                ...textMetrics.lines.map((line) => line.length)
-              ),
-              avgLineLength:
-                textMetrics.lines.reduce((sum, line) => sum + line.length, 0) /
-                textMetrics.lines.length,
-              stickyNotePosition: { x: obj.x, y: obj.y },
-              stickyNoteDimensions: { width: obj.width, height: obj.height },
-              fontSettings: {
-                fontSize: textData.fontSize,
-                fontFamily: textData.fontFamily,
-                bold: textData.bold,
-                italic: textData.italic,
-              },
-              timestamp: Date.now(),
-            });
-
             // Render each line with proper alignment
             for (let i = 0; i < textMetrics.lines.length; i++) {
               const line = textMetrics.lines[i];
