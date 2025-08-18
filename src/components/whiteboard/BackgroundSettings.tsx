@@ -16,6 +16,7 @@ interface BackgroundSettingsProps {
 
 const backgroundImages = [
   { name: 'Aquarium', url: '/backgrounds/Aquarium.png', preview: '/backgrounds/Aquarium.png' },
+  { name: 'Beach', url: '/backgrounds/Beach.png', preview: '/backgrounds/Beach.png' },
   { name: 'Bedroom', url: '/backgrounds/Bedroom.png', preview: '/backgrounds/Bedroom.png' },
   { name: 'Garden', url: '/backgrounds/Garden.png', preview: '/backgrounds/Garden.png' },
   { name: 'Gym', url: '/backgrounds/Gym.png', preview: '/backgrounds/Gym.png' },
@@ -23,6 +24,7 @@ const backgroundImages = [
   { name: 'Kitchen', url: '/backgrounds/Kitchen.png', preview: '/backgrounds/Kitchen.png' },
   { name: 'Library', url: '/backgrounds/Library.png', preview: '/backgrounds/Library.png' },
   { name: 'Living Room', url: '/backgrounds/Living-Room.png', preview: '/backgrounds/Living-Room.png' },
+  { name: 'Playground', url: '/backgrounds/Playground.png', preview: '/backgrounds/Playground.png' },
   { name: 'School', url: '/backgrounds/School.png', preview: '/backgrounds/School.png' },
   { name: 'Treehouse', url: '/backgrounds/Treehouse.png', preview: '/backgrounds/Treehouse.png' },
 ];
