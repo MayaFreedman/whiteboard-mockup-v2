@@ -166,7 +166,7 @@ export const DynamicToolSettings: React.FC = () => {
   const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
     // No preloading needed - images load progressively as they become visible
-    console.log(`🎯 Switched to category: ${category} (progressive loading enabled)`);
+    
   }, []);
 
   // Memoize stamp selection handler

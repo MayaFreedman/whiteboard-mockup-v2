@@ -67,12 +67,6 @@ export const TextPropertiesPanel: React.FC<TextPropertiesPanelProps> = ({ select
       // Calculate new bounds based on updated text properties
       const newBounds = updateTextBounds(obj, updatedData);
       
-      console.log('📝 Text property change triggering bounds update:', { 
-        property, 
-        value, 
-        newBounds, 
-        currentBounds: { width: obj.width, height: obj.height }
-      });
       
       updateObject(selectedObjectId, { 
         data: updatedData,

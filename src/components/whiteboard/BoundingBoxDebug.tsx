@@ -15,20 +15,11 @@ export const BoundingBoxDebug: React.FC<BoundingBoxDebugProps> = ({
 }) => {
   const { objects } = useWhiteboardStore();
 
-  console.log('🔴 BoundingBoxDebug render:', { 
-    enabled, 
-    selectedCount: selectedObjectIds.length, 
-    selectedIds: selectedObjectIds,
-    totalObjects: Object.keys(objects).length 
-  });
-
   if (!enabled) return null;
 
   const selectedObjects = selectedObjectIds
     .map(id => ({ id, obj: objects[id] }))
     .filter(({ obj }) => obj);
-
-  console.log('🔴 Filtered selected objects:', selectedObjects.length);
 
   return (
     <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1000 }}>
@@ -42,14 +33,6 @@ export const BoundingBoxDebug: React.FC<BoundingBoxDebugProps> = ({
         const finalX = dragOffset ? boundingBox.x + (dragOffset.x - obj.x) : boundingBox.x;
         const finalY = dragOffset ? boundingBox.y + (dragOffset.y - obj.y) : boundingBox.y;
 
-        console.log('🔴 Object bounding box:', {
-          id,
-          type: obj.type,
-          objPos: { x: obj.x, y: obj.y },
-          boundingBox,
-          dragOffset,
-          final: { x: finalX, y: finalY }
-        });
 
         return (
           <div
