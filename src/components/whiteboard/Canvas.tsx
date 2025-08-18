@@ -610,19 +610,7 @@ export const Canvas: React.FC = () => {
             y >= obj.y - tolerance &&
             y <= obj.y + obj.height + tolerance;
 
-          console.log("🗒️ Checking sticky note bounds:", {
-            id: id.slice(0, 8),
-            bounds: {
-              x: obj.x,
-              y: obj.y,
-              width: obj.width,
-              height: obj.height,
-            },
-            clickPos: { x, y },
-            tolerance,
-            isInBounds,
-          });
-
+          
           return isInBounds;
         })
       : null;
@@ -805,13 +793,7 @@ export const Canvas: React.FC = () => {
         textData
       );
 
-      console.log("🗒️ Sticky note dynamic font size:", {
-        text: newText.slice(0, 20),
-        optimalFontSize,
-        dimensions: { width, height },
-        currentFontSize: obj.data.fontSize,
-      });
-
+      
       // Update textarea styling to match the dynamic font size
       const textarea = e.target;
       textarea.style.fontSize = optimalFontSize + "px";

@@ -933,15 +933,7 @@ export const useCanvasRendering = (
               }))
             );
 
-            console.log("🗒️ STICKY CANVAS RENDERING:", {
-              id: objectId?.slice(0, 8),
-              fullId: objectId,
-              content: contentToRender?.slice(0, 20),
-              fontSize: stickyNoteData.fontSize,
-              isBeingEdited,
-              canvasPosition: { x: obj.x, y: obj.y },
-            });
-
+            
             // Draw sticky note background with shadow and rounded corners
             ctx.save();
             ctx.shadowColor = "rgba(0, 0, 0, 0.1)";

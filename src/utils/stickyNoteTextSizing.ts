@@ -25,16 +25,7 @@ export const calculateOptimalFontSize = (
   const minFontSize = 8;
   const maxFontSize = Math.min(width / 2, height / 2, 100); // Limit to 100px max
 
-  console.log('🔍 Sticky Note Text Analysis:', {
-    content: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
-    contentLength: content.length,
-    hasSpaces: content.includes(' '),
-    hasLineBreaks: content.includes('\n'),
-    dimensions: { width, height },
-    availableSpace: { maxWidth, maxHeight },
-    fontSizeRange: { min: minFontSize, max: maxFontSize }
-  });
-
+  
   // Test font sizes from largest to smallest, prioritizing wrapping over shrinking
   for (let fontSize = maxFontSize; fontSize >= minFontSize; fontSize--) {
     // Use the proven measureText algorithm for accurate text measurement
