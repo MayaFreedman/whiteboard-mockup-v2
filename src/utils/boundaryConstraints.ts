@@ -136,7 +136,11 @@ export function getGroupBoundingBox(objects: WhiteboardObject[]): { x: number; y
   }
 
   // Get bounding boxes for all objects
-  const boundingBoxes = objects.map(obj => getObjectBoundingBox(obj));
+  const boundingBoxes = objects.map(obj => {
+    const box = getObjectBoundingBox(obj);
+    console.log('🔍 GROUP BOUNDS: Object', obj.id?.slice(0, 8), 'box:', box, 'position:', { x: obj.x, y: obj.y });
+    return box;
+  });
   
   // Find extreme coordinates
   const leftmost = Math.min(...boundingBoxes.map(box => box.x));
@@ -144,12 +148,15 @@ export function getGroupBoundingBox(objects: WhiteboardObject[]): { x: number; y
   const rightmost = Math.max(...boundingBoxes.map(box => box.x + box.width));
   const bottommost = Math.max(...boundingBoxes.map(box => box.y + box.height));
   
-  return {
+  const groupBounds = {
     x: leftmost,
     y: topmost,
     width: rightmost - leftmost,
     height: bottommost - topmost
   };
+  
+  console.log('🔍 GROUP BOUNDS: Final group bounding box:', groupBounds, 'from', objects.length, 'objects');
+  return groupBounds;
 }
 
 /**
@@ -163,17 +170,20 @@ export function constrainGroupToBounds(
   canvasBounds: CanvasBounds
 ): { x: number; y: number } {
   if (objects.length === 0) {
+    console.warn('🚨 GROUP CONSTRAINT: No objects provided');
     return { x: deltaX, y: deltaY };
   }
 
   // Get the current group bounding box
   const groupBounds = getGroupBoundingBox(objects);
+  console.log('🎯 GROUP CONSTRAINT: Current group bounds:', groupBounds);
   
   // Calculate the new position with the proposed deltas
   const newGroupPosition = {
     x: groupBounds.x + deltaX,
     y: groupBounds.y + deltaY
   };
+  console.log('🎯 GROUP CONSTRAINT: Proposed new position:', newGroupPosition, 'with deltas:', { deltaX, deltaY });
 
   // Apply boundary constraints to the group bounding box
   const constrainedGroupPos = constrainObjectToBounds(
@@ -181,12 +191,25 @@ export function constrainGroupToBounds(
     { width: groupBounds.width, height: groupBounds.height },
     canvasBounds
   );
+  console.log('🎯 GROUP CONSTRAINT: Constrained position:', constrainedGroupPos);
+  console.log('🎯 GROUP CONSTRAINT: Canvas bounds:', canvasBounds);
 
-  // Return the constrained deltas
-  return {
+  // Calculate the constrained deltas
+  const constrainedDeltas = {
     x: constrainedGroupPos.x - groupBounds.x,
     y: constrainedGroupPos.y - groupBounds.y
   };
+  
+  console.log('🎯 GROUP CONSTRAINT: Final deltas:', {
+    original: { x: deltaX, y: deltaY },
+    constrained: constrainedDeltas,
+    difference: { 
+      x: constrainedDeltas.x - deltaX, 
+      y: constrainedDeltas.y - deltaY 
+    }
+  });
+
+  return constrainedDeltas;
 }
 
 /**
