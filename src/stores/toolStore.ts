@@ -321,11 +321,22 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   setActiveColorPalette: (palette) => {
-    set((state) => ({
-      activeColorPalette: palette,
-      stateVersion: state.stateVersion + 1,
-      lastStateUpdate: Date.now()
-    }));
+    set((state) => {
+      const newPaletteCustomColor = state.paletteCustomColors[palette];
+      const shouldUpdateStrokeColor = newPaletteCustomColor !== 'rainbow-gradient';
+      
+      return {
+        activeColorPalette: palette,
+        stateVersion: state.stateVersion + 1,
+        lastStateUpdate: Date.now(),
+        ...(shouldUpdateStrokeColor && {
+          toolSettings: {
+            ...state.toolSettings,
+            strokeColor: newPaletteCustomColor
+          }
+        })
+      };
+    });
   },
 
   setPaletteCustomColor: (palette, color) => {
