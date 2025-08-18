@@ -14,7 +14,7 @@ import { CustomCursor } from "./CustomCursor";
 import { ResizeHandles } from "./ResizeHandles";
 import { BoundingBoxDebug } from "./BoundingBoxDebug";
 import { measureText } from "../../utils/textMeasurement";
-import { BOUNDING_BOX_DEBUG } from "../../config/devMode";
+import { BOUNDING_BOX_DEBUG, debugLog } from "../../config/devMode";
 
 /**
  * Gets the appropriate cursor style based on the active tool
@@ -362,7 +362,7 @@ export const Canvas: React.FC = () => {
     if (isFixedW) {
       // Use fixed width constraint
       maxWidth = Math.max((textObject.width || 0) - padding, 0);
-      console.log("🔧 updateTextBounds - Fixed width:", {
+      debugLog("🔧 updateTextBounds - Fixed width:", {
         maxWidth,
         objectWidth: textObject.width,
       });
@@ -505,7 +505,7 @@ export const Canvas: React.FC = () => {
   const handleDoubleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
 
-    console.log(
+    debugLog(
       "🖱️ Double-click detected - setting protection flag and clearing text interaction state"
     );
     setIsHandlingDoubleClick(true);
@@ -644,7 +644,7 @@ export const Canvas: React.FC = () => {
       // For sticky notes, trigger immediate text editing using the existing system
       const coords = { x: x, y: y };
 
-      console.log("🗒️ Double-click triggering sticky note immediate editing:", {
+      debugLog("🗒️ Double-click triggering sticky note immediate editing:", {
         objectId: objectId.slice(0, 8),
         canvasCoords: coords,
       });
@@ -690,12 +690,12 @@ export const Canvas: React.FC = () => {
                 if (currentContent) {
                   const textLength = currentContent.length;
                   textarea.setSelectionRange(textLength, textLength);
-                  console.log(
+                  debugLog(
                     "🗒️ Positioned cursor at end of sticky note text (double-click), length:",
                     textLength
                   );
                 } else {
-                  console.log(
+                  debugLog(
                     "🗒️ Focused sticky note textarea with empty content (double-click)"
                   );
                 }
@@ -705,14 +705,14 @@ export const Canvas: React.FC = () => {
         }
       }, 10);
     } else {
-      console.log(
+      debugLog(
         "🖱️ No text object or sticky note found at double-click position"
       );
     }
 
     // Reset protection flag after a shorter delay - reduced to 200ms
     doubleClickTimeoutRef.current = setTimeout(() => {
-      console.log("🖱️ Clearing double-click protection flag");
+      debugLog("🖱️ Clearing double-click protection flag");
       setIsHandlingDoubleClick(false);
     }, 200);
   };
@@ -735,7 +735,7 @@ export const Canvas: React.FC = () => {
       });
 
       // DO NOT auto-resize for double-click editing - preserve original dimensions
-      console.log(
+      debugLog(
         "📝 Text editing completed without auto-resize for:",
         editingTextId.slice(0, 8)
       );
@@ -794,7 +794,7 @@ export const Canvas: React.FC = () => {
       textarea.style.fontSize = optimalFontSize + "px";
       textarea.style.lineHeight = optimalFontSize * 1.2 + "px";
 
-      console.log("🗒️ Updated textarea font size to:", optimalFontSize + "px");
+      debugLog("🗒️ Updated textarea font size to:", optimalFontSize + "px");
 
       updateObject(
         immediateTextObjectId,
@@ -1185,14 +1185,14 @@ export const Canvas: React.FC = () => {
   const onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     // Block events during double-click protection
     if (isHandlingDoubleClick) {
-      console.log("🖱️ Mouse down blocked - double-click protection active");
+      debugLog("🖱️ Mouse down blocked - double-click protection active");
       return;
     }
 
     // Handle click outside immediate text editing area - complete the text
     // This should work regardless of which tool is active
     if (isImmediateTextEditing) {
-      console.log("🖱️ Click outside immediate text editing - completing text");
+      debugLog("🖱️ Click outside immediate text editing - completing text");
       handleImmediateTextComplete();
       // Don't return here - allow the tool interaction to continue
       // This ensures we can start a new text editing session immediately
@@ -1200,7 +1200,7 @@ export const Canvas: React.FC = () => {
 
     // Handle click outside regular text editing area - complete the text editing
     if (editingTextId) {
-      console.log(
+      debugLog(
         "🖱️ Click outside regular text editing - completing text edit"
       );
       handleTextEditComplete();
@@ -1208,7 +1208,7 @@ export const Canvas: React.FC = () => {
     }
 
     if (canvasRef.current) {
-      console.log(
+      debugLog(
         "🖱️ Mouse down - protection flag:",
         isHandlingDoubleClick,
         "editing text:",

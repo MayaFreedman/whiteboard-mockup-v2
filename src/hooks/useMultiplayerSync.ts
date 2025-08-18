@@ -305,7 +305,7 @@ export const useMultiplayerSync = () => {
               // Special handling for BATCH_UPDATE actions - optimize payload
               let actionToSend = state.lastAction;
               if (state.lastAction.type === 'BATCH_UPDATE') {
-                console.log('🎯 Optimizing batch for network:', {
+                debugLog('🎯 Optimizing batch for network:', {
                   originalSize: state.lastAction.payload.actions?.length || 0,
                   actionType: state.lastAction.type
                 });

@@ -11,6 +11,7 @@ import {
   setImageFailed,
   getCacheStats,
 } from "../utils/sharedImageCache";
+import { debugLog } from "../config/devMode";
 // Import optimized brush effects
 import {
   renderPaintbrushOptimized,
@@ -1537,7 +1538,7 @@ export const useCanvasRendering = (
           redrawCanvas();
         }
       } else {
-        console.log(
+        debugLog(
           "📐 Canvas size changed during manual resize - skipping redraw"
         );
       }

@@ -1323,7 +1323,7 @@ export const useCanvasInteractions = () => {
       }
 
       case 'text': {
-        console.log('📝 Text pointer up - checking mode:', {
+        debugLog('📝 Text pointer up - checking mode:', {
           wasDrawing: isDrawingRef.current,
           hasClickStartPos: !!textClickStartPosRef.current,
           clickStartPos: textClickStartPosRef.current

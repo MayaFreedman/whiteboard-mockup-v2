@@ -3,6 +3,7 @@ import { useWhiteboardStore } from '../stores/whiteboardStore';
 import { WhiteboardAction, WhiteboardState } from '../types/whiteboard';
 import { nanoid } from 'nanoid';
 import { useMultiplayer } from './useMultiplayer';
+import { debugLog } from '../config/devMode';
 
 interface UndoRedoManager {
   undo: (userId: string) => void;
@@ -27,7 +28,7 @@ export const useUndoRedo = (): UndoRedoManager => {
       case 'ADD_OBJECT': {
         // Check if the object still exists and hasn't been modified by others
         const objectExists = store.checkObjectExists(action.payload.object.id);
-        console.log('🔍 Validating ADD_OBJECT undo:', {
+        debugLog('🔍 Validating ADD_OBJECT undo:', {
           actionObjectId: action.payload.object.id,
           objectExists,
           currentObjects: Object.keys(store.getState().objects)
@@ -443,7 +444,7 @@ export const useUndoRedo = (): UndoRedoManager => {
     const userHistory = state.userActionHistories.get(userId) || [];
     const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
     
-    console.log('↶ Undo requested for user:', userId, {
+    debugLog('↶ Undo requested for user:', userId, {
       currentIndex,
       historyLength: userHistory.length,
       canUndo: currentIndex >= 0
@@ -492,7 +493,7 @@ export const useUndoRedo = (): UndoRedoManager => {
     store.updateLocalUserHistoryIndex(userId, currentIndex - 1);
     
     // Log what state change is being applied
-    console.log('🔍 Applying undo state change:', {
+    debugLog('🔍 Applying undo state change:', {
       objectsKeys: result.stateChange.objects ? Object.keys(result.stateChange.objects) : 'unchanged',
       selectedObjectIds: result.stateChange.selectedObjectIds
     });
@@ -540,7 +541,7 @@ export const useUndoRedo = (): UndoRedoManager => {
     const currentIndex = state.userHistoryIndices.get(userId) ?? -1;
     const nextIndex = currentIndex + 1;
     
-    console.log('↷ Redo requested for user:', userId, {
+    debugLog('↷ Redo requested for user:', userId, {
       currentIndex,
       nextIndex,
       historyLength: userHistory.length,

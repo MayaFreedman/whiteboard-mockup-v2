@@ -1,5 +1,6 @@
 
 import { Point } from './pathConversion';
+import { debugLog } from '../../config/devMode';
 
 /**
  * Interpolates points between two points to ensure continuous coverage
@@ -64,7 +65,7 @@ export const preprocessPathForSmallErasers = (points: Point[], minEraserRadius: 
   // For very small erasers, break segments into even tinier chunks
   const maxSegmentLength = Math.max(0.5, minEraserRadius / 3);
   
-  console.log(`🔧 Pre-processing path for small eraser (${minEraserRadius}px radius):`, {
+  debugLog(`🔧 Pre-processing path for small eraser (${minEraserRadius}px radius):`, {
     originalPoints: points.length,
     maxSegmentLength
   });
@@ -92,7 +93,7 @@ export const preprocessPathForSmallErasers = (points: Point[], minEraserRadius: 
     processedPoints.push(points[i]);
   }
   
-  console.log(`🔧 Path pre-processing complete:`, {
+  debugLog(`🔧 Path pre-processing complete:`, {
     originalPoints: points.length,
     processedPoints: processedPoints.length,
     pointsAdded: processedPoints.length - points.length
