@@ -1083,6 +1083,7 @@ export const useCanvasInteractions = () => {
             
             constrainedDelta = constrainGroupToBounds(
               selectedObjects,
+              initialDragPositionsRef.current,
               { x: deltaX, y: deltaY },
               activeWhiteboardSize
             );

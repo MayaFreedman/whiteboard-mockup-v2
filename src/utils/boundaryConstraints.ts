@@ -156,10 +156,11 @@ export function calculateGroupBoundingBox(
 
 /**
  * Constrains a group movement delta to keep all objects within canvas bounds
- * Returns the constrained delta that should be applied to all objects in the group
+ * Takes initial positions and proposed delta to calculate group constraint
  */
 export function constrainGroupToBounds(
   objects: WhiteboardObject[],
+  initialPositions: Record<string, { x: number; y: number }>,
   proposedDelta: { x: number; y: number },
   canvasBounds: CanvasBounds
 ): { x: number; y: number } {
@@ -167,8 +168,15 @@ export function constrainGroupToBounds(
     return proposedDelta;
   }
 
-  // Calculate the group's current bounding box
-  const groupBounds = calculateGroupBoundingBox(objects);
+  // Create temporary objects with initial drag positions to calculate group bounds
+  const objectsWithInitialPositions = objects.map(obj => ({
+    ...obj,
+    x: initialPositions[obj.id]?.x ?? obj.x,
+    y: initialPositions[obj.id]?.y ?? obj.y
+  }));
+
+  // Calculate the group's current bounding box using initial positions
+  const groupBounds = calculateGroupBoundingBox(objectsWithInitialPositions);
   
   // Calculate the proposed new position for the group
   const proposedGroupPosition = {
