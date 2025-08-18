@@ -188,8 +188,7 @@ export const useCanvasInteractions = () => {
   /**
    * Triggers immediate text editing mode at the specified position
    */
-  const triggerImmediateTextEditing = useCallback((coords: { x: number; y: number }) => {
-    
+    const triggerImmediateTextEditing = useCallback((coords: { x: number; y: number }) => {
     // Clear any existing timer
     if (textClickTimerRef.current) {
       clearTimeout(textClickTimerRef.current);
@@ -988,34 +987,17 @@ export const useCanvasInteractions = () => {
       case 'heart': {
 
         // Check if we're clicking on an existing shape of the same type for auto-select
-        console.log('🔷 SHAPE TOOL: Looking for object at coords:', coords);
         const clickedObjectId = findObjectAt(coords.x, coords.y);
-        console.log('🔷 SHAPE TOOL: Found object ID:', clickedObjectId);
-        
         const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
-        console.log('🔷 SHAPE TOOL: Found object:', clickedObject ? { id: clickedObjectId, type: clickedObject.type } : 'null');
-        
         const isClickingOnSameShape = clickedObject && clickedObject.type === activeTool;
-        console.log('🔷 SHAPE TOOL: Is clicking on same shape type?', isClickingOnSameShape, `(${activeTool})`);
         
         if (isClickingOnSameShape) {
-          console.log('🔷 SHAPE TOOL: ✅ DETECTED CLICK ON MATCHING SHAPE - auto-switching to select tool:', clickedObjectId.slice(0, 8));
-          console.log('🔷 SHAPE TOOL: Current auto-switch state before:', { 
-            wasAutoSwitched: toolStore.wasAutoSwitched, 
-            autoSwitchedFromTool: toolStore.autoSwitchedFromTool 
-          });
-          
           // Auto-switch to select tool and track the original tool
           toolStore.setAutoSwitchState(activeTool, true);
-          console.log('🔷 SHAPE TOOL: Set auto-switch state to', activeTool);
-          
           toolStore.setActiveTool('select');
-          console.log('🔷 SHAPE TOOL: Changed tool to select');
           
           // Select the shape
           whiteboardStore.selectObjects([clickedObjectId], userId);
-          console.log('🔷 SHAPE TOOL: Selected object:', clickedObjectId.slice(0, 8));
-          console.log('🔄 SHAPE TOOL: ✅ Auto-switched from', activeTool, 'to select tool');
           return;
         }
 
@@ -1120,7 +1102,7 @@ export const useCanvasInteractions = () => {
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = newPos;
             } else {
-              console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
+              
             }
           });
           
@@ -1151,7 +1133,6 @@ export const useCanvasInteractions = () => {
           const deltaY = Math.abs(coords.y - textClickStartPosRef.current.y);
           
           if (deltaX > 5 || deltaY > 5) {
-            
             isDrawingRef.current = true; // Now mark as drawing since it's a drag
           }
         }

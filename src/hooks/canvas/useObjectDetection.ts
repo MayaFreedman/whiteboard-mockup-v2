@@ -202,7 +202,7 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
   const findObjectAt = useCallback((x: number, y: number): string | null => {
     const objects = Object.entries(whiteboardStore.objects);
     
-    console.log('🎯 Finding object at:', { x, y, totalObjects: objects.length });
+    
     
     // Check objects from top to bottom (reverse order for z-index)
     for (let i = objects.length - 1; i >= 0; i--) {
@@ -226,58 +226,27 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
             const relativeY = y - obj.y;
             isHit = isPointInPath(obj.data.path, relativeX, relativeY, obj.strokeWidth);
             
-            console.log('🖊️ Path hit test:', {
-              id: id.slice(0, 8),
-              screenCoords: { x, y },
-              objectCoords: { x: obj.x, y: obj.y },
-              relativeCoords: { x: relativeX, y: relativeY },
-              strokeWidth: obj.strokeWidth,
-              isHit
-            });
           }
           break;
         }
         
         case 'rectangle': {
           isHit = isPointInRectangle(obj, x, y);
-          console.log('▭ Rectangle hit test:', {
-            id: id.slice(0, 8),
-            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
-            isHit
-          });
           break;
         }
         
         case 'circle': {
           isHit = isPointInCircle(obj, x, y);
-          console.log('⭕ Circle hit test:', {
-            id: id.slice(0, 8),
-            center: { x: obj.x + (obj.width || 0) / 2, y: obj.y + (obj.height || 0) / 2 },
-            radiusX: (obj.width || 0) / 2,
-            radiusY: (obj.height || 0) / 2,
-            isHit
-          });
           break;
         }
         
         case 'text': {
           isHit = isPointInText(obj, x, y);
-          console.log('📝 Text hit test (improved):', {
-            id: id.slice(0, 8),
-            position: { x: obj.x, y: obj.y },
-            content: obj.data?.content,
-            isHit
-          });
           break;
         }
         
         case 'image': {
           isHit = isPointInImage(obj, x, y);
-          console.log('🖼️ Image hit test:', {
-            id: id.slice(0, 8),
-            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
-            isHit
-          });
           break;
         }
         
@@ -293,12 +262,6 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
         case 'star':
         case 'heart': {
           isHit = isPointInComplexShape(obj, x, y);
-          console.log('🔷 Complex shape hit test:', {
-            id: id.slice(0, 8),
-            type: obj.type,
-            bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
-            isHit
-          });
           break;
         }
         
@@ -306,27 +269,15 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
           // Fallback for other types - use a larger hit area around the point
           const hitRadius = 15;
           isHit = Math.abs(x - obj.x) <= hitRadius && Math.abs(y - obj.y) <= hitRadius;
-          console.log('❓ Unknown type hit test:', {
-            id: id.slice(0, 8),
-            type: obj.type,
-            distance: Math.sqrt((x - obj.x) ** 2 + (y - obj.y) ** 2),
-            hitRadius,
-            isHit
-          });
         }
       }
       
       if (isHit) {
-        console.log('✅ Object found:', {
-          id: id.slice(0, 8),
-          type: obj.type,
-          position: { x: obj.x, y: obj.y }
-        });
         return id;
       }
     }
     
-    console.log('❌ No object found at coordinates');
+    
     return null;
   }, [whiteboardStore.objects, isPointInPath, isPointInRectangle, isPointInCircle, isPointInText, isPointInImage, isPointInComplexShape, getEffectiveObjectPosition]);
 
@@ -369,7 +320,7 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
     const objects = Object.entries(whiteboardStore.objects);
     const selectedIds: string[] = [];
     
-    console.log('🎯 Finding objects in selection box:', box);
+    
     
     for (const [id, originalObj] of objects) {
       // Get the effective object position (accounting for live drag)
@@ -382,15 +333,10 @@ export const useObjectDetection = (getLiveDragPositions?: () => Record<string, {
       
       if (isObjectInSelectionBox(obj, box)) {
         selectedIds.push(id);
-        console.log('✅ Object in selection box:', {
-          id: id.slice(0, 8),
-          type: obj.type,
-          bounds: { x: obj.x, y: obj.y, width: obj.width, height: obj.height }
-        });
       }
     }
     
-    console.log('🎯 Found objects in selection box:', selectedIds.length);
+    
     return selectedIds;
   }, [whiteboardStore.objects, isObjectInSelectionBox, getEffectiveObjectPosition]);
 

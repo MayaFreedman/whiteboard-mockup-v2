@@ -1011,12 +1011,6 @@ export const Canvas: React.FC = () => {
       }
     }
 
-    console.log("✏️ Text changed:", {
-      length: newText.length,
-      content: newText.slice(0, 50) + (newText.length > 50 ? "..." : ""),
-      lines: newText.split("\n").length,
-      hasLongWords: newText.split(" ").some((word) => word.length > 20),
-    });
   };
 
   // Handle text input key events (double-click editing)
@@ -1142,11 +1136,6 @@ export const Canvas: React.FC = () => {
         // Clear selection after deletion (not part of undo/redo)
         clearSelection(userId);
 
-        console.log(
-          "🗑️ Deleted selected objects in batch:",
-          selectedObjectIds.length,
-          "objects"
-        );
       }
     };
 
@@ -1179,10 +1168,6 @@ export const Canvas: React.FC = () => {
   // Watch for batch updates and trigger canvas redraw
   useEffect(() => {
     if (whiteboardStore.lastBatchUpdateTime) {
-      console.log(
-        "🎨 Triggering redraw after batch update:",
-        whiteboardStore.lastBatchUpdateTime
-      );
       redrawCanvas(true); // immediate redraw
     }
   }, [whiteboardStore.lastBatchUpdateTime, redrawCanvas]);
