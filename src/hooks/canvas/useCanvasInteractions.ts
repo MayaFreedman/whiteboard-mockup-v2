@@ -680,17 +680,11 @@ export const useCanvasInteractions = () => {
    */
   const handleMouseLeave = useCallback(() => {
     if (isDrawingRef.current || isDraggingRef.current) {
-      console.log('🖱️ OFF-CANVAS: Mouse leave detected', {
-        drawing: isDrawingRef.current,
-        dragging: isDraggingRef.current,
-        selectedObjects: whiteboardStore.selectedObjectIds.length
-      });
       
       // Set a timeout for drag operations to allow for quick re-entry
       if (isDraggingRef.current) {
         dragTimeoutRef.current = setTimeout(() => {
           if (isDraggingRef.current) {
-            console.log('🖱️ OFF-CANVAS: Drag timeout triggered - completing drag');
             endCurrentDrawing();
           }
         }, 100); // Short timeout to allow mouse re-entry
@@ -739,8 +733,6 @@ export const useCanvasInteractions = () => {
       }
 
       case 'stamp': {
-        console.log('🖼️ STAMP TOOL: Pointer down triggered at:', coords);
-        console.log('🖼️ STAMP TOOL: Current tool:', toolStore.activeTool);
         
         // Validate that a stamp is selected before proceeding
         if (!toolStore.toolSettings.selectedSticker) {
@@ -749,22 +741,14 @@ export const useCanvasInteractions = () => {
         }
 
         // Check if we're clicking on an existing stamp/image for auto-select
-        console.log('🖼️ STAMP TOOL: Looking for object at coords:', coords);
         const clickedObjectId = findObjectAt(coords.x, coords.y);
-        console.log('🖼️ STAMP TOOL: Found object ID:', clickedObjectId);
         
         const clickedObject = clickedObjectId ? whiteboardStore.objects[clickedObjectId] : null;
-        console.log('🖼️ STAMP TOOL: Found object:', clickedObject ? { id: clickedObjectId, type: clickedObject.type } : 'null');
         
         const isClickingOnStamp = clickedObject && clickedObject.type === 'image';
-        console.log('🖼️ STAMP TOOL: Is clicking on stamp/image?', isClickingOnStamp);
         
         if (isClickingOnStamp) {
-          console.log('🖼️ STAMP TOOL: ✅ DETECTED CLICK ON STAMP - auto-switching to select tool:', clickedObjectId.slice(0, 8));
-          console.log('🖼️ STAMP TOOL: Current auto-switch state before:', { 
-            wasAutoSwitched: toolStore.wasAutoSwitched, 
-            autoSwitchedFromTool: toolStore.autoSwitchedFromTool 
-          });
+          // Auto-switch to select tool when clicking on existing stamp
           
           // Auto-switch to select tool and track the original tool
           toolStore.setAutoSwitchState('stamp', true);
@@ -779,14 +763,13 @@ export const useCanvasInteractions = () => {
           console.log('🔄 STAMP TOOL: ✅ Auto-switched from stamp to select tool');
           return;
         } else {
-          console.log('🖼️ STAMP TOOL: Not clicking on stamp - creating new one');
+          // Create new stamp
         }
         
         const stampSize = toolStore.toolSettings.stampSize || 10;
         const stampObject = createStampObject(coords.x, coords.y, stampSize);
         
         const objectId = whiteboardStore.addObject(stampObject, userId);
-        console.log('🖼️ STAMP TOOL: Created stamp:', objectId.slice(0, 8));
         
         if (redrawCanvasRef.current) {
           redrawCanvasRef.current();
@@ -806,21 +789,21 @@ export const useCanvasInteractions = () => {
               // Remove from selection
               const newSelection = currentSelection.filter(id => id !== objectId);
               whiteboardStore.selectObjects(newSelection, userId);
-              console.log('🎯 Removed object from selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
+              // Selection updated
             } else {
               // Add to selection
               const newSelection = [...currentSelection, objectId];
               whiteboardStore.selectObjects(newSelection, userId);
-              console.log('🎯 Added object to selection:', objectId.slice(0, 8), 'new count:', newSelection.length);
+              // Selection updated
             }
           } else {
             // Normal click - only change selection if clicking on unselected object
             if (!whiteboardStore.selectedObjectIds.includes(objectId)) {
               // Single selection - clear existing and select only this object
               whiteboardStore.selectObjects([objectId], userId);
-              console.log('🎯 Selected single object:', objectId.slice(0, 8));
+              // Object selected
             } else {
-              console.log('🎯 Clicked on already selected object - maintaining selection for drag');
+              // Maintaining selection for potential drag
             }
           }
           
@@ -850,14 +833,14 @@ export const useCanvasInteractions = () => {
             draggedObjectIdRef.current = objectId;
             isDraggingRef.current = true;
             dragStartRef.current = coords;
-            console.log('🎯 Started dragging', whiteboardStore.selectedObjectIds.length, 'object(s):', objectId.slice(0, 8));
+            // Drag started
           }
         } else {
           // Clicked on empty area
           if (!isShiftPressed) {
             // Clear selection and start selection box
             whiteboardStore.clearSelection(userId);
-            console.log('🎯 Cleared selection, starting selection box');
+            // Selection cleared
           }
           
           // Start selection box
@@ -1340,7 +1323,6 @@ export const useCanvasInteractions = () => {
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const finalPos = liveDragPositionsRef.current[objectId];
             if (finalPos) {
-              console.log('🎯 ON-CANVAS: Final position for object:', objectId.slice(0, 8), finalPos);
               whiteboardStore.updateObject(objectId, finalPos, userId);
             }
           });
