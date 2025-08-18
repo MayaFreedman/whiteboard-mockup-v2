@@ -918,21 +918,6 @@ export const useCanvasRendering = (
               (id) => objects[id] === obj
             );
 
-            // Debug: Show all sticky notes in store to detect duplicates
-            const allStickyNotes = Object.entries(objects).filter(
-              ([id, obj]) => obj.type === "sticky-note"
-            );
-            console.log(
-              "🗒️ ALL STICKY NOTES IN STORE:",
-              allStickyNotes.map(([id, obj]) => ({
-                id: id.slice(0, 8),
-                fullId: id,
-                content: obj.data?.content?.slice(0, 10),
-                position: { x: obj.x, y: obj.y },
-                size: { w: obj.width, h: obj.height },
-              }))
-            );
-
             
             // Draw sticky note background with shadow and rounded corners
             ctx.save();
@@ -998,17 +983,6 @@ export const useCanvasRendering = (
                 width: obj.width,
                 height: obj.height,
               });
-              console.log("  - textMetrics:", {
-                lines: lines.length,
-                lineHeight,
-              });
-              console.log(
-                "  - CANVAS TEXT WILL START AT Y:",
-                startY,
-                "(obj.y + 8 =",
-                obj.y,
-                "+ 8)"
-              );
               if (stickyNoteData.textAlign === "left") startX = obj.x + 8;
               else if (stickyNoteData.textAlign === "right")
                 startX = obj.x + obj.width - 8;
