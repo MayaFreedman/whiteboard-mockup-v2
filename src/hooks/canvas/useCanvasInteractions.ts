@@ -650,17 +650,8 @@ export const useCanvasInteractions = () => {
       const currentlyDrawing = isDrawingRef.current;
       const currentlyDragging = isDraggingRef.current;
       
-      console.log('🖱️ OFF-CANVAS: Document mouse up detected', {
-        target: event.target?.constructor?.name || 'unknown',
-        drawing: currentlyDrawing,
-        dragging: currentlyDragging,
-        selectedObjects: whiteboardStore.selectedObjectIds.length,
-        liveDragCount: Object.keys(liveDragPositionsRef.current).length
-      });
-      
       // FORCE completion if ANY operation is active
       if (currentlyDrawing || currentlyDragging || Object.keys(liveDragPositionsRef.current).length > 0) {
-        console.log('🔧 FORCE: Completing operation due to document mouse up');
         
         // Clear any drag timeout since we're handling it now
         if (dragTimeoutRef.current) {
@@ -670,8 +661,6 @@ export const useCanvasInteractions = () => {
         
         // Force complete the operation
         endCurrentDrawing();
-      } else {
-        console.log('🖱️ OFF-CANVAS: No active operations detected');
       }
     };
 
@@ -681,7 +670,6 @@ export const useCanvasInteractions = () => {
       const currentlyDragging = isDraggingRef.current;
       
       if (currentlyDrawing || currentlyDragging || Object.keys(liveDragPositionsRef.current).length > 0) {
-        console.log('🖱️ OFF-CANVAS: Window blur detected - force completing operations');
         endCurrentDrawing();
       }
     };
@@ -1171,11 +1159,6 @@ export const useCanvasInteractions = () => {
           const deltaX = coords.x - dragStartRef.current.x;
           const deltaY = coords.y - dragStartRef.current.y;
           
-          console.log('🔄 Dragging movement:', {
-            selectedCount: whiteboardStore.selectedObjectIds.length,
-            delta: { x: deltaX, y: deltaY },
-            initialPositions: Object.keys(initialDragPositionsRef.current).length
-          });
           
           let constrainedDelta = { x: deltaX, y: deltaY };
           
@@ -1218,7 +1201,6 @@ export const useCanvasInteractions = () => {
                 );
               }
               
-              console.log('🔄 Live dragging object:', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
               // Store the live position for rendering but don't create UPDATE_OBJECT actions yet
               liveDragPositionsRef.current[objectId] = newPos;
             } else {
