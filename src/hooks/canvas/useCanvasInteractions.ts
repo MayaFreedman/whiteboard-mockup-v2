@@ -1073,6 +1073,9 @@ export const useCanvasInteractions = () => {
             initialPositions: Object.keys(initialDragPositionsRef.current).length
           });
           
+          // Store current drag deltas for live rendering without creating actions
+          dragDeltasRef.current = { x: deltaX, y: deltaY };
+          
           // Get all selected objects for group constraint calculation
           const selectedObjects = whiteboardStore.selectedObjectIds
             .map(id => whiteboardStore.objects[id])
@@ -1093,9 +1096,6 @@ export const useCanvasInteractions = () => {
               objectCount: selectedObjects.length
             });
             
-            // Store constrained deltas for live rendering to ensure mouse tracking matches object movement
-            dragDeltasRef.current = constrainedDeltas;
-            
             // Apply the same constrained deltas to all objects in the group
             whiteboardStore.selectedObjectIds.forEach(objectId => {
               const initialPos = initialDragPositionsRef.current[objectId];
@@ -1113,9 +1113,6 @@ export const useCanvasInteractions = () => {
             });
           } else {
             // Single object dragging: use individual object constraint
-            let actualDeltaX = deltaX;
-            let actualDeltaY = deltaY;
-            
             whiteboardStore.selectedObjectIds.forEach(objectId => {
               const initialPos = initialDragPositionsRef.current[objectId];
               const obj = whiteboardStore.objects[objectId];
@@ -1132,19 +1129,12 @@ export const useCanvasInteractions = () => {
                   activeWhiteboardSize
                 );
                 
-                // Calculate the actual deltas used after constraint
-                actualDeltaX = newPos.x - initialPos.x;
-                actualDeltaY = newPos.y - initialPos.y;
-                
                 console.log('🔄 Live dragging object (single):', objectId.slice(0, 8), 'from', initialPos, 'to', newPos);
                 liveDragPositionsRef.current[objectId] = newPos;
               } else {
                 console.warn('❌ No initial position stored for object:', objectId.slice(0, 8));
               }
             });
-            
-            // Store constrained deltas for live rendering to ensure mouse tracking matches object movement
-            dragDeltasRef.current = { x: actualDeltaX, y: actualDeltaY };
           }
           
           // Check if batch is getting too large
