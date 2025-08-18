@@ -127,6 +127,70 @@ export function getObjectBoundingBox(obj: WhiteboardObject): { x: number; y: num
 }
 
 /**
+ * Calculates the collective bounding box for a group of objects
+ * Returns the overall bounds that encompass all objects in the group
+ */
+export function calculateGroupBoundingBox(
+  objects: WhiteboardObject[]
+): { x: number; y: number; width: number; height: number } {
+  if (objects.length === 0) {
+    return { x: 0, y: 0, width: 0, height: 0 };
+  }
+
+  // Get bounding boxes for all objects
+  const boundingBoxes = objects.map(obj => getObjectBoundingBox(obj));
+  
+  // Find the collective bounds
+  const minX = Math.min(...boundingBoxes.map(box => box.x));
+  const minY = Math.min(...boundingBoxes.map(box => box.y));
+  const maxX = Math.max(...boundingBoxes.map(box => box.x + box.width));
+  const maxY = Math.max(...boundingBoxes.map(box => box.y + box.height));
+  
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY
+  };
+}
+
+/**
+ * Constrains a group movement delta to keep all objects within canvas bounds
+ * Returns the constrained delta that should be applied to all objects in the group
+ */
+export function constrainGroupToBounds(
+  objects: WhiteboardObject[],
+  proposedDelta: { x: number; y: number },
+  canvasBounds: CanvasBounds
+): { x: number; y: number } {
+  if (objects.length === 0) {
+    return proposedDelta;
+  }
+
+  // Calculate the group's current bounding box
+  const groupBounds = calculateGroupBoundingBox(objects);
+  
+  // Calculate the proposed new position for the group
+  const proposedGroupPosition = {
+    x: groupBounds.x + proposedDelta.x,
+    y: groupBounds.y + proposedDelta.y
+  };
+  
+  // Constrain the group position to canvas bounds
+  const constrainedGroupPosition = constrainObjectToBounds(
+    proposedGroupPosition,
+    { width: groupBounds.width, height: groupBounds.height },
+    canvasBounds
+  );
+  
+  // Calculate the constrained delta
+  return {
+    x: constrainedGroupPosition.x - groupBounds.x,
+    y: constrainedGroupPosition.y - groupBounds.y
+  };
+}
+
+/**
  * Constrains a whiteboard object's position to canvas bounds
  * High-level utility that combines position constraint with object bounding box handling
  */
