@@ -1092,6 +1092,15 @@ export const useCanvasInteractions = () => {
               height: activeWhiteboardSize.height
             };
             
+            console.log('🔍 DEBUG Multi-drag coordinates:', {
+              canvasOffset: { offsetX, offsetY },
+              activeWhiteboardSize,
+              effectiveCanvasBounds,
+              rawDeltas: { deltaX, deltaY },
+              selectedObjectsCount: selectedObjects.length,
+              firstObjectPos: selectedObjects[0] ? { x: selectedObjects[0].x, y: selectedObjects[0].y } : null
+            });
+            
             // Adjust selected objects positions to account for canvas offset
             const offsetAdjustedObjects = selectedObjects.map(obj => ({
               ...obj,
@@ -1099,12 +1108,23 @@ export const useCanvasInteractions = () => {
               y: obj.y - offsetY
             }));
             
+            console.log('🔍 DEBUG Offset adjustment:', {
+              beforeAdjustment: selectedObjects.slice(0, 2).map(obj => ({ id: obj.id, x: obj.x, y: obj.y })),
+              afterAdjustment: offsetAdjustedObjects.slice(0, 2).map(obj => ({ id: obj.id, x: obj.x, y: obj.y }))
+            });
+            
             const constrainedDeltas = constrainGroupToBounds(
               deltaX,
               deltaY,
               offsetAdjustedObjects,
               effectiveCanvasBounds
             );
+            
+            console.log('🔍 DEBUG Constraint result:', {
+              inputDeltas: { deltaX, deltaY },
+              constrainedDeltas,
+              deltaChanged: deltaX !== constrainedDeltas.x || deltaY !== constrainedDeltas.y
+            });
             
             console.log('🔄 Group constraint applied:', {
               originalDeltas: { x: deltaX, y: deltaY },
