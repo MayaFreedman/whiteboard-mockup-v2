@@ -646,14 +646,21 @@ export const useCanvasInteractions = () => {
   // Add document-level mouseup listener to catch releases outside canvas
   useEffect(() => {
     const handleDocumentMouseUp = (event: MouseEvent) => {
-      // Only handle if we're actually drawing or dragging something on the canvas
-      if (isDrawingRef.current || isDraggingRef.current) {
-        console.log('🖱️ OFF-CANVAS: Document mouse up detected', {
-          target: event.target?.constructor?.name || 'unknown',
-          drawing: isDrawingRef.current,
-          dragging: isDraggingRef.current,
-          selectedObjects: whiteboardStore.selectedObjectIds.length
-        });
+      // ALWAYS check actual state instead of relying on event conditions
+      const currentlyDrawing = isDrawingRef.current;
+      const currentlyDragging = isDraggingRef.current;
+      
+      console.log('🖱️ OFF-CANVAS: Document mouse up detected', {
+        target: event.target?.constructor?.name || 'unknown',
+        drawing: currentlyDrawing,
+        dragging: currentlyDragging,
+        selectedObjects: whiteboardStore.selectedObjectIds.length,
+        liveDragCount: Object.keys(liveDragPositionsRef.current).length
+      });
+      
+      // FORCE completion if ANY operation is active
+      if (currentlyDrawing || currentlyDragging || Object.keys(liveDragPositionsRef.current).length > 0) {
+        console.log('🔧 FORCE: Completing operation due to document mouse up');
         
         // Clear any drag timeout since we're handling it now
         if (dragTimeoutRef.current) {
@@ -661,14 +668,20 @@ export const useCanvasInteractions = () => {
           dragTimeoutRef.current = null;
         }
         
+        // Force complete the operation
         endCurrentDrawing();
+      } else {
+        console.log('🖱️ OFF-CANVAS: No active operations detected');
       }
     };
 
     // Also handle window blur and focus loss
     const handleWindowBlur = () => {
-      if (isDrawingRef.current || isDraggingRef.current) {
-        console.log('🖱️ OFF-CANVAS: Window blur detected - completing operations');
+      const currentlyDrawing = isDrawingRef.current;
+      const currentlyDragging = isDraggingRef.current;
+      
+      if (currentlyDrawing || currentlyDragging || Object.keys(liveDragPositionsRef.current).length > 0) {
+        console.log('🖱️ OFF-CANVAS: Window blur detected - force completing operations');
         endCurrentDrawing();
       }
     };

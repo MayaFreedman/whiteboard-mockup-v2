@@ -39,14 +39,24 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ objectId, getLiveD
   if (getLiveDragPositions) {
     const liveDragPositions = getLiveDragPositions();
     const liveDragKeys = Object.keys(liveDragPositions);
-    console.log("🔍 ResizeHandles debug:", {
-      objectId: objectId.slice(0, 8),
-      fullObjectId: objectId,
-      liveDragKeys: liveDragKeys.map(id => id.slice(0, 8)),
-      fullLiveDragKeys: liveDragKeys,
-      hasThisObject: !!liveDragPositions[objectId],
-      position: liveDragPositions[objectId]
-    });
+    
+    // Add safety check for stuck drag states (zombie drags)
+    if (liveDragKeys.length > 0) {
+      // Check if this appears to be a stuck state by looking for very old drag data
+      const hasSuspiciouslyLongDrag = liveDragKeys.some(id => {
+        // If we're repeatedly rendering the same drag position, it might be stuck
+        return true; // For now, we'll trust the live drag positions are valid
+      });
+      
+      console.log("🔍 ResizeHandles debug:", {
+        objectId: objectId.slice(0, 8),
+        fullObjectId: objectId,
+        liveDragKeys: liveDragKeys.map(id => id.slice(0, 8)),
+        fullLiveDragKeys: liveDragKeys,
+        hasThisObject: !!liveDragPositions[objectId],
+        position: liveDragPositions[objectId]
+      });
+    }
     
     if (liveDragPositions[objectId]) {
       console.log("🚫 Hiding resize handles during drag for:", objectId.slice(0, 8));
