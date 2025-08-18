@@ -484,10 +484,60 @@ export const useCanvasInteractions = () => {
   }, [findObjectAt, whiteboardStore, toolStore.toolSettings.strokeColor, userId]);
 
   /**
+   * Completes drag operation by applying final positions and sending updates
+   */
+  const completeDragOperation = useCallback(() => {
+    if (!isDraggingRef.current || whiteboardStore.selectedObjectIds.length === 0) {
+      return;
+    }
+
+    console.log('🔄 DRAG COMPLETION: Completing off-canvas drag for', whiteboardStore.selectedObjectIds.length, 'object(s)');
+    
+    // Create optimized drag completion batch with only final positions
+    const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE_OFFCANVAS', 'multi-object', userId);
+    
+    // Apply final positions for all dragged objects in a single batch
+    whiteboardStore.selectedObjectIds.forEach(objectId => {
+      const finalPos = liveDragPositionsRef.current[objectId];
+      if (finalPos) {
+        console.log('🎯 OFF-CANVAS: Final position for object:', objectId.slice(0, 8), finalPos);
+        whiteboardStore.updateObject(objectId, finalPos, userId);
+      }
+    });
+    
+    // End the optimized batch
+    whiteboardStore.endActionBatch();
+    
+    // Clean up drag state
+    currentBatchIdRef.current = null;
+    draggedObjectIdRef.current = null;
+    initialDragPositionsRef.current = {};
+    liveDragPositionsRef.current = {};
+    dragDeltasRef.current = { x: 0, y: 0 };
+    isDraggingRef.current = false;
+    dragStartRef.current = null;
+    
+    console.log('✅ DRAG COMPLETION: Off-canvas drag completed and synchronized');
+  }, [whiteboardStore, userId]);
+
+  /**
    * Ends current drawing session and saves the path if valid
+   * Enhanced to handle both drawing and dragging completion
    */
   const endCurrentDrawing = useCallback(() => {
     const activeTool = toolStore.activeTool;
+    
+    console.log('🔄 END CURRENT DRAWING:', {
+      activeTool,
+      isDrawing: isDrawingRef.current,
+      isDragging: isDraggingRef.current,
+      selectedCount: whiteboardStore.selectedObjectIds.length
+    });
+
+    // Handle drag completion for select tool
+    if (activeTool === 'select' && isDraggingRef.current) {
+      completeDragOperation();
+    }
     
     if ((activeTool === 'pencil' || activeTool === 'brush') && 
         isDrawingRef.current && 
@@ -588,43 +638,78 @@ export const useCanvasInteractions = () => {
     if (redrawCanvasRef.current) {
       redrawCanvasRef.current();
     }
-  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId, cleanupBatching]);
+  }, [toolStore.activeTool, toolStore.toolSettings, whiteboardStore, handleEraserEnd, createShapeObject, createTextObject, userId, cleanupBatching, completeDragOperation]);
+
+  // Drag operation timeout safety mechanism
+  const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Add document-level mouseup listener to catch releases outside canvas
   useEffect(() => {
     const handleDocumentMouseUp = (event: MouseEvent) => {
       // Only handle if we're actually drawing or dragging something on the canvas
       if (isDrawingRef.current || isDraggingRef.current) {
-        console.log('🖱️ Document mouse up - ending current interaction', {
-          target: event.target,
+        console.log('🖱️ OFF-CANVAS: Document mouse up detected', {
+          target: event.target?.constructor?.name || 'unknown',
           drawing: isDrawingRef.current,
-          dragging: isDraggingRef.current
+          dragging: isDraggingRef.current,
+          selectedObjects: whiteboardStore.selectedObjectIds.length
         });
+        
+        // Clear any drag timeout since we're handling it now
+        if (dragTimeoutRef.current) {
+          clearTimeout(dragTimeoutRef.current);
+          dragTimeoutRef.current = null;
+        }
+        
         endCurrentDrawing();
-      } else {
-        console.log('🖱️ Document mouse up - ignoring (not drawing/dragging)', {
-          target: event.target,
-          drawing: isDrawingRef.current,
-          dragging: isDraggingRef.current
-        });
+      }
+    };
+
+    // Also handle window blur and focus loss
+    const handleWindowBlur = () => {
+      if (isDrawingRef.current || isDraggingRef.current) {
+        console.log('🖱️ OFF-CANVAS: Window blur detected - completing operations');
+        endCurrentDrawing();
       }
     };
 
     document.addEventListener('mouseup', handleDocumentMouseUp);
+    window.addEventListener('blur', handleWindowBlur);
+    
     return () => {
       document.removeEventListener('mouseup', handleDocumentMouseUp);
+      window.removeEventListener('blur', handleWindowBlur);
+      if (dragTimeoutRef.current) {
+        clearTimeout(dragTimeoutRef.current);
+      }
     };
-  }, [endCurrentDrawing]);
+  }, [endCurrentDrawing, whiteboardStore.selectedObjectIds]);
 
   /**
-   * Handles mouse leaving the canvas area
+   * Handles mouse leaving the canvas area - enhanced for drag completion
    */
   const handleMouseLeave = useCallback(() => {
     if (isDrawingRef.current || isDraggingRef.current) {
+      console.log('🖱️ OFF-CANVAS: Mouse leave detected', {
+        drawing: isDrawingRef.current,
+        dragging: isDraggingRef.current,
+        selectedObjects: whiteboardStore.selectedObjectIds.length
+      });
       
-      endCurrentDrawing();
+      // Set a timeout for drag operations to allow for quick re-entry
+      if (isDraggingRef.current) {
+        dragTimeoutRef.current = setTimeout(() => {
+          if (isDraggingRef.current) {
+            console.log('🖱️ OFF-CANVAS: Drag timeout triggered - completing drag');
+            endCurrentDrawing();
+          }
+        }, 100); // Short timeout to allow mouse re-entry
+      } else {
+        // For drawing operations, complete immediately
+        endCurrentDrawing();
+      }
     }
-  }, [endCurrentDrawing]);
+  }, [endCurrentDrawing, whiteboardStore.selectedObjectIds]);
 
   /**
    * Handles the start of a drawing/interaction session
@@ -762,6 +847,12 @@ export const useCanvasInteractions = () => {
               }
             });
             initialDragPositionsRef.current = initialPositions;
+            
+            // Clear any existing drag timeout
+            if (dragTimeoutRef.current) {
+              clearTimeout(dragTimeoutRef.current);
+              dragTimeoutRef.current = null;
+            }
             
             // START BATCH for object dragging - use appropriate action type based on selection count
             const actionType = whiteboardStore.selectedObjectIds.length > 1 ? 'MULTI_OBJECT_DRAG' : 'UPDATE_OBJECT';
@@ -1250,7 +1341,13 @@ export const useCanvasInteractions = () => {
     switch (activeTool) {
       case 'select': {
         if (isDraggingRef.current) {
-          console.log('🔄 Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
+          console.log('🔄 ON-CANVAS: Finished dragging', whiteboardStore.selectedObjectIds.length, 'object(s), applying final positions');
+          
+          // Clear any drag timeout since we're completing normally
+          if (dragTimeoutRef.current) {
+            clearTimeout(dragTimeoutRef.current);
+            dragTimeoutRef.current = null;
+          }
           
           // Create optimized drag completion batch with only final positions
           const finalBatchId = whiteboardStore.startActionBatch('DRAG_COMPLETE', 'multi-object', userId);
@@ -1259,7 +1356,7 @@ export const useCanvasInteractions = () => {
           whiteboardStore.selectedObjectIds.forEach(objectId => {
             const finalPos = liveDragPositionsRef.current[objectId];
             if (finalPos) {
-              console.log('🎯 Final position for object:', objectId.slice(0, 8), finalPos);
+              console.log('🎯 ON-CANVAS: Final position for object:', objectId.slice(0, 8), finalPos);
               whiteboardStore.updateObject(objectId, finalPos, userId);
             }
           });
