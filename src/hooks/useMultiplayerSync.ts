@@ -108,14 +108,14 @@ export const useMultiplayerSync = () => {
       }
       responseTimeoutRef.current = setTimeout(() => {
         if (!hasReceivedInitialStateRef.current) {
-          console.warn('⏳ No state response received; assuming empty room');
+          console.warn('⏳ No state response received within 1s; assuming empty room');
           // Finalize initial state attempt to avoid infinite loader/retry loop
           hasReceivedInitialStateRef.current = true;
           setIsWaitingForInitialState(false);
           // allow a future manual retry if needed (keep requested=false)
           hasRequestedStateRef.current = false;
         }
-      }, 2000)
+      }, 1000)
     } catch (error) {
       console.error('❌ Failed to send state request:', error)
       hasReceivedInitialStateRef.current = true
@@ -169,6 +169,11 @@ export const useMultiplayerSync = () => {
             responseTimeoutRef.current = null
           }
           setIsWaitingForInitialState(false)
+          
+          const objectCount = Object.keys(message.state?.objects || {}).length
+          if (objectCount === 0) {
+            console.log('📭 Empty room - no objects to sync, ready to start fresh')
+          }
           
           // Clear any existing objects first to prevent duplicates
           whiteboardStore.clearObjects()
