@@ -103,20 +103,8 @@ export const useEraserLogic = () => {
           let transferredData: any = null;
           
           if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
-            console.log('🎨 Pre-caching brush effects for atomic transfer:', {
-              originalId: id.slice(0, 8),
-              brushType,
-              segmentCount: segmentsWithIds.length
-            });
-            
             // PRE-POPULATE: Transfer and validate cache data BEFORE any store operations
             transferredData = brushEffectCache.transferToSegmentsAtomic(id, brushType, segmentsWithIds);
-            
-            if (transferredData) {
-              console.log('✅ Atomic brush cache pre-population complete - segments ready (removal deferred to store)');
-            } else {
-              console.warn('⚠️ Failed to pre-populate brush cache - segments may flash');
-            }
           }
           
           // Mark object as processed in this stroke
@@ -148,17 +136,6 @@ export const useEraserLogic = () => {
           };
           
           whiteboardStore.erasePath(enhancedAction, userId);
-          
-          console.log('🧹 Processed eraser action for object:', {
-            objectId: id.slice(0, 8),
-            segments: segmentsWithIds.length,
-            strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8),
-            userId: userId.slice(0, 8),
-            brushType: obj.data?.brushType,
-            preservedEffects: !!(brushType && (brushType === 'spray' || brushType === 'chalk')),
-            metadataIncluded: true,
-            cacheDataTransferred: !!transferredData
-          });
         }
       }
     });
@@ -170,11 +147,7 @@ export const useEraserLogic = () => {
   const handleEraserStart = useCallback((coords: { x: number; y: number }, findObjectAt: (x: number, y: number) => string | null, redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
     
-    console.log('🎨 Starting eraser stroke:', { mode: eraserMode, coords });
-    
     if (eraserMode === 'object') {
-      console.log('🎯 Object eraser starting at:', coords);
-      
       const searchRadius = 8;
       const testPositions = [
         coords,
@@ -193,24 +166,16 @@ export const useEraserLogic = () => {
       for (const testPos of testPositions) {
         objectId = findObjectAt(testPos.x, testPos.y);
         if (objectId) {
-          console.log('🎯 Found object at test position:', { 
-            testPos, 
-            originalPos: coords, 
-            objectId: objectId.slice(0, 8) 
-          });
           break;
         }
       }
       
       if (objectId) {
         whiteboardStore.deleteObject(objectId, userId);
-        console.log('🗑️ Object eraser successfully deleted:', objectId.slice(0, 8));
         
         if (redrawCanvas) {
           redrawCanvas();
         }
-      } else {
-        console.log('❌ Object eraser found no objects to delete at:', coords);
       }
     } else {
       // Start the eraser stroke batch
@@ -226,12 +191,6 @@ export const useEraserLogic = () => {
         radius: eraserRadius
       }];
       lastEraserProcessRef.current = Date.now();
-      
-      console.log('🧹 Started pixel eraser stroke:', {
-        strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8),
-        coords,
-        userId: userId.slice(0, 8)
-      });
     }
   }, [toolStore.toolSettings, whiteboardStore, userId, eraserBatching]);
 
@@ -255,7 +214,6 @@ export const useEraserLogic = () => {
         const objectId = findObjectAt(testPos.x, testPos.y);
         if (objectId) {
           whiteboardStore.deleteObject(objectId, userId);
-          console.log('🗑️ Object eraser deleted during drag:', objectId.slice(0, 8));
           
           if (redrawCanvas) {
             redrawCanvas();
@@ -301,13 +259,6 @@ export const useEraserLogic = () => {
    */
   const handleEraserEnd = useCallback((redrawCanvas?: () => void) => {
     const eraserMode = toolStore.toolSettings.eraserMode;
-    
-    console.log('🎨 Ending eraser stroke:', { 
-      mode: eraserMode, 
-      strokeInProgress: strokeInProgressRef.current,
-      remainingPoints: eraserPointsRef.current.length,
-      strokeId: eraserBatching.getCurrentStrokeId()?.slice(0, 8)
-    });
     
     if (eraserMode === 'pixel') {
       // Process any remaining eraser points

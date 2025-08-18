@@ -229,8 +229,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   lastUsedShapeTool: 'rectangle',
 
   setActiveTool: (tool) => {
-    console.log('🔧 Setting active tool:', tool);
-    
     set((state) => {
       const timestamp = Date.now();
       const newVersion = state.stateVersion + 1;
@@ -249,14 +247,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
         { tool, timestamp, settings: state.toolSettings }
       ], 50);
       
-      console.log('🔧 Tool state updated:', {
-        tool,
-        version: newVersion,
-        historyLength: newHistory.length,
-        clearingAutoSwitch: clearAutoSwitch,
-        lastUsedShapeTool
-      });
-      
       return {
         activeTool: tool,
         lastUsedShapeTool,
@@ -273,8 +263,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   updateToolSettings: (settings) => {
-    console.log('🎨 Updating tool settings:', settings);
-    
     set((state) => {
       const newSettings = { ...state.toolSettings, ...settings };
       const timestamp = Date.now();
@@ -285,12 +273,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
         get().updateRecentlyUsedColor(settings.strokeColor);
       }
       
-      console.log('🎨 Tool settings updated:', {
-        changes: Object.keys(settings),
-        version: newVersion,
-        newSettings: settings
-      });
-      
       return {
         toolSettings: newSettings,
         stateVersion: newVersion,
@@ -300,8 +282,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   updateRecentlyUsedColor: (color) => {
-    console.log('🎨 Adding recent color:', color);
-    
     set((state) => ({
       recentlyUsedColors: addToRecentArray(state.recentlyUsedColors, color, 10)
     }));
@@ -323,8 +303,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   addCustomColor: (color) => {
-    console.log('🎨 Adding custom color:', color);
-    
     set((state) => {
       const newCustomColors = [...state.customColors];
       if (!newCustomColors.includes(color)) {
@@ -343,8 +321,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   setActiveColorPalette: (palette) => {
-    console.log('🎨 Setting active color palette:', palette);
-    
     set((state) => ({
       activeColorPalette: palette,
       stateVersion: state.stateVersion + 1,
@@ -353,8 +329,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   setPaletteCustomColor: (palette, color) => {
-    console.log('🎨 Setting custom color for palette:', palette, color);
-    
     set((state) => ({
       paletteCustomColors: {
         ...state.paletteCustomColors,
@@ -388,7 +362,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   clearToolHistory: () => {
-    console.log('🧹 Clearing tool history');
     set((state) => ({
       toolChangeHistory: [],
       stateVersion: state.stateVersion + 1,
@@ -397,7 +370,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   setAutoSwitchState: (fromTool, wasAutoSwitched) => {
-    console.log('🔄 Setting auto-switch state:', { fromTool, wasAutoSwitched });
     set({
       autoSwitchedFromTool: fromTool,
       wasAutoSwitched,
@@ -411,7 +383,6 @@ export const useToolStore = create<ToolStore>((set, get) => ({
   },
 
   clearAutoSwitchState: () => {
-    console.log('🔄 Clearing auto-switch state');
     set({
       autoSwitchedFromTool: null,
       wasAutoSwitched: false,

@@ -219,8 +219,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
 
   startActionBatch: (actionType, objectId, userId = 'local') => {
     const batchId = nanoid();
-    
-    
     set((state) => ({
       currentBatch: {
         id: batchId,
@@ -253,9 +251,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       }));
       return;
     }
-    
-    
-    
     
     // Create a batch action that contains all the individual actions
     const batchAction: WhiteboardAction = {
@@ -305,7 +300,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         actions: [...state.currentBatch.actions, action]
       }
     }));
-    
   },
 
   setViewport: (viewport) => set({ viewport }),
@@ -415,7 +409,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     // If we're in an active batch, add to batch instead of recording immediately
     const currentBatch = get().currentBatch;
     if (currentBatch.id && currentBatch.actions.length >= 0) {
-      
       get().addToBatch(action);
     } else {
       get().recordAction(action);
@@ -460,7 +453,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     const isObjectsEmpty = Object.keys(state.objects).length === 0;
     const isBgDefault = (state.settings.backgroundColor || '#ffffff') === '#ffffff';
     if (isObjectsEmpty && isBgDefault) {
-      
       return;
     }
     
@@ -668,12 +660,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
 
     get().recordAction(whiteboardAction);
     
-    console.log('✂️ Erased path with preserved brush metadata:', {
-      originalId: originalObjectId.slice(0, 8),
-      segments: resultingSegments.length,
-      brushType: originalObjectMetadata?.brushType || originalObject.data?.brushType,
-      preservedMetadata: originalObjectMetadata
-    });
   },
   
   zoomIn: () => {
@@ -742,11 +728,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   },
   
   applyRemoteAction: (action) => {
-    console.log('🔄 Applying remote action:', action.type, action.id);
-    
     // Handle SYNC actions specially - they only apply state changes, don't get recorded in history
     if (action.type === 'SYNC_UNDO' || action.type === 'SYNC_REDO') {
-      console.log('🔄 Applying SYNC action state change:', action.type);
       if (action.payload.stateChange) {
         set((state) => ({
           ...state,
@@ -760,10 +743,8 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
       const currentIndex = currentState.userHistoryIndices.get(originalUserId) ?? -1;
       
       if (action.type === 'SYNC_UNDO') {
-        console.log('🔄 Updating history index for SYNC_UNDO - user:', originalUserId, 'index:', currentIndex - 1);
         get().updateLocalUserHistoryIndex(originalUserId, currentIndex - 1);
       } else if (action.type === 'SYNC_REDO') {
-        console.log('🔄 Updating history index for SYNC_REDO - user:', originalUserId, 'index:', currentIndex + 1);
         get().updateLocalUserHistoryIndex(originalUserId, currentIndex + 1);
       }
       
@@ -778,7 +759,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         if (action.payload.actions && Array.isArray(action.payload.actions)) {
           // Check for duplicate batch processing
           if (get().processedBatchIds.has(action.id)) {
-            console.log('🚫 Skipping duplicate BATCH_UPDATE:', action.id.slice(0, 8));
             return;
           }
           
@@ -786,8 +766,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           set((state) => ({
             processedBatchIds: new Set(state.processedBatchIds).add(action.id)
           }));
-          
-          console.log('🔄 Processing remote BATCH_UPDATE with', action.payload.actions.length, 'actions, ID:', action.id.slice(0, 8));
           get().batchUpdate(action.payload.actions);
           return; // Don't add the batch action itself to history
         }
@@ -822,7 +800,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 opacity,
                 effectData
               });
-              console.log('🗂️ Cached brush effect for remote ADD_OBJECT:', { id: obj.id.slice(0,8), type: obj.data.brushType, points: points.length, strokeWidth });
+              
             } catch (e) {
               console.warn('⚠️ Failed to precompute brush effect for remote add:', e);
             }
@@ -837,12 +815,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
           if (existing) {
             // Soft-lock guard: ignore updates from non-lock owner while lock is active
             if (get().isLockedByOther(objId, action.userId)) {
-              console.log('🔒 Skipping remote UPDATE_OBJECT due to active lock by another user:', objId.slice(0,8));
+              
               break;
             }
             // Timestamp guard: drop stale updates
             if (typeof action.timestamp === 'number' && typeof existing.updatedAt === 'number' && action.timestamp < existing.updatedAt) {
-              console.log('⏱️ Skipping stale UPDATE_OBJECT (ts', action.timestamp, '< updatedAt', existing.updatedAt, '):', objId.slice(0,8));
+              
               break;
             }
             set((state) => ({
@@ -874,12 +852,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
         
       case 'SELECT_OBJECTS':
         // Skip applying remote selection actions - selections should remain local
-        console.log('🔄 Skipping remote SELECT_OBJECTS action - selections are local');
+        
         return;
         
       case 'CLEAR_SELECTION':
         // Skip applying remote clear selection actions - selections should remain local
-        console.log('🔄 Skipping remote CLEAR_SELECTION action - selections are local');
+        
         return;
         
       case 'CLEAR_CANVAS':
@@ -927,12 +905,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
               fill: originalObject.fill
             };
             
-            console.log('🎨 Processing remote ERASE_PATH with brush metadata:', {
-              originalId: originalObjectId.slice(0, 8),
-              brushType: originalObjectMetadata.brushType,
-              segmentCount: resultingSegments.length,
-              hasMetadata: !!originalObjectMetadata
-            });
             
             set((state) => {
               const newObjects = { ...state.objects };
@@ -941,11 +913,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
               // PRESERVE brush effects before removing original object
               const brushType = originalObjectMetadata?.brushType;
               if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
-                console.log('🎨 Preserving brush effects for remote eraser action:', {
-                  originalId: originalObjectId.slice(0, 8),
-                  brushType,
-                  segmentCount: resultingSegments.length
-                });
                 
                 // Ensure original cache exists before transfer
                 const existing = brushEffectCache.get(originalObjectId, brushType);
@@ -967,7 +934,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                       opacity,
                       effectData
                     });
-                    console.log('🗂️ Cached original brush effect for remote ERASE_PATH:', { id: originalObjectId.slice(0,8), type: brushType, points: points.length, strokeWidth });
+                    
                   } catch (e) {
                     console.warn('⚠️ Failed to precompute original brush effect for remote erase:', e);
                   }
@@ -1026,19 +993,13 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
               };
             });
             
-            console.log('✅ Remote ERASE_PATH applied with preserved brush effects:', {
-              originalId: originalObjectId.slice(0, 8),
-              segments: resultingSegments.length,
-              brushType: originalObjectMetadata?.brushType,
-              preservedEffects: !!(originalObjectMetadata?.brushType && (originalObjectMetadata.brushType === 'spray' || originalObjectMetadata.brushType === 'chalk'))
-            });
           }
         }
         break;
         
         
       default:
-        console.log('🔄 Unknown action type for remote application:', action.type);
+        
         break;
     }
     
@@ -1063,8 +1024,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
   
   batchUpdate: (actions) => {
     // Apply batch of actions without triggering sync
-    console.log('🔄 Applying batch update:', actions.length, 'actions');
-    console.log('🔄 Action types in batch:', actions.map(a => a.type).join(', '));
     
     // Apply each action directly without setting lastAction
     actions.forEach(action => {
@@ -1098,7 +1057,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                   opacity,
                   effectData
                 });
-                console.log('🗂️ Cached brush effect for batched ADD_OBJECT:', { id: obj.id.slice(0,8), type: obj.data.brushType, points: points.length, strokeWidth });
+                
               } catch (e) {
                 console.warn('⚠️ Failed to precompute brush effect for batched add:', e);
               }
@@ -1113,12 +1072,12 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
             if (existing) {
               // Soft-lock guard during batch
               if (get().isLockedByOther(objId, action.userId)) {
-                console.log('🔒 Skipping batched UPDATE_OBJECT due to active lock by another user:', objId.slice(0,8));
+                
                 break;
               }
               // Timestamp guard during batch
               if (typeof action.timestamp === 'number' && typeof existing.updatedAt === 'number' && action.timestamp < existing.updatedAt) {
-                console.log('⏱️ Skipping stale batched UPDATE_OBJECT (ts', action.timestamp, '< updatedAt', existing.updatedAt, '):', objId.slice(0,8));
+                
                 break;
               }
               set((state) => ({
@@ -1170,12 +1129,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 fill: originalObject.fill
               };
               
-              console.log('🎨 Processing batched ERASE_PATH with brush metadata:', {
-                originalId: originalObjectId.slice(0, 8),
-                brushType: originalObjectMetadata.brushType,
-                segmentCount: resultingSegments.length,
-                segmentDetails: resultingSegments.map(s => ({ id: s.id.slice(0, 8), pointCount: s.points.length }))
-              });
               
               set((state) => {
                 const newObjects = { ...state.objects };
@@ -1184,11 +1137,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
                 // PRESERVE brush effects before removing original object
                 const brushType = originalObjectMetadata?.brushType;
                 if (brushType && (brushType === 'spray' || brushType === 'chalk')) {
-                  console.log('🎨 Preserving brush effects for batched eraser action:', {
-                    originalId: originalObjectId.slice(0, 8),
-                    brushType,
-                    segmentCount: resultingSegments.length
-                  });
                   
                   // Transfer brush effects to segments BEFORE clearing the original
                   brushEffectCache.transferToSegments(originalObjectId, brushType, resultingSegments);
@@ -1253,10 +1201,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     
     // Log final state after batch processing
     const finalState = get();
-    console.log('🎨 Batch update complete - final object count:', Object.keys(finalState.objects).length, {
-      objectIds: Object.keys(finalState.objects).map(id => id.slice(0, 8)),
-      objectTypes: Object.values(finalState.objects).map(obj => obj.type)
-    });
     
     // Signal that a batch update occurred to trigger canvas redraw
     set((state) => ({
@@ -1272,17 +1216,7 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     });
   },
   applyStateChange: (stateChange) => {
-    console.log('🔄 applyStateChange called with:', {
-      objectsKeys: stateChange.objects ? Object.keys(stateChange.objects) : 'unchanged',
-      selectedObjectIds: stateChange.selectedObjectIds
-    });
-    
-    const prevObjects = get().objects;
-    
     set((state) => ({ ...state, ...stateChange }));
-    
-    const newObjects = get().objects;
-    console.log('🔄 State change applied - objects reference changed:', prevObjects !== newObjects);
   },
   
   restoreHistoryState: (historyState: {
@@ -1292,11 +1226,6 @@ export const useWhiteboardStore = create<WhiteboardStore>((set, get) => ({
     currentHistoryIndex: number;
     objectRelationships: Record<string, { originalId?: string; segmentIds?: string[] }>;
   }) => {
-    console.log('🔄 Restoring history state:', {
-      actionHistoryLength: historyState.actionHistory.length,
-      userCount: Object.keys(historyState.userActionHistories).length,
-      currentIndex: historyState.currentHistoryIndex
-    });
     
     // Convert plain objects back to Maps
     const userActionHistoriesMap = new Map<string, WhiteboardAction[]>();

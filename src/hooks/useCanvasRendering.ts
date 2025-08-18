@@ -93,22 +93,13 @@ export const useCanvasRendering = (
         return null;
       }
 
-      // Add detailed cache lookup logging with FULL paths
-      console.log(`🔍 Cache lookup for FULL PATH: "${normalizedSrc}"`);
-      const cacheStats = getCacheStats();
-      console.log(
-        `📦 Shared cache has ${cacheStats.cached} images, local cache has ${imageCache.current.size} images`
-      );
-
       // Return cached image if available in local cache
       if (imageCache.current.has(normalizedSrc)) {
-        console.log(`✨ Cache HIT for FULL PATH: "${normalizedSrc}"`);
         return imageCache.current.get(normalizedSrc)!;
       }
 
       // Don't retry failed images to prevent infinite loops
       if (failedImages.current.has(normalizedSrc)) {
-        console.log(`🚫 Skipping failed image FULL PATH: "${normalizedSrc}"`);
         return null;
       }
 
@@ -146,10 +137,7 @@ export const useCanvasRendering = (
             loadingImages.current.delete(normalizedSrc);
             failedImages.current.add(normalizedSrc); // Mark as failed to prevent retries
             setImageFailed(normalizedSrc, error); // Mark as failed in shared cache
-            console.error(
-              `❌ img.onerror for FULL PATH: "${normalizedSrc}"`,
-              error
-            );
+            console.error(`Failed to load image: ${normalizedSrc}`, error);
             reject(new Error(`Failed to load image: ${normalizedSrc}`));
           };
 
@@ -166,15 +154,8 @@ export const useCanvasRendering = (
                 return response.text();
               })
               .then((svgText) => {
-                console.log(
-                  `📄 SVG TEXT received for: "${normalizedSrc}", length: ${svgText.length}`
-                );
-
                 const blob = new Blob([svgText], { type: "image/svg+xml" });
                 const url = URL.createObjectURL(blob);
-                console.log(
-                  `🔗 SVG BLOB URL created for: "${normalizedSrc}" -> ${url}`
-                );
 
                 // Override onload for SVG
                 img.onload = () => {
@@ -193,27 +174,20 @@ export const useCanvasRendering = (
                   failedImages.current.add(normalizedSrc);
                   setImageFailed(normalizedSrc, error); // Mark as failed in shared cache
                   URL.revokeObjectURL(url);
-                  console.error(
-                    `❌ SVG img.onerror for FULL PATH: "${normalizedSrc}"`,
-                    error
-                  );
+                  console.error(`Failed to load SVG: ${normalizedSrc}`, error);
                   reject(
                     new Error(`Failed to load SVG image: ${normalizedSrc}`)
                   );
                 };
 
                 img.src = url;
-                console.log(`🎯 SVG img.src set for: "${normalizedSrc}"`);
               })
               .catch((error) => {
                 clearTimeout(timeoutId);
                 loadingImages.current.delete(normalizedSrc);
                 failedImages.current.add(normalizedSrc);
                 setImageFailed(normalizedSrc, error); // Mark as failed in shared cache
-                console.error(
-                  `❌ SVG FETCH failed for FULL PATH: "${normalizedSrc}"`,
-                  error
-                );
+                console.error(`SVG fetch failed: ${normalizedSrc}`, error);
                 reject(error);
               });
           } else {
