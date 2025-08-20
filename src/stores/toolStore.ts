@@ -147,7 +147,7 @@ const defaultToolSettings: ToolSettings = {
   textItalic: false,
   textUnderline: false,
   textAlign: 'left',
-  selectedSticker: '⭐', // Default to star emoji since it works
+  selectedSticker: null,
   stickyNoteSize: 180,
   stickyNoteBackgroundColor: '#fef3c7',
   shapeColorMode: 'fill'
