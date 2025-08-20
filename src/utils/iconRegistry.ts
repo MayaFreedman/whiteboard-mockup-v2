@@ -14030,6 +14030,7 @@ export const iconRegistry: IconInfo[] = [
       "smileys",
       "emotion",
       "glasses",
+      "maya freedman",
       "1f60e",
     ],
     group: "Smileys & Emotion",
